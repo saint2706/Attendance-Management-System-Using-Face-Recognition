@@ -158,3 +158,5 @@ Thumbs.db
 
 # profiling data
 .prof
+
+training_dataset/*
