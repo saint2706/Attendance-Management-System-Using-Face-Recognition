@@ -1,132 +1,93 @@
 {% load static %}
 
-
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-	  <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script src="https://kit.fontawesome.com/00148adc4d.js" crossorigin="anonymous"></script>
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
-   <style>
-    body{
-      background: url('{% static "recognition/img/bg_image.png"%}') no-repeat center center fixed;
-      background-size: cover;
-      
-    }
-   
-   </style>
-
-
-	
-</head>
-<body>
-   <div class="col-lg-12" style="background: rgba(0,0,0,0.6);margin-top:3em;margin-bottom:5em;padding-top:1em;padding-bottom:3em;color:#fff;border-radius:10px;-webkit-box-shadow: 2px 2px 15px 0px rgba(0, 3, 0, 0.7);
--moz-box-shadow:    2px 2px 15px 0px rgba(0, 3, 0, 0.7);
-box-shadow:         2px 2px 15px 0px rgba(0, 3, 0, 0.7);">
-    <div class="col-sm-12">
-       <a href="{% url 'logout' %}"><h5 class="text-right"><i class="fa fa-user-circle" aria-hidden="true"></i> Logout</h5></a>
-      <h1 class="text-center section-title" style="margin-bottom:2em">Welcome, {{user.username}}.</h1>
-    </div>
-     <style>
-      h4{
-        margin-bottom: 1.5em;
-        padding-top: 30px;
-
-      }
-      img{
-        border-radius:50%;
-        -webkit-transition: all 0.3s ease-in-out;
-    -moz-transition: all 0.3s ease-in-out;
-     transition: all 0.3s ease-in-out;
-      }
-      img:hover{
-        -webkit-box-shadow: 2px 2px 21px 0px rgba(0, 3, 0, 0.91);
-        -moz-box-shadow:    2px 2px 21px 0px rgba(0, 3, 0, 0.91);
-        box-shadow:         2px 2px 21px 0px rgba(0, 3, 0, 0.91);
-        border:2px solid #fff;
-      }
-      h3{
-        margin-bottom: 1.3em;
-      }
-      a{
-        color:inherit
-      }
-      a:hover{
-        color:inherit;
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <style>
+      a {
+        margin: 2px 0;
         text-decoration: none;
       }
-      /*
-      .section-title:after {
-          content:' ';display:block;margin:0 auto;width:100px;margin-top: 6px;border:2px solid #d0d0d0;border-radius:4px;
-          -webkit-border-radius:4px;
-          -moz-border-radius:4px;
-          box-shadow:inset 0 1px 1px rgba(0, 0, 0, .05);
-          -webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, .05);
-          -moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, .05);
-          margin-bottom:1em;
-        }
-        */
-     
+      
+      .navbar {
+        background-color: #222831;
+      }
+      
+      .btn {
+        background-color: #eeeeee;
+        border: 2px solid #393e46;
+        transition-duration: 0.4s;
+      }
+      
+      .btn:hover {
+        background-color: #393e46;
+        color: white;
+      }
+      
+      .navbar-brand {
+        color: white !important;
+        transition-duration: 0.4s;
+        opacity: 0.6;
+      }
+      
+      .navbar-brand:hover {
+        color: white !important;
+        opacity: 1;
+      }
+      
+      .wrapper {
+        height: 40vh;
+        width: 30%;
+        background-color: #eeeeee;
+        padding: 10px;
+        margin-top: 10%;
+        border-radius: 4px;
+        align-items: center;
+      }
+      
+      .zoom {
+        color: black !important;
+      }
+      
+      .zoom:hover {
+        color: black !important;
+        transform: scale(1.05);
+      }
     </style>
-
-
-
-
-
-      <div class="row">
-     
-       
-
-          
-          
-       
-          
-            
-        
-        <div class="col-md-12" style="padding-left: 900px; margin-left: auto; margin-right: auto;">
-          <a href="{%url 'view-my-attendance-employee-login' %}"><img src="{% static 'recognition/img/reports.png' %}" class="img-responsive" style="width:300px;height:300px"/></a>
-       
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg">
+      <a href="{% url 'logout' %}" style="margin-left: 4px;"><span class="navbar-brand"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</span></a>
+      <span class="text-center navbar-brand">Welcome {{ user.username }}.</span>
+    </nav>
+    <div>
+      <div class="container-fluid wrapper d-flex align-items-center">
+        <div class="container d-flex flex-column align-items-center">
+          <a href="{% url 'view-my-attendance-employee-login' %}" class="navbar-brand zoom"><i class="fa-solid fa-magnifying-glass-chart fa-8x"></i></a>
+          <h2 class="text-center">View My Attendance</h2>
         </div>
-       
-
-
-
-
       </div>
-  <div class="row">
 
-  
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    </div>
 
-        <div class="col md-6" style="padding-left: 945px;">
-             <h4 >View My Attendance</h4>
-        </div>
-     
-
-
-</div>
-
- {% if messages %}
-      {% for message in messages%}
-      <div class="alert alert-{{message.tags}}" > {{message}}
-      </div>
-      {%endfor %}
-
-    {%endif%}
-
-
-</div>
-
-
-
-<!-- Optional JavaScript -->
+    <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-</body>
+  </body>
 </html>
