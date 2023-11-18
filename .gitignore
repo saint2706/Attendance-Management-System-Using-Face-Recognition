@@ -158,5 +158,4 @@ Thumbs.db
 
 # profiling data
 .prof
-
-training_dataset/*
+/face_recognition_data/training_dataset
