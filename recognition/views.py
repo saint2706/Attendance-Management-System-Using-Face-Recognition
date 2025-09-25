@@ -325,19 +325,20 @@ def predict(face_aligned, svc, threshold: float = 0.7):
             face_aligned, known_face_locations=x_face_locations
         )
         if len(faces_encodings) == 0:
-            return ([-1], [0])
+            return (-1, 0.0)
 
     except Exception:
 
         logger.exception("Failed to encode face for prediction")
-        return ([-1], [0])
+        return (-1, 0.0)
 
     prob = svc.predict_proba(faces_encodings)
-    result = np.where(prob[0] == np.amax(prob[0]))
-    if prob[0][result[0]] <= threshold:
-        return ([-1], prob[0][result[0]])
+    best_index = int(np.argmax(prob[0]))
+    best_prob = float(prob[0][best_index])
+    if best_prob <= threshold:
+        return (-1, best_prob)
 
-    return (result[0], prob[0][result[0]])
+    return (best_index, best_prob)
 
 
 def vizualize_Data(embedded, targets) -> None:
@@ -912,8 +913,8 @@ def mark_your_attendance_out(request):
 
                 pred, prob = predict(face_aligned, svc)
 
-                if pred != [-1]:
-                    person_name = encoder.inverse_transform(np.ravel([pred]))[0]
+                if pred != -1:
+                    person_name = encoder.inverse_transform([pred])[0]
                     if count[person_name] == 0:
                         start[person_name] = time.time()
                     if (
@@ -932,7 +933,7 @@ def mark_your_attendance_out(request):
                         )
                     cv2.putText(
                         frame,
-                        f"{person_name}{prob}",
+                        f"{person_name} {prob:.2f}",
                         (x + 6, y + h - 6),
                         cv2.FONT_HERSHEY_SIMPLEX,
                         0.5,
@@ -992,8 +993,8 @@ def mark_your_attendance_out(request):
 
                 pred, prob = predict(face_aligned, svc)
 
-                if pred != [-1]:
-                    person_name = encoder.inverse_transform(np.ravel([pred]))[0]
+                if pred != -1:
+                    person_name = encoder.inverse_transform([pred])[0]
                     if count[person_name] == 0:
                         start[person_name] = time.time()
                     if (
@@ -1012,7 +1013,7 @@ def mark_your_attendance_out(request):
                         )
                     cv2.putText(
                         frame,
-                        f"{person_name}{prob}",
+                        f"{person_name} {prob:.2f}",
                         (x + 6, y + h - 6),
                         cv2.FONT_HERSHEY_SIMPLEX,
                         0.5,
