@@ -137,23 +137,24 @@ def create_dataset(username):
 
 
 def predict(face_aligned,svc,threshold=0.7):
-	face_encodings=np.zeros((1,128))
-	try:
-		x_face_locations=face_recognition.face_locations(face_aligned)
-		faces_encodings=face_recognition.face_encodings(face_aligned,known_face_locations=x_face_locations)
-		if(len(faces_encodings)==0):
-			return ([-1],[0])
+        face_encodings=np.zeros((1,128))
+        try:
+                x_face_locations=face_recognition.face_locations(face_aligned)
+                faces_encodings=face_recognition.face_encodings(face_aligned,known_face_locations=x_face_locations)
+                if(len(faces_encodings)==0):
+                        return (-1,0.0)
 
-	except:
+        except:
 
-		return ([-1],[0])
+                return (-1,0.0)
 
-	prob=svc.predict_proba(faces_encodings)
-	result=np.where(prob[0]==np.amax(prob[0]))
-	if(prob[0][result[0]]<=threshold):
-		return ([-1],prob[0][result[0]])
+        prob=svc.predict_proba(faces_encodings)
+        best_index=int(np.argmax(prob[0]))
+        best_prob=float(prob[0][best_index])
+        if(best_prob<=threshold):
+                return (-1,0.0)
 
-	return (result[0],prob[0][result[0]])
+        return (best_index,best_prob)
 
 
 def vizualize_Data(embedded, targets,):
@@ -631,16 +632,16 @@ def mark_your_attendance(request):
 			cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),1)
 					
 			
-			(pred,prob)=predict(face_aligned,svc)
-			
+                        (pred,prob)=predict(face_aligned,svc)
 
-			
-			if(pred!=[-1]):
-				
-				person_name=encoder.inverse_transform(np.ravel([pred]))[0]
-				pred=person_name
-				if count[pred] == 0:
-					start[pred] = time.time()
+
+
+                        if(pred!=-1):
+
+                                person_name=encoder.inverse_transform([pred])[0]
+                                pred=person_name
+                                if count[pred] == 0:
+                                        start[pred] = time.time()
 					count[pred] = count.get(pred,0) + 1
 
 				if count[pred] == 4 and (time.time()-start[pred]) > 1.2:
@@ -648,10 +649,10 @@ def mark_your_attendance(request):
 				else:
 				#if count[pred] == 4 and (time.time()-start) <= 1.5:
 					present[pred] = True
-					log_time[pred] = datetime.datetime.now()
-					count[pred] = count.get(pred,0) + 1
-					print(pred, present[pred], count[pred])
-				cv2.putText(frame, str(person_name)+ str(prob), (x+6,y+h-6), cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,255,0),1)
+                                        log_time[pred] = datetime.datetime.now()
+                                        count[pred] = count.get(pred,0) + 1
+                                        print(pred, present[pred], count[pred])
+                                cv2.putText(frame, f"{person_name} {prob:.2f}", (x+6,y+h-6), cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,255,0),1)
 
 			else:
 				person_name="unknown"
@@ -741,16 +742,16 @@ def mark_your_attendance_out(request):
 			cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),1)
 					
 			
-			(pred,prob)=predict(face_aligned,svc)
-			
+                        (pred,prob)=predict(face_aligned,svc)
 
-			
-			if(pred!=[-1]):
-				
-				person_name=encoder.inverse_transform(np.ravel([pred]))[0]
-				pred=person_name
-				if count[pred] == 0:
-					start[pred] = time.time()
+
+
+                        if(pred!=-1):
+
+                                person_name=encoder.inverse_transform([pred])[0]
+                                pred=person_name
+                                if count[pred] == 0:
+                                        start[pred] = time.time()
 					count[pred] = count.get(pred,0) + 1
 
 				if count[pred] == 4 and (time.time()-start[pred]) > 1.5:
@@ -758,10 +759,10 @@ def mark_your_attendance_out(request):
 				else:
 				#if count[pred] == 4 and (time.time()-start) <= 1.5:
 					present[pred] = True
-					log_time[pred] = datetime.datetime.now()
-					count[pred] = count.get(pred,0) + 1
-					print(pred, present[pred], count[pred])
-				cv2.putText(frame, str(person_name)+ str(prob), (x+6,y+h-6), cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,255,0),1)
+                                        log_time[pred] = datetime.datetime.now()
+                                        count[pred] = count.get(pred,0) + 1
+                                        print(pred, present[pred], count[pred])
+                                cv2.putText(frame, f"{person_name} {prob:.2f}", (x+6,y+h-6), cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,255,0),1)
 
 			else:
 				person_name="unknown"
