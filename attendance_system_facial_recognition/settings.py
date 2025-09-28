@@ -1,5 +1,6 @@
 """Django settings for attendance_system_facial_recognition project."""
 
+import os
 from pathlib import Path
 
 
@@ -8,15 +9,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
+# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "4!of@+5)(cu6!@c&21m644*%n5)h(9h6shzgg5ka%005e=04qu"
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY", "a-secure-default-key-for-development-only"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]  # More specific in production
 
 
 # Application definition
@@ -25,6 +28,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "recognition.apps.RecognitionConfig",
     "crispy_forms",
+    "crispy_bootstrap5",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -117,7 +121,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-CRISPY_TEMPLATE_PACK = "bootstrap4"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 LOGIN_URL = "login"
 LOGOUT_REDIRECT_URL = "home"

@@ -5,18 +5,14 @@ from __future__ import annotations
 import datetime
 import logging
 import math
-import pickle
 import time
 from pathlib import Path
 from typing import Dict
 
 import cv2
-import dlib
-import face_recognition
 import imutils
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sns
 from django.conf import settings
@@ -27,15 +23,10 @@ from django.db.models import Count, QuerySet
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django_pandas.io import read_frame
-from face_recognition.face_recognition_cli import image_files_in_folder
-from imutils import face_utils
-from imutils.face_utils import FaceAligner
 from imutils.video import VideoStream
 from matplotlib import rcParams
 from pandas.plotting import register_matplotlib_converters
-from sklearn.manifold import TSNE
-from sklearn.preprocessing import LabelEncoder
-from sklearn.svm import SVC
+from deepface import DeepFace
 
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
 from users.models import Present, Time
@@ -44,18 +35,13 @@ from users.models import Present, Time
 mpl.use("Agg")
 
 
-
 logger = logging.getLogger(__name__)
 
 
 DATA_ROOT = Path(settings.BASE_DIR) / "face_recognition_data"
 TRAINING_DATASET_ROOT = DATA_ROOT / "training_dataset"
-SHAPE_PREDICTOR_PATH = DATA_ROOT / "shape_predictor_68_face_landmarks.dat"
-SVC_MODEL_PATH = DATA_ROOT / "svc.sav"
-CLASSES_PATH = DATA_ROOT / "classes.npy"
 
 APP_STATIC_ROOT = Path(__file__).resolve().parent / "static" / "recognition" / "img"
-TRAINING_VIZ_PATH = APP_STATIC_ROOT / "training_visualisation.png"
 HOURS_VS_DATE_PATH = APP_STATIC_ROOT / "attendance_graphs" / "hours_vs_date" / "1.png"
 EMPLOYEE_LOGIN_PATH = APP_STATIC_ROOT / "attendance_graphs" / "employee_login" / "1.png"
 HOURS_VS_EMPLOYEE_PATH = (
@@ -71,19 +57,6 @@ def _ensure_directory(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
 
-def load_recognition_artifacts():
-    """Load the persisted recognition artifacts."""
-
-    detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor(str(SHAPE_PREDICTOR_PATH))
-    with open(SVC_MODEL_PATH, "rb") as model_file:
-        svc = pickle.load(model_file)
-    face_aligner = FaceAligner(predictor, desiredFaceWidth=96)
-    encoder = LabelEncoder()
-    encoder.classes_ = np.load(str(CLASSES_PATH))
-    return detector, face_aligner, svc, encoder
-
-
 def username_present(username: str) -> bool:
     """Return whether the given username exists in the system."""
 
@@ -96,11 +69,6 @@ def create_dataset(username: str) -> None:
     dataset_directory = TRAINING_DATASET_ROOT / username
     dataset_directory.mkdir(parents=True, exist_ok=True)
 
-    logger.info("Loading the facial detector")
-    detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor(str(SHAPE_PREDICTOR_PATH))
-    face_aligner = FaceAligner(predictor, desiredFaceWidth=96)
-
     logger.info("Initializing video stream")
     video_stream = VideoStream(src=0).start()
 
@@ -108,74 +76,18 @@ def create_dataset(username: str) -> None:
     while True:
         frame = video_stream.read()
         frame = imutils.resize(frame, width=800)
-        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = detector(gray_frame, 0)
 
-        for face in faces:
-            logger.debug("Processing detected face for user %s", username)
-
-            if face is None:
-                logger.debug("Skipping empty face detection for user %s", username)
-                continue
-
-            face_aligned = face_aligner.align(frame, gray_frame, face)
-            sample_number += 1
-            output_path = dataset_directory / f"{sample_number}.jpg"
-            cv2.imwrite(str(output_path), face_aligned)
-            imutils.resize(face_aligned, width=400)
-            (x, y, w, h) = face_utils.rect_to_bb(face)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
-            cv2.waitKey(50)
+        sample_number += 1
+        output_path = dataset_directory / f"{sample_number}.jpg"
+        cv2.imwrite(str(output_path), frame)
 
         cv2.imshow("Add Images", frame)
         cv2.waitKey(1)
-        if sample_number > 300:
+        if sample_number > 50:  # Capture 50 frames
             break
 
     video_stream.stop()
     cv2.destroyAllWindows()
-
-
-def predict(face_aligned, svc, threshold: float = 0.7):
-    """Predict the identity of the aligned face using the trained classifier."""
-
-    try:
-        x_face_locations = face_recognition.face_locations(face_aligned)
-        faces_encodings = face_recognition.face_encodings(
-            face_aligned, known_face_locations=x_face_locations
-        )
-        if len(faces_encodings) == 0:
-            return (-1, 0.0)
-
-    except Exception:
-
-        logger.exception("Failed to encode face for prediction")
-        return (-1, 0.0)
-
-    prob = svc.predict_proba(faces_encodings)
-    best_index = int(np.argmax(prob[0]))
-    best_prob = float(prob[0][best_index])
-    if best_prob <= threshold:
-        return (-1, best_prob)
-
-    return (best_index, best_prob)
-
-
-def vizualize_Data(embedded, targets) -> None:
-    """Visualise the embedded face encodings to understand clustering."""
-
-    X_embedded = TSNE(n_components=2).fit_transform(embedded)
-
-    for target in set(targets):
-        idx = targets == target
-        plt.scatter(X_embedded[idx, 0], X_embedded[idx, 1], label=target)
-
-    plt.legend(bbox_to_anchor=(1, 1))
-    rcParams.update({"figure.autolayout": True})
-    plt.tight_layout()
-    _ensure_directory(TRAINING_VIZ_PATH)
-    plt.savefig(TRAINING_VIZ_PATH)
-    plt.close()
 
 
 def update_attendance_in_db_in(present: Dict[str, bool]) -> None:
@@ -469,7 +381,7 @@ def add_photos(request):
         username = data.get("username")
         if username_present(username):
             create_dataset(username)
-            messages.success(request, f"Dataset Created")
+            messages.success(request, f"Dataset Created for {username}")
             return redirect("add-photos")
         else:
             messages.warning(
@@ -483,236 +395,99 @@ def add_photos(request):
         return render(request, "recognition/add_photos.html", {"form": form})
 
 
-def mark_your_attendance(request):
-    detector, fa, svc, encoder = load_recognition_artifacts()
-
-    faces_encodings = np.zeros((1, 128))
-    no_of_faces = len(svc.predict_proba(faces_encodings)[0])
-    labels = [encoder.inverse_transform([i])[0] for i in range(no_of_faces)]
-    count = {label: 0 for label in labels}
-    present = {label: False for label in labels}
-    log_time: Dict[str, datetime.datetime] = {}
-    start: Dict[str, float] = {}
-
+def _mark_attendance(request, check_in):
     vs = VideoStream(src=0).start()
+    present = {}
+    db_path = str(TRAINING_DATASET_ROOT)
+    # Switched to a faster model and detector for better performance
+    model_name = "Facenet"
+    detector_backend = "ssd"
+
+    window_title = (
+        "Mark Attendance - In - Press q to exit"
+        if check_in
+        else "Mark Attendance- Out - Press q to exit"
+    )
 
     try:
         while True:
             frame = vs.read()
             frame = imutils.resize(frame, width=800)
-            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = detector(gray_frame, 0)
 
-            for face in faces:
-                logger.debug("Processing face for attendance check-in")
-                (x, y, w, h) = face_utils.rect_to_bb(face)
-
-                face_aligned = fa.align(frame, gray_frame, face)
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
-
-                pred, prob = predict(face_aligned, svc)
-
-                if pred != -1:
-                    person_name = encoder.inverse_transform([pred])[0]
-                    if count[person_name] == 0:
-                        start[person_name] = time.time()
-                    if (
-                        count[person_name] == 4
-                        and (time.time() - start[person_name]) > 1.2
-                    ):
-                        count[person_name] = 0
-                    else:
-                        present[person_name] = True
-                        log_time[person_name] = timezone.now()
-                        count[person_name] = count.get(person_name, 0) + 1
-                        logger.debug(
-                            "Marked %s present with count %s",
-                            person_name,
-                            count[person_name],
+            try:
+                dfs = DeepFace.find(
+                    img_path=frame,
+                    db_path=db_path,
+                    model_name=model_name,
+                    detector_backend=detector_backend,
+                    enforce_detection=False,
+                    silent=True,
+                )
+                if dfs and not dfs[0].empty:
+                    df = dfs[0]
+                    if not df.empty:
+                        # Get the path of the matched image
+                        identity_path = df.iloc[0]["identity"]
+                        # Extract username from the path
+                        username = Path(identity_path).parent.name
+                        present[username] = True
+                        logger.info(f"Recognized {username}")
+                        # Draw rectangle and put text
+                        x = int(df.iloc[0]["source_x"])
+                        y = int(df.iloc[0]["source_y"])
+                        w = int(df.iloc[0]["source_w"])
+                        h = int(df.iloc[0]["source_h"])
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                        cv2.putText(
+                            frame,
+                            username,
+                            (x, y - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            0.9,
+                            (0, 255, 0),
+                            2,
                         )
-                    cv2.putText(
-                        frame,
-                        f"{person_name} {prob:.2f}",
-                        (x + 6, y + h - 6),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (0, 255, 0),
-                        1,
-                    )
-                else:
-                    person_name = "unknown"
-                    cv2.putText(
-                        frame,
-                        person_name,
-                        (x + 6, y + h - 6),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (0, 255, 0),
-                        1,
-                    )
 
-            cv2.imshow("Mark Attendance - In - Press q to exit", frame)
-            key = cv2.waitKey(50) & 0xFF
+            except Exception as e:
+                logger.error(f"Error in face recognition: {e}")
+
+            cv2.imshow(window_title, frame)
+            key = cv2.waitKey(1) & 0xFF
             if key == ord("q"):
                 break
     finally:
         vs.stop()
         cv2.destroyAllWindows()
 
-    update_attendance_in_db_in(present)
+    if check_in:
+        update_attendance_in_db_in(present)
+    else:
+        update_attendance_in_db_out(present)
     return redirect("home")
+
+
+def mark_your_attendance(request):
+    return _mark_attendance(request, check_in=True)
 
 
 def mark_your_attendance_out(request):
-    detector, fa, svc, encoder = load_recognition_artifacts()
-
-    faces_encodings = np.zeros((1, 128))
-    no_of_faces = len(svc.predict_proba(faces_encodings)[0])
-    labels = [encoder.inverse_transform([i])[0] for i in range(no_of_faces)]
-    count = {label: 0 for label in labels}
-    present = {label: False for label in labels}
-    log_time: Dict[str, datetime.datetime] = {}
-    start: Dict[str, float] = {}
-
-    vs = VideoStream(src=0).start()
-
-    try:
-        while True:
-            frame = vs.read()
-            frame = imutils.resize(frame, width=800)
-            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = detector(gray_frame, 0)
-
-            for face in faces:
-                logger.debug("Processing face for attendance check-out")
-                (x, y, w, h) = face_utils.rect_to_bb(face)
-
-                face_aligned = fa.align(frame, gray_frame, face)
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
-
-                pred, prob = predict(face_aligned, svc)
-
-                if pred != -1:
-                    person_name = encoder.inverse_transform([pred])[0]
-                    if count[person_name] == 0:
-                        start[person_name] = time.time()
-                    if (
-                        count[person_name] == 4
-                        and (time.time() - start[person_name]) > 1.5
-                    ):
-                        count[person_name] = 0
-                    else:
-                        present[person_name] = True
-                        log_time[person_name] = timezone.now()
-                        count[person_name] = count.get(person_name, 0) + 1
-                        logger.debug(
-                            "Marked %s for check-out with count %s",
-                            person_name,
-                            count[person_name],
-                        )
-                    cv2.putText(
-                        frame,
-                        f"{person_name} {prob:.2f}",
-                        (x + 6, y + h - 6),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (0, 255, 0),
-                        1,
-                    )
-                else:
-                    person_name = "unknown"
-                    cv2.putText(
-                        frame,
-                        person_name,
-                        (x + 6, y + h - 6),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (0, 255, 0),
-                        1,
-                    )
-
-            cv2.imshow("Mark Attendance- Out - Press q to exit", frame)
-            key = cv2.waitKey(50) & 0xFF
-            if key == ord("q"):
-                break
-    finally:
-        vs.stop()
-        cv2.destroyAllWindows()
-
-    update_attendance_in_db_out(present)
-    return redirect("home")
-
+    return _mark_attendance(request, check_in=False)
 
 
 @login_required
 def train(request):
+    """
+    This view is now obsolete as DeepFace does not require a separate training step.
+    The 'training' is implicitly handled by organizing images in folders.
+    """
     if request.user.username != "admin":
         return redirect("not-authorised")
 
-    training_dir = TRAINING_DATASET_ROOT
-    if not training_dir.exists():
-        messages.warning(
-            request,
-            "No training data available. Please add images before training the model.",
-        )
-        return redirect("dashboard")
-
-    feature_vectors = []
-    labels = []
-
-    for person_dir in sorted(training_dir.iterdir()):
-        if not person_dir.is_dir():
-            continue
-        for image_path_str in image_files_in_folder(str(person_dir)):
-            image_path = Path(image_path_str)
-            image = cv2.imread(str(image_path))
-            if image is None:
-                logger.warning("Skipping unreadable training image %s", image_path)
-                try:
-                    image_path.unlink(missing_ok=True)
-                except OSError:
-                    logger.exception("Failed to remove unreadable image %s", image_path)
-                continue
-            try:
-                encoding = face_recognition.face_encodings(image)[0]
-            except IndexError:
-                logger.warning("No face found in %s; removing file", image_path)
-                try:
-                    image_path.unlink(missing_ok=True)
-                except OSError:
-                    logger.exception(
-                        "Failed to remove image without faces %s", image_path
-                    )
-                continue
-
-            feature_vectors.append(encoding.tolist())
-            labels.append(person_dir.name)
-
-    if not feature_vectors:
-        messages.warning(request, "No valid training images were found.")
-        return redirect("dashboard")
-
-    targets = np.array(labels)
-    encoder = LabelEncoder()
-    encoder.fit(labels)
-    encoded_labels = encoder.transform(labels)
-    X1 = np.array(feature_vectors)
-
-    _ensure_directory(CLASSES_PATH)
-    np.save(str(CLASSES_PATH), encoder.classes_)
-
-    svc = SVC(kernel="linear", probability=True)
-    svc.fit(X1, encoded_labels)
-
-    _ensure_directory(SVC_MODEL_PATH)
-    with open(SVC_MODEL_PATH, "wb") as model_file:
-        pickle.dump(svc, model_file)
-
-    vizualize_Data(X1, targets)
-
-    messages.success(request, "Training Complete.")
-
-    return render(request, "recognition/train.html")
+    messages.info(
+        request,
+        "The training process is now automatic. Just add photos for new users.",
+    )
+    return redirect("dashboard")
 
 
 @login_required
