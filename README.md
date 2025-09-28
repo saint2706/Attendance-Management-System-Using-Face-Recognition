@@ -1,6 +1,7 @@
 # Modern Smart Attendance System
 
 This project is a fully refactored and modernized smart attendance system that leverages deep learning for face recognition. It provides a seamless and automated way to track employee attendance, eliminating the need for manual record-keeping. The system is built with a responsive web interface for a great user experience on any device.
+## Attendance Management System Using Face Recognition 💻
 
 ## Features
 
@@ -52,6 +53,7 @@ Follow these instructions to get a copy of the project up and running on your lo
     ```bash
     python manage.py migrate
     ```
+## Presentation 🎓
 
 5.  **Create a superuser (admin account):**
     ```bash
@@ -92,3 +94,4 @@ Follow these instructions to get a copy of the project up and running on your lo
 ---
 
 This modernized Smart Attendance System is now easier to set up, more efficient, and more user-friendly than ever before. Enjoy a seamless attendance tracking experience!
+
