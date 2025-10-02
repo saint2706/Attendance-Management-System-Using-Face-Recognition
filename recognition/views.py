@@ -12,6 +12,9 @@ from typing import Dict
 import cv2
 import imutils
 import matplotlib as mpl
+
+mpl.use("Agg")
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -30,11 +33,6 @@ from deepface import DeepFace
 
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
 from users.models import Present, Time
-
-
-mpl.use("Agg")
-
-
 logger = logging.getLogger(__name__)
 
 
