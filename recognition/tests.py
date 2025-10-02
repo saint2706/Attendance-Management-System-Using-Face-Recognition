@@ -1,6 +1,9 @@
 import datetime
+import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+sys.modules.setdefault("cv2", MagicMock())
 
 import numpy as np
 import pandas as pd
@@ -114,7 +117,7 @@ class AddPhotosTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.admin_user = User.objects.create_user(
-            "admin", "admin@example.com", "password", is_staff=True
+            "manager", "manager@example.com", "password", is_staff=True
         )
 
     @patch("recognition.views.username_present", return_value=True)
@@ -148,3 +151,75 @@ class AddPhotosTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("dashboard"))
         mock_create_dataset.assert_not_called()
+
+
+class AdminAccessViewsTest(TestCase):
+    def setUp(self):
+        self.staff_user = User.objects.create_user(
+            "manager", "manager@example.com", "password", is_staff=True
+        )
+        self.regular_user = User.objects.create_user(
+            "employee", "employee@example.com", "password"
+        )
+
+    def test_dashboard_staff_user_sees_admin_dashboard(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "recognition/admin_dashboard.html")
+
+    def test_dashboard_regular_user_sees_employee_dashboard(self):
+        self.client.force_login(self.regular_user)
+        response = self.client.get(reverse("dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "recognition/employee_dashboard.html")
+
+    def test_admin_views_allow_staff_user(self):
+        self.client.force_login(self.staff_user)
+
+        response = self.client.get(reverse("add-photos"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "recognition/add_photos.html")
+
+        response = self.client.get(reverse("view-attendance-date"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "recognition/view_attendance_date.html"
+        )
+
+        response = self.client.get(reverse("view-attendance-employee"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "recognition/view_attendance_employee.html"
+        )
+
+        response = self.client.get(reverse("train"))
+        self.assertRedirects(response, reverse("dashboard"))
+
+    def test_admin_views_redirect_regular_user(self):
+        self.client.force_login(self.regular_user)
+
+        response = self.client.get(reverse("add-photos"))
+        self.assertRedirects(response, reverse("not-authorised"))
+
+        response = self.client.get(reverse("view-attendance-date"))
+        self.assertRedirects(response, reverse("not-authorised"))
+
+        response = self.client.get(reverse("view-attendance-employee"))
+        self.assertRedirects(response, reverse("not-authorised"))
+
+        response = self.client.get(reverse("train"))
+        self.assertRedirects(response, reverse("not-authorised"))
+
+    def test_employee_view_blocks_staff_user(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("view-my-attendance-employee-login"))
+        self.assertRedirects(response, reverse("not-authorised"))
+
+    def test_employee_view_allows_regular_user(self):
+        self.client.force_login(self.regular_user)
+        response = self.client.get(reverse("view-my-attendance-employee-login"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "recognition/view_my_attendance_employee_login.html"
+        )
