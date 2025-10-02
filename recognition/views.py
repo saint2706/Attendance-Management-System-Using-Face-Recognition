@@ -96,7 +96,14 @@ def update_attendance_in_db_in(present: Dict[str, bool]) -> None:
     today = timezone.localdate()
     current_time = timezone.now()
     for person, is_present in present.items():
-        user = User.objects.get(username=person)
+        user = User.objects.filter(username=person).first()
+        if user is None:
+            logger.warning(
+                "Skipping check-in attendance update for unknown user '%s'. "
+                "Training data may be stale.",
+                person,
+            )
+            continue
         qs = Present.objects.filter(user=user, date=today).first()
 
         if qs is None:
@@ -119,7 +126,14 @@ def update_attendance_in_db_out(present: Dict[str, bool]) -> None:
         if not is_present:
             continue
 
-        user = User.objects.get(username=person)
+        user = User.objects.filter(username=person).first()
+        if user is None:
+            logger.warning(
+                "Skipping check-out attendance update for unknown user '%s'. "
+                "Training data may be stale.",
+                person,
+            )
+            continue
         Time.objects.create(user=user, date=today, time=current_time, out=True)
 
 

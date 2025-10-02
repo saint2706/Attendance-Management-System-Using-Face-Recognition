@@ -109,6 +109,18 @@ class DatabaseUpdateTest(TestCase):
             Time.objects.filter(user=self.user, date=self.today, out=True).exists()
         )
 
+    def test_update_attendance_handles_missing_user(self):
+        missing_username = "ghost"
+        self.assertFalse(User.objects.filter(username=missing_username).exists())
+
+        try:
+            views.update_attendance_in_db_in({missing_username: True})
+        except Exception as exc:  # pragma: no cover - fail loudly if raised
+            self.fail(f"update_attendance_in_db_in raised an exception: {exc}")
+
+        self.assertFalse(Present.objects.filter(date=self.today).exists())
+        self.assertFalse(Time.objects.filter(date=self.today).exists())
+
 
 class AddPhotosTest(TestCase):
     def setUp(self):
