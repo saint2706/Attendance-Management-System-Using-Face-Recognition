@@ -43,6 +43,7 @@ class DeepFaceAttendanceTest(TestCase):
         self, mock_videostream, mock_cv2, mock_deepface_find, mock_update_db
     ):
         request = self.factory.get("/mark_attendance/")
+        request.user = self.user
         self._setup_mocks(mock_videostream, mock_cv2)
 
         # Simulate DeepFace finding a user
@@ -71,6 +72,7 @@ class DeepFaceAttendanceTest(TestCase):
         self, mock_videostream, mock_cv2, mock_deepface_find, mock_update_db
     ):
         request = self.factory.get("/mark_attendance_out/")
+        request.user = self.user
         self._setup_mocks(mock_videostream, mock_cv2)
 
         # Simulate DeepFace finding a user
