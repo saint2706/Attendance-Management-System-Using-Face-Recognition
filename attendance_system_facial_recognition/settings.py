@@ -1,34 +1,48 @@
-"""Django settings for attendance_system_facial_recognition project."""
+"""
+Django settings for the Smart Attendance System project.
+
+This file contains the configuration for the Django project, including database settings,
+installed applications, middleware, and custom application-specific parameters.
+It is configured to read sensitive values from environment variables for security.
+"""
 
 import os
 from pathlib import Path
 
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Define the project's base directory.
+# `BASE_DIR` points to the root of the Django project.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+# --- Security Settings ---
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# SECRET_KEY: A secret key used for cryptographic signing.
+# It is crucial to keep this key secret in a production environment.
+# The value is read from an environment variable, with a default for development.
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY", "a-secure-default-key-for-development-only"
 )
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG: A boolean that turns on/off debug mode.
+# Never run with debug mode turned on in a production environment.
+# The value is read from an environment variable, defaulting to True for development.
 DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = ["*"]  # More specific in production
+# ALLOWED_HOSTS: A list of strings representing the host/domain names that this Django site can serve.
+# In development, '*' is permissive, but this should be locked down in production.
+ALLOWED_HOSTS = ["*"]
 
 
-# Application definition
+# --- Application Configuration ---
 
 INSTALLED_APPS = [
+    # Custom applications for this project
     "users.apps.UsersConfig",
     "recognition.apps.RecognitionConfig",
+    # Third-party packages
     "crispy_forms",
     "crispy_bootstrap5",
+    # Core Django applications
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -47,6 +61,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# The root URL configuration module for the project.
 ROOT_URLCONF = "attendance_system_facial_recognition.urls"
 
 TEMPLATES = [
@@ -65,11 +80,12 @@ TEMPLATES = [
     },
 ]
 
+# WSGI application entry point for production servers.
 WSGI_APPLICATION = "attendance_system_facial_recognition.wsgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
+# --- Database Configuration ---
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
     "default": {
@@ -79,61 +95,60 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
+# --- Password Validation ---
+# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/2.2/topics/i18n/
+# --- Internationalization ---
+# https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "Asia/Kolkata"
-
+TIME_ZONE = "Asia/Kolkata"  # Set to the appropriate timezone
 USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
+USE_TZ = True  # Enable timezone-aware datetimes
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.2/howto/static-files/
+# --- Static Files Configuration ---
+# https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "/static/"
-
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+# --- Crispy Forms Configuration ---
+
+# Specifies that django-crispy-forms should use Bootstrap 5 templates.
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
+# --- Authentication and Redirects ---
+
+# The URL to redirect to for login when using the @login_required decorator.
 LOGIN_URL = "login"
+
+# The URL to redirect to after a user logs out.
 LOGOUT_REDIRECT_URL = "home"
 
-
+# The default URL to redirect to after a user logs in.
 LOGIN_REDIRECT_URL = "dashboard"
 
+# --- Model Field Configuration ---
+
+# Specifies the default primary key field type for new models.
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Threshold for accepting DeepFace matches when marking attendance. Lower values
-# mean stricter matching. This can be overridden via the environment variable of
-# the same name.
+# --- Custom Application Settings ---
+
+# Threshold for accepting DeepFace matches when marking attendance.
+# Lower values (e.g., 0.3) mean stricter matching, while higher values (e.g., 0.5)
+# are more permissive. This can be overridden via an environment variable.
 RECOGNITION_DISTANCE_THRESHOLD = float(
     os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4")
 )
