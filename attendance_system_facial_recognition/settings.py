@@ -130,3 +130,10 @@ LOGOUT_REDIRECT_URL = "home"
 LOGIN_REDIRECT_URL = "dashboard"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Threshold for accepting DeepFace matches when marking attendance. Lower values
+# mean stricter matching. This can be overridden via the environment variable of
+# the same name.
+RECOGNITION_DISTANCE_THRESHOLD = float(
+    os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4")
+)

@@ -69,6 +69,14 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 ## Usage
 
+### Configuration
+
+- `RECOGNITION_DISTANCE_THRESHOLD` (default: `0.4`): sets the maximum
+  allowable embedding distance returned by DeepFace when marking attendance.
+  Lower values make recognition stricter, while higher values are more
+  permissive. Configure it via an environment variable before starting the
+  server if you need to tune recognition sensitivity.
+
 ### 1. Admin: Register a New Employee
 
 - Log in to the admin dashboard (`/login`) with your superuser credentials.

@@ -407,6 +407,9 @@ def add_photos(request):
         return render(request, "recognition/add_photos.html", {"form": form})
 
 
+DEFAULT_DISTANCE_THRESHOLD = 0.4
+
+
 def _mark_attendance(request, check_in):
     vs = VideoStream(src=0).start()
     present = {}
@@ -414,6 +417,9 @@ def _mark_attendance(request, check_in):
     # Switched to a faster model and detector for better performance
     model_name = "Facenet"
     detector_backend = "ssd"
+    distance_threshold = getattr(
+        settings, "RECOGNITION_DISTANCE_THRESHOLD", DEFAULT_DISTANCE_THRESHOLD
+    )
 
     window_title = (
         "Mark Attendance - In - Press q to exit"
@@ -438,27 +444,44 @@ def _mark_attendance(request, check_in):
                 if dfs and not dfs[0].empty:
                     df = dfs[0]
                     if not df.empty:
-                        # Get the path of the matched image
-                        identity_path = df.iloc[0]["identity"]
-                        # Extract username from the path
-                        username = Path(identity_path).parent.name
-                        present[username] = True
-                        logger.info(f"Recognized {username}")
-                        # Draw rectangle and put text
-                        x = int(df.iloc[0]["source_x"])
-                        y = int(df.iloc[0]["source_y"])
-                        w = int(df.iloc[0]["source_w"])
-                        h = int(df.iloc[0]["source_h"])
-                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                        cv2.putText(
-                            frame,
-                            username,
-                            (x, y - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.9,
-                            (0, 255, 0),
-                            2,
-                        )
+                        match = df.iloc[0]
+                        if "distance" in df.columns:
+                            df = df.sort_values(by="distance")
+                            match = df.iloc[0]
+                        distance = match.get("distance")
+                        is_confident = True
+                        if distance is not None and distance > distance_threshold:
+                            logger.info(
+                                "Ignoring potential match for '%s' due to distance %.4f "
+                                "> threshold %.4f",
+                                Path(match["identity"]).parent.name,
+                                distance,
+                                distance_threshold,
+                            )
+                            is_confident = False
+
+                        if is_confident:
+                            # Get the path of the matched image
+                            identity_path = match["identity"]
+                            # Extract username from the path
+                            username = Path(identity_path).parent.name
+                            present[username] = True
+                            logger.info("Recognized %s", username)
+                            # Draw rectangle and put text
+                            x = int(match["source_x"])
+                            y = int(match["source_y"])
+                            w = int(match["source_w"])
+                            h = int(match["source_h"])
+                            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                            cv2.putText(
+                                frame,
+                                username,
+                                (x, y - 10),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.9,
+                                (0, 255, 0),
+                                2,
+                            )
 
             except Exception as e:
                 logger.error(f"Error in face recognition: {e}")
