@@ -1,54 +1,46 @@
-from django.shortcuts import render,redirect
+"""
+Views for the users app.
+
+This module contains views related to user management, such as employee registration.
+Access to these views is typically restricted to administrators.
+"""
+
+from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 
-#utility functions
-'''
-def hours_vs_date_every_employee():
-	qs = Attendance.objects.all()
-	diff=[]
-	
-	for obj in qs:
-		ti=obj.time_in
-		to=obj.time_out
-		hours=((to-ti).total_seconds())/3600
-		diff.append(hours)
-		
-	df = read_frame(qs)
-	df['hours']=diff
-	figure=plt.figure()
-	sns.barplot(data=df,x='date',y='')
-	html_graph=mpld3.fig_to_html(fig)
-
-
-'''
-
-
-
-
-
-
-
-# Create your views here.
-
 @login_required
 def register(request):
-	if not (request.user.is_staff or request.user.is_superuser):
-		return redirect('not-authorised')
-	if request.method=='POST':
-		form=UserCreationForm(request.POST)
-		if form.is_valid():
-			form.save() ###add user to database
-			messages.success(request, f'Employee registered successfully!')
-			return redirect('dashboard')
-		
+    """
+    Handle the employee registration process.
 
+    This view allows staff members or superusers to register new employee accounts.
+    It uses Django's built-in UserCreationForm to handle user creation.
 
-	else:
-		form=UserCreationForm()
-	return render(request,'users/register.html', {'form' : form})
+    - On GET request, it displays the registration form.
+    - On POST request, it validates the form data and, if valid, saves the
+      new user to the database, displaying a success message.
+
+    If a non-admin user attempts to access this page, they are redirected.
+    """
+    # Restrict access to staff and superusers only
+    if not (request.user.is_staff or request.user.is_superuser):
+        return redirect("not-authorised")
+
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()  # Add user to the database
+            messages.success(request, "Employee registered successfully!")
+            return redirect("dashboard")
+    else:
+        # For GET requests, create a new, empty form
+        form = UserCreationForm()
+
+    # Render the registration page with the form
+    return render(request, "users/register.html", {"form": form})
 
 
 
