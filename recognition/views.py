@@ -268,8 +268,9 @@ def hours_vs_employee_given_date(present_qs, time_qs):
 
 
 def total_number_employees() -> int:
-    qs = User.objects.all()
-    return len(qs) - 1
+    """Return the total count of non-staff, non-superuser employees."""
+
+    return User.objects.filter(is_staff=False, is_superuser=False).count()
 
 
 def employees_present_today() -> int:

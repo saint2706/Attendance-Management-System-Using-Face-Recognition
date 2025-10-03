@@ -199,6 +199,19 @@ class AdminAccessViewsTest(TestCase):
             response, "recognition/view_attendance_date.html"
         )
 
+    def test_view_attendance_home_employee_count_excludes_admin_accounts(self):
+        self.client.force_login(self.staff_user)
+
+        User.objects.create_superuser(
+            "admin", "admin@example.com", "password"
+        )
+        User.objects.create_user("employee2", "employee2@example.com", "password")
+
+        response = self.client.get(reverse("view-attendance-home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["total_num_of_emp"], 2)
+
         response = self.client.get(reverse("view-attendance-employee"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(
