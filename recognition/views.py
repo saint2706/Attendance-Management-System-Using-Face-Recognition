@@ -479,10 +479,12 @@ def _mark_attendance(request, check_in):
     return redirect("home")
 
 
+@login_required
 def mark_your_attendance(request):
     return _mark_attendance(request, check_in=True)
 
 
+@login_required
 def mark_your_attendance_out(request):
     return _mark_attendance(request, check_in=False)
 
