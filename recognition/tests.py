@@ -55,6 +55,7 @@ class DeepFaceAttendanceTest(TestCase):
                     "source_y": 10,
                     "source_w": 50,
                     "source_h": 50,
+                    "distance": 0.3,
                 }
             ]
         )
@@ -84,6 +85,7 @@ class DeepFaceAttendanceTest(TestCase):
                     "source_y": 10,
                     "source_w": 50,
                     "source_h": 50,
+                    "distance": 0.2,
                 }
             ]
         )
@@ -92,6 +94,35 @@ class DeepFaceAttendanceTest(TestCase):
         views.mark_your_attendance_out(request)
 
         mock_update_db.assert_called_once_with({"tester": True})
+
+    @patch("recognition.views.update_attendance_in_db_in")
+    @patch("recognition.views.DeepFace.find")
+    @patch("recognition.views.cv2")
+    @patch("recognition.views.VideoStream")
+    def test_mark_attendance_in_ignores_low_confidence(
+        self, mock_videostream, mock_cv2, mock_deepface_find, mock_update_db
+    ):
+        request = self.factory.get("/mark_attendance/")
+        self._setup_mocks(mock_videostream, mock_cv2)
+
+        low_confidence_df = pd.DataFrame(
+            [
+                {
+                    "identity": str(self.db_path / "tester" / "1.jpg"),
+                    "source_x": 10,
+                    "source_y": 10,
+                    "source_w": 50,
+                    "source_h": 50,
+                    "distance": 0.9,
+                }
+            ]
+        )
+        mock_deepface_find.return_value = [low_confidence_df]
+
+        with self.settings(RECOGNITION_DISTANCE_THRESHOLD=0.4):
+            views.mark_your_attendance(request)
+
+        mock_update_db.assert_called_once_with({})
 
 
 class DatabaseUpdateTest(TestCase):
