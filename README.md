@@ -71,6 +71,15 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 ### Configuration
 
+Before running the project you should configure the following environment variables:
+
+- `DJANGO_DEBUG` (default: `False`): enables Django's debug mode for local development.
+  Set it to `True` when you want verbose error pages and auto-reload behaviour.
+- `DJANGO_ALLOWED_HOSTS`: a comma-separated list of hostnames that Django is allowed to
+  serve. This value is required when `DJANGO_DEBUG` is `False`.
+- `DJANGO_SECRET_KEY`: a cryptographically secure secret key. This must be set in
+  production deployments. The built-in development key is only accepted when
+  `DJANGO_DEBUG` is explicitly enabled.
 - `RECOGNITION_DISTANCE_THRESHOLD` (default: `0.4`): sets the maximum
   allowable embedding distance returned by DeepFace when marking attendance.
   Lower values make recognition stricter, while higher values are more
