@@ -140,6 +140,62 @@ class DeepFaceAttendanceTest(TestCase):
         # Verify that the database update was called with an empty dictionary
         mock_update_db.assert_called_once_with({})
 
+    @patch("recognition.views.time.sleep", return_value=None)
+    @patch("recognition.views._is_headless_environment", return_value=True)
+    @patch("recognition.views.update_attendance_in_db_in")
+    @patch("recognition.views.DeepFace.find", return_value=[])
+    @patch("recognition.views.cv2")
+    @patch("recognition.views.VideoStream")
+    def test_mark_attendance_in_headless_exits(
+        self,
+        mock_videostream,
+        mock_cv2,
+        mock_deepface_find,
+        mock_update_db,
+        _mock_headless,
+        _mock_sleep,
+    ):
+        """Headless mode should exit automatically after a bounded number of frames."""
+
+        request = self.factory.get("/mark_attendance/")
+        request.user = self.user
+        self._setup_mocks(mock_videostream, mock_cv2)
+
+        with self.settings(RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=2):
+            views.mark_your_attendance(request)
+
+        mock_update_db.assert_called_once_with({})
+        mock_cv2.imshow.assert_not_called()
+        mock_cv2.waitKey.assert_not_called()
+
+    @patch("recognition.views.time.sleep", return_value=None)
+    @patch("recognition.views._is_headless_environment", return_value=True)
+    @patch("recognition.views.update_attendance_in_db_out")
+    @patch("recognition.views.DeepFace.find", return_value=[])
+    @patch("recognition.views.cv2")
+    @patch("recognition.views.VideoStream")
+    def test_mark_attendance_out_headless_exits(
+        self,
+        mock_videostream,
+        mock_cv2,
+        mock_deepface_find,
+        mock_update_db,
+        _mock_headless,
+        _mock_sleep,
+    ):
+        """Headless mode should exit automatically for check-out as well."""
+
+        request = self.factory.get("/mark_attendance_out/")
+        request.user = self.user
+        self._setup_mocks(mock_videostream, mock_cv2)
+
+        with self.settings(RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=1):
+            views.mark_your_attendance_out(request)
+
+        mock_update_db.assert_called_once_with({})
+        mock_cv2.imshow.assert_not_called()
+        mock_cv2.waitKey.assert_not_called()
+
 
 class DatabaseUpdateTest(TestCase):
     """Test suite for database update functions."""

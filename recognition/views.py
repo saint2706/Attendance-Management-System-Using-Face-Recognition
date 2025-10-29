@@ -12,6 +12,8 @@ import datetime
 import logging
 import math
 import time
+import os
+import sys
 from pathlib import Path
 from typing import Dict
 
@@ -102,24 +104,41 @@ def create_dataset(username: str) -> None:
     logger.info("Initializing video stream to capture images for %s", username)
     video_stream = VideoStream(src=0).start()
 
+    headless = _is_headless_environment()
+    max_frames = int(
+        getattr(settings, "RECOGNITION_HEADLESS_DATASET_FRAMES", 50)
+    )
+    frame_pause = float(
+        getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01)
+    )
+
     sample_number = 0
-    while True:
-        # Read a frame from the video stream
-        frame = video_stream.read()
-        frame = imutils.resize(frame, width=800)
+    try:
+        while True:
+            # Read a frame from the video stream
+            frame = video_stream.read()
+            frame = imutils.resize(frame, width=800)
 
-        sample_number += 1
-        output_path = dataset_directory / f"{sample_number}.jpg"
-        cv2.imwrite(str(output_path), frame)
+            sample_number += 1
+            output_path = dataset_directory / f"{sample_number}.jpg"
+            cv2.imwrite(str(output_path), frame)
 
-        # Display the frame to the user
-        cv2.imshow("Add Images - Press 'q' to stop", frame)
-        if cv2.waitKey(1) & 0xFF == ord("q") or sample_number > 50:  # Capture 50 frames
-            break
+            if not headless:
+                # Display the frame to the user and allow them to quit manually
+                cv2.imshow("Add Images - Press 'q' to stop", frame)
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+            else:
+                if frame_pause:
+                    time.sleep(frame_pause)
 
-    logger.info("Finished capturing images for %s.", username)
-    video_stream.stop()
-    cv2.destroyAllWindows()
+            if sample_number >= max_frames:
+                break
+    finally:
+        logger.info("Finished capturing images for %s.", username)
+        video_stream.stop()
+        if not headless:
+            cv2.destroyAllWindows()
 
 
 def update_attendance_in_db_in(present: Dict[str, bool]) -> None:
@@ -511,6 +530,24 @@ def add_photos(request):
 DEFAULT_DISTANCE_THRESHOLD = 0.4
 
 
+def _is_headless_environment() -> bool:
+    """Return ``True`` when no graphical display is available."""
+
+    override = getattr(settings, "RECOGNITION_HEADLESS", None)
+    if override is not None:
+        return bool(override)
+
+    # Windows typically has a display available when running interactively
+    if sys.platform.startswith("win"):
+        return False
+
+    display_vars = ("DISPLAY", "WAYLAND_DISPLAY", "MIR_SOCKET")
+    if any(os.environ.get(var) for var in display_vars):
+        return False
+
+    return True
+
+
 def _mark_attendance(request, check_in: bool):
     """
     Core logic for marking attendance (both in and out) using face recognition.
@@ -522,6 +559,10 @@ def _mark_attendance(request, check_in: bool):
     vs = VideoStream(src=0).start()
     present = {}
     db_path = str(TRAINING_DATASET_ROOT)
+    headless = _is_headless_environment()
+    max_frames = int(getattr(settings, "RECOGNITION_HEADLESS_ATTENDANCE_FRAMES", 30))
+    frame_pause = float(getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01))
+    frames_processed = 0
 
     # Configure DeepFace settings
     model_name = "Facenet"
@@ -540,6 +581,7 @@ def _mark_attendance(request, check_in: bool):
         while True:
             frame = vs.read()
             frame = imutils.resize(frame, width=800)
+            frames_processed += 1
 
             try:
                 # Use DeepFace to find matching faces in the database
@@ -590,12 +632,22 @@ def _mark_attendance(request, check_in: bool):
             except Exception as e:
                 logger.error("Error during face recognition loop: %s", e)
 
-            cv2.imshow(window_title, frame)
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
+            if not headless:
+                cv2.imshow(window_title, frame)
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+            else:
+                if frame_pause:
+                    time.sleep(frame_pause)
+                if frames_processed >= max_frames:
+                    logger.info(
+                        "Headless mode reached frame limit of %d frames", max_frames
+                    )
+                    break
     finally:
         vs.stop()
-        cv2.destroyAllWindows()
+        if not headless:
+            cv2.destroyAllWindows()
 
     # Update the database based on whether it's a check-in or check-out
     if check_in:
