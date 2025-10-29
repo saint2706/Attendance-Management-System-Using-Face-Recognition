@@ -9,6 +9,8 @@ It is configured to read sensitive values from environment variables for securit
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 # Define the project's base directory.
 # `BASE_DIR` points to the root of the Django project.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,21 +18,40 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- Security Settings ---
 
-# SECRET_KEY: A secret key used for cryptographic signing.
-# It is crucial to keep this key secret in a production environment.
-# The value is read from an environment variable, with a default for development.
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY", "a-secure-default-key-for-development-only"
-)
+
+def _get_bool_env(var_name: str, default: bool = False) -> bool:
+    """Return a boolean from an environment variable."""
+
+    raw_value = os.environ.get(var_name)
+    if raw_value is None:
+        return default
+    return raw_value.lower() in {"1", "true", "yes", "on"}
+
+
+DEFAULT_SECRET_KEY = "a-secure-default-key-for-development-only"
 
 # DEBUG: A boolean that turns on/off debug mode.
 # Never run with debug mode turned on in a production environment.
-# The value is read from an environment variable, defaulting to True for development.
-DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
+# The value is read from an environment variable, defaulting to False for safety.
+DEBUG = _get_bool_env("DJANGO_DEBUG", default=False)
+
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", DEFAULT_SECRET_KEY)
+if SECRET_KEY == DEFAULT_SECRET_KEY and not DEBUG:
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY must be set to a secure value when DJANGO_DEBUG is not enabled."
+    )
 
 # ALLOWED_HOSTS: A list of strings representing the host/domain names that this Django site can serve.
-# In development, '*' is permissive, but this should be locked down in production.
-ALLOWED_HOSTS = ["*"]
+# When DJANGO_DEBUG is False the value must be explicitly provided.
+allowed_hosts_env = os.environ.get("DJANGO_ALLOWED_HOSTS")
+if allowed_hosts_env:
+    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(",") if host.strip()]
+elif DEBUG:
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
+else:
+    raise ImproperlyConfigured(
+        "DJANGO_ALLOWED_HOSTS must be provided (comma separated) when DJANGO_DEBUG is not enabled."
+    )
 
 
 # --- Application Configuration ---
