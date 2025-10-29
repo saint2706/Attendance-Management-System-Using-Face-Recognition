@@ -58,4 +58,9 @@ class Time(models.Model):
     def __str__(self):
         """Return a string representation of the time entry."""
         event_type = "Time-Out" if self.out else "Time-In"
-        return f"{self.user.username} - {self.time.strftime('%Y-%m-%d %H:%M:%S')} - {event_type}"
+        if self.time is not None:
+            formatted_time = self.time.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            formatted_time = "No timestamp recorded"
+
+        return f"{self.user.username} - {formatted_time} - {event_type}"

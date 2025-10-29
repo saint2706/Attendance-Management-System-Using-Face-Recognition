@@ -9,6 +9,8 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.test import TestCase
 
+from .models import Time
+
 
 class RegisterViewTests(TestCase):
     """Test suite for the user registration view."""
@@ -85,4 +87,21 @@ class RegisterViewTests(TestCase):
         self.assertRedirects(response, self.not_authorised_url)
         self.assertFalse(
             get_user_model().objects.filter(username="should_not_create").exists()
+        )
+
+
+class TimeModelTests(TestCase):
+    """Test suite for the Time model."""
+
+    def test_time_str_handles_missing_timestamp(self):
+        """The string representation should handle a missing timestamp gracefully."""
+
+        user = get_user_model().objects.create_user(
+            username="time_user", password="Testpass123"
+        )
+        time_entry = Time(user=user, time=None, out=False)
+
+        self.assertEqual(
+            str(time_entry),
+            "time_user - No timestamp recorded - Time-In",
         )
