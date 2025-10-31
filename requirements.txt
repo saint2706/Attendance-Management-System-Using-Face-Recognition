@@ -1,4 +1,4 @@
-Django==5.0.4
+Django==5.1.13
 django-crispy-forms==2.1
 crispy-bootstrap5==2024.1
 django-pandas==0.6.1
@@ -8,5 +8,5 @@ matplotlib==3.8.4
 seaborn==0.13.2
 Pillow==10.3.0
 opencv-python==4.9.0.80
-scikit-learn==1.4.2
+scikit-learn==1.5.0
 tf-keras==2.16.0
