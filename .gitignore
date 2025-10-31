@@ -11,6 +11,9 @@ db.sqlite3-journal
 media/
 face_recognition_data/
 
+# Generated attendance graphs (regenerated at runtime)
+recognition/static/recognition/img/attendance_graphs/
+
 # Python virtual environment
 venv/
 env/
