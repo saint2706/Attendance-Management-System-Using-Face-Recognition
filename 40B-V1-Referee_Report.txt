@@ -1,0 +1,30 @@
+﻿Team JRR Section B-V1 Rishabh Agrawal
+59) Team_JRR_Section_B-V1_Rishabh Agrawal.pdf - Loans/Credit/Fraud, Admissions/EdTech
+
+What I read (evidence)
+* Focus appears to be **Loans/Credit/Fraud, Admissions/EdTech** (domain cues detected on page 1).
+* Metrics referenced include **ACCURACY, PRECISION, RECALL, F1** (early pages).
+* Baselines are discussed on p.4: "ese Models: Facenet was selected for its proven accuracy on benchmark datasets,  enabling reliable facial identification. DeepFac...".
+* Reproducibility cues on p.6: "he required dependencies using the command: pip install -r  requirements.txt.  4. Run database migrations with: python manage.py migrate...".
+
+Major issues (blocking)
+1. Specify and justify the **validation protocol** (train/val/test or K-fold) with split ratios and a fixed seed.
+2. Include an **error/ablation** section: sensitivity to key hyperparameters and 3-5 representative failures.
+
+Concrete fixes (by section)
+* Create a **Data Card** (variables, types, missing%, leakage risk) and a **split table** (counts, dates).
+* Report **task-appropriate metrics** with confidence intervals; add a compact **results table** + one figure.
+* Translate model outputs into **business actions** and quantify expected impact.
+
+Reproducibility
+Repo with `requirements.txt`/`environment.yml`, `make reproduce`, and a sample data slice.
+
+Score (30-point rubric - with side comments)
+* **Relevance 3.8/4** (clear business link; tighten KPI & decision mapping).
+* **Significance 3.8/4** (quantify value with baseline deltas & CIs).
+* **Originality 1.1/6** (specify methods tried and novelty).
+* **Achievement 2.7/4** (add validation and at least one key figure/table).
+* **Writing 2.9/4** (organized; add descriptive captions & IEEE polish).
+* **Reproducibility 3.8/4** (signals present; pin env & add reproduce script).
+* **Technical Quality 1.9/4** (detail metrics/validation/baselines; add error analysis).
+**Total: 20.0/30**

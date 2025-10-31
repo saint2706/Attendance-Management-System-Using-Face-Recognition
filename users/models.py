@@ -4,6 +4,7 @@ Database models for the users app.
 This module defines the data models for tracking employee attendance, including
 daily presence status and specific time-in/time-out events.
 """
+import datetime
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -27,6 +28,12 @@ class Present(models.Model):
     present = models.BooleanField(
         default=False, help_text="Indicates if the user was present on this date."
     )
+    
+    # Non-persistent fields for calculated values
+    time_in: datetime.datetime | None = None
+    time_out: datetime.datetime | None = None
+    hours: str | int = "0 hrs 0 mins"
+    break_hours: str | float = "0 hrs 0 mins"
 
     def __str__(self):
         """Return a string representation of the attendance record."""

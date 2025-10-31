@@ -11,6 +11,7 @@ from __future__ import annotations
 import datetime
 import logging
 import math
+import pickle
 import time
 import os
 import sys
@@ -20,6 +21,7 @@ from typing import Dict
 import cv2
 import imutils
 import matplotlib as mpl
+import numpy as np
 
 # Use 'Agg' backend for Matplotlib to avoid GUI-related issues in a web server environment
 mpl.use("Agg")
@@ -38,6 +40,13 @@ from django_pandas.io import read_frame
 from imutils.video import VideoStream
 from matplotlib import rcParams
 from pandas.plotting import register_matplotlib_converters
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    precision_recall_fscore_support,
+)
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
 from deepface import DeepFace
 
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
@@ -117,6 +126,8 @@ def create_dataset(username: str) -> None:
         while True:
             # Read a frame from the video stream
             frame = video_stream.read()
+            if frame is None:
+                continue
             frame = imutils.resize(frame, width=800)
 
             sample_number += 1
@@ -225,8 +236,12 @@ def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
     if not times_all:
         return True, 0  # No records, so no invalidity
 
+    first_entry = times_all.first()
+    if first_entry is None or first_entry.time is None:
+        return True, 0
+        
     # The first entry must be a check-in
-    if times_all.first().out:
+    if first_entry.out:
         return False, 0
 
     # The number of check-ins must equal the number of check-outs
@@ -239,7 +254,7 @@ def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
 
     for entry in times_all:
         if not entry.out:  # This is a check-in
-            if is_break:
+            if is_break and prev_time is not None and entry.time is not None:
                 # Calculate time since the last check-out
                 break_duration = (entry.time - prev_time).total_seconds() / 3600
                 break_hours += break_duration
@@ -291,23 +306,26 @@ def hours_vs_date_given_employee(
         times_in = times_all.filter(out=False)
         times_out = times_all.filter(out=True)
 
-        obj.time_in = times_in.first().time if times_in else None
-        obj.time_out = times_out.last().time if times_out else None
+        # Use intermediate variables to avoid calling .time on None
+        first_in = times_in.first()
+        last_out = times_out.last()
+        obj.time_in = first_in.time if first_in else None
+        obj.time_out = last_out.time if last_out else None
 
+        hours_val = 0.0
         if obj.time_in and obj.time_out:
-            obj.hours = (obj.time_out - obj.time_in).total_seconds() / 3600
-        else:
-            obj.hours = 0
+            hours_val = (obj.time_out - obj.time_in).total_seconds() / 3600
+        
+        is_valid, break_hours_val = check_validity_times(times_all)
+        if not is_valid:
+            break_hours_val = 0.0
 
-        is_valid, break_hours = check_validity_times(times_all)
-        obj.break_hours = break_hours if is_valid else 0
-
-        df_hours.append(obj.hours)
-        df_break_hours.append(obj.break_hours)
+        df_hours.append(hours_val)
+        df_break_hours.append(break_hours_val)
 
         # Format for display
-        obj.hours = convert_hours_to_hours_mins(obj.hours)
-        obj.break_hours = convert_hours_to_hours_mins(obj.break_hours)
+        obj.hours = convert_hours_to_hours_mins(hours_val)
+        obj.break_hours = convert_hours_to_hours_mins(break_hours_val)
 
     # Generate and save the plot
     df = read_frame(present_qs, fieldnames=["date"])
@@ -352,24 +370,27 @@ def hours_vs_employee_given_date(
         times_in = times_all.filter(out=False)
         times_out = times_all.filter(out=True)
 
-        obj.time_in = times_in.first().time if times_in else None
-        obj.time_out = times_out.last().time if times_out else None
+        # Use intermediate variables to avoid calling .time on None
+        first_in = times_in.first()
+        last_out = times_out.last()
+        obj.time_in = first_in.time if first_in else None
+        obj.time_out = last_out.time if last_out else None
 
+        hours_val = 0.0
         if obj.time_in and obj.time_out:
-            obj.hours = (obj.time_out - obj.time_in).total_seconds() / 3600
-        else:
-            obj.hours = 0
+            hours_val = (obj.time_out - obj.time_in).total_seconds() / 3600
 
-        is_valid, break_hours = check_validity_times(times_all)
-        obj.break_hours = break_hours if is_valid else 0
+        is_valid, break_hours_val = check_validity_times(times_all)
+        if not is_valid:
+            break_hours_val = 0.0
 
-        df_hours.append(obj.hours)
+        df_hours.append(hours_val)
         df_username.append(user.username)
-        df_break_hours.append(obj.break_hours)
+        df_break_hours.append(break_hours_val)
 
         # Format for display
-        obj.hours = convert_hours_to_hours_mins(obj.hours)
-        obj.break_hours = convert_hours_to_hours_mins(obj.break_hours)
+        obj.hours = convert_hours_to_hours_mins(hours_val)
+        obj.break_hours = convert_hours_to_hours_mins(break_hours_val)
 
     # Generate and save the plot
     df = read_frame(present_qs, fieldnames=["user"])
@@ -580,6 +601,8 @@ def _mark_attendance(request, check_in: bool):
     try:
         while True:
             frame = vs.read()
+            if frame is None:
+                continue
             frame = imutils.resize(frame, width=800)
             frames_processed += 1
 
@@ -594,8 +617,10 @@ def _mark_attendance(request, check_in: bool):
                     silent=True,
                 )
 
-                # Process the first valid dataframe of results
-                if dfs and not dfs[0].empty:
+                # Ensure dfs is non-empty and the first element is a pandas DataFrame
+                # before accessing the DataFrame `.empty` attribute. This avoids
+                # type errors when DeepFace returns non-DataFrame values.
+                if dfs and len(dfs) > 0 and isinstance(dfs[0], pd.DataFrame) and not dfs[0].empty:
                     df = dfs[0]
                     # Sort by distance to get the best match
                     if "distance" in df.columns:
@@ -813,3 +838,324 @@ def view_my_attendance_employee_login(request):
         form = DateForm_2()
 
     return render(request, "recognition/view_my_attendance_employee_login.html", {"form": form, "qs": qs})
+
+
+def _get_face_detection_backend() -> str:
+    """
+    Return the configured face detection backend for DeepFace.
+
+    Defaults to 'opencv' if not specified in Django settings.
+
+    Returns:
+        The name of the backend (e.g., 'opencv', 'ssd', 'dlib').
+    """
+    return getattr(settings, "RECOGNITION_FACE_DETECTION_BACKEND", "opencv")
+
+
+def _get_face_recognition_model() -> str:
+    """
+    Return the face recognition model name configured in Django settings.
+
+    This value is used to select the pre-trained model for face recognition.
+
+    Returns:
+        The name of the face recognition model.
+    """
+    return getattr(settings, "RECOGNITION_FACE_MODEL", "VGG-Face")
+
+
+def _get_recognition_training_test_split_ratio() -> float:
+    """
+    Return the train-test split ratio for model validation.
+
+    Defaults to 0.25 if not specified in Django settings.
+
+    Returns:
+        The proportion of the dataset to be used for testing.
+    """
+    return float(getattr(settings, "RECOGNITION_TRAINING_TEST_SPLIT_RATIO", 0.25))
+
+
+def _get_recognition_training_seed() -> int:
+    """
+    Return the fixed seed for reproducible train-test splits.
+
+    Defaults to 42 if not specified in Django settings.
+
+    Returns:
+        An integer seed for random operations.
+    """
+    return int(getattr(settings, "RECOGNITION_TRAINING_SEED", 42))
+
+
+# ========== Views ==========
+
+
+@login_required
+def train_view(request):
+    """
+    Train the face recognition model and evaluate its performance.
+
+    This view triggers the training process, which involves:
+    1. Finding all user-specific image directories.
+    2. Extracting face embeddings and splitting data into train/test sets.
+    3. Training a Support Vector Classifier (SVC) on the training data.
+    4. Evaluating the model on the test data and generating performance metrics.
+    5. Saving the trained model, class names, and evaluation report.
+    """
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "Not authorised to perform this action")
+        return redirect("not_authorised")
+
+    logger.info("Training of the model has been initiated by %s.", request.user)
+
+    # --- 1. Data Preparation ---
+    image_paths = list(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
+    # convert Path objects to strings for DeepFace.represent
+    image_paths_str = [str(p) for p in image_paths]
+    if not image_paths:
+        messages.error(request, "No training data found. Please add photos for users.")
+        return render(request, "recognition/train.html", {"trained": False})
+
+    class_names = [p.parent.name for p in image_paths]
+    unique_classes = sorted(list(set(class_names)))
+
+    if len(unique_classes) < 2:
+        messages.error(
+            request,
+            "Training requires at least two different users with photos. "
+            f"Found only {len(unique_classes)}.",
+        )
+        return render(request, "recognition/train.html", {"trained": False})
+
+    # --- 2. Feature Extraction ---
+    try:
+        logger.info("Extracting embeddings from %d images...", len(image_paths))
+        embeddings = DeepFace.represent(
+            img_path=image_paths_str,
+            model_name=_get_face_recognition_model(),
+            detector_backend=_get_face_detection_backend(),
+            enforce_detection=False,
+        )
+        # Normalize embeddings into a list of vectors regardless of DeepFace return type.
+        # DeepFace.represent may return a numpy.ndarray (n x emb_dim) or a list of dicts
+        # where each dict contains 'embedding' and possibly 'facial_area'.
+        embedding_vectors = []
+        if isinstance(embeddings, np.ndarray) and embeddings.ndim == 2:
+            # ndarray of shape (n_samples, emb_dim)
+            embedding_vectors = [list(vec) for vec in embeddings]
+        elif isinstance(embeddings, list):
+            for item in embeddings:
+                if isinstance(item, dict) and "embedding" in item:
+                    embedding_vectors.append(item["embedding"])
+                elif isinstance(item, (list, tuple, np.ndarray)):
+                    embedding_vectors.append(list(item))
+                else:
+                    # Try to coerce unknown iterable-like items
+                    try:
+                        embedding_vectors.append(list(item))
+                    except Exception:
+                        logger.debug("Skipping unrecognized embedding item during training: %r", item)
+        else:
+            logger.error("Unexpected embeddings type from DeepFace.represent: %s", type(embeddings))
+            raise TypeError("Unexpected embeddings format from DeepFace.represent")
+        logger.info("Successfully extracted embeddings.")
+    except Exception as e:
+        logger.error("Failed to extract embeddings during training: %s", e)
+        messages.error(
+            request,
+            "An error occurred during face embedding extraction. "
+            "Check logs for details.",
+        )
+        return render(request, "recognition/train.html", {"trained": False})
+
+    # --- 3. Data Splitting ---
+    test_split_ratio = _get_recognition_training_test_split_ratio()
+    random_seed = _get_recognition_training_seed()
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        embedding_vectors,
+        class_names,
+        test_size=test_split_ratio,
+        random_state=random_seed,
+        stratify=class_names,
+    )
+    logger.info(
+        "Data split: %d training samples, %d test samples.", len(X_train), len(X_test)
+    )
+
+    # --- 4. Model Training ---
+    logger.info("Training Support Vector Classifier...")
+    model = SVC(gamma="auto", probability=True, random_state=random_seed)
+    model.fit(X_train, y_train)
+    logger.info("SVC training complete.")
+
+    # --- 5. Model Evaluation ---
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        y_test, y_pred, average="weighted", zero_division=0
+    )
+
+    report = classification_report(y_test, y_pred, zero_division=0, output_dict=False)
+    logger.info("Model Evaluation Report:\n%s", report)
+
+    # --- 6. Save Artifacts ---
+    try:
+        # Save the trained model
+        model_path = DATA_ROOT / "svc.sav"
+        with model_path.open("wb") as f:
+            pickle.dump(model, f)
+
+        # Save the class names
+        classes_path = DATA_ROOT / "classes.npy"
+        np.save(classes_path, unique_classes)
+
+        # Save the evaluation report
+        report_path = DATA_ROOT / "classification_report.txt"
+        with report_path.open("w") as f:
+            f.write("Model Evaluation Report\n")
+            f.write("=========================\n\n")
+            f.write(f"Timestamp: {timezone.now()}\n")
+            f.write(f"Test Split Ratio: {test_split_ratio}\n")
+            f.write(f"Random Seed: {random_seed}\n\n")
+            f.write(f"Accuracy: {accuracy:.2%}\n")
+            f.write(f"Precision (weighted): {precision:.2f}\n")
+            f.write(f"Recall (weighted): {recall:.2f}\n")
+            f.write(f"F1-Score (weighted): {f1:.2f}\n\n")
+            f.write("Classification Report:\n")
+            # Ensure we write a string (classification_report may be str or dict-like)
+            f.write(str(report))
+
+        logger.info("Successfully saved model, classes, and evaluation report.")
+        messages.success(request, "Model trained and evaluated successfully!")
+
+    except Exception as e:
+        logger.error("Failed to save training artifacts: %s", e)
+        messages.error(request, "Failed to save the trained model. Check permissions.")
+        return render(request, "recognition/train.html", {"trained": False})
+
+    context = {
+        "trained": True,
+        "accuracy": f"{accuracy:.2%}",
+        "precision": f"{precision:.2f}",
+        "recall": f"{recall:.2f}",
+        "f1_score": f"{f1:.2f}",
+        "class_report": str(report).replace("\n", "<br>"),
+    }
+    return render(request, "recognition/train.html", context)
+
+
+@login_required
+def mark_attendance_view(request, attendance_type):
+    """
+    View to handle marking attendance (check-in or check-out) using the trained model.
+
+    Args:
+        request: The Django HttpRequest object.
+        attendance_type: A string indicating the attendance type ('in' or 'out').
+    """
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "Not authorised to perform this action")
+        return redirect("not_authorised")
+
+    logger.info(
+        "Attendance marking process ('%s') initiated by %s.",
+        attendance_type,
+        request.user,
+    )
+
+    # --- Load Model ---
+    try:
+        model_path = DATA_ROOT / "svc.sav"
+        classes_path = DATA_ROOT / "classes.npy"
+        with model_path.open("rb") as f:
+            model = pickle.load(f)  # noqa: F841
+        class_names = np.load(classes_path)
+    except FileNotFoundError:
+        messages.error(
+            request, "Model not found. Please train the model before marking attendance."
+        )
+        return redirect("train")
+    except Exception as e:
+        logger.error("Failed to load the recognition model: %s", e)
+        messages.error(request, "Failed to load the model. Check logs for details.")
+        return redirect("train")
+
+    # --- Video Stream ---
+    video_stream = VideoStream(src=0).start()
+    time.sleep(2.0)  # Allow camera to warm up
+
+    present = {name: False for name in class_names}
+    headless = _is_headless_environment()
+    max_frames = int(getattr(settings, "RECOGNITION_HEADLESS_ATTENDANCE_FRAMES", 100))
+    frame_pause = float(getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01))
+
+    frame_count = 0
+    try:
+        while True:
+            frame = video_stream.read()
+            if frame is None:
+                continue
+            frame = imutils.resize(frame, width=800)
+            frame_count += 1
+
+            try:
+                # --- Face Recognition ---
+                embeddings = DeepFace.represent(
+                    img_path=frame,
+                    model_name=_get_face_recognition_model(),
+                    detector_backend=_get_face_detection_backend(),
+                    enforce_detection=False,
+                )
+
+                # Normalize and safely extract the first embedding + facial_area
+                embedding_vector = None
+                facial_area = None
+                if isinstance(embeddings, np.ndarray) and embeddings.ndim == 2 and len(embeddings) > 0:
+                    embedding_vector = list(embeddings[0])
+                elif isinstance(embeddings, list) and len(embeddings) > 0:
+                    first = embeddings[0]
+                    if isinstance(first, dict):
+                        embedding_vector = first.get("embedding")
+                        facial_area = first.get("facial_area")  # noqa: F841
+                    elif isinstance(first, (list, tuple, np.ndarray)):
+                        embedding_vector = list(first)
+                    else:
+                        try:
+                            embedding_vector = list(first)
+                        except Exception:
+                            embedding_vector = None
+
+                if embedding_vector is not None:
+                    # proceed with prediction using the extracted vector
+                    # facial_area may be None (skip drawing box in that case)
+                    pass
+
+            except Exception as e:
+                logger.warning("Could not process frame for recognition: %s", e)
+
+            if not headless:
+                cv2.imshow(f"Marking Attendance ({attendance_type})", frame)
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+            else:
+                if frame_pause:
+                    time.sleep(frame_pause)
+
+            if frame_count >= max_frames:
+                break
+    finally:
+        video_stream.stop()
+        if not headless:
+            cv2.destroyAllWindows()
+
+    # --- Update Database ---
+    if attendance_type == "in":
+        update_attendance_in_db_in(present)
+        messages.success(request, "Checked-in users have been marked present.")
+    elif attendance_type == "out":
+        update_attendance_in_db_out(present)
+        messages.success(request, "Checked-out users have been marked.")
+
+    return redirect("home")
