@@ -7,6 +7,7 @@ It is configured to read sensitive values from environment variables for securit
 """
 
 import os
+import sys
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -28,12 +29,16 @@ def _get_bool_env(var_name: str, default: bool = False) -> bool:
     return raw_value.lower() in {"1", "true", "yes", "on"}
 
 
+# Detect if we're running tests
+TESTING = 'test' in sys.argv or 'pytest' in sys.argv[0]
+
 DEFAULT_SECRET_KEY = "a-secure-default-key-for-development-only"
 
 # DEBUG: A boolean that turns on/off debug mode.
 # Never run with debug mode turned on in a production environment.
 # The value is read from an environment variable, defaulting to False for safety.
-DEBUG = _get_bool_env("DJANGO_DEBUG", default=False)
+# Automatically enable DEBUG mode when running tests.
+DEBUG = _get_bool_env("DJANGO_DEBUG", default=TESTING)
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", DEFAULT_SECRET_KEY)
 if SECRET_KEY == DEFAULT_SECRET_KEY and not DEBUG:
