@@ -30,7 +30,7 @@ def _get_bool_env(var_name: str, default: bool = False) -> bool:
 
 
 # Detect if we're running tests
-TESTING = 'test' in sys.argv or 'pytest' in sys.argv[0]
+TESTING = 'test' in sys.argv or (len(sys.argv) > 0 and 'pytest' in sys.argv[0])
 
 DEFAULT_SECRET_KEY = "a-secure-default-key-for-development-only"
 
