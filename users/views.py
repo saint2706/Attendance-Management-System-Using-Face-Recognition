@@ -25,24 +25,22 @@ def register(request):
 
     If a non-admin user attempts to access this page, they are redirected.
     """
-    # Restrict access to staff and superusers only
+    # Restrict access to staff and superusers only.
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
 
     if request.method == "POST":
+        # If the form has been submitted, process the data.
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()  # Add user to the database
+            # If the form is valid, save the new user to the database.
+            form.save()
             messages.success(request, "Employee registered successfully!")
+            # Redirect to the dashboard after successful registration.
             return redirect("dashboard")
     else:
-        # For GET requests, create a new, empty form
+        # For GET requests, create a new, empty form.
         form = UserCreationForm()
 
-    # Render the registration page with the form
+    # Render the registration page with the form.
     return render(request, "users/register.html", {"form": form})
-
-
-
-
-
