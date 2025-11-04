@@ -71,12 +71,28 @@ def create_stratified_splits(
     )
 
     # Second split: val vs test
-    val_persons, test_persons = train_test_split(
-        temp_persons,
-        test_size=(test_ratio / (val_ratio + test_ratio)),
-        random_state=random_state,
-        shuffle=True,
-    )
+    val_persons: List[str] = []
+    test_persons: List[str] = []
+
+    if len(temp_persons) >= 2:
+        val_persons, test_persons = train_test_split(
+            temp_persons,
+            test_size=(test_ratio / (val_ratio + test_ratio)),
+            random_state=random_state,
+            shuffle=True,
+        )
+    elif len(temp_persons) == 1:
+        # When only a single person remains after the initial split, assign them
+        # to the validation or test split based on the larger ratio to avoid
+        # train_test_split raising an error for insufficient samples.
+        single_person = temp_persons[0]
+        if val_ratio >= test_ratio:
+            val_persons = [single_person]
+            test_persons = []
+        else:
+            val_persons = []
+            test_persons = [single_person]
+    # If no persons remain in temp_persons the default empty lists above are used.
 
     # Collect all images for each split
     train_paths = []
