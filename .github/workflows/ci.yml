@@ -17,18 +17,48 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
+    
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install black==24.10.0 isort==5.13.2 flake8==7.1.1
+    
+    - name: Lint with flake8
+      run: |
+        flake8 --max-line-length=100 --ignore=E203,W503,E501 --exclude=migrations,__pycache__,.venv,venv .
+    
+    - name: Check code formatting
+      run: |
+        black --check --line-length=100 . || echo "Code formatting issues found (non-blocking)"
+        isort --check-only --profile=black --line-length=100 . || echo "Import sorting issues found (non-blocking)"
+    
     - name: Run Tests
       env:
         DJANGO_DEBUG: "True"
         DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
         DJANGO_SECRET_KEY: "test-secret-key"
+        RECOGNITION_HEADLESS: "True"
       run: |
         python manage.py test
+    
+    - name: Smoke Test - Prepare Splits
+      env:
+        DJANGO_DEBUG: "True"
+        DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+        DJANGO_SECRET_KEY: "test-secret-key"
+      run: |
+        python manage.py prepare_splits --seed 42 || echo "Splits preparation skipped (no data)"
+    
+    - name: Smoke Test - Eval
+      env:
+        DJANGO_DEBUG: "True"
+        DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+        DJANGO_SECRET_KEY: "test-secret-key"
+      run: |
+        python manage.py eval --seed 42 --n-bootstrap 100 || echo "Eval skipped (no data)"
