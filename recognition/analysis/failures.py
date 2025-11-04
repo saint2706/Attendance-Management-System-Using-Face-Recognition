@@ -271,7 +271,7 @@ def analyze_subgroups(
     y_pred: np.ndarray,
     y_scores: np.ndarray,
     groups: np.ndarray,
-    output_path: Path,
+    output_path: Optional[Path],
 ) -> pd.DataFrame:
     """
     Perform subgroup analysis to detect bias.
@@ -314,7 +314,8 @@ def analyze_subgroups(
         rows.append(row)
 
     df = pd.DataFrame(rows)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(output_path, index=False)
+    if output_path is not None:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(output_path, index=False)
 
     return df
