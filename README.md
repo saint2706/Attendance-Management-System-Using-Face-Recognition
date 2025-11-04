@@ -447,9 +447,10 @@ For a complete walkthrough of the project, including a guide for non-programmers
 
 ### Additional Documentation
 
-- **[DATA_CARD.md](DATA_CARD.md)**: Comprehensive dataset documentation
-- **[BUSINESS_ACTIONS.md](docs/BUSINESS_ACTIONS.md)**: Policy mapping and expected impact
-- **[ARCHITECTURE.md](ARCHITECTURE.md)**: System architecture overview
-- **[DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)**: Development setup and guidelines
-- **[API.md](API.md)**: API documentation
+- **[guide.md](guide.md)**: **Complete non-programmer guide** - Explains all concepts, usage, evaluation tools, metrics, troubleshooting, and maintenance in plain language
+- **[DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)**: Development setup, management commands, Makefile usage, testing strategy, evaluation architecture, and contributing guidelines
+- **[ARCHITECTURE.md](ARCHITECTURE.md)**: System architecture, evaluation pipeline, data flow diagrams, and technology stack
+- **[API.md](API.md)**: API endpoints, URL patterns, CLI tools, and command reference
+- **[DATA_CARD.md](DATA_CARD.md)**: Comprehensive dataset documentation including privacy policies and data splits
+- **[BUSINESS_ACTIONS.md](docs/BUSINESS_ACTIONS.md)**: Policy-based action mapping and expected business impact
 
