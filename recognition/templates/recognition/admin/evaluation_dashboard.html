@@ -1,0 +1,168 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Evaluation Dashboard{% endblock %}
+
+{% block content %}
+<h1>Evaluation Dashboard</h1>
+
+<div class="module">
+    <h2>System Metrics</h2>
+    
+    {% if metrics_available %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                    <th>95% CI</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>ROC AUC</strong></td>
+                    <td>{{ metrics.roc_auc|floatformat:4 }}</td>
+                    <td>
+                        {% if confidence_intervals.auc.ci_lower %}
+                            [{{ confidence_intervals.auc.ci_lower|floatformat:4 }}, 
+                             {{ confidence_intervals.auc.ci_upper|floatformat:4 }}]
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Equal Error Rate (EER)</strong></td>
+                    <td>{{ metrics.eer|floatformat:4 }}</td>
+                    <td>
+                        {% if confidence_intervals.eer.ci_lower %}
+                            [{{ confidence_intervals.eer.ci_lower|floatformat:4 }}, 
+                             {{ confidence_intervals.eer.ci_upper|floatformat:4 }}]
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Optimal F1 Score</strong></td>
+                    <td>{{ metrics.optimal_f1|floatformat:4 }}</td>
+                    <td>
+                        {% if confidence_intervals.optimal_f1.ci_lower %}
+                            [{{ confidence_intervals.optimal_f1.ci_lower|floatformat:4 }}, 
+                             {{ confidence_intervals.optimal_f1.ci_upper|floatformat:4 }}]
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Brier Score</strong></td>
+                    <td>{{ metrics.brier_score|floatformat:4 }}</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>Operating Points</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Operating Point</th>
+                    <th>Value</th>
+                    <th>Threshold</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for op_name, op_data in metrics.operating_points.items %}
+                <tr>
+                    <td>{{ op_name }}</td>
+                    <td>{{ op_data.value|floatformat:4 }}</td>
+                    <td>{{ op_data.threshold|floatformat:4 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No evaluation metrics available. Run <code>python manage.py eval</code> to generate metrics.</p>
+    {% endif %}
+</div>
+
+<div class="module">
+    <h2>Threshold Selection</h2>
+    {% if threshold_available %}
+        <table>
+            <tr>
+                <td><strong>Method:</strong></td>
+                <td>{{ threshold_info.method }}</td>
+            </tr>
+            <tr>
+                <td><strong>Selected Threshold:</strong></td>
+                <td>{{ threshold_info.threshold|floatformat:4 }}</td>
+            </tr>
+            {% if threshold_info.eer %}
+            <tr>
+                <td><strong>EER:</strong></td>
+                <td>{{ threshold_info.eer|floatformat:4 }}</td>
+            </tr>
+            {% endif %}
+        </table>
+    {% else %}
+        <p>No threshold selection available. Run <code>python manage.py threshold_select</code>.</p>
+    {% endif %}
+</div>
+
+<div class="module">
+    <h2>Data Splits</h2>
+    {% if splits_available %}
+        <table>
+            <tr>
+                <td><strong>Total Images:</strong></td>
+                <td>{{ split_info.total_images }}</td>
+            </tr>
+            <tr>
+                <td><strong>Total Persons:</strong></td>
+                <td>{{ split_info.total_persons }}</td>
+            </tr>
+            <tr>
+                <td><strong>Train:</strong></td>
+                <td>{{ split_info.train.images }} images ({{ split_info.train.persons }} persons)</td>
+            </tr>
+            <tr>
+                <td><strong>Validation:</strong></td>
+                <td>{{ split_info.val.images }} images ({{ split_info.val.persons }} persons)</td>
+            </tr>
+            <tr>
+                <td><strong>Test:</strong></td>
+                <td>{{ split_info.test.images }} images ({{ split_info.test.persons }} persons)</td>
+            </tr>
+        </table>
+    {% else %}
+        <p>No split information available. Run <code>python manage.py prepare_splits</code>.</p>
+    {% endif %}
+</div>
+
+<div class="module">
+    <h2>Metric Visualizations</h2>
+    {% if figures_available %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+            {% for figure in available_figures %}
+                <div>
+                    <h3>{{ figure|slice:":-4"|title }}</h3>
+                    <img src="{% static 'reports/figures/' %}{{ figure }}" alt="{{ figure }}" style="width: 100%; max-width: 500px;">
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No figures available. Run <code>python manage.py eval</code> to generate visualizations.</p>
+    {% endif %}
+</div>
+
+<div class="module">
+    <h2>Quick Actions</h2>
+    <ul>
+        <li><a href="{% url 'admin:ablation_results' %}">View Ablation Results</a></li>
+        <li><a href="{% url 'admin:failure_analysis' %}">View Failure Analysis</a></li>
+    </ul>
+</div>
+
+{% endblock %}
