@@ -13,8 +13,6 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from src.common.seeding import get_random_state
-
 # Fixed random state for reproducibility
 RANDOM_STATE = 42
 

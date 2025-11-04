@@ -5,7 +5,6 @@ Unit tests for data splitting functionality.
 import tempfile
 from pathlib import Path
 
-import pytest
 from django.test import TestCase
 
 from recognition.data_splits import (

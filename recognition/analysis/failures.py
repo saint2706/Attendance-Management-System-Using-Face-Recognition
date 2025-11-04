@@ -102,8 +102,6 @@ def analyze_failures(
     Returns:
         Tuple of (false_accepts_df, false_rejects_df)
     """
-    n_samples = len(y_true)
-
     # False Accepts: predicted 1 but true is 0
     fa_indices = np.where((y_pred == 1) & (y_true == 0))[0]
 
@@ -199,7 +197,7 @@ def generate_failure_report(
             # Representative cases
             f.write("### Representative Cases\n\n")
             for i, row in fa_df.head(3).iterrows():
-                f.write(f"**Case {i+1}:**\n")
+                f.write(f"**Case {i + 1}:**\n")
                 f.write(f"- Predicted Score: {row['score']:.4f}\n")
                 f.write(f"- Lighting: {row['lighting']}\n")
                 f.write(f"- Pose: {row['pose']}\n")
@@ -231,7 +229,7 @@ def generate_failure_report(
             # Representative cases
             f.write("### Representative Cases\n\n")
             for i, row in fr_df.head(3).iterrows():
-                f.write(f"**Case {i+1}:**\n")
+                f.write(f"**Case {i + 1}:**\n")
                 f.write(f"- Predicted Score: {row['score']:.4f}\n")
                 f.write(f"- Lighting: {row['lighting']}\n")
                 f.write(f"- Pose: {row['pose']}\n")
@@ -297,7 +295,6 @@ def analyze_subgroups(
         group_mask = groups == group
         group_y_true = y_true[group_mask]
         group_y_pred = y_pred[group_mask]
-        group_y_scores = y_scores[group_mask]
 
         if len(group_y_true) == 0:
             continue

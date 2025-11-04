@@ -6,13 +6,9 @@ including face recognition-based attendance marking, database updates, admin-onl
 views, and user access control.
 """
 
-import datetime
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-
-# Mock the cv2 module before it's imported by views to avoid installation in test environments
-sys.modules.setdefault("cv2", MagicMock())
 
 import numpy as np
 import pandas as pd
@@ -22,8 +18,11 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from recognition import views
-from users.models import Present, Time
+# Mock the cv2 module before it's imported by views to avoid installation in test environments
+sys.modules.setdefault("cv2", MagicMock())
+
+from recognition import views  # noqa: E402
+from users.models import Present, Time  # noqa: E402
 
 
 class DeepFaceAttendanceTest(TestCase):
