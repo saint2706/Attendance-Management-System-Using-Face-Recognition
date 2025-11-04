@@ -11,24 +11,21 @@ from __future__ import annotations
 import datetime
 import logging
 import math
-import pickle
-import time
 import os
+import pickle
 import sys
+import time
 from pathlib import Path
 from typing import Dict
 
 import cv2
 import imutils
 import matplotlib as mpl
-import numpy as np
-
-# Use 'Agg' backend for Matplotlib to avoid GUI-related issues in a web server environment
-mpl.use("Agg")
-
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
+from deepface import DeepFace
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -47,10 +44,12 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
-from deepface import DeepFace
 
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
 from users.models import Present, Time
+
+# Use 'Agg' backend for Matplotlib to avoid GUI-related issues in a web server environment
+mpl.use("Agg")
 
 # Initialize logger for the module
 logger = logging.getLogger(__name__)
@@ -239,7 +238,7 @@ def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
     first_entry = times_all.first()
     if first_entry is None or first_entry.time is None:
         return True, 0
-        
+
     # The first entry must be a check-in
     if first_entry.out:
         return False, 0
@@ -315,7 +314,7 @@ def hours_vs_date_given_employee(
         hours_val = 0.0
         if obj.time_in and obj.time_out:
             hours_val = (obj.time_out - obj.time_in).total_seconds() / 3600
-        
+
         is_valid, break_hours_val = check_validity_times(times_all)
         if not is_valid:
             break_hours_val = 0.0
@@ -453,7 +452,7 @@ def this_week_emp_count_vs_date() -> None:
         emp_cnt_all.append(attendance_by_date.get(current_date, 0))
 
     if not str_dates_all:
-        return # Avoid plotting if there's no data
+        return  # Avoid plotting if there's no data
 
     df = pd.DataFrame({"date": str_dates_all, "Number of employees": emp_cnt_all})
 

@@ -93,7 +93,7 @@ class Command(BaseCommand):
         self.stdout.write(f"  - EER: {metrics['eer']:.4f}")
         self.stdout.write(f"  - Brier Score: {metrics['brier_score']:.4f}")
         self.stdout.write(f"  - Optimal F1: {metrics['optimal_f1']:.4f}")
-        self.stdout.write(f"\nConfidence Intervals (95%):")
+        self.stdout.write("\nConfidence Intervals (95%):")
         if ci_results["auc"]["mean"] is not None:
             self.stdout.write(
                 f"  - AUC: {ci_results['auc']['mean']:.4f} "

@@ -8,9 +8,8 @@ This module runs ablation experiments toggling different components:
 - Class rebalancing: on/off for threshold selection
 """
 
-import json
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -226,20 +225,20 @@ def generate_ablation_report(df: pd.DataFrame, output_path: Path) -> None:
         # Find baseline (SSD, alignment=True, cosine, rebalancing=False)
         baseline_row = df[
             (df["detector"] == "ssd")
-            & (df["alignment"] == True)
+            & (df["alignment"])
             & (df["distance_metric"] == "cosine")
-            & (df["rebalancing"] == False)
+            & (~df["rebalancing"])
         ]
 
         if not baseline_row.empty:
             baseline_acc = baseline_row.iloc[0]["accuracy"]
             baseline_f1 = baseline_row.iloc[0]["f1_score"]
-            f.write(f"## Baseline Configuration\n\n")
-            f.write(f"- Detector: SSD\n")
-            f.write(f"- Alignment: Enabled\n")
-            f.write(f"- Distance Metric: Cosine\n")
-            f.write(f"- Class Rebalancing: Disabled\n\n")
-            f.write(f"**Performance:**\n")
+            f.write("## Baseline Configuration\n\n")
+            f.write("- Detector: SSD\n")
+            f.write("- Alignment: Enabled\n")
+            f.write("- Distance Metric: Cosine\n")
+            f.write("- Class Rebalancing: Disabled\n\n")
+            f.write("**Performance:**\n")
             f.write(f"- Accuracy: {baseline_acc:.4f}\n")
             f.write(f"- F1 Score: {baseline_f1:.4f}\n\n")
 
@@ -251,9 +250,9 @@ def generate_ablation_report(df: pd.DataFrame, output_path: Path) -> None:
         for detector in ["ssd", "opencv", "mtcnn"]:
             row = df[
                 (df["detector"] == detector)
-                & (df["alignment"] == True)
+                & (df["alignment"])
                 & (df["distance_metric"] == "cosine")
-                & (df["rebalancing"] == False)
+                & (~df["rebalancing"])
             ]
             if not row.empty:
                 acc = row.iloc[0]["accuracy"]
@@ -270,7 +269,7 @@ def generate_ablation_report(df: pd.DataFrame, output_path: Path) -> None:
                 (df["detector"] == "ssd")
                 & (df["alignment"] == alignment)
                 & (df["distance_metric"] == "cosine")
-                & (df["rebalancing"] == False)
+                & (~df["rebalancing"])
             ]
             if not row.empty:
                 acc = row.iloc[0]["accuracy"]
@@ -287,9 +286,9 @@ def generate_ablation_report(df: pd.DataFrame, output_path: Path) -> None:
         for metric in ["cosine", "euclidean", "euclidean_l2"]:
             row = df[
                 (df["detector"] == "ssd")
-                & (df["alignment"] == True)
+                & (df["alignment"])
                 & (df["distance_metric"] == metric)
-                & (df["rebalancing"] == False)
+                & (~df["rebalancing"])
             ]
             if not row.empty:
                 acc = row.iloc[0]["accuracy"]
@@ -304,7 +303,7 @@ def generate_ablation_report(df: pd.DataFrame, output_path: Path) -> None:
         for rebalancing in [False, True]:
             row = df[
                 (df["detector"] == "ssd")
-                & (df["alignment"] == True)
+                & (df["alignment"])
                 & (df["distance_metric"] == "cosine")
                 & (df["rebalancing"] == rebalancing)
             ]

@@ -28,7 +28,7 @@ class Present(models.Model):
     present = models.BooleanField(
         default=False, help_text="Indicates if the user was present on this date."
     )
-    
+
     # Non-persistent fields for calculated values
     time_in: datetime.datetime | None = None
     time_out: datetime.datetime | None = None

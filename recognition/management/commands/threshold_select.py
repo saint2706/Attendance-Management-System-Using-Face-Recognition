@@ -59,7 +59,7 @@ class Command(BaseCommand):
         # Select threshold based on method
         if options["method"] == "eer":
             eer, threshold = calculate_eer(y_true, y_scores)
-            self.stdout.write(f"Selected threshold using EER method")
+            self.stdout.write("Selected threshold using EER method")
             self.stdout.write(f"  - EER: {eer:.4f}")
             self.stdout.write(f"  - Threshold: {threshold:.4f}")
             selection_info = {
@@ -70,7 +70,7 @@ class Command(BaseCommand):
 
         elif options["method"] == "f1":
             threshold, best_f1 = find_optimal_threshold(y_true, y_scores)
-            self.stdout.write(f"Selected threshold using F1 optimization")
+            self.stdout.write("Selected threshold using F1 optimization")
             self.stdout.write(f"  - Optimal F1: {best_f1:.4f}")
             self.stdout.write(f"  - Threshold: {threshold:.4f}")
             selection_info = {
