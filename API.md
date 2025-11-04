@@ -24,6 +24,12 @@ This document outlines all the URL patterns for the project and explains the pur
 | `/add_photos/`  | `recog_views.add_photos`| `add-photos`   | Handles the 'Add Photos' functionality for admins to create face datasets for users.                                                                           |
 | `/train/`       | `recog_views.train`     | `train`        | **Obsolete.** This view is no longer used, as the training process is now automatic. It redirects to the dashboard with an informational message.                  |
 
+## Evaluation and Analytics (Admin-only)
+
+| URL Path            | View Function                      | Name                      | Description                                                                 |
+|---------------------|------------------------------------|---------------------------|-----------------------------------------------------------------------------|
+| `/admin/evaluation/`| `recog_admin_views.evaluation_dashboard` | `admin:evaluation_dashboard` | Displays comprehensive evaluation metrics, confidence intervals, performance visualizations, and links to detailed reports. Shows ROC AUC, EER, FAR/TPR metrics with bootstrap confidence intervals. |
+
 ## Face Recognition and Attendance Marking
 
 | URL Path                      | View Function                      | Name                         | Description                                            |
@@ -45,3 +51,64 @@ This document outlines all the URL patterns for the project and explains the pur
 | URL Path           | View Function              | Name                 | Description                                                       |
 |--------------------|----------------------------|----------------------|-------------------------------------------------------------------|
 | `/not_authorised`  | `recog_views.not_authorised` | `not-authorised`     | Renders a page for users trying to access unauthorized areas.     |
+
+
+## Command-Line Tools
+
+The project includes several command-line tools for evaluation, testing, and analysis:
+
+### Management Commands
+
+All management commands are run using `python manage.py <command>`:
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `prepare_splits` | Prepares stratified train/validation/test splits with identity-level grouping | `python manage.py prepare_splits --seed 42` |
+| `eval` | Runs comprehensive evaluation with verification metrics and confidence intervals | `python manage.py eval --seed 42 --n-bootstrap 1000` |
+| `threshold_select` | Selects optimal recognition threshold based on validation set | `python manage.py threshold_select --method eer` |
+| `ablation` | Runs ablation experiments to test different component configurations | `python manage.py ablation --seed 42` |
+| `export_reports` | Exports all generated reports and figures to consolidated directory | `python manage.py export_reports` |
+
+### Standalone CLI Tool
+
+| Tool | Description | Example |
+|------|-------------|---------|
+| `predict_cli.py` | Standalone prediction tool with policy-based action recommendations | `python predict_cli.py --image path/to/image.jpg` |
+
+**Features:**
+- Tests face recognition on individual images
+- Applies policy configuration (action bands)
+- Provides confidence scores and recommendations
+- Supports JSON output for automation
+
+**Options:**
+- `--image`: Path to image file (required)
+- `--threshold`: Custom similarity threshold (optional)
+- `--json`: Output in JSON format (optional)
+- `--policy`: Path to custom policy YAML file (optional)
+
+**Example Output:**
+```
+Identity: john_doe
+Score: 0.85
+Band: Confident Accept
+Action: Approve immediately
+User Experience: < 2 second interaction
+```
+
+### Makefile Shortcuts
+
+For convenience, common commands are aliased in the Makefile:
+
+| Make Command | Equivalent Django Command | Description |
+|--------------|---------------------------|-------------|
+| `make setup` | `pip install && migrate` | Initial setup |
+| `make run` | `python manage.py runserver` | Start dev server |
+| `make test` | `python manage.py test` | Run all tests |
+| `make evaluate` | `python manage.py eval` | Run evaluation |
+| `make ablation` | `python manage.py ablation` | Run ablations |
+| `make reproduce` | Multiple commands | Full reproducibility workflow |
+| `make lint` | `black --check && isort --check && flake8` | Check code quality |
+| `make format` | `black && isort` | Auto-format code |
+
+See [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for detailed information on all commands and their options.
