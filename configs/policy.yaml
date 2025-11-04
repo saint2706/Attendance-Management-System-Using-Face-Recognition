@@ -1,0 +1,68 @@
+# Policy configuration for score bands and recommended actions
+
+# Score bands define confidence thresholds for different actions
+score_bands:
+  confident_accept:
+    threshold_min: 0.80
+    threshold_max: 1.00
+    description: "High confidence match - automatic approval"
+    action: "approve"
+    color: "green"
+
+  uncertain:
+    threshold_min: 0.50
+    threshold_max: 0.80
+    description: "Moderate confidence - requires secondary verification"
+    action: "verify_secondary"
+    color: "yellow"
+
+  reject:
+    threshold_min: 0.00
+    threshold_max: 0.50
+    description: "Low confidence - reject and suggest re-enrollment"
+    action: "reject"
+    color: "red"
+
+# Actions define what should happen for each score band
+actions:
+  approve:
+    description: "Automatically approve attendance"
+    requires_secondary_auth: false
+    mark_attendance: true
+    log_level: "info"
+    user_message: "Attendance marked successfully"
+
+  verify_secondary:
+    description: "Request secondary authentication (PIN/OTP)"
+    requires_secondary_auth: true
+    mark_attendance: false  # Mark as provisional until verified
+    log_level: "warning"
+    user_message: "Please verify with PIN or OTP"
+    provisional: true
+
+  reject:
+    description: "Reject recognition and suggest re-enrollment"
+    requires_secondary_auth: false
+    mark_attendance: false
+    log_level: "warning"
+    user_message: "Face not recognized. Please contact HR for re-enrollment."
+    suggest_reenrollment: true
+
+# Thresholds for different metrics
+thresholds:
+  default_threshold: 0.60  # Default decision threshold
+  eer_based: true  # Use EER-based threshold if available
+  target_far: 0.01  # Target False Accept Rate for threshold selection
+
+# Policy for repeated failures
+repeated_failures:
+  max_attempts: 3
+  lockout_duration_minutes: 15
+  action_after_max_attempts: "suggest_reenrollment"
+  notification: "admin"
+
+# HR integration settings
+hr_integration:
+  auto_suggest_reenrollment_after_failures: 5
+  notify_hr_on_repeated_rejects: true
+  provision_attendance_retention_days: 7  # Keep provisional attendance for this many days

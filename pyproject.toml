@@ -1,0 +1,85 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "attendance-system-facial-recognition"
+version = "1.0.0"
+description = "Smart Attendance System using Face Recognition with DeepFace"
+requires-python = ">=3.12"
+authors = [
+    {name = "Attendance System Team"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+
+dependencies = [
+    "Django==5.1.13",
+    "django-crispy-forms==2.1",
+    "crispy-bootstrap5==2024.2",
+    "django-pandas==0.6.7",
+    "deepface==0.0.93",
+    "imutils==0.5.4",
+    "matplotlib==3.8.4",
+    "seaborn==0.13.2",
+    "Pillow==10.3.0",
+    "opencv-python==4.9.0.80",
+    "scikit-learn==1.5.0",
+    "tf-keras==2.20.1",
+    "numpy==2.3.4",
+    "pandas==2.3.3",
+    "scipy==1.16.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black==24.10.0",
+    "isort==5.13.2",
+    "flake8==7.1.1",
+    "pytest==8.3.4",
+    "pytest-django==4.9.0",
+    "pytest-cov==6.0.0",
+    "pre-commit==4.0.1",
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | venv
+  | migrations
+  | __pycache__
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_glob = ["*/migrations/*", "*/__pycache__/*"]
+known_django = ["django"]
+sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+
+[tool.flake8]
+max-line-length = 100
+exclude = [
+    ".git",
+    "__pycache__",
+    "migrations",
+    "venv",
+    ".venv",
+    "build",
+    "dist",
+]
+ignore = ["E203", "W503", "E501"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "attendance_system_facial_recognition.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+testpaths = ["recognition", "users"]
+addopts = "--cov=. --cov-report=term-missing --cov-report=html"
