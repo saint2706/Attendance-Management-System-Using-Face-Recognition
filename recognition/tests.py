@@ -10,13 +10,14 @@ import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import numpy as np
-import pandas as pd
 from django.contrib.auth.models import User
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
+
+import numpy as np
+import pandas as pd
 
 # Mock the cv2 module before it's imported by views to avoid installation in test environments
 sys.modules.setdefault("cv2", MagicMock())
@@ -64,8 +65,10 @@ class DeepFaceAttendanceTest(TestCase):
             [
                 {
                     "identity": str(self.db_path / "tester" / "1.jpg"),
-                    "source_x": 10, "source_y": 10,
-                    "source_w": 50, "source_h": 50,
+                    "source_x": 10,
+                    "source_y": 10,
+                    "source_w": 50,
+                    "source_h": 50,
                     "distance": 0.3,
                 }
             ]
@@ -95,8 +98,10 @@ class DeepFaceAttendanceTest(TestCase):
             [
                 {
                     "identity": str(self.db_path / "tester" / "1.jpg"),
-                    "source_x": 10, "source_y": 10,
-                    "source_w": 50, "source_h": 50,
+                    "source_x": 10,
+                    "source_y": 10,
+                    "source_w": 50,
+                    "source_h": 50,
                     "distance": 0.2,
                 }
             ]
@@ -124,8 +129,10 @@ class DeepFaceAttendanceTest(TestCase):
             [
                 {
                     "identity": str(self.db_path / "tester" / "1.jpg"),
-                    "source_x": 10, "source_y": 10,
-                    "source_w": 50, "source_h": 50,
+                    "source_x": 10,
+                    "source_y": 10,
+                    "source_w": 50,
+                    "source_h": 50,
                     "distance": 0.9,  # High distance means low confidence
                 }
             ]
@@ -210,16 +217,12 @@ class DatabaseUpdateTest(TestCase):
         self.assertTrue(
             Present.objects.filter(user=self.user, date=self.today, present=True).exists()
         )
-        self.assertTrue(
-            Time.objects.filter(user=self.user, date=self.today, out=False).exists()
-        )
+        self.assertTrue(Time.objects.filter(user=self.user, date=self.today, out=False).exists())
 
     def test_update_attendance_in_db_out_creates_time_record(self):
         """Verify that a check-out creates a Time record with the 'out' flag."""
         views.update_attendance_in_db_out({"testuser": True})
-        self.assertTrue(
-            Time.objects.filter(user=self.user, date=self.today, out=True).exists()
-        )
+        self.assertTrue(Time.objects.filter(user=self.user, date=self.today, out=True).exists())
 
     def test_update_attendance_handles_missing_user(self):
         """Ensure the system doesn't crash when trying to update a non-existent user."""
@@ -266,9 +269,7 @@ class AddPhotosTest(TestCase):
 
     @patch("recognition.views.username_present", return_value=False)
     @patch("recognition.views.create_dataset")
-    def test_add_photos_user_not_found(
-        self, mock_create_dataset, mock_username_present
-    ):
+    def test_add_photos_user_not_found(self, mock_create_dataset, mock_username_present):
         """Test that adding photos fails if the username does not exist."""
         request = self.factory.post("/add_photos/", {"username": "nonexistent"})
         request.user = self.admin_user
@@ -292,9 +293,7 @@ class AdminAccessViewsTest(TestCase):
         self.staff_user = User.objects.create_user(
             "manager", "manager@example.com", "password", is_staff=True
         )
-        self.regular_user = User.objects.create_user(
-            "employee", "employee@example.com", "password"
-        )
+        self.regular_user = User.objects.create_user("employee", "employee@example.com", "password")
 
     def test_dashboard_staff_user_sees_admin_dashboard(self):
         """Verify that staff users are shown the admin dashboard."""
@@ -341,9 +340,7 @@ class AdminAccessViewsTest(TestCase):
         # Check another admin view for completeness
         response = self.client.get(reverse("view-attendance-employee"))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(
-            response, "recognition/view_attendance_employee.html"
-        )
+        self.assertTemplateUsed(response, "recognition/view_attendance_employee.html")
 
         # The obsolete 'train' view should redirect to the dashboard
         response = self.client.get(reverse("train"))
@@ -378,6 +375,4 @@ class AdminAccessViewsTest(TestCase):
         self.client.force_login(self.regular_user)
         response = self.client.get(reverse("view-my-attendance-employee-login"))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(
-            response, "recognition/view_my_attendance_employee_login.html"
-        )
+        self.assertTemplateUsed(response, "recognition/view_my_attendance_employee_login.html")

@@ -2,8 +2,9 @@
 Unit tests for evaluation metrics with confidence intervals.
 """
 
-import numpy as np
 from django.test import TestCase
+
+import numpy as np
 
 from recognition.evaluation.metrics import (
     bootstrap_confidence_intervals,

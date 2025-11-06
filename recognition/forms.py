@@ -29,9 +29,7 @@ class DateForm(forms.Form):
     """
 
     date = forms.DateField(
-        widget=forms.SelectDateWidget(
-            empty_label=("Choose Year", "Choose Month", "Choose Day")
-        )
+        widget=forms.SelectDateWidget(empty_label=("Choose Year", "Choose Month", "Choose Day"))
     )
 
 
@@ -46,15 +44,11 @@ class UsernameAndDateForm(forms.Form):
     username = forms.CharField(label="Username", max_length=150)
     date_from = forms.DateField(
         label="From",
-        widget=forms.SelectDateWidget(
-            empty_label=("Choose Year", "Choose Month", "Choose Day")
-        ),
+        widget=forms.SelectDateWidget(empty_label=("Choose Year", "Choose Month", "Choose Day")),
     )
     date_to = forms.DateField(
         label="To",
-        widget=forms.SelectDateWidget(
-            empty_label=("Choose Year", "Choose Month", "Choose Day")
-        ),
+        widget=forms.SelectDateWidget(empty_label=("Choose Year", "Choose Month", "Choose Day")),
     )
 
 
@@ -69,13 +63,9 @@ class DateForm_2(forms.Form):
 
     date_from = forms.DateField(
         label="From",
-        widget=forms.SelectDateWidget(
-            empty_label=("Choose Year", "Choose Month", "Choose Day")
-        ),
+        widget=forms.SelectDateWidget(empty_label=("Choose Year", "Choose Month", "Choose Day")),
     )
     date_to = forms.DateField(
         label="To",
-        widget=forms.SelectDateWidget(
-            empty_label=("Choose Year", "Choose Month", "Choose Day")
-        ),
+        widget=forms.SelectDateWidget(empty_label=("Choose Year", "Choose Month", "Choose Day")),
     )

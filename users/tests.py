@@ -5,9 +5,10 @@ This module contains test cases for the user registration view, ensuring that
 access is correctly restricted based on user roles (staff, superuser, regular user)
 and that the registration functionality works as expected for authorized users.
 """
+
 from django.contrib.auth import get_user_model
-from django.urls import reverse
 from django.test import TestCase
+from django.urls import reverse
 
 from .models import Time
 
@@ -67,9 +68,7 @@ class RegisterViewTests(TestCase):
         # Should redirect to the dashboard on success
         self.assertRedirects(response, reverse("dashboard"))
         # Verify the new user was created in the database
-        self.assertTrue(
-            get_user_model().objects.filter(username="new_employee").exists()
-        )
+        self.assertTrue(get_user_model().objects.filter(username="new_employee").exists())
 
     def test_non_staff_user_cannot_register_via_post(self):
         """Ensure a regular user is redirected and cannot register a new user via POST."""
@@ -85,9 +84,7 @@ class RegisterViewTests(TestCase):
 
         # The user should be redirected, and no new user should be created
         self.assertRedirects(response, self.not_authorised_url)
-        self.assertFalse(
-            get_user_model().objects.filter(username="should_not_create").exists()
-        )
+        self.assertFalse(get_user_model().objects.filter(username="should_not_create").exists())
 
 
 class TimeModelTests(TestCase):
@@ -96,9 +93,7 @@ class TimeModelTests(TestCase):
     def test_time_str_handles_missing_timestamp(self):
         """The string representation should handle a missing timestamp gracefully."""
 
-        user = get_user_model().objects.create_user(
-            username="time_user", password="Testpass123"
-        )
+        user = get_user_model().objects.create_user(username="time_user", password="Testpass123")
         time_entry = Time(user=user, time=None, out=False)
 
         self.assertEqual(

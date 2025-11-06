@@ -4,9 +4,10 @@ Django management command to run evaluation with metrics and confidence interval
 
 from pathlib import Path
 
-import numpy as np
 from django.conf import settings
 from django.core.management.base import BaseCommand
+
+import numpy as np
 
 from recognition.evaluation.metrics import (
     bootstrap_confidence_intervals,
@@ -66,9 +67,7 @@ class Command(BaseCommand):
 
         # Calculate metrics
         self.stdout.write("Calculating verification metrics...")
-        metrics = calculate_verification_metrics(
-            y_true, y_scores, threshold=options["threshold"]
-        )
+        metrics = calculate_verification_metrics(y_true, y_scores, threshold=options["threshold"])
 
         # Calculate confidence intervals
         self.stdout.write("Bootstrapping confidence intervals...")

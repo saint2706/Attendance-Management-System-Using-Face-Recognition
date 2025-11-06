@@ -30,7 +30,7 @@ def _get_bool_env(var_name: str, default: bool = False) -> bool:
 
 
 # Detect if we're running tests
-TESTING = 'test' in sys.argv or (len(sys.argv) > 0 and 'pytest' in sys.argv[0])
+TESTING = "test" in sys.argv or (len(sys.argv) > 0 and "pytest" in sys.argv[0])
 
 DEFAULT_SECRET_KEY = "a-secure-default-key-for-development-only"
 
@@ -175,6 +175,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Threshold for accepting DeepFace matches when marking attendance.
 # Lower values (e.g., 0.3) mean stricter matching, while higher values (e.g., 0.5)
 # are more permissive. This can be overridden via an environment variable.
-RECOGNITION_DISTANCE_THRESHOLD = float(
-    os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4")
-)
+RECOGNITION_DISTANCE_THRESHOLD = float(os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4"))

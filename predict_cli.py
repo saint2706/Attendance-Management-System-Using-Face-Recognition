@@ -98,12 +98,8 @@ def main():
     parser.add_argument(
         "--threshold", type=float, default=0.6, help="Decision threshold (default: 0.6)"
     )
-    parser.add_argument(
-        "--policy", type=str, default=None, help="Path to policy.yaml (optional)"
-    )
-    parser.add_argument(
-        "--json", action="store_true", help="Output results as JSON"
-    )
+    parser.add_argument("--policy", type=str, default=None, help="Path to policy.yaml (optional)")
+    parser.add_argument("--json", action="store_true", help="Output results as JSON")
 
     args = parser.parse_args()
 
@@ -135,9 +131,7 @@ def main():
         print(f"Action Description: {result['action_description']}")
         print()
         print(f"Mark Attendance: {'Yes' if result['mark_attendance'] else 'No'}")
-        print(
-            f"Requires Secondary Auth: {'Yes' if result['requires_secondary_auth'] else 'No'}"
-        )
+        print(f"Requires Secondary Auth: {'Yes' if result['requires_secondary_auth'] else 'No'}")
         print()
         print(f"User Message: {result['user_message']}")
         print("=" * 60)
