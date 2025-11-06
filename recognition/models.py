@@ -34,4 +34,5 @@ to apply the changes to the database:
 
 This ensures that the database schema is kept in sync with your models.
 """
+
 # Create your models here.

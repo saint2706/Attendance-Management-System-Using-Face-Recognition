@@ -18,6 +18,14 @@ import time
 from pathlib import Path
 from typing import Dict
 
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.db.models import Count, QuerySet
+from django.shortcuts import redirect, render
+from django.utils import timezone
+
 import cv2
 import imutils
 import matplotlib as mpl
@@ -26,27 +34,17 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from deepface import DeepFace
-from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.db.models import Count, QuerySet
-from django.shortcuts import redirect, render
-from django.utils import timezone
 from django_pandas.io import read_frame
 from imutils.video import VideoStream
 from matplotlib import rcParams
 from pandas.plotting import register_matplotlib_converters
-from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
-    precision_recall_fscore_support,
-)
+from sklearn.metrics import accuracy_score, classification_report, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 
-from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
 from users.models import Present, Time
+
+from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
 
 # Use 'Agg' backend for Matplotlib to avoid GUI-related issues in a web server environment
 mpl.use("Agg")
@@ -63,9 +61,7 @@ TRAINING_DATASET_ROOT = DATA_ROOT / "training_dataset"
 APP_STATIC_ROOT = Path(__file__).resolve().parent / "static" / "recognition" / "img"
 HOURS_VS_DATE_PATH = APP_STATIC_ROOT / "attendance_graphs" / "hours_vs_date" / "1.png"
 EMPLOYEE_LOGIN_PATH = APP_STATIC_ROOT / "attendance_graphs" / "employee_login" / "1.png"
-HOURS_VS_EMPLOYEE_PATH = (
-    APP_STATIC_ROOT / "attendance_graphs" / "hours_vs_employee" / "1.png"
-)
+HOURS_VS_EMPLOYEE_PATH = APP_STATIC_ROOT / "attendance_graphs" / "hours_vs_employee" / "1.png"
 THIS_WEEK_PATH = APP_STATIC_ROOT / "attendance_graphs" / "this_week" / "1.png"
 LAST_WEEK_PATH = APP_STATIC_ROOT / "attendance_graphs" / "last_week" / "1.png"
 
@@ -113,12 +109,8 @@ def create_dataset(username: str) -> None:
     video_stream = VideoStream(src=0).start()
 
     headless = _is_headless_environment()
-    max_frames = int(
-        getattr(settings, "RECOGNITION_HEADLESS_DATASET_FRAMES", 50)
-    )
-    frame_pause = float(
-        getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01)
-    )
+    max_frames = int(getattr(settings, "RECOGNITION_HEADLESS_DATASET_FRAMES", 50))
+    frame_pause = float(getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01))
 
     sample_number = 0
     try:
@@ -644,13 +636,19 @@ def _mark_attendance(request, check_in: bool):
                         )
                         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                         cv2.putText(
-                            frame, username, (x, y - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2
+                            frame,
+                            username,
+                            (x, y - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            0.9,
+                            (0, 255, 0),
+                            2,
                         )
                     else:
                         logger.info(
                             "Ignoring potential match for '%s' due to high distance %.4f",
-                            Path(match["identity"]).parent.name, distance
+                            Path(match["identity"]).parent.name,
+                            distance,
                         )
 
             except Exception as e:
@@ -664,9 +662,7 @@ def _mark_attendance(request, check_in: bool):
                 if frame_pause:
                     time.sleep(frame_pause)
                 if frames_processed >= max_frames:
-                    logger.info(
-                        "Headless mode reached frame limit of %d frames", max_frames
-                    )
+                    logger.info("Headless mode reached frame limit of %d frames", max_frames)
                     break
     finally:
         vs.stop()
@@ -758,7 +754,9 @@ def view_attendance_date(request):
             else:
                 messages.warning(request, "No records for the selected date.")
 
-            return render(request, "recognition/view_attendance_date.html", {"form": form, "qs": qs})
+            return render(
+                request, "recognition/view_attendance_date.html", {"form": form, "qs": qs}
+            )
     else:
         form = DateForm()
 
@@ -782,13 +780,19 @@ def view_attendance_employee(request):
             date_to = form.cleaned_data["date_to"]
 
             if date_to < date_from:
-                messages.warning(request, "Invalid date selection: 'To' date cannot be before 'From' date.")
+                messages.warning(
+                    request, "Invalid date selection: 'To' date cannot be before 'From' date."
+                )
                 return redirect("view-attendance-employee")
 
             user = User.objects.filter(username=username).first()
             if user:
-                time_qs = Time.objects.filter(user=user, date__gte=date_from, date__lte=date_to).order_by("-date")
-                present_qs = Present.objects.filter(user=user, date__gte=date_from, date__lte=date_to).order_by("-date")
+                time_qs = Time.objects.filter(
+                    user=user, date__gte=date_from, date__lte=date_to
+                ).order_by("-date")
+                present_qs = Present.objects.filter(
+                    user=user, date__gte=date_from, date__lte=date_to
+                ).order_by("-date")
 
                 if present_qs.exists():
                     qs = hours_vs_date_given_employee(present_qs, time_qs, admin=True)
@@ -797,7 +801,9 @@ def view_attendance_employee(request):
             else:
                 messages.warning(request, "Username not found.")
 
-            return render(request, "recognition/view_attendance_employee.html", {"form": form, "qs": qs})
+            return render(
+                request, "recognition/view_attendance_employee.html", {"form": form, "qs": qs}
+            )
     else:
         form = UsernameAndDateForm()
 
@@ -824,19 +830,29 @@ def view_my_attendance_employee_login(request):
                 messages.warning(request, "Invalid date selection.")
                 return redirect("view-my-attendance-employee-login")
 
-            time_qs = Time.objects.filter(user=user, date__gte=date_from, date__lte=date_to).order_by("-date")
-            present_qs = Present.objects.filter(user=user, date__gte=date_from, date__lte=date_to).order_by("-date")
+            time_qs = Time.objects.filter(
+                user=user, date__gte=date_from, date__lte=date_to
+            ).order_by("-date")
+            present_qs = Present.objects.filter(
+                user=user, date__gte=date_from, date__lte=date_to
+            ).order_by("-date")
 
             if present_qs.exists():
                 qs = hours_vs_date_given_employee(present_qs, time_qs, admin=False)
             else:
                 messages.warning(request, "No records for the selected duration.")
 
-            return render(request, "recognition/view_my_attendance_employee_login.html", {"form": form, "qs": qs})
+            return render(
+                request,
+                "recognition/view_my_attendance_employee_login.html",
+                {"form": form, "qs": qs},
+            )
     else:
         form = DateForm_2()
 
-    return render(request, "recognition/view_my_attendance_employee_login.html", {"form": form, "qs": qs})
+    return render(
+        request, "recognition/view_my_attendance_employee_login.html", {"form": form, "qs": qs}
+    )
 
 
 def _get_face_detection_backend() -> str:
@@ -954,7 +970,9 @@ def train_view(request):
                     try:
                         embedding_vectors.append(list(item))
                     except Exception:
-                        logger.debug("Skipping unrecognized embedding item during training: %r", item)
+                        logger.debug(
+                            "Skipping unrecognized embedding item during training: %r", item
+                        )
         else:
             logger.error("Unexpected embeddings type from DeepFace.represent: %s", type(embeddings))
             raise TypeError("Unexpected embeddings format from DeepFace.represent")
@@ -963,8 +981,7 @@ def train_view(request):
         logger.error("Failed to extract embeddings during training: %s", e)
         messages.error(
             request,
-            "An error occurred during face embedding extraction. "
-            "Check logs for details.",
+            "An error occurred during face embedding extraction. " "Check logs for details.",
         )
         return render(request, "recognition/train.html", {"trained": False})
 
@@ -979,9 +996,7 @@ def train_view(request):
         random_state=random_seed,
         stratify=class_names,
     )
-    logger.info(
-        "Data split: %d training samples, %d test samples.", len(X_train), len(X_test)
-    )
+    logger.info("Data split: %d training samples, %d test samples.", len(X_train), len(X_test))
 
     # --- 4. Model Training ---
     logger.info("Training Support Vector Classifier...")
@@ -1111,7 +1126,11 @@ def mark_attendance_view(request, attendance_type):
                 # Normalize and safely extract the first embedding + facial_area
                 embedding_vector = None
                 facial_area = None
-                if isinstance(embeddings, np.ndarray) and embeddings.ndim == 2 and len(embeddings) > 0:
+                if (
+                    isinstance(embeddings, np.ndarray)
+                    and embeddings.ndim == 2
+                    and len(embeddings) > 0
+                ):
                     embedding_vector = list(embeddings[0])
                 elif isinstance(embeddings, list) and len(embeddings) > 0:
                     first = embeddings[0]

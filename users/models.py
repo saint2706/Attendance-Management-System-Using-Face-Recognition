@@ -4,9 +4,11 @@ Database models for the users app.
 This module defines the data models for tracking employee attendance, including
 daily presence status and specific time-in/time-out events.
 """
+
 import datetime
-from django.db import models
+
 from django.contrib.auth.models import User
+from django.db import models
 from django.utils import timezone
 
 
@@ -52,12 +54,8 @@ class Time(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, help_text="The user this time entry belongs to."
     )
-    date = models.DateField(
-        default=timezone.localdate, help_text="The date of the time entry."
-    )
-    time = models.DateTimeField(
-        null=True, blank=True, help_text="The exact time of the event."
-    )
+    date = models.DateField(default=timezone.localdate, help_text="The date of the time entry.")
+    time = models.DateTimeField(null=True, blank=True, help_text="The exact time of the event.")
     out = models.BooleanField(
         default=False, help_text="False for a time-in event, True for a time-out event."
     )

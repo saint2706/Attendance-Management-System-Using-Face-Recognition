@@ -338,9 +338,7 @@ def plot_calibration_curve(
     plt.close()
 
 
-def generate_metric_plots(
-    y_true: np.ndarray, y_scores: np.ndarray, output_dir: Path
-) -> None:
+def generate_metric_plots(y_true: np.ndarray, y_scores: np.ndarray, output_dir: Path) -> None:
     """
     Generate all metric plots.
 

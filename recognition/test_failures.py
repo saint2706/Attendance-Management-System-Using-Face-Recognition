@@ -2,8 +2,9 @@
 Unit tests for failure analysis functionality.
 """
 
-import numpy as np
 from django.test import TestCase
+
+import numpy as np
 
 from recognition.analysis.failures import analyze_failures, analyze_subgroups
 
@@ -80,9 +81,7 @@ class FailureAnalysisTest(TestCase):
         """Test subgroup analysis."""
         groups = np.array(["camera1"] * 5 + ["camera2"] * 5)
 
-        df = analyze_subgroups(
-            self.y_true, self.y_pred, self.y_scores, groups, output_path=None
-        )
+        df = analyze_subgroups(self.y_true, self.y_pred, self.y_scores, groups, output_path=None)
 
         # Should have 2 groups
         self.assertEqual(len(df), 2)
@@ -105,9 +104,7 @@ class FailureAnalysisTest(TestCase):
         # Create unbalanced groups
         groups = np.array(["A"] * 8 + ["B"] * 2)
 
-        df = analyze_subgroups(
-            self.y_true, self.y_pred, self.y_scores, groups, output_path=None
-        )
+        df = analyze_subgroups(self.y_true, self.y_pred, self.y_scores, groups, output_path=None)
 
         # Should handle both groups
         self.assertEqual(len(df), 2)

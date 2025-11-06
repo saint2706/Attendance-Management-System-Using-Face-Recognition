@@ -152,9 +152,7 @@ def analyze_failures(
     return fa_df, fr_df
 
 
-def generate_failure_report(
-    fa_df: pd.DataFrame, fr_df: pd.DataFrame, output_path: Path
-) -> None:
+def generate_failure_report(fa_df: pd.DataFrame, fr_df: pd.DataFrame, output_path: Path) -> None:
     """
     Generate a narrative failure analysis report.
 
@@ -176,9 +174,7 @@ def generate_failure_report(
         # False Accepts
         f.write("## False Accepts\n\n")
         if len(fa_df) > 0:
-            f.write(
-                f"**Total False Accepts Analyzed**: {len(fa_df)} (top cases by confidence)\n\n"
-            )
+            f.write(f"**Total False Accepts Analyzed**: {len(fa_df)} (top cases by confidence)\n\n")
 
             # Lighting analysis
             lighting_counts = fa_df["lighting"].value_counts()
@@ -208,9 +204,7 @@ def generate_failure_report(
         # False Rejects
         f.write("## False Rejects\n\n")
         if len(fr_df) > 0:
-            f.write(
-                f"**Total False Rejects Analyzed**: {len(fr_df)} (lowest confidence cases)\n\n"
-            )
+            f.write(f"**Total False Rejects Analyzed**: {len(fr_df)} (lowest confidence cases)\n\n")
 
             # Lighting analysis
             lighting_counts = fr_df["lighting"].value_counts()
@@ -306,9 +300,7 @@ def analyze_subgroups(
             "precision": precision_score(
                 group_y_true, group_y_pred, average="binary", zero_division=0
             ),
-            "recall": recall_score(
-                group_y_true, group_y_pred, average="binary", zero_division=0
-            ),
+            "recall": recall_score(group_y_true, group_y_pred, average="binary", zero_division=0),
             "f1_score": f1_score(group_y_true, group_y_pred, average="binary", zero_division=0),
         }
         rows.append(row)

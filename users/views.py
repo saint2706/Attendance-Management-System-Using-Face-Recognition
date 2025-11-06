@@ -5,10 +5,10 @@ This module contains views related to user management, such as employee registra
 Access to these views is typically restricted to administrators.
 """
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.shortcuts import redirect, render
 
 
 @login_required

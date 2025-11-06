@@ -7,17 +7,22 @@ apps, as well as to Django's built-in authentication views.
 """
 
 from django.contrib import admin
-from django.urls import path
 from django.contrib.auth import views as auth_views
-from recognition import views as recog_views
+from django.urls import path
+
 from recognition import admin_views as recog_admin_views
+from recognition import views as recog_views
 from users import views as users_views
 
 urlpatterns = [
     # Admin Site
     path("admin/", admin.site.urls),
     # Custom Admin Views
-    path("admin/evaluation/", recog_admin_views.evaluation_dashboard, name="admin:evaluation_dashboard"),
+    path(
+        "admin/evaluation/",
+        recog_admin_views.evaluation_dashboard,
+        name="admin:evaluation_dashboard",
+    ),
     path("admin/ablation/", recog_admin_views.ablation_results, name="admin:ablation_results"),
     path("admin/failures/", recog_admin_views.failure_analysis, name="admin:failure_analysis"),
     # Core pages
@@ -37,9 +42,7 @@ urlpatterns = [
     # User and Photo Management (Admin-only)
     path("register/", users_views.register, name="register"),
     path("add_photos/", recog_views.add_photos, name="add-photos"),
-    path(
-        "train/", recog_views.train, name="train"
-    ),  # Obsolete, but kept for URL consistency
+    path("train/", recog_views.train, name="train"),  # Obsolete, but kept for URL consistency
     # Face Recognition and Attendance Marking
     path(
         "mark_your_attendance",

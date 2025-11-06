@@ -7,7 +7,8 @@ administrators to view, add, edit, and delete attendance records directly.
 """
 
 from django.contrib import admin
-from .models import Time, Present
+
+from .models import Present, Time
 
 # Register the Time model to make it available in the Django admin panel.
 admin.site.register(Time)

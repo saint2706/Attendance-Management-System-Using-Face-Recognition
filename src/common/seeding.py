@@ -31,6 +31,7 @@ def set_global_seed(seed: int = 42) -> None:
     # NumPy
     try:
         import numpy as np
+
         np.random.seed(seed)
     except ImportError:
         pass
@@ -38,16 +39,18 @@ def set_global_seed(seed: int = 42) -> None:
     # TensorFlow and tf.keras
     try:
         import tensorflow as tf
+
         tf.random.set_seed(seed)
         # Set environment variables for TensorFlow determinism
-        os.environ['TF_DETERMINISTIC_OPS'] = '1'
-        os.environ['TF_CUDNN_DETERMINISTIC'] = '1'
+        os.environ["TF_DETERMINISTIC_OPS"] = "1"
+        os.environ["TF_CUDNN_DETERMINISTIC"] = "1"
     except ImportError:
         pass
 
     # PyTorch (if used in the future)
     try:
         import torch
+
         torch.manual_seed(seed)
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)

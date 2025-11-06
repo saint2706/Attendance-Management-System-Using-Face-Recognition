@@ -5,9 +5,10 @@ Django management command to select optimal threshold on validation set.
 import json
 from pathlib import Path
 
-import numpy as np
 from django.conf import settings
 from django.core.management.base import BaseCommand
+
+import numpy as np
 
 from recognition.evaluation.metrics import calculate_eer, find_optimal_threshold
 from src.common.seeding import set_global_seed

@@ -6,6 +6,7 @@ its name and other settings. Django automatically discovers this
 configuration when the app is included in the `INSTALLED_APPS` list
 in the project's settings.
 """
+
 from django.apps import AppConfig
 
 
@@ -16,4 +17,5 @@ class UsersConfig(AppConfig):
     This class defines the configuration for the users app, including its
     name. Django uses this class to manage the app and its models.
     """
-    name = 'users'
+
+    name = "users"
