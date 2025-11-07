@@ -100,6 +100,8 @@ The project includes a comprehensive `Makefile` for common development tasks:
 - `make ablation`: Run ablation experiments
 - `make report`: Generate comprehensive reports (evaluation + ablation)
 
+> **Note:** Model training is triggered automatically whenever new employee photos are captured. The legacy `make train` target now just prints a reminder and points to `make evaluate`/`make report` for checking metrics.
+
 ### Reproducibility
 - `make reproduce`: Complete reproducibility workflow (setup → splits → evaluation → reports)
 
