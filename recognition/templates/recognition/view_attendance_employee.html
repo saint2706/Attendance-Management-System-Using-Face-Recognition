@@ -70,7 +70,11 @@
         <h4 class="mb-0">Work Hours Over Time</h4>
     </div>
     <div class="card-body text-center">
-        <img src="{% static 'recognition/img/attendance_graphs/hours_vs_date/1.png' %}" class="img-fluid" alt="Hours vs. Date Graph">
+        {% if hours_vs_date_chart_url %}
+        <img src="{{ hours_vs_date_chart_url }}" class="img-fluid" alt="Hours vs. Date Graph">
+        {% else %}
+        <p class="text-muted mb-0">Graphs will appear once attendance data is available.</p>
+        {% endif %}
         <p class="text-muted mt-2">Total work hours per day for the selected employee and duration.</p>
     </div>
 </div>
