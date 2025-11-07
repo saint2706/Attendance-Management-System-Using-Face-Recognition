@@ -25,11 +25,12 @@ class DateForm(forms.Form):
     A form to select a single date.
 
     Used by admins to view attendance records for all employees on a specific day.
-    The widget provides dropdowns for year, month, and day for easy selection.
+    The widget provides an HTML5 date picker for easy selection.
     """
 
     date = forms.DateField(
-        widget=forms.SelectDateWidget(empty_label=("Choose Year", "Choose Month", "Choose Day"))
+        widget=forms.DateInput(attrs={"type": "date"}),
+        input_formats=["%Y-%m-%d"],
     )
 
 
@@ -44,11 +45,13 @@ class UsernameAndDateForm(forms.Form):
     username = forms.CharField(label="Username", max_length=150)
     date_from = forms.DateField(
         label="From",
-        widget=forms.SelectDateWidget(empty_label=("Choose Year", "Choose Month", "Choose Day")),
+        widget=forms.DateInput(attrs={"type": "date"}),
+        input_formats=["%Y-%m-%d"],
     )
     date_to = forms.DateField(
         label="To",
-        widget=forms.SelectDateWidget(empty_label=("Choose Year", "Choose Month", "Choose Day")),
+        widget=forms.DateInput(attrs={"type": "date"}),
+        input_formats=["%Y-%m-%d"],
     )
 
 
@@ -63,9 +66,11 @@ class DateForm_2(forms.Form):
 
     date_from = forms.DateField(
         label="From",
-        widget=forms.SelectDateWidget(empty_label=("Choose Year", "Choose Month", "Choose Day")),
+        widget=forms.DateInput(attrs={"type": "date"}),
+        input_formats=["%Y-%m-%d"],
     )
     date_to = forms.DateField(
         label="To",
-        widget=forms.SelectDateWidget(empty_label=("Choose Year", "Choose Month", "Choose Day")),
+        widget=forms.DateInput(attrs={"type": "date"}),
+        input_formats=["%Y-%m-%d"],
     )

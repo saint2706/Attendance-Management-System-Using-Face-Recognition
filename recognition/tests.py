@@ -376,3 +376,103 @@ class AdminAccessViewsTest(TestCase):
         response = self.client.get(reverse("view-my-attendance-employee-login"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "recognition/view_my_attendance_employee_login.html")
+
+
+class DateFormISOFormatTest(TestCase):
+    """Test suite to verify that forms correctly parse ISO-formatted dates."""
+
+    def test_date_form_accepts_iso_formatted_date(self):
+        """Verify DateForm accepts ISO-formatted date string (YYYY-MM-DD)."""
+        from recognition.forms import DateForm
+
+        form_data = {"date": "2024-12-15"}
+        form = DateForm(data=form_data)
+        self.assertTrue(form.is_valid(), f"Form errors: {form.errors}")
+        self.assertEqual(form.cleaned_data["date"].isoformat(), "2024-12-15")
+
+    def test_username_and_date_form_accepts_iso_formatted_dates(self):
+        """Verify UsernameAndDateForm accepts ISO-formatted date strings."""
+        from recognition.forms import UsernameAndDateForm
+
+        form_data = {
+            "username": "testuser",
+            "date_from": "2024-12-01",
+            "date_to": "2024-12-31",
+        }
+        form = UsernameAndDateForm(data=form_data)
+        self.assertTrue(form.is_valid(), f"Form errors: {form.errors}")
+        self.assertEqual(form.cleaned_data["date_from"].isoformat(), "2024-12-01")
+        self.assertEqual(form.cleaned_data["date_to"].isoformat(), "2024-12-31")
+
+    def test_date_form_2_accepts_iso_formatted_dates(self):
+        """Verify DateForm_2 accepts ISO-formatted date strings."""
+        from recognition.forms import DateForm_2
+
+        form_data = {
+            "date_from": "2024-11-01",
+            "date_to": "2024-11-30",
+        }
+        form = DateForm_2(data=form_data)
+        self.assertTrue(form.is_valid(), f"Form errors: {form.errors}")
+        self.assertEqual(form.cleaned_data["date_from"].isoformat(), "2024-11-01")
+        self.assertEqual(form.cleaned_data["date_to"].isoformat(), "2024-11-30")
+
+    def test_date_form_rejects_invalid_format(self):
+        """Verify DateForm rejects dates in non-ISO format."""
+        from recognition.forms import DateForm
+
+        # Try with MM/DD/YYYY format (should fail)
+        form_data = {"date": "12/15/2024"}
+        form = DateForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("date", form.errors)
+
+    def test_username_and_date_form_validates_date_order_in_view(self):
+        """Verify that view_attendance_employee properly validates date ranges."""
+        staff_user = User.objects.create_user(
+            "admin", "admin@example.com", "password", is_staff=True
+        )
+        User.objects.create_user("testuser", "test@example.com", "password")
+
+        self.client.force_login(staff_user)
+
+        # Post with date_to before date_from (invalid)
+        response = self.client.post(
+            reverse("view-attendance-employee"),
+            {
+                "username": "testuser",
+                "date_from": "2024-12-31",
+                "date_to": "2024-12-01",
+            },
+        )
+
+        # View should show a warning message and redirect
+        self.assertEqual(response.status_code, 302)
+        messages_list = list(response.wsgi_request._messages)
+        self.assertTrue(
+            any("Invalid date selection" in str(msg) for msg in messages_list),
+            "Expected warning message about invalid date selection",
+        )
+
+    def test_date_form_2_validates_date_order_in_view(self):
+        """Verify that view_my_attendance_employee_login properly validates date ranges."""
+        regular_user = User.objects.create_user("employee", "employee@example.com", "password")
+
+        self.client.force_login(regular_user)
+
+        # Post with date_to before date_from (invalid)
+        response = self.client.post(
+            reverse("view-my-attendance-employee-login"),
+            {
+                "date_from": "2024-12-31",
+                "date_to": "2024-12-01",
+            },
+        )
+
+        # View should show a warning message and redirect
+        self.assertEqual(response.status_code, 302)
+        messages_list = list(response.wsgi_request._messages)
+        self.assertTrue(
+            any("Invalid date selection" in str(msg) for msg in messages_list),
+            "Expected warning message about invalid date selection",
+        )
