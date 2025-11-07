@@ -381,6 +381,15 @@ class AdminAccessViewsTest(TestCase):
 class DateFormISOFormatTest(TestCase):
     """Test suite to verify that forms correctly parse ISO-formatted dates."""
 
+    def _assert_invalid_date_selection_message(self, response):
+        """Helper method to verify that invalid date selection message is present."""
+        self.assertEqual(response.status_code, 302)
+        messages_list = list(response.wsgi_request._messages)
+        self.assertTrue(
+            any("Invalid date selection" in str(msg) for msg in messages_list),
+            "Expected warning message about invalid date selection",
+        )
+
     def test_date_form_accepts_iso_formatted_date(self):
         """Verify DateForm accepts ISO-formatted date string (YYYY-MM-DD)."""
         from recognition.forms import DateForm
@@ -446,13 +455,7 @@ class DateFormISOFormatTest(TestCase):
             },
         )
 
-        # View should show a warning message and redirect
-        self.assertEqual(response.status_code, 302)
-        messages_list = list(response.wsgi_request._messages)
-        self.assertTrue(
-            any("Invalid date selection" in str(msg) for msg in messages_list),
-            "Expected warning message about invalid date selection",
-        )
+        self._assert_invalid_date_selection_message(response)
 
     def test_date_form_2_validates_date_order_in_view(self):
         """Verify that view_my_attendance_employee_login properly validates date ranges."""
@@ -469,10 +472,4 @@ class DateFormISOFormatTest(TestCase):
             },
         )
 
-        # View should show a warning message and redirect
-        self.assertEqual(response.status_code, 302)
-        messages_list = list(response.wsgi_request._messages)
-        self.assertTrue(
-            any("Invalid date selection" in str(msg) for msg in messages_list),
-            "Expected warning message about invalid date selection",
-        )
+        self._assert_invalid_date_selection_message(response)
