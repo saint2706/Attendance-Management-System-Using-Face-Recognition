@@ -108,6 +108,12 @@ Before running the project you should configure the following environment variab
 - **Admins** can view comprehensive attendance reports for all employees from their dashboard.
 - **Employees** can log in to view their personal attendance history from their own dashboard.
 
+### Attendance Charts & Media Files
+
+- Generated attendance charts are stored under the `media/attendance_graphs/` directory (configurable via `DJANGO_MEDIA_ROOT`).
+- The directory is created automatically and should remain writable so the reporting views can update the charts.
+- You can safely delete files inside `media/attendance_graphs/` if you want to regenerate fresh plots—the application will recreate them on demand.
+
 ---
 
 This modernized Smart Attendance System is now easier to set up, more efficient, and more user-friendly than ever before. Enjoy a seamless attendance tracking experience!

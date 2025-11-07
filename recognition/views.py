@@ -16,7 +16,8 @@ import pickle
 import sys
 import time
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional, Tuple
+from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib import messages
@@ -57,13 +58,15 @@ logger = logging.getLogger(__name__)
 DATA_ROOT = Path(settings.BASE_DIR) / "face_recognition_data"
 TRAINING_DATASET_ROOT = DATA_ROOT / "training_dataset"
 
-# Define paths for saving generated attendance graphs
-APP_STATIC_ROOT = Path(__file__).resolve().parent / "static" / "recognition" / "img"
-HOURS_VS_DATE_PATH = APP_STATIC_ROOT / "attendance_graphs" / "hours_vs_date" / "1.png"
-EMPLOYEE_LOGIN_PATH = APP_STATIC_ROOT / "attendance_graphs" / "employee_login" / "1.png"
-HOURS_VS_EMPLOYEE_PATH = APP_STATIC_ROOT / "attendance_graphs" / "hours_vs_employee" / "1.png"
-THIS_WEEK_PATH = APP_STATIC_ROOT / "attendance_graphs" / "this_week" / "1.png"
-LAST_WEEK_PATH = APP_STATIC_ROOT / "attendance_graphs" / "last_week" / "1.png"
+# Define paths for saving generated attendance graphs within MEDIA_ROOT
+ATTENDANCE_GRAPHS_ROOT = Path(
+    getattr(settings, "ATTENDANCE_GRAPHS_ROOT", Path(settings.MEDIA_ROOT) / "attendance_graphs")
+)
+HOURS_VS_DATE_PATH = ATTENDANCE_GRAPHS_ROOT / "hours_vs_date" / "1.png"
+EMPLOYEE_LOGIN_PATH = ATTENDANCE_GRAPHS_ROOT / "employee_login" / "1.png"
+HOURS_VS_EMPLOYEE_PATH = ATTENDANCE_GRAPHS_ROOT / "hours_vs_employee" / "1.png"
+THIS_WEEK_PATH = ATTENDANCE_GRAPHS_ROOT / "this_week" / "1.png"
+LAST_WEEK_PATH = ATTENDANCE_GRAPHS_ROOT / "last_week" / "1.png"
 
 
 def _ensure_directory(path: Path) -> None:
@@ -77,6 +80,28 @@ def _ensure_directory(path: Path) -> None:
         path: The file path whose parent directory needs to exist.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
+
+
+def _media_url_for(path: Path) -> str:
+    """Return the MEDIA_URL-relative URL for the provided file path."""
+
+    media_root = Path(settings.MEDIA_ROOT)
+    try:
+        relative_path = path.resolve().relative_to(media_root.resolve())
+    except ValueError:
+        relative_path = path
+    return urljoin(settings.MEDIA_URL, relative_path.as_posix())
+
+
+def _save_plot_to_media(path: Path) -> str:
+    """Persist the current Matplotlib plot and return its media URL."""
+
+    _ensure_directory(path)
+    try:
+        plt.savefig(path)
+    finally:
+        plt.close()
+    return _media_url_for(path)
 
 
 def username_present(username: str) -> bool:
@@ -275,7 +300,7 @@ def convert_hours_to_hours_mins(hours: float) -> str:
 
 def hours_vs_date_given_employee(
     present_qs: QuerySet[Present], time_qs: QuerySet[Time], admin: bool = True
-) -> QuerySet[Present]:
+) -> Tuple[QuerySet[Present], str]:
     """
     Calculate work and break hours for an employee over a date range and generate a plot.
 
@@ -285,7 +310,7 @@ def hours_vs_date_given_employee(
         admin: A boolean indicating if the view is for an admin (affects save path).
 
     Returns:
-        The `Present` queryset annotated with work and break hours.
+        A tuple containing the annotated queryset and the media URL of the generated plot.
     """
     register_matplotlib_converters()
     df_hours = []
@@ -330,16 +355,14 @@ def hours_vs_date_given_employee(
     plt.tight_layout()
 
     target_path = HOURS_VS_DATE_PATH if admin else EMPLOYEE_LOGIN_PATH
-    _ensure_directory(target_path)
-    plt.savefig(target_path)
-    plt.close()
+    chart_url = _save_plot_to_media(target_path)
 
-    return present_qs
+    return present_qs, chart_url
 
 
 def hours_vs_employee_given_date(
     present_qs: QuerySet[Present], time_qs: QuerySet[Time]
-) -> QuerySet[Present]:
+) -> Tuple[QuerySet[Present], str]:
     """
     Calculate work and break hours for all employees on a given date and generate a plot.
 
@@ -348,7 +371,7 @@ def hours_vs_employee_given_date(
         time_qs: A queryset of `Time` objects for the date.
 
     Returns:
-        The `Present` queryset annotated with work and break hours.
+        A tuple containing the annotated queryset and the media URL of the generated plot.
     """
     register_matplotlib_converters()
     df_hours = []
@@ -393,11 +416,9 @@ def hours_vs_employee_given_date(
     plt.xticks(rotation="vertical")
     rcParams.update({"figure.autolayout": True})
     plt.tight_layout()
-    _ensure_directory(HOURS_VS_EMPLOYEE_PATH)
-    plt.savefig(HOURS_VS_EMPLOYEE_PATH)
-    plt.close()
+    chart_url = _save_plot_to_media(HOURS_VS_EMPLOYEE_PATH)
 
-    return present_qs
+    return present_qs, chart_url
 
 
 def total_number_employees() -> int:
@@ -415,9 +436,12 @@ def employees_present_today() -> int:
     return Present.objects.filter(date=today, present=True).count()
 
 
-def this_week_emp_count_vs_date() -> None:
+def this_week_emp_count_vs_date() -> Optional[str]:
     """
     Generate and save a line plot of employee presence for the current week.
+
+    Returns:
+        The media URL of the generated plot, or ``None`` when no data is available.
     """
     today = timezone.localdate()
     start_of_week = today - datetime.timedelta(days=today.weekday())
@@ -444,19 +468,20 @@ def this_week_emp_count_vs_date() -> None:
         emp_cnt_all.append(attendance_by_date.get(current_date, 0))
 
     if not str_dates_all:
-        return  # Avoid plotting if there's no data
+        return None  # Avoid plotting if there's no data
 
     df = pd.DataFrame({"date": str_dates_all, "Number of employees": emp_cnt_all})
 
     sns.lineplot(data=df, x="date", y="Number of employees")
-    _ensure_directory(THIS_WEEK_PATH)
-    plt.savefig(THIS_WEEK_PATH)
-    plt.close()
+    return _save_plot_to_media(THIS_WEEK_PATH)
 
 
-def last_week_emp_count_vs_date() -> None:
+def last_week_emp_count_vs_date() -> Optional[str]:
     """
     Generate and save a line plot of employee presence for the last week.
+
+    Returns:
+        The media URL of the generated plot, or ``None`` when no data is available.
     """
     today = timezone.localdate()
     start_of_last_week = today - datetime.timedelta(days=today.weekday() + 7)
@@ -485,9 +510,7 @@ def last_week_emp_count_vs_date() -> None:
     df = pd.DataFrame({"date": str_dates_all, "emp_count": emp_cnt_all})
 
     sns.lineplot(data=df, x="date", y="emp_count")
-    _ensure_directory(LAST_WEEK_PATH)
-    plt.savefig(LAST_WEEK_PATH)
-    plt.close()
+    return _save_plot_to_media(LAST_WEEK_PATH)
 
 
 # ========== Main Views ==========
@@ -722,11 +745,13 @@ def view_attendance_home(request):
     """
     total_num_of_emp = total_number_employees()
     emp_present_today = employees_present_today()
-    this_week_emp_count_vs_date()
-    last_week_emp_count_vs_date()
+    this_week_graph_url = this_week_emp_count_vs_date()
+    last_week_graph_url = last_week_emp_count_vs_date()
     context = {
         "total_num_of_emp": total_num_of_emp,
         "emp_present_today": emp_present_today,
+        "this_week_graph_url": this_week_graph_url,
+        "last_week_graph_url": last_week_graph_url,
     }
     return render(request, "recognition/view_attendance_home.html", context)
 
@@ -739,7 +764,8 @@ def view_attendance_date(request):
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
 
-    qs = None
+    qs: Optional[QuerySet[Present]] = None
+    chart_url: Optional[str] = None
     if request.method == "POST":
         form = DateForm(request.POST)
         if form.is_valid():
@@ -750,17 +776,18 @@ def view_attendance_date(request):
             present_qs = Present.objects.filter(date=date)
 
             if present_qs.exists():
-                qs = hours_vs_employee_given_date(present_qs, time_qs)
+                qs, chart_url = hours_vs_employee_given_date(present_qs, time_qs)
             else:
                 messages.warning(request, "No records for the selected date.")
-
-            return render(
-                request, "recognition/view_attendance_date.html", {"form": form, "qs": qs}
-            )
     else:
         form = DateForm()
 
-    return render(request, "recognition/view_attendance_date.html", {"form": form, "qs": qs})
+    context = {
+        "form": form,
+        "qs": qs,
+        "hours_vs_employee_chart_url": chart_url,
+    }
+    return render(request, "recognition/view_attendance_date.html", context)
 
 
 @login_required
@@ -771,7 +798,8 @@ def view_attendance_employee(request):
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
 
-    qs = None
+    qs: Optional[QuerySet[Present]] = None
+    chart_url: Optional[str] = None
     if request.method == "POST":
         form = UsernameAndDateForm(request.POST)
         if form.is_valid():
@@ -795,19 +823,22 @@ def view_attendance_employee(request):
                 ).order_by("-date")
 
                 if present_qs.exists():
-                    qs = hours_vs_date_given_employee(present_qs, time_qs, admin=True)
+                    qs, chart_url = hours_vs_date_given_employee(
+                        present_qs, time_qs, admin=True
+                    )
                 else:
                     messages.warning(request, "No records for the selected duration.")
             else:
                 messages.warning(request, "Username not found.")
-
-            return render(
-                request, "recognition/view_attendance_employee.html", {"form": form, "qs": qs}
-            )
     else:
         form = UsernameAndDateForm()
 
-    return render(request, "recognition/view_attendance_employee.html", {"form": form, "qs": qs})
+    context = {
+        "form": form,
+        "qs": qs,
+        "hours_vs_date_chart_url": chart_url,
+    }
+    return render(request, "recognition/view_attendance_employee.html", context)
 
 
 @login_required
@@ -818,7 +849,8 @@ def view_my_attendance_employee_login(request):
     if request.user.is_staff or request.user.is_superuser:
         return redirect("not-authorised")
 
-    qs = None
+    qs: Optional[QuerySet[Present]] = None
+    chart_url: Optional[str] = None
     if request.method == "POST":
         form = DateForm_2(request.POST)
         if form.is_valid():
@@ -838,20 +870,22 @@ def view_my_attendance_employee_login(request):
             ).order_by("-date")
 
             if present_qs.exists():
-                qs = hours_vs_date_given_employee(present_qs, time_qs, admin=False)
+                qs, chart_url = hours_vs_date_given_employee(
+                    present_qs, time_qs, admin=False
+                )
             else:
                 messages.warning(request, "No records for the selected duration.")
 
-            return render(
-                request,
-                "recognition/view_my_attendance_employee_login.html",
-                {"form": form, "qs": qs},
-            )
     else:
         form = DateForm_2()
 
+    context = {
+        "form": form,
+        "qs": qs,
+        "hours_vs_date_chart_url": chart_url,
+    }
     return render(
-        request, "recognition/view_my_attendance_employee_login.html", {"form": form, "qs": qs}
+        request, "recognition/view_my_attendance_employee_login.html", context
     )
 
 

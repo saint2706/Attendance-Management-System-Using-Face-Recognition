@@ -36,7 +36,11 @@
         <div class="card shadow-sm">
             <div class="card-body">
                 <h5 class="card-title text-center">This Week's Attendance</h5>
-                <img src="{% static 'recognition/img/attendance_graphs/this_week/1.png' %}" class="img-fluid" alt="This week's attendance graph">
+                {% if this_week_graph_url %}
+                <img src="{{ this_week_graph_url }}" class="img-fluid" alt="This week's attendance graph">
+                {% else %}
+                <p class="text-muted text-center mb-0">Graphs will appear once attendance data is available.</p>
+                {% endif %}
                 <p class="card-text text-center text-muted mt-2">Number of employees present each day</p>
             </div>
         </div>
@@ -45,7 +49,11 @@
         <div class="card shadow-sm">
             <div class="card-body">
                 <h5 class="card-title text-center">Last Week's Attendance</h5>
-                <img src="{% static 'recognition/img/attendance_graphs/last_week/1.png' %}" class="img-fluid" alt="Last week's attendance graph">
+                {% if last_week_graph_url %}
+                <img src="{{ last_week_graph_url }}" class="img-fluid" alt="Last week's attendance graph">
+                {% else %}
+                <p class="text-muted text-center mb-0">Graphs will appear once attendance data is available.</p>
+                {% endif %}
                 <p class="card-text text-center text-muted mt-2">Number of employees present each day</p>
             </div>
         </div>

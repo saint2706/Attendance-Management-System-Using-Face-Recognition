@@ -6,6 +6,8 @@ URL paths to their corresponding view functions from the `recognition` and `user
 apps, as well as to Django's built-in authentication views.
 """
 
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path
@@ -78,3 +80,6 @@ urlpatterns = [
     # Error/Status Pages
     path("not_authorised", recog_views.not_authorised, name="not-authorised"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

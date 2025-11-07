@@ -141,13 +141,19 @@ USE_I18N = True
 USE_TZ = True  # Enable timezone-aware datetimes
 
 
-# --- Static Files Configuration ---
+# --- Static & Media Files Configuration ---
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+MEDIA_URL = os.environ.get("DJANGO_MEDIA_URL", "/media/")
+MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT", BASE_DIR / "media"))
+
+# Directory used by the reporting views to persist generated charts.
+ATTENDANCE_GRAPHS_ROOT = MEDIA_ROOT / "attendance_graphs"
 
 # --- Crispy Forms Configuration ---
 
