@@ -96,6 +96,8 @@ To compute these metrics, the system compares predicted labels (who the model th
 
 4. **Register Employees**
    - Log in with the admin account and use the dashboard to create users.
+- The registration form now lives in the same responsive layout as the rest of the app, so you can comfortably complete it on tablets or phones. Handy links on both authentication pages make it easy to jump between login and registration in a single tap.
+   - ![Responsive registration form with helper text](docs/images/register.png)
 
 5. **Capture Training Photos**
    - Use the “Add Photos” feature to record embeddings automatically.

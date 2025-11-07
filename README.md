@@ -7,6 +7,7 @@ This project is a fully refactored and modernized smart attendance system that l
 
 - **Automated Attendance:** Mark time-in and time-out effortlessly using real-time face recognition.
 - **Responsive Web Interface:** A clean, modern, and intuitive UI that works beautifully on desktops, tablets, and mobile devices.
+- **Polished Authentication Experience:** Redesigned login and registration pages inherit the global layout, stay consistent across the site, and adapt gracefully to any screen size. Quick navigation links let you hop between login and employee registration without leaving the page.
 - **Admin Dashboard:** A powerful dashboard for administrators to manage employees, add user photos, and view comprehensive attendance reports.
 - **Employee Dashboard:** A personalized dashboard for employees to view their own attendance records.
 - **Automatic Training:** The face recognition model updates automatically when new employee photos are added—no manual training required. Use `make evaluate` or `make report` any time you want to review metrics.
@@ -91,6 +92,14 @@ Before running the project you should configure the following environment variab
 - Log in to the admin dashboard (`/login`) with your superuser credentials.
 - From the dashboard, navigate to **Register Employee**.
 - Fill out the registration form to create a new user account for the employee.
+
+### Responsive Authentication Screens
+
+The authentication workflow now shares the same base template used across the site and relies on Bootstrap's grid utilities for responsive sizing. The forms below are rendered with Django Crispy Forms, so field hints and validation feedback continue to work exactly as before.
+
+![Responsive login screen featuring a centered card](docs/images/login.png)
+
+![Registration screen with responsive layout and helper text](docs/images/register.png)
 
 ### 2. Admin: Add Photos for the Employee
 

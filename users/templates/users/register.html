@@ -1,76 +1,37 @@
-{% load static %}
+{% extends "recognition/base.html" %}
 {% load crispy_forms_tags %}
 
-<!DOCTYPE html>
-<html>
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+{% block title %}Register Employee - Smart Attendance System{% endblock %}
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-
-    <style>
-      .form-group {
-        padding: 5px 0;
-      }
-      
-      .navbar {
-        background-color: #222831;
-      }
-      
-      .btn {
-        background-color: #eeeeee;
-        border: 2px solid #393e46;
-        transition-duration: 0.4s;
-      }
-      
-      .btn:hover {
-        background-color: #393e46;
-        color: white;
-      }
-      
-      .navbar-brand {
-        color: white;
-        transition-duration: 0.4s;
-        opacity: 0.6;
-      }
-      
-      .navbar-brand:hover {
-        color: white;
-        opacity: 1;
-      }
-      
-      .wrapper {
-        width: 35%;
-        background-color: #eeeeee;
-        padding: 10px 20px;
-        margin-top: 4.5%;
-        border-radius: 4px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="navbar navbar-expand-lg">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'dashboard' %}"><h5 class="text-left">Back</h5></a>
+{% block content %}
+<section class="auth-section">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-11 col-lg-8 col-xl-7">
+      <div class="d-flex justify-content-end mb-3">
+        <a class="auth-back-link" href="{% url 'dashboard' %}">
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+          <span>Back to Dashboard</span>
+        </a>
+      </div>
+      <div class="card auth-card">
+        <div class="card-body">
+          <h1 class="h4 auth-heading text-center mb-4">Register New Employee</h1>
+          <form method="post" class="auth-form">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="d-grid mt-3">
+              <button class="btn btn-auth" type="submit">Register</button>
+            </div>
+          </form>
+          <div class="text-center mt-4">
+            <a class="auth-alt-link" href="{% url 'login' %}">
+              <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+              <span>Return to login</span>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="container-fluid wrapper">
-      <form method="POST">
-        {% csrf_token %}
-        <div class="form-group">
-          <legend class="border-bottom mb-4">Register New Employee</legend>
-          {{ form|crispy }}
-        </div>
-
-        <div class="form-group">
-          <button class="btn" type="submit">Register</button>
-        </div>
-      </form>
-    </div>
-  </body>
-</html>
+  </div>
+</section>
+{% endblock %}
