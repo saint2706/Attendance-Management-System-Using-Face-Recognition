@@ -117,6 +117,16 @@ The authentication workflow now shares the same base template used across the si
 - **Admins** can view comprehensive attendance reports for all employees from their dashboard.
 - **Employees** can log in to view their personal attendance history from their own dashboard.
 
+#### Streamlined Date Selection
+
+The attendance viewing forms now use modern HTML5 date pickers for a better user experience:
+- **Single-click date selection**: Choose dates quickly with your browser's native date picker
+- **Mobile-friendly**: Works seamlessly on smartphones and tablets
+- **Keyboard accessible**: Navigate dates easily with keyboard shortcuts
+- **Browser support**: All modern browsers (Chrome, Firefox, Safari, Edge) provide native date pickers
+
+The system accepts dates in ISO format (YYYY-MM-DD) and validates them automatically. For date range queries, the system ensures that the "To" date is not before the "From" date.
+
 ### Attendance Charts & Media Files
 
 - Generated attendance charts are stored under the `media/attendance_graphs/` directory (configurable via `DJANGO_MEDIA_ROOT`).
