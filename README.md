@@ -9,7 +9,7 @@ This project is a fully refactored and modernized smart attendance system that l
 - **Responsive Web Interface:** A clean, modern, and intuitive UI that works beautifully on desktops, tablets, and mobile devices.
 - **Admin Dashboard:** A powerful dashboard for administrators to manage employees, add user photos, and view comprehensive attendance reports.
 - **Employee Dashboard:** A personalized dashboard for employees to view their own attendance records.
-- **Automatic Training:** The face recognition model updates automatically when new employee photos are added—no manual training required.
+- **Automatic Training:** The face recognition model updates automatically when new employee photos are added—no manual training required. Use `make evaluate` or `make report` any time you want to review metrics.
 - **Performance Optimized:** Utilizes the efficient "Facenet" model and "SSD" detector for a fast and responsive recognition experience.
 - **Continuous Integration:** Includes a GitHub Actions workflow to automatically run tests, ensuring code quality and stability.
 

@@ -52,11 +52,10 @@ run:
 	@echo "Starting the development server at http://127.0.0.1:8000/"
 	python manage.py runserver
 
-# Train the face recognition model
+# Train target retained for compatibility but training happens automatically
 train:
-	@echo "Training face recognition model..."
-	python manage.py train_model
-	@echo "Training complete."
+	@echo "Training is automatic when new photos are added; no manual step is required."
+	@echo "If you want to assess model quality, run 'make evaluate' or 'make report'."
 
 # Run evaluation and generate metrics
 evaluate:
