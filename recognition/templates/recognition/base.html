@@ -4,55 +4,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Smart Attendance System - Automated attendance tracking using face recognition technology">
+    <meta name="theme-color" content="#0d6efd">
     <title>{% block title %}Smart Attendance System{% endblock %}</title>
-    <!-- Bootstrap CSS -->
+    
+    <!-- Bootstrap CSS (for compatibility with existing styles) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <!-- Font Awesome -->
+    
+    <!-- Font Awesome Icons -->
     <script src="https://kit.fontawesome.com/00148adc4d.js" crossorigin="anonymous"></script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
     {% block extra_head %}{% endblock %}
 </head>
-<body class="app-body">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">
-                <i class="fas fa-user-check"></i> Smart Attendance
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container main-container">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<body>
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
+    
+    <!-- Main Layout Wrapper -->
+    <div class="app-layout">
+        <!-- Navigation Bar -->
+        <nav class="app-navbar" role="navigation" aria-label="Main navigation">
+            <div class="navbar-container">
+                <a class="navbar-brand" href="{% url 'home' %}" aria-label="Smart Attendance System Home">
+                    <i class="fas fa-user-check" aria-hidden="true"></i>
+                    <span>Smart Attendance</span>
+                </a>
+                
+                <div class="d-flex align-items-center gap-4">
+                    <!-- Navigation Links -->
+                    <ul class="navbar-nav" id="navbar-nav" role="menubar">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item" role="none">
+                                <a class="nav-link" href="{% url 'dashboard' %}" role="menuitem">
+                                    <i class="fas fa-dashboard" aria-hidden="true"></i>
+                                    <span>Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="nav-item" role="none">
+                                <a class="nav-link" href="{% url 'logout' %}" role="menuitem">
+                                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                                    <span>Logout</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item" role="none">
+                                <a class="nav-link" href="{% url 'login' %}" role="menuitem">
+                                    <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+                                    <span>Login</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    
+                    <!-- Theme Toggle Button -->
+                    <button 
+                        id="theme-toggle" 
+                        class="theme-toggle no-print" 
+                        aria-label="Toggle dark mode"
+                        title="Toggle dark mode"
+                        type="button">
+                        <i class="fas fa-moon" aria-hidden="true"></i>
+                    </button>
+                    
+                    <!-- Mobile Menu Toggle -->
+                    <button 
+                        id="mobile-menu-toggle" 
+                        class="mobile-menu-toggle" 
+                        aria-label="Toggle navigation menu"
+                        aria-expanded="false"
+                        aria-controls="navbar-nav"
+                        type="button">
+                        <i class="fas fa-bars" aria-hidden="true"></i>
+                    </button>
                 </div>
-            {% endfor %}
-        {% endif %}
-        {% block content %}{% endblock %}
+            </div>
+        </nav>
+        
+        <!-- Main Content Area -->
+        <main id="main-content" class="main-content" role="main">
+            <!-- Messages/Alerts -->
+            {% if messages %}
+                <div class="messages-container" role="status" aria-live="polite">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade-in" role="alert">
+                            <div class="d-flex align-items-start gap-2">
+                                {% if message.tags == 'success' %}
+                                    <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                    <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                                {% elif message.tags == 'warning' %}
+                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                                {% endif %}
+                                <span>{{ message }}</span>
+                            </div>
+                            <button type="button" class="alert-close" aria-label="Close alert">
+                                <i class="fas fa-times" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Page Content -->
+            {% block content %}{% endblock %}
+        </main>
+        
+        <!-- Footer -->
+        <footer class="app-footer no-print" role="contentinfo">
+            <div class="main-content">
+                <div class="d-flex justify-content-between align-items-center flex-wrap" style="padding: var(--space-6) 0; border-top: 1px solid var(--color-border); margin-top: var(--space-8);">
+                    <p class="text-muted mb-0" style="font-size: var(--font-size-sm);">
+                        © 2024 Smart Attendance System. All rights reserved.
+                    </p>
+                    <div class="d-flex gap-4">
+                        <a href="{% url 'home' %}" class="text-muted text-decoration-none" style="font-size: var(--font-size-sm);">Home</a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'dashboard' %}" class="text-muted text-decoration-none" style="font-size: var(--font-size-sm);">Dashboard</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
-
-    <!-- Bootstrap JS -->
+    
+    <!-- Bootstrap JS (for compatibility) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    
+    <!-- Custom UI JavaScript -->
+    <script src="{% static 'js/ui.js' %}"></script>
+    
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

@@ -3,42 +3,102 @@
 {% block title %}Home - Smart Attendance System{% endblock %}
 
 {% block content %}
-<div class="text-center mb-5">
-    <h1>Welcome to the Smart Attendance System</h1>
-    <p class="lead">Your one-stop solution for automated attendance management using face recognition.</p>
+<div class="text-center mb-8">
+    <h1 style="font-size: var(--font-size-4xl); font-weight: var(--font-weight-bold); margin-bottom: var(--space-4); color: var(--color-text);">
+        Welcome to the Smart Attendance System
+    </h1>
+    <p class="lead" style="font-size: var(--font-size-xl); color: var(--color-text-muted); max-width: 800px; margin: 0 auto;">
+        Your one-stop solution for automated attendance management using advanced face recognition technology.
+    </p>
 </div>
 
 <div class="row text-center">
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body">
-                <a href="{% url 'mark-your-attendance' %}" class="text-decoration-none">
-                    <i class="fas fa-arrow-right-from-bracket card-icon mb-3"></i>
-                    <h5 class="card-title">Mark Time-In</h5>
-                    <p class="card-text">Clock in for the day by scanning your face.</p>
+    <div class="col-12 col-md-6 col-lg-4 mb-4">
+        <article class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-center" style="padding: var(--space-8);">
+                <a href="{% url 'mark-your-attendance' %}" class="text-decoration-none" style="color: inherit;">
+                    <i class="fas fa-arrow-right-from-bracket card-icon mb-4" aria-hidden="true"></i>
+                    <h2 class="card-title" style="font-size: var(--font-size-2xl); margin-bottom: var(--space-4);">
+                        Mark Time-In
+                    </h2>
+                    <p class="card-text" style="font-size: var(--font-size-base); color: var(--color-text-muted);">
+                        Clock in for the day by scanning your face with our secure recognition system.
+                    </p>
                 </a>
             </div>
-        </div>
+        </article>
     </div>
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body">
-                <a href="{% url 'mark-your-attendance-out' %}" class="text-decoration-none">
-                    <i class="fas fa-right-to-bracket card-icon mb-3"></i>
-                    <h5 class="card-title">Mark Time-Out</h5>
-                    <p class="card-text">Clock out when you're done for the day.</p>
+    
+    <div class="col-12 col-md-6 col-lg-4 mb-4">
+        <article class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-center" style="padding: var(--space-8);">
+                <a href="{% url 'mark-your-attendance-out' %}" class="text-decoration-none" style="color: inherit;">
+                    <i class="fas fa-right-to-bracket card-icon mb-4" aria-hidden="true"></i>
+                    <h2 class="card-title" style="font-size: var(--font-size-2xl); margin-bottom: var(--space-4);">
+                        Mark Time-Out
+                    </h2>
+                    <p class="card-text" style="font-size: var(--font-size-base); color: var(--color-text-muted);">
+                        Clock out when you're done for the day. Track your work hours effortlessly.
+                    </p>
                 </a>
             </div>
-        </div>
+        </article>
     </div>
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body">
-                <a href="{% url 'login' %}" class="text-decoration-none">
-                    <i class="fas fa-user-shield card-icon mb-3"></i>
-                    <h5 class="card-title">Dashboard Login</h5>
-                    <p class="card-text">Access your attendance records and manage users.</p>
+    
+    <div class="col-12 col-md-6 col-lg-4 mb-4">
+        <article class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-center" style="padding: var(--space-8);">
+                <a href="{% url 'login' %}" class="text-decoration-none" style="color: inherit;">
+                    <i class="fas fa-user-shield card-icon mb-4" aria-hidden="true"></i>
+                    <h2 class="card-title" style="font-size: var(--font-size-2xl); margin-bottom: var(--space-4);">
+                        Dashboard Login
+                    </h2>
+                    <p class="card-text" style="font-size: var(--font-size-base); color: var(--color-text-muted);">
+                        Access your attendance records, manage users, and view comprehensive reports.
+                    </p>
                 </a>
+            </div>
+        </article>
+    </div>
+</div>
+
+<!-- Feature Highlights Section -->
+<div class="mt-8" style="margin-top: var(--space-16);">
+    <h2 class="text-center mb-6" style="font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); margin-bottom: var(--space-8); color: var(--color-text);">
+        Why Choose Our System?
+    </h2>
+    <div class="row">
+        <div class="col-12 col-md-4 mb-4">
+            <div class="text-center">
+                <i class="fas fa-bolt" style="font-size: 2.5rem; color: var(--color-primary); margin-bottom: var(--space-4);" aria-hidden="true"></i>
+                <h3 style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-3); color: var(--color-text);">
+                    Fast & Accurate
+                </h3>
+                <p style="color: var(--color-text-muted); font-size: var(--font-size-base);">
+                    Advanced AI-powered face recognition ensures quick and precise attendance marking.
+                </p>
+            </div>
+        </div>
+        <div class="col-12 col-md-4 mb-4">
+            <div class="text-center">
+                <i class="fas fa-shield-halved" style="font-size: 2.5rem; color: var(--color-primary); margin-bottom: var(--space-4);" aria-hidden="true"></i>
+                <h3 style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-3); color: var(--color-text);">
+                    Secure & Private
+                </h3>
+                <p style="color: var(--color-text-muted); font-size: var(--font-size-base);">
+                    Your biometric data is encrypted and stored securely with industry-standard protection.
+                </p>
+            </div>
+        </div>
+        <div class="col-12 col-md-4 mb-4">
+            <div class="text-center">
+                <i class="fas fa-chart-line" style="font-size: 2.5rem; color: var(--color-primary); margin-bottom: var(--space-4);" aria-hidden="true"></i>
+                <h3 style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-3); color: var(--color-text);">
+                    Detailed Reports
+                </h3>
+                <p style="color: var(--color-text-muted); font-size: var(--font-size-base);">
+                    Generate comprehensive attendance reports with visual analytics and export capabilities.
+                </p>
             </div>
         </div>
     </div>
