@@ -4,30 +4,63 @@
 {% block title %}Register Employee - Smart Attendance System{% endblock %}
 
 {% block content %}
-<section class="auth-section">
+<section class="auth-section" style="padding: var(--space-12) 0;">
   <div class="row justify-content-center">
     <div class="col-12 col-md-11 col-lg-8 col-xl-7">
-      <div class="d-flex justify-content-end mb-3">
-        <a class="auth-back-link" href="{% url 'dashboard' %}">
+      <div class="d-flex justify-content-between align-items-center mb-4" style="margin-bottom: var(--space-6);">
+        <a class="auth-back-link" href="{% url 'dashboard' %}" style="display: inline-flex; align-items: center; gap: var(--space-2); color: var(--color-text-muted); text-decoration: none; font-weight: var(--font-weight-medium); transition: color var(--transition-fast);">
           <i class="fas fa-arrow-left" aria-hidden="true"></i>
           <span>Back to Dashboard</span>
         </a>
       </div>
-      <div class="card auth-card">
-        <div class="card-body">
-          <h1 class="h4 auth-heading text-center mb-4">Register New Employee</h1>
-          <form method="post" class="auth-form">
+      
+      <article class="card" style="box-shadow: var(--shadow-xl);">
+        <div class="card-body" style="padding: var(--space-10) var(--space-8);">
+          <div class="text-center mb-6" style="margin-bottom: var(--space-8);">
+            <i class="fas fa-user-plus" style="font-size: 4rem; color: var(--color-primary); margin-bottom: var(--space-4);" aria-hidden="true"></i>
+            <h1 style="font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); margin-bottom: var(--space-2); color: var(--color-text);">
+              Register New Employee
+            </h1>
+            <p class="text-muted mb-0" style="font-size: var(--font-size-base);">
+              Add a new employee to the attendance system
+            </p>
+          </div>
+          
+          <form method="post" class="auth-form" data-validate="true">
             {% csrf_token %}
             {{ form|crispy }}
-            <div class="d-grid mt-3">
-              <button class="btn btn-auth" type="submit">Register</button>
+            <div class="d-grid mt-6" style="margin-top: var(--space-8);">
+              <button class="btn btn-primary" type="submit" style="padding: var(--space-4) var(--space-6); font-size: var(--font-size-lg);">
+                <i class="fas fa-user-check" aria-hidden="true"></i> Register Employee
+              </button>
             </div>
           </form>
-          <div class="text-center mt-4">
-            <a class="auth-alt-link" href="{% url 'login' %}">
+          
+          <div class="text-center mt-6" style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+            <p class="text-muted mb-2" style="font-size: var(--font-size-sm); margin-bottom: var(--space-3);">
+              Already have an account?
+            </p>
+            <a class="auth-alt-link" href="{% url 'login' %}" style="display: inline-flex; align-items: center; gap: var(--space-2); color: var(--color-primary); text-decoration: none; font-weight: var(--font-weight-semibold); font-size: var(--font-size-base);">
               <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
               <span>Return to login</span>
             </a>
+          </div>
+        </div>
+      </article>
+      
+      <!-- Help Card -->
+      <div class="card mt-4" style="margin-top: var(--space-6); border-left: 4px solid var(--color-info);">
+        <div class="card-body" style="padding: var(--space-5);">
+          <div class="d-flex align-items-start gap-3">
+            <i class="fas fa-info-circle" style="font-size: 1.5rem; color: var(--color-info); margin-top: var(--space-1);" aria-hidden="true"></i>
+            <div>
+              <h2 style="font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-2); color: var(--color-text);">
+                After Registration
+              </h2>
+              <p class="text-muted mb-0" style="font-size: var(--font-size-sm);">
+                Once the employee is registered, you'll need to add their face photos using the "Add Photos" feature from the admin dashboard. The system will automatically train the recognition model when photos are added.
+              </p>
+            </div>
           </div>
         </div>
       </div>

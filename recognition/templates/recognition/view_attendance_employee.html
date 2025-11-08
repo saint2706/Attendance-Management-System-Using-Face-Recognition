@@ -2,81 +2,103 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
-{% block title %}View Attendance by Employee{% endblock %}
+{% block title %}View Attendance by Employee - Smart Attendance System{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h3 class="card-title text-center">View Attendance by Employee</h3>
-                <form method="POST">
+    <div class="col-12 col-md-10 col-lg-8">
+        <article class="card mb-6" style="margin-bottom: var(--space-8); box-shadow: var(--shadow-lg);">
+            <div class="card-body" style="padding: var(--space-8);">
+                <div class="text-center mb-6" style="margin-bottom: var(--space-6);">
+                    <i class="fas fa-user-clock" style="font-size: 3rem; color: var(--color-primary); margin-bottom: var(--space-3);" aria-hidden="true"></i>
+                    <h1 style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--color-text); margin: 0;">
+                        View Attendance by Employee
+                    </h1>
+                </div>
+                <form method="POST" data-validate="true">
                     {% csrf_token %}
                     {{ form|crispy }}
-                    <div class="d-grid mt-3">
-                        <button class="btn btn-primary" type="submit">
-                            <i class="fas fa-search me-2"></i>Get Records
+                    <div class="d-grid mt-4" style="margin-top: var(--space-6);">
+                        <button class="btn btn-primary" type="submit" style="padding: var(--space-4) var(--space-6); font-size: var(--font-size-lg);">
+                            <i class="fas fa-search" aria-hidden="true"></i> Get Records
                         </button>
                     </div>
                 </form>
             </div>
-        </div>
+        </article>
     </div>
 </div>
 
 {% if qs %}
-<div class="card shadow-sm">
-    <div class="card-header">
-        <h4 class="mb-0">Attendance Records for {{ qs.first.user.username }}</h4>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Time In</th>
-                        <th>Time Out</th>
-                        <th>Work Hours</th>
-                        <th>Break Hours</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in qs %}
-                    <tr>
-                        <td>{{ item.date }}</td>
-                        <td>
-                            {% if item.present %}
-                                <span class="badge bg-success">Present</span>
-                            {% else %}
-                                <span class="badge bg-danger">Absent</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ item.time_in|time:"H:i"|default:"-" }}</td>
-                        <td>{{ item.time_out|time:"H:i"|default:"-" }}</td>
-                        <td>{{ item.hours }}</td>
-                        <td>{{ item.break_hours }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<section aria-label="Employee attendance records">
+    <article class="card mb-6" style="margin-bottom: var(--space-8);">
+        <div class="card-body" style="padding: 0;">
+            <div style="padding: var(--space-6); border-bottom: 1px solid var(--color-border);">
+                <h2 style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); color: var(--color-text); margin: 0;">
+                    <i class="fas fa-user" aria-hidden="true"></i> Attendance Records for {{ qs.first.user.username }}
+                </h2>
+            </div>
+            <div class="table-container">
+                <table class="table" data-enhance="true" aria-label="Employee attendance records table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Time In</th>
+                            <th scope="col">Time Out</th>
+                            <th scope="col">Work Hours</th>
+                            <th scope="col">Break Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in qs %}
+                        <tr>
+                            <td>{{ item.date }}</td>
+                            <td>
+                                {% if item.present %}
+                                    <span style="display: inline-block; padding: var(--space-1) var(--space-3); background-color: var(--color-success); color: white; border-radius: var(--radius-full); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);">
+                                        <i class="fas fa-check" aria-hidden="true"></i> Present
+                                    </span>
+                                {% else %}
+                                    <span style="display: inline-block; padding: var(--space-1) var(--space-3); background-color: var(--color-danger); color: white; border-radius: var(--radius-full); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);">
+                                        <i class="fas fa-times" aria-hidden="true"></i> Absent
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.time_in|time:"H:i"|default:"-" }}</td>
+                            <td>{{ item.time_out|time:"H:i"|default:"-" }}</td>
+                            <td>{{ item.hours }}</td>
+                            <td>{{ item.break_hours }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</div>
+    </article>
 
-<div class="card shadow-sm mt-4">
-    <div class="card-header">
-        <h4 class="mb-0">Work Hours Over Time</h4>
-    </div>
-    <div class="card-body text-center">
-        {% if hours_vs_date_chart_url %}
-        <img src="{{ hours_vs_date_chart_url }}" class="img-fluid" alt="Hours vs. Date Graph">
-        {% else %}
-        <p class="text-muted mb-0">Graphs will appear once attendance data is available.</p>
-        {% endif %}
-        <p class="text-muted mt-2">Total work hours per day for the selected employee and duration.</p>
-    </div>
-</div>
+    <article class="card">
+        <div class="card-body" style="padding: var(--space-6);">
+            <h2 class="text-center mb-4" style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); color: var(--color-text); margin-bottom: var(--space-6);">
+                <i class="fas fa-chart-line" aria-hidden="true"></i> Work Hours Over Time
+            </h2>
+            {% if hours_vs_date_chart_url %}
+                <div style="border-radius: var(--radius-md); overflow: hidden; background-color: var(--color-gray-50);">
+                    <img src="{{ hours_vs_date_chart_url }}" class="img-fluid" alt="Line chart showing work hours over time" style="width: 100%; height: auto;">
+                </div>
+                <p class="text-center text-muted mt-3 mb-0" style="font-size: var(--font-size-sm); margin-top: var(--space-4);">
+                    Total work hours per day for the selected employee and duration
+                </p>
+            {% else %}
+                <div class="text-center" style="padding: var(--space-10) var(--space-4); background-color: var(--color-gray-50); border-radius: var(--radius-md);">
+                    <i class="fas fa-chart-line" style="font-size: 3rem; color: var(--color-text-muted); opacity: 0.3; margin-bottom: var(--space-4);" aria-hidden="true"></i>
+                    <p class="text-muted mb-0" style="font-size: var(--font-size-base);">
+                        Graphs will appear once attendance data is available
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </article>
+</section>
 {% endif %}
 {% endblock %}
