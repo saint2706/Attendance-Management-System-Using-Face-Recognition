@@ -53,6 +53,10 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements-dev.txt
 
+      - name: Install Playwright browsers
+        run: |
+          playwright install chromium --with-deps
+
       - name: Validate Django project
         run: |
           python manage.py check
