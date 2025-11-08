@@ -84,11 +84,13 @@ The Smart Attendance System has undergone a complete UI/UX overhaul to provide a
 
 ### 📊 Performance & Quality Metrics
 
-**Lighthouse Scores** (Target)
+**Lighthouse Scores** (Automatically Tested in CI)
 - 🎯 Accessibility: ≥ 95
 - 🎯 Best Practices: ≥ 95
 - 🎯 Performance: ≥ 80
 - 🎯 SEO: ≥ 90
+
+These scores are automatically audited on every push and pull request using Lighthouse CI. Audit results are available as workflow artifacts in the GitHub Actions tab.
 
 **Browser Compatibility**
 - ✅ Chrome (latest)

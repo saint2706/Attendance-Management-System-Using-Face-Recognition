@@ -4,6 +4,20 @@ This document tracks all major UI/UX changes, feature additions, and improvement
 
 ---
 
+## Version 2.1.0 - November 2024
+
+### 📊 Quality & Performance
+
+**Lighthouse CI Integration**
+- ✨ Added automated Lighthouse CI audits in GitHub Actions workflow
+- ✨ Configured to test accessibility, best practices, performance, and SEO
+- ✨ Enforces minimum scores: Accessibility ≥95, Best Practices ≥95, Performance ≥80, SEO ≥90
+- ✨ Tests multiple pages (home, login) with 3 runs per page
+- ✨ Results uploaded as workflow artifacts for review
+- ✨ Updated documentation with CI integration details
+
+---
+
 ## Version 2.0.0 - November 2024
 
 ### 🎨 Major UI/UX Overhaul
