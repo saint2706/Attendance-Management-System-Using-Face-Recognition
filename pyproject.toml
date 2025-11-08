@@ -81,5 +81,5 @@ ignore = ["E203", "W503", "E501"]
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "attendance_system_facial_recognition.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
-testpaths = ["recognition", "users"]
+testpaths = ["tests"]
 addopts = "--cov=. --cov-report=term-missing --cov-report=html"

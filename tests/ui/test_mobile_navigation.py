@@ -5,6 +5,8 @@ These tests verify that the mobile navigation menu works correctly
 on small screens and touch devices.
 """
 
+import re
+
 import pytest
 from playwright.sync_api import Page, expect
 
@@ -23,9 +25,9 @@ def mobile_page(browser):
 
 
 @pytest.mark.mobile
-def test_mobile_menu_toggle_button_visible(mobile_page: Page):
+def test_mobile_menu_toggle_button_visible(mobile_page: Page, server_url: str):
     """Test that mobile menu toggle button is visible on small screens."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     # Check that mobile menu toggle is visible
     toggle_button = mobile_page.locator("#mobile-menu-toggle")
@@ -33,103 +35,103 @@ def test_mobile_menu_toggle_button_visible(mobile_page: Page):
 
 
 @pytest.mark.mobile
-def test_mobile_menu_opens_on_click(mobile_page: Page):
+def test_mobile_menu_opens_on_click(mobile_page: Page, server_url: str):
     """Test that clicking the toggle button opens the mobile menu."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     # Get navigation menu
     nav_menu = mobile_page.locator("#navbar-nav")
 
     # Menu should not be open initially
-    expect(nav_menu).not_to_have_class("is-open")
+    expect(nav_menu).not_to_have_class(re.compile(r"is-open"))
 
     # Click toggle button
     mobile_page.click("#mobile-menu-toggle")
 
     # Menu should now be open
-    expect(nav_menu).to_have_class("is-open")
+    expect(nav_menu).to_have_class(re.compile(r"is-open"))
 
 
 @pytest.mark.mobile
-def test_mobile_menu_closes_on_second_click(mobile_page: Page):
+def test_mobile_menu_closes_on_second_click(mobile_page: Page, server_url: str):
     """Test that clicking the toggle button again closes the menu."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     nav_menu = mobile_page.locator("#navbar-nav")
 
     # Open menu
     mobile_page.click("#mobile-menu-toggle")
-    expect(nav_menu).to_have_class("is-open")
+    expect(nav_menu).to_have_class(re.compile(r"is-open"))
 
     # Close menu
     mobile_page.click("#mobile-menu-toggle")
-    expect(nav_menu).not_to_have_class("is-open")
+    expect(nav_menu).not_to_have_class(re.compile(r"is-open"))
 
 
 @pytest.mark.mobile
-def test_mobile_menu_closes_on_escape_key(mobile_page: Page):
+def test_mobile_menu_closes_on_escape_key(mobile_page: Page, server_url: str):
     """Test that pressing Escape closes the mobile menu."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     nav_menu = mobile_page.locator("#navbar-nav")
 
     # Open menu
     mobile_page.click("#mobile-menu-toggle")
-    expect(nav_menu).to_have_class("is-open")
+    expect(nav_menu).to_have_class(re.compile(r"is-open"))
 
     # Press Escape key
     mobile_page.keyboard.press("Escape")
 
     # Menu should be closed
-    expect(nav_menu).not_to_have_class("is-open")
+    expect(nav_menu).not_to_have_class(re.compile(r"is-open"))
 
 
 @pytest.mark.mobile
-def test_mobile_menu_closes_on_outside_click(mobile_page: Page):
+def test_mobile_menu_closes_on_outside_click(mobile_page: Page, server_url: str):
     """Test that clicking outside the menu closes it."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     nav_menu = mobile_page.locator("#navbar-nav")
 
     # Open menu
     mobile_page.click("#mobile-menu-toggle")
-    expect(nav_menu).to_have_class("is-open")
+    expect(nav_menu).to_have_class(re.compile(r"is-open"))
 
     # Click outside the menu (on main content)
     mobile_page.click("#main-content")
 
     # Menu should be closed
-    expect(nav_menu).not_to_have_class("is-open")
+    expect(nav_menu).not_to_have_class(re.compile(r"is-open"))
 
 
 @pytest.mark.mobile
-def test_mobile_menu_icon_changes(mobile_page: Page):
+def test_mobile_menu_icon_changes(mobile_page: Page, server_url: str):
     """Test that the toggle icon changes between bars and X."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     icon = mobile_page.locator("#mobile-menu-toggle i")
 
     # Initial icon should be bars (menu closed)
-    expect(icon).to_have_class("fa-bars")
+    expect(icon).to_have_class(re.compile(r"fa-bars"))
 
     # Click to open menu
     mobile_page.click("#mobile-menu-toggle")
 
     # Icon should change to X (menu open)
-    expect(icon).to_have_class("fa-times")
+    expect(icon).to_have_class(re.compile(r"fa-times"))
 
     # Click to close menu
     mobile_page.click("#mobile-menu-toggle")
 
     # Icon should change back to bars
-    expect(icon).to_have_class("fa-bars")
+    expect(icon).to_have_class(re.compile(r"fa-bars"))
 
 
 @pytest.mark.mobile
 @pytest.mark.accessibility
-def test_mobile_menu_aria_expanded_attribute(mobile_page: Page):
+def test_mobile_menu_aria_expanded_attribute(mobile_page: Page, server_url: str):
     """Test that aria-expanded attribute is updated correctly."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     toggle_button = mobile_page.locator("#mobile-menu-toggle")
 
@@ -150,9 +152,9 @@ def test_mobile_menu_aria_expanded_attribute(mobile_page: Page):
 
 
 @pytest.mark.mobile
-def test_mobile_menu_links_are_clickable(mobile_page: Page):
+def test_mobile_menu_links_are_clickable(mobile_page: Page, server_url: str):
     """Test that navigation links in mobile menu are clickable."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     # Open menu
     mobile_page.click("#mobile-menu-toggle")
@@ -166,7 +168,7 @@ def test_mobile_menu_links_are_clickable(mobile_page: Page):
     mobile_page.wait_for_load_state("networkidle")
 
     # Verify navigation occurred
-    expect(mobile_page).to_have_url(lambda url: "login" in url)
+    expect(mobile_page).to_have_url(re.compile(r"login"))
 
 
 # Configuration notes:
