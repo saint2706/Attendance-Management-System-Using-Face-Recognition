@@ -5,8 +5,9 @@ These tests verify that the dark mode toggle works correctly and persists
 the user's theme preference across page loads.
 """
 
-import pytest
 import re
+
+import pytest
 from playwright.sync_api import Page, expect
 
 

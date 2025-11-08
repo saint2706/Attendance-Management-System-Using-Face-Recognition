@@ -5,8 +5,9 @@ These tests verify that the mobile navigation menu works correctly
 on small screens and touch devices.
 """
 
-import pytest
 import re
+
+import pytest
 from playwright.sync_api import Page, expect
 
 
