@@ -23,9 +23,9 @@ def mobile_page(browser):
 
 
 @pytest.mark.mobile
-def test_mobile_menu_toggle_button_visible(mobile_page: Page):
+def test_mobile_menu_toggle_button_visible(mobile_page: Page, server_url: str):
     """Test that mobile menu toggle button is visible on small screens."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     # Check that mobile menu toggle is visible
     toggle_button = mobile_page.locator("#mobile-menu-toggle")
@@ -33,9 +33,9 @@ def test_mobile_menu_toggle_button_visible(mobile_page: Page):
 
 
 @pytest.mark.mobile
-def test_mobile_menu_opens_on_click(mobile_page: Page):
+def test_mobile_menu_opens_on_click(mobile_page: Page, server_url: str):
     """Test that clicking the toggle button opens the mobile menu."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     # Get navigation menu
     nav_menu = mobile_page.locator("#navbar-nav")
@@ -51,9 +51,9 @@ def test_mobile_menu_opens_on_click(mobile_page: Page):
 
 
 @pytest.mark.mobile
-def test_mobile_menu_closes_on_second_click(mobile_page: Page):
+def test_mobile_menu_closes_on_second_click(mobile_page: Page, server_url: str):
     """Test that clicking the toggle button again closes the menu."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     nav_menu = mobile_page.locator("#navbar-nav")
 
@@ -67,9 +67,9 @@ def test_mobile_menu_closes_on_second_click(mobile_page: Page):
 
 
 @pytest.mark.mobile
-def test_mobile_menu_closes_on_escape_key(mobile_page: Page):
+def test_mobile_menu_closes_on_escape_key(mobile_page: Page, server_url: str):
     """Test that pressing Escape closes the mobile menu."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     nav_menu = mobile_page.locator("#navbar-nav")
 
@@ -85,9 +85,9 @@ def test_mobile_menu_closes_on_escape_key(mobile_page: Page):
 
 
 @pytest.mark.mobile
-def test_mobile_menu_closes_on_outside_click(mobile_page: Page):
+def test_mobile_menu_closes_on_outside_click(mobile_page: Page, server_url: str):
     """Test that clicking outside the menu closes it."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     nav_menu = mobile_page.locator("#navbar-nav")
 
@@ -103,9 +103,9 @@ def test_mobile_menu_closes_on_outside_click(mobile_page: Page):
 
 
 @pytest.mark.mobile
-def test_mobile_menu_icon_changes(mobile_page: Page):
+def test_mobile_menu_icon_changes(mobile_page: Page, server_url: str):
     """Test that the toggle icon changes between bars and X."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     icon = mobile_page.locator("#mobile-menu-toggle i")
 
@@ -127,9 +127,9 @@ def test_mobile_menu_icon_changes(mobile_page: Page):
 
 @pytest.mark.mobile
 @pytest.mark.accessibility
-def test_mobile_menu_aria_expanded_attribute(mobile_page: Page):
+def test_mobile_menu_aria_expanded_attribute(mobile_page: Page, server_url: str):
     """Test that aria-expanded attribute is updated correctly."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     toggle_button = mobile_page.locator("#mobile-menu-toggle")
 
@@ -150,9 +150,9 @@ def test_mobile_menu_aria_expanded_attribute(mobile_page: Page):
 
 
 @pytest.mark.mobile
-def test_mobile_menu_links_are_clickable(mobile_page: Page):
+def test_mobile_menu_links_are_clickable(mobile_page: Page, server_url: str):
     """Test that navigation links in mobile menu are clickable."""
-    mobile_page.goto("http://localhost:8000/")
+    mobile_page.goto(server_url)
 
     # Open menu
     mobile_page.click("#mobile-menu-toggle")

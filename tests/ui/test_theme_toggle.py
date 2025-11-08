@@ -17,18 +17,18 @@ def page(browser):
     page.close()
 
 
-def test_theme_toggle_button_exists(page: Page):
+def test_theme_toggle_button_exists(page: Page, server_url: str):
     """Test that the theme toggle button is present on the page."""
-    page.goto("http://localhost:8000/")
+    page.goto(server_url)
 
     # Check that theme toggle button exists
     theme_toggle = page.locator("#theme-toggle")
     expect(theme_toggle).to_be_visible()
 
 
-def test_theme_toggle_switches_to_dark_mode(page: Page):
+def test_theme_toggle_switches_to_dark_mode(page: Page, server_url: str):
     """Test that clicking the toggle switches to dark mode."""
-    page.goto("http://localhost:8000/")
+    page.goto(server_url)
 
     # Get initial state (should be light mode)
     html = page.locator("html")
@@ -45,9 +45,9 @@ def test_theme_toggle_switches_to_dark_mode(page: Page):
     expect(icon).to_have_class("fa-sun")
 
 
-def test_theme_toggle_switches_back_to_light_mode(page: Page):
+def test_theme_toggle_switches_back_to_light_mode(page: Page, server_url: str):
     """Test that clicking the toggle again switches back to light mode."""
-    page.goto("http://localhost:8000/")
+    page.goto(server_url)
 
     # Switch to dark mode
     page.click("#theme-toggle")
@@ -63,9 +63,9 @@ def test_theme_toggle_switches_back_to_light_mode(page: Page):
     expect(icon).to_have_class("fa-moon")
 
 
-def test_theme_preference_persists_on_reload(page: Page):
+def test_theme_preference_persists_on_reload(page: Page, server_url: str):
     """Test that theme preference persists after page reload."""
-    page.goto("http://localhost:8000/")
+    page.goto(server_url)
 
     # Switch to dark mode
     page.click("#theme-toggle")
@@ -79,9 +79,9 @@ def test_theme_preference_persists_on_reload(page: Page):
     expect(html).to_have_class("theme-dark")
 
 
-def test_theme_preference_persists_across_navigation(page: Page):
+def test_theme_preference_persists_across_navigation(page: Page, server_url: str):
     """Test that theme preference persists when navigating between pages."""
-    page.goto("http://localhost:8000/")
+    page.goto(server_url)
 
     # Switch to dark mode
     page.click("#theme-toggle")
@@ -96,9 +96,9 @@ def test_theme_preference_persists_across_navigation(page: Page):
     expect(html).to_have_class("theme-dark")
 
 
-def test_theme_toggle_accessibility(page: Page):
+def test_theme_toggle_accessibility(page: Page, server_url: str):
     """Test that theme toggle is accessible via keyboard."""
-    page.goto("http://localhost:8000/")
+    page.goto(server_url)
 
     # Focus on theme toggle using keyboard
     page.keyboard.press("Tab")
@@ -118,9 +118,9 @@ def test_theme_toggle_accessibility(page: Page):
     expect(html).to_have_class("theme-dark")
 
 
-def test_theme_toggle_aria_labels(page: Page):
+def test_theme_toggle_aria_labels(page: Page, server_url: str):
     """Test that theme toggle has proper ARIA labels."""
-    page.goto("http://localhost:8000/")
+    page.goto(server_url)
 
     theme_toggle = page.locator("#theme-toggle")
 

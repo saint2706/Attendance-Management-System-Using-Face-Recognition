@@ -7,6 +7,9 @@ This file contains fixtures and configuration for Playwright tests.
 import pytest
 from playwright.sync_api import sync_playwright
 
+# Mark all tests in this module to use Django database
+pytestmark = pytest.mark.django_db
+
 
 @pytest.fixture(scope="session")
 def browser_context_args(browser_context_args):
@@ -21,13 +24,19 @@ def browser_context_args(browser_context_args):
     }
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def browser():
-    """Create a browser instance for the test session."""
+    """Create a browser instance for each test."""
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         yield browser
         browser.close()
+
+
+@pytest.fixture(scope="function")
+def server_url(live_server):
+    """Provide the base URL for the live Django server."""
+    return live_server.url
 
 
 # Add markers for different test categories
