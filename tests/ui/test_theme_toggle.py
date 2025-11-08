@@ -6,6 +6,7 @@ the user's theme preference across page loads.
 """
 
 import pytest
+import re
 from playwright.sync_api import Page, expect
 
 
@@ -42,7 +43,7 @@ def test_theme_toggle_switches_to_dark_mode(page: Page, server_url: str):
 
     # Check that icon changed to sun (light mode icon)
     icon = page.locator("#theme-toggle i")
-    expect(icon).to_have_class("fa-sun")
+    expect(icon).to_have_class(re.compile(r"fa-sun"))
 
 
 def test_theme_toggle_switches_back_to_light_mode(page: Page, server_url: str):
@@ -60,7 +61,7 @@ def test_theme_toggle_switches_back_to_light_mode(page: Page, server_url: str):
 
     # Check that icon changed back to moon (dark mode icon)
     icon = page.locator("#theme-toggle i")
-    expect(icon).to_have_class("fa-moon")
+    expect(icon).to_have_class(re.compile(r"fa-moon"))
 
 
 def test_theme_preference_persists_on_reload(page: Page, server_url: str):

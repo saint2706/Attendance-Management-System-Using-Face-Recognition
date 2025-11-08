@@ -6,6 +6,7 @@ on small screens and touch devices.
 """
 
 import pytest
+import re
 from playwright.sync_api import Page, expect
 
 
@@ -41,13 +42,13 @@ def test_mobile_menu_opens_on_click(mobile_page: Page, server_url: str):
     nav_menu = mobile_page.locator("#navbar-nav")
 
     # Menu should not be open initially
-    expect(nav_menu).not_to_have_class("is-open")
+    expect(nav_menu).not_to_have_class(re.compile(r"is-open"))
 
     # Click toggle button
     mobile_page.click("#mobile-menu-toggle")
 
     # Menu should now be open
-    expect(nav_menu).to_have_class("is-open")
+    expect(nav_menu).to_have_class(re.compile(r"is-open"))
 
 
 @pytest.mark.mobile
@@ -59,11 +60,11 @@ def test_mobile_menu_closes_on_second_click(mobile_page: Page, server_url: str):
 
     # Open menu
     mobile_page.click("#mobile-menu-toggle")
-    expect(nav_menu).to_have_class("is-open")
+    expect(nav_menu).to_have_class(re.compile(r"is-open"))
 
     # Close menu
     mobile_page.click("#mobile-menu-toggle")
-    expect(nav_menu).not_to_have_class("is-open")
+    expect(nav_menu).not_to_have_class(re.compile(r"is-open"))
 
 
 @pytest.mark.mobile
@@ -75,13 +76,13 @@ def test_mobile_menu_closes_on_escape_key(mobile_page: Page, server_url: str):
 
     # Open menu
     mobile_page.click("#mobile-menu-toggle")
-    expect(nav_menu).to_have_class("is-open")
+    expect(nav_menu).to_have_class(re.compile(r"is-open"))
 
     # Press Escape key
     mobile_page.keyboard.press("Escape")
 
     # Menu should be closed
-    expect(nav_menu).not_to_have_class("is-open")
+    expect(nav_menu).not_to_have_class(re.compile(r"is-open"))
 
 
 @pytest.mark.mobile
@@ -93,13 +94,13 @@ def test_mobile_menu_closes_on_outside_click(mobile_page: Page, server_url: str)
 
     # Open menu
     mobile_page.click("#mobile-menu-toggle")
-    expect(nav_menu).to_have_class("is-open")
+    expect(nav_menu).to_have_class(re.compile(r"is-open"))
 
     # Click outside the menu (on main content)
     mobile_page.click("#main-content")
 
     # Menu should be closed
-    expect(nav_menu).not_to_have_class("is-open")
+    expect(nav_menu).not_to_have_class(re.compile(r"is-open"))
 
 
 @pytest.mark.mobile
@@ -110,19 +111,19 @@ def test_mobile_menu_icon_changes(mobile_page: Page, server_url: str):
     icon = mobile_page.locator("#mobile-menu-toggle i")
 
     # Initial icon should be bars (menu closed)
-    expect(icon).to_have_class("fa-bars")
+    expect(icon).to_have_class(re.compile(r"fa-bars"))
 
     # Click to open menu
     mobile_page.click("#mobile-menu-toggle")
 
     # Icon should change to X (menu open)
-    expect(icon).to_have_class("fa-times")
+    expect(icon).to_have_class(re.compile(r"fa-times"))
 
     # Click to close menu
     mobile_page.click("#mobile-menu-toggle")
 
     # Icon should change back to bars
-    expect(icon).to_have_class("fa-bars")
+    expect(icon).to_have_class(re.compile(r"fa-bars"))
 
 
 @pytest.mark.mobile
@@ -166,7 +167,7 @@ def test_mobile_menu_links_are_clickable(mobile_page: Page, server_url: str):
     mobile_page.wait_for_load_state("networkidle")
 
     # Verify navigation occurred
-    expect(mobile_page).to_have_url(lambda url: "login" in url)
+    expect(mobile_page).to_have_url(re.compile(r"login"))
 
 
 # Configuration notes:
