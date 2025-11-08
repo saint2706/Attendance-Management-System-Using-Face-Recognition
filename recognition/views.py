@@ -823,9 +823,7 @@ def view_attendance_employee(request):
                 ).order_by("-date")
 
                 if present_qs.exists():
-                    qs, chart_url = hours_vs_date_given_employee(
-                        present_qs, time_qs, admin=True
-                    )
+                    qs, chart_url = hours_vs_date_given_employee(present_qs, time_qs, admin=True)
                 else:
                     messages.warning(request, "No records for the selected duration.")
             else:
@@ -870,9 +868,7 @@ def view_my_attendance_employee_login(request):
             ).order_by("-date")
 
             if present_qs.exists():
-                qs, chart_url = hours_vs_date_given_employee(
-                    present_qs, time_qs, admin=False
-                )
+                qs, chart_url = hours_vs_date_given_employee(present_qs, time_qs, admin=False)
             else:
                 messages.warning(request, "No records for the selected duration.")
 
@@ -884,9 +880,7 @@ def view_my_attendance_employee_login(request):
         "qs": qs,
         "hours_vs_date_chart_url": chart_url,
     }
-    return render(
-        request, "recognition/view_my_attendance_employee_login.html", context
-    )
+    return render(request, "recognition/view_my_attendance_employee_login.html", context)
 
 
 def _get_face_detection_backend() -> str:
