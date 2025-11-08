@@ -4,27 +4,49 @@
 {% block title %}Login - Smart Attendance System{% endblock %}
 
 {% block content %}
-<section class="auth-section">
+<section class="auth-section" style="padding: var(--space-12) 0;">
   <div class="row justify-content-center">
     <div class="col-12 col-md-8 col-lg-5 col-xl-4">
-      <div class="card auth-card">
-        <div class="card-body">
-          <h1 class="h4 auth-heading text-center mb-4">Log In</h1>
-          <form method="post" class="auth-form">
+      <article class="card" style="box-shadow: var(--shadow-xl);">
+        <div class="card-body" style="padding: var(--space-10) var(--space-8);">
+          <div class="text-center mb-6" style="margin-bottom: var(--space-8);">
+            <i class="fas fa-user-circle" style="font-size: 4rem; color: var(--color-primary); margin-bottom: var(--space-4);" aria-hidden="true"></i>
+            <h1 style="font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); margin-bottom: var(--space-2); color: var(--color-text);">
+              Welcome Back
+            </h1>
+            <p class="text-muted mb-0" style="font-size: var(--font-size-base);">
+              Sign in to access your dashboard
+            </p>
+          </div>
+          
+          <form method="post" class="auth-form" data-validate="true">
             {% csrf_token %}
             {{ form|crispy }}
-            <div class="d-grid mt-3">
-              <button class="btn btn-auth" type="submit">Login</button>
+            <div class="d-grid mt-4" style="margin-top: var(--space-6);">
+              <button class="btn btn-primary" type="submit" style="padding: var(--space-4) var(--space-6); font-size: var(--font-size-lg);">
+                <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Login
+              </button>
             </div>
           </form>
-          <div class="text-center mt-4">
-            <a class="auth-alt-link" href="{% url 'register' %}">
+          
+          <div class="text-center mt-6" style="margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+            <p class="text-muted mb-2" style="font-size: var(--font-size-sm); margin-bottom: var(--space-3);">
+              Don't have an account?
+            </p>
+            <a class="auth-alt-link" href="{% url 'register' %}" style="display: inline-flex; align-items: center; gap: var(--space-2); color: var(--color-primary); text-decoration: none; font-weight: var(--font-weight-semibold); font-size: var(--font-size-base);">
               <i class="fas fa-user-plus" aria-hidden="true"></i>
               <span>Create a new employee account</span>
             </a>
           </div>
+          
+          <div class="text-center mt-6" style="margin-top: var(--space-6);">
+            <a href="{% url 'home' %}" class="text-muted text-decoration-none" style="display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-sm);">
+              <i class="fas fa-arrow-left" aria-hidden="true"></i>
+              <span>Back to Home</span>
+            </a>
+          </div>
         </div>
-      </div>
+      </article>
     </div>
   </div>
 </section>

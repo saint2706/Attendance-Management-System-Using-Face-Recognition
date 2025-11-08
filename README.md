@@ -14,13 +14,237 @@ This project is a fully refactored and modernized smart attendance system that l
 - **Performance Optimized:** Utilizes the efficient "Facenet" model and "SSD" detector for a fast and responsive recognition experience.
 - **Continuous Integration:** Includes a GitHub Actions workflow to automatically run tests, ensuring code quality and stability.
 
+## 🎨 UI/UX Upgrades (Version 2.0)
+
+The Smart Attendance System has undergone a complete UI/UX overhaul to provide a modern, accessible, and delightful user experience. Here's what's new:
+
+### 🌟 Key Features
+
+**Modern Design System**
+- ✨ Comprehensive CSS design system with CSS custom properties
+- ✨ Consistent design tokens for colors, spacing, and typography
+- ✨ Professional card-based layouts throughout
+- ✨ Smooth animations and transitions
+- ✨ Modern hover effects and visual feedback
+
+**Dark Mode Support** 🌙
+- Toggle between light and dark themes with a single click
+- Preference automatically saved and persisted across sessions
+- Carefully designed dark theme with optimal contrast
+- Eye-friendly for low-light environments
+
+**Responsive & Mobile-First** 📱
+- Fully responsive design that works on all devices
+- Collapsible navigation menu on mobile
+- Touch-friendly interface for phones and tablets
+- Optimized layouts for different screen sizes
+
+**Accessibility First** ♿
+- Semantic HTML5 structure (nav, main, article, section)
+- ARIA labels and roles for screen readers
+- Keyboard navigation support throughout
+- Skip-to-content link for screen reader users
+- WCAG AA color contrast compliance
+- Focus indicators for keyboard users
+
+**Interactive Tables** 📊
+- Built-in search/filter functionality
+- Sortable columns (click column headers)
+- CSV export capability for data analysis
+- Responsive table design
+
+**Enhanced Forms** 📝
+- Modern form styling with validation
+- Clear error messages and hints
+- Accessible form labels
+- Mobile-optimized input fields
+
+### 📸 Screenshots
+
+#### Light Theme - Desktop
+![Home Page Light Theme](docs/images/home-light.png)
+*Modern card-based home page with feature highlights*
+
+![Admin Dashboard Light](docs/images/admin-dashboard-light.png)
+*Clean admin dashboard with quick statistics*
+
+#### Dark Theme - Desktop
+![Home Page Dark Theme](docs/images/home-dark.png)
+*Beautiful dark theme for reduced eye strain*
+
+![Admin Dashboard Dark](docs/images/admin-dashboard-dark.png)
+*Dark mode with perfect contrast and readability*
+
+#### Mobile Views
+![Mobile Navigation](docs/images/mobile-nav.png)
+*Collapsible mobile navigation menu*
+
+![Mobile Responsive](docs/images/mobile-responsive.png)
+*Fully responsive layouts on all screen sizes*
+
+### 📊 Performance & Quality Metrics
+
+**Lighthouse Scores** (Target)
+- 🎯 Accessibility: ≥ 95
+- 🎯 Best Practices: ≥ 95
+- 🎯 Performance: ≥ 80
+- 🎯 SEO: ≥ 90
+
+**Browser Compatibility**
+- ✅ Chrome (latest)
+- ✅ Firefox (latest)
+- ✅ Safari (latest)
+- ✅ Edge (latest)
+- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
+
+### 🎨 Design Tokens
+
+The design system uses CSS variables for easy customization:
+
+```css
+/* Colors */
+--color-primary: #0d6efd;        /* Blue */
+--color-success: #198754;        /* Green */
+--color-danger: #dc3545;         /* Red */
+
+/* Spacing */
+--space-4: 1rem;                 /* 16px */
+--space-8: 2rem;                 /* 32px */
+
+/* Typography */
+--font-size-base: 1rem;          /* 16px */
+--font-size-lg: 1.125rem;        /* 18px */
+```
+
+Want to customize? See the [Theme Customization Guide](docs/theme-customization.md)!
+
+### 📚 Comprehensive Documentation
+
+New documentation to help everyone use and customize the system:
+
+1. **[User Guide](docs/user-guide.md)** - For non-technical users
+   - Step-by-step instructions
+   - Troubleshooting tips
+   - FAQ section
+   - Best practices
+
+2. **[Developer Guide](docs/developer-guide.md)** - For developers
+   - Architecture overview
+   - Customization instructions
+   - Adding new features
+   - Best practices
+
+3. **[Theme Customization Guide](docs/theme-customization.md)** - For designers
+   - Design token reference
+   - Color customization
+   - Creating custom themes
+   - Multiple examples
+
+4. **[Change Log](docs/change-log.md)** - Version history
+   - What's new in Version 2.0
+   - Breaking changes (none!)
+   - Future roadmap
+
+### 🚀 Interactive Features
+
+**Dark Mode Toggle**
+```javascript
+// Automatically saves preference
+ThemeManager.toggle();
+```
+
+**Table Enhancements**
+```html
+<!-- Simply add data-enhance attribute -->
+<table class="table" data-enhance="true">
+  <!-- Automatically gets search, sort, and CSV export! -->
+</table>
+```
+
+**Mobile Menu**
+- Smooth slide-in animation
+- Touch-friendly tap targets
+- Keyboard accessible
+- Escape key to close
+
+### 🎯 How to Use
+
+**Switching Themes**
+1. Look for the moon/sun icon in the top-right corner
+2. Click to toggle between light and dark mode
+3. Your preference is automatically saved
+
+**Using Table Features**
+1. Search: Type in the search box above any table
+2. Sort: Click column headers to sort
+3. Export: Click "Export CSV" button to download data
+
+**Mobile Navigation**
+1. Tap the menu icon (☰) on mobile devices
+2. Navigate using the slide-out menu
+3. Tap outside or press Escape to close
+
+### 🔄 Migration from Version 1.x
+
+**Good News:** No breaking changes! 🎉
+
+- All existing functionality preserved
+- No database migrations needed
+- No code changes required
+- Templates work exactly as before
+- New features are additive only
+
+**What's Changed:**
+- New CSS file (`app.css`) added
+- New JavaScript file (`ui.js`) added
+- Old `styles.css` still loads for compatibility
+- Base template enhanced with new features
+
+**For Custom Themes:**
+If you've customized `styles.css`, your changes will still work! To use the new design system:
+1. Review the [Theme Customization Guide](docs/theme-customization.md)
+2. Port your customizations to CSS variables
+3. Enjoy automatic dark mode support!
+
+### 💡 Tips for Best Experience
+
+**For Users**
+- Try dark mode for comfortable viewing in low light
+- Use keyboard shortcuts (Tab, Enter, Escape) for faster navigation
+- Export tables to CSV for offline analysis
+- Check the User Guide for detailed instructions
+
+**For Administrators**
+- Review the Developer Guide for customization options
+- Explore theme customization for brand consistency
+- Test on different devices to ensure accessibility
+- Keep documentation handy for your team
+
+**For Developers**
+- Follow the design system for consistency
+- Use CSS variables for all styling
+- Maintain accessibility standards
+- Test on multiple browsers and devices
+- Check the Developer Guide for best practices
+
+### 🆘 Getting Help
+
+- **Users:** See the [User Guide](docs/user-guide.md)
+- **Developers:** See the [Developer Guide](docs/developer-guide.md)
+- **Designers:** See the [Theme Customization Guide](docs/theme-customization.md)
+- **Issues:** Open an issue on GitHub
+
+---
+
 ## Technical Stack
 
 - **Backend:** Django 5+
 - **Face Recognition:** DeepFace (wrapping Facenet)
-- **Frontend:** HTML5, CSS3, Bootstrap 5
+- **Frontend:** HTML5, CSS3, Bootstrap 5, Custom CSS Design System
+- **JavaScript:** Vanilla JS (no framework dependencies)
+- **Icons:** Font Awesome 6
 - **Database:** SQLite (default, configurable in Django)
-- **Testing:** Django's built-in test framework
+- **Testing:** Django's built-in test framework, Playwright (planned)
 
 ## Getting Started
 

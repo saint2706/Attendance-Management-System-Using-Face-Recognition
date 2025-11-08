@@ -1,29 +1,72 @@
 {% extends "recognition/base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Add Photos{% endblock %}
+{% block title %}Add Photos - Smart Attendance System{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h3 class="card-title text-center mb-4">Add Employee Photos</h3>
-                <p class="text-muted text-center">Enter the username of the employee to begin capturing photos for face recognition. The webcam will activate upon submission.</p>
-                <form method="POST">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+        <article class="card" style="box-shadow: var(--shadow-lg);">
+            <div class="card-body" style="padding: var(--space-8);">
+                <div class="text-center mb-6" style="margin-bottom: var(--space-8);">
+                    <i class="fas fa-camera" style="font-size: 4rem; color: var(--color-primary); margin-bottom: var(--space-4);" aria-hidden="true"></i>
+                    <h1 style="font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); margin-bottom: var(--space-3); color: var(--color-text);">
+                        Add Employee Photos
+                    </h1>
+                    <p class="text-muted" style="font-size: var(--font-size-base); max-width: 600px; margin: 0 auto;">
+                        Enter the username of the employee to begin capturing photos for face recognition. 
+                        The webcam will activate upon submission and capture multiple photos for training.
+                    </p>
+                </div>
+                
+                <form method="POST" data-validate="true">
                     {% csrf_token %}
-                    <fieldset class="form-group">
+                    <fieldset>
                         {{ form|crispy }}
                     </fieldset>
-                    <div class="d-grid gap-2 mt-4">
-                        <button class="btn btn-primary" type="submit">
-                            <i class="fas fa-camera me-2"></i>Start Camera
+                    <div class="d-grid gap-3 mt-6" style="margin-top: var(--space-8); gap: var(--space-3) !important;">
+                        <button class="btn btn-primary" type="submit" style="padding: var(--space-4) var(--space-6); font-size: var(--font-size-lg);">
+                            <i class="fas fa-camera" aria-hidden="true"></i> Start Camera
                         </button>
-                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary" style="padding: var(--space-4) var(--space-6);">
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Dashboard
                         </a>
                     </div>
                 </form>
+            </div>
+        </article>
+        
+        <!-- Instructions Card -->
+        <div class="card mt-4" style="margin-top: var(--space-6); border-left: 4px solid var(--color-info);">
+            <div class="card-body" style="padding: var(--space-6);">
+                <h2 class="d-flex align-items-center gap-2 mb-4" style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); color: var(--color-text); margin-bottom: var(--space-4);">
+                    <i class="fas fa-lightbulb" style="color: var(--color-info);" aria-hidden="true"></i>
+                    <span>Photo Capture Tips</span>
+                </h2>
+                <ul class="text-muted mb-0" style="font-size: var(--font-size-sm); line-height: var(--line-height-relaxed); padding-left: var(--space-5);">
+                    <li style="margin-bottom: var(--space-2);">Ensure good lighting conditions for better recognition accuracy</li>
+                    <li style="margin-bottom: var(--space-2);">Position the face clearly in front of the camera</li>
+                    <li style="margin-bottom: var(--space-2);">Remove any obstructions like sunglasses or hats</li>
+                    <li style="margin-bottom: var(--space-2);">Multiple photos will be captured automatically from different angles</li>
+                    <li>The system will train automatically once photos are added</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Security Note -->
+        <div class="card mt-4" style="margin-top: var(--space-6); background-color: var(--color-gray-50); border: 1px solid var(--color-border);">
+            <div class="card-body" style="padding: var(--space-5);">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="fas fa-shield-halved" style="font-size: 1.5rem; color: var(--color-success);" aria-hidden="true"></i>
+                    <div>
+                        <h3 style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-2); color: var(--color-text);">
+                            Privacy & Security
+                        </h3>
+                        <p class="text-muted mb-0" style="font-size: var(--font-size-sm);">
+                            All facial data is encrypted and stored securely. Photos are used solely for attendance recognition purposes and are protected according to data privacy regulations.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
