@@ -529,17 +529,32 @@ pytest tests/ui/           # Headless
 
 #### Lighthouse Audits
 
-Run Lighthouse for accessibility and performance:
+**Automated CI Audits**
+
+Lighthouse CI runs automatically on every push and pull request via GitHub Actions. The audit results are uploaded as workflow artifacts and can be viewed in the Actions tab.
+
+**Running Locally**
+
+To run Lighthouse audits locally:
 
 ```bash
 # Install Lighthouse CLI
 npm install -g @lhci/cli
 
-# Run audit
-lhci autorun --collect.url=http://localhost:8000
+# Run audit with configuration
+lhci autorun
+
+# Or manually specify URLs
+lhci collect --url=http://localhost:8000
 ```
 
-Target scores:
+The repository includes a `.lighthouserc.js` configuration file that:
+- Automatically starts the Django server
+- Tests multiple pages (home, login)
+- Runs 3 audits and takes the median score
+- Enforces target score thresholds
+
+Target scores (enforced in CI):
 - Accessibility: ≥ 95
 - Best Practices: ≥ 95
 - Performance: ≥ 80

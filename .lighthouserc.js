@@ -4,7 +4,7 @@ module.exports = {
       // Start the Django server for testing
       startServerCommand: 'python manage.py runserver 8000',
       startServerReadyPattern: 'Starting development server',
-      startServerReadyTimeout: 30000,
+      startServerReadyTimeout: 60000,
       // URLs to audit
       url: [
         'http://localhost:8000/',
@@ -14,6 +14,8 @@ module.exports = {
       settings: {
         // Ensure we're testing in a realistic scenario
         preset: 'desktop',
+        // Use headless Chrome for CI environments
+        chromeFlags: '--no-sandbox --disable-gpu --headless',
         throttling: {
           rttMs: 40,
           throughputKbps: 10240,
