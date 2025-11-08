@@ -2,6 +2,7 @@ module.exports = {
   ci: {
     collect: {
       // Start the Django server for testing
+      // Note: This command inherits environment variables from the shell/CI
       startServerCommand: 'python manage.py runserver 8000',
       startServerReadyPattern: 'Starting development server',
       startServerReadyTimeout: 60000,
@@ -15,7 +16,7 @@ module.exports = {
         // Ensure we're testing in a realistic scenario
         preset: 'desktop',
         // Use headless Chrome for CI environments
-        chromeFlags: '--no-sandbox --disable-gpu --headless',
+        chromeFlags: '--no-sandbox --disable-gpu --headless --disable-dev-shm-usage',
         throttling: {
           rttMs: 40,
           throughputKbps: 10240,
