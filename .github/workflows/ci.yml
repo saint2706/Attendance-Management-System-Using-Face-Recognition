@@ -84,19 +84,6 @@ jobs:
         run: |
           pytest
 
-      - name: Generate coverage report
-        if: matrix.python-version == '3.12'
-        run: |
-          coverage xml
-
-      - name: Upload coverage HTML report
-        if: matrix.python-version == '3.12'
-        uses: actions/upload-artifact@v4
-        with:
-          name: htmlcov
-          path: htmlcov
-          retention-days: 7
-
       - name: Smoke test - prepare splits
         if: matrix.python-version == '3.12'
         run: |
