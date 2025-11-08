@@ -23,10 +23,10 @@ urlpatterns = [
     path(
         "admin/evaluation/",
         recog_admin_views.evaluation_dashboard,
-        name="admin:evaluation_dashboard",
+        name="admin_evaluation_dashboard",
     ),
-    path("admin/ablation/", recog_admin_views.ablation_results, name="admin:ablation_results"),
-    path("admin/failures/", recog_admin_views.failure_analysis, name="admin:failure_analysis"),
+    path("admin/ablation/", recog_admin_views.ablation_results, name="admin_ablation_results"),
+    path("admin/failures/", recog_admin_views.failure_analysis, name="admin_failure_analysis"),
     # Core pages
     path("", recog_views.home, name="home"),
     path("dashboard/", recog_views.dashboard, name="dashboard"),
