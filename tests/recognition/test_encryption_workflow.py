@@ -111,10 +111,10 @@ class EncryptionWorkflowTests(TestCase):
     @patch.object(views, "train_test_split")
     @patch.object(views, "SVC")
     @patch.object(views, "DeepFace")
-    @patch.object(views, "_load_encrypted_image")
+    @patch.object(views, "_get_or_compute_cached_embedding")
     def test_training_and_mark_attendance_use_encrypted_artifacts(
         self,
-        mock_load_image,
+        mock_get_embedding,
         mock_deepface,
         mock_svc,
         mock_train_test_split,
@@ -127,7 +127,10 @@ class EncryptionWorkflowTests(TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(encrypt_bytes(b"placeholder"))
 
-        mock_load_image.return_value = np.zeros((10, 10, 3), dtype=np.uint8)
+        mock_get_embedding.side_effect = [
+            np.array([0.1, 0.2], dtype=float),
+            np.array([0.9, 0.8], dtype=float),
+        ]
         mock_deepface.represent.side_effect = [
             [{"embedding": [0.1, 0.2]}],
             [{"embedding": [0.9, 0.8]}],
@@ -170,6 +173,7 @@ class EncryptionWorkflowTests(TestCase):
         class_names = np.load(io.BytesIO(decrypted_classes), allow_pickle=True)
         self.assertListEqual(class_names.tolist(), ["alice", "bob"])
 
+        mock_get_embedding.reset_mock()
         mock_deepface.represent.reset_mock()
         mock_deepface.represent.side_effect = lambda *args, **kwargs: np.array([[0.1, 0.2]])
 
@@ -189,6 +193,7 @@ class EncryptionWorkflowTests(TestCase):
         captured_models: list[DummyModel] = []
 
         with (
+            patch.object(views, "_load_dataset_embeddings_for_matching") as mock_loader,
             patch.object(views, "get_webcam_manager", return_value=manager),
             patch.object(views, "cv2") as mock_cv2,
             patch.object(views, "_is_headless_environment", return_value=True),
@@ -196,6 +201,13 @@ class EncryptionWorkflowTests(TestCase):
             patch.object(views, "update_attendance_in_db_in") as mock_update_db,
             patch.object(views, "_predict_identity_from_embedding") as mock_predict,
         ):
+            mock_loader.return_value = [
+                {
+                    "identity": str(alice_path),
+                    "embedding": np.array([0.1, 0.2], dtype=float),
+                    "username": "alice",
+                }
+            ]
             mock_time.sleep.return_value = None
             mock_cv2.waitKey.return_value = ord("q")
 
@@ -212,3 +224,5 @@ class EncryptionWorkflowTests(TestCase):
         mock_update_db.assert_called_once()
         attendance_payload = mock_update_db.call_args.args[0]
         self.assertTrue(attendance_payload.get("alice"))
+        self.assertEqual(mock_loader.call_count, 2)
+        mock_deepface.represent.assert_called()
