@@ -9,6 +9,7 @@ marking attendance, and displaying attendance data.
 from __future__ import annotations
 
 import datetime
+import io
 import logging
 import math
 import os
@@ -46,6 +47,7 @@ from sklearn.metrics import accuracy_score, classification_report, precision_rec
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 
+from src.common import InvalidToken, decrypt_bytes, encrypt_bytes
 from users.models import Present, Time
 
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
@@ -157,6 +159,144 @@ def _save_plot_to_media(path: Path) -> str:
     return _media_url_for(path)
 
 
+def _load_encrypted_image(image_path: Path) -> Optional[np.ndarray]:
+    """Decrypt and load an encrypted image stored on disk."""
+
+    try:
+        encrypted_bytes = image_path.read_bytes()
+    except FileNotFoundError:
+        logger.warning("Image path %s is missing while building dataset index.", image_path)
+        return None
+    except OSError as exc:
+        logger.error("Failed to read encrypted image %s: %s", image_path, exc)
+        return None
+
+    try:
+        decrypted_bytes = decrypt_bytes(encrypted_bytes)
+    except InvalidToken:
+        logger.error("Invalid encryption token encountered for %s", image_path)
+        return None
+    except Exception as exc:  # pragma: no cover - defensive programming
+        logger.error("Unexpected error decrypting %s: %s", image_path, exc)
+        return None
+
+    frame_array = np.frombuffer(decrypted_bytes, dtype=np.uint8)
+    if frame_array.size == 0:
+        logger.warning("Decrypted image %s is empty.", image_path)
+        return None
+
+    imread_flag = getattr(cv2, "IMREAD_COLOR", 1)
+    image = cv2.imdecode(frame_array, imread_flag)
+    if image is None:
+        logger.warning("Failed to decode decrypted image %s", image_path)
+        return None
+    return image
+
+
+def _extract_first_embedding(representations) -> Tuple[Optional[Sequence[float]], Optional[Dict[str, int]]]:
+    """Normalize DeepFace representations to a single embedding and facial area."""
+
+    embedding_vector: Optional[Sequence[float]] = None
+    facial_area: Optional[Dict[str, int]] = None
+
+    if isinstance(representations, np.ndarray):
+        if representations.ndim == 2 and len(representations) > 0:
+            embedding_vector = representations[0]
+    elif isinstance(representations, list) and representations:
+        first = representations[0]
+        if isinstance(first, dict):
+            embedding_vector = first.get("embedding")
+            area = first.get("facial_area")
+            facial_area = area if isinstance(area, dict) else None
+        elif isinstance(first, (list, tuple, np.ndarray)):
+            embedding_vector = first
+    elif isinstance(representations, dict) and "embedding" in representations:
+        embedding_vector = representations.get("embedding")
+        area = representations.get("facial_area")
+        facial_area = area if isinstance(area, dict) else None
+
+    if embedding_vector is None:
+        return None, facial_area
+
+    try:
+        normalized = [float(value) for value in embedding_vector]
+    except (TypeError, ValueError):
+        logger.debug("Unable to coerce embedding values to floats: %r", embedding_vector)
+        return None, facial_area
+
+    return normalized, facial_area
+
+
+def _load_dataset_embeddings_for_matching(model_name: str, detector_backend: str):
+    """Build embeddings for the encrypted training dataset."""
+
+    dataset_index = []
+    image_paths = sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
+
+    for image_path in image_paths:
+        image = _load_encrypted_image(image_path)
+        if image is None:
+            continue
+
+        try:
+            representations = DeepFace.represent(
+                img_path=image,
+                model_name=model_name,
+                detector_backend=detector_backend,
+                enforce_detection=False,
+            )
+        except Exception as exc:
+            logger.debug("Failed to generate embedding for %s: %s", image_path, exc)
+            continue
+
+        embedding_vector, _ = _extract_first_embedding(representations)
+        if embedding_vector is None:
+            logger.debug("No embedding produced for %s", image_path)
+            continue
+
+        dataset_index.append(
+            {
+                "identity": str(image_path),
+                "embedding": np.array(embedding_vector, dtype=float),
+                "username": image_path.parent.name,
+            }
+        )
+
+    return dataset_index
+
+
+def _find_closest_dataset_match(
+    embedding_vector: np.ndarray, dataset_index
+) -> Optional[Tuple[str, float, str]]:
+    """Return the nearest neighbour match for the provided embedding."""
+
+    if embedding_vector.size == 0 or not dataset_index:
+        return None
+
+    best_entry = None
+    best_distance: Optional[float] = None
+
+    for entry in dataset_index:
+        candidate = entry.get("embedding")
+        if candidate is None:
+            continue
+
+        try:
+            distance = float(np.linalg.norm(candidate - embedding_vector))
+        except Exception as exc:  # pragma: no cover - defensive programming
+            logger.debug("Failed to compute distance for %s: %s", entry.get("identity"), exc)
+            continue
+
+        if best_distance is None or distance < best_distance:
+            best_distance = distance
+            best_entry = entry
+
+    if best_entry is None or best_distance is None:
+        return None
+
+    return best_entry["username"], best_distance, best_entry["identity"]
+
+
 def username_present(username: str) -> bool:
     """
     Return whether the given username exists in the system.
@@ -201,7 +341,25 @@ def create_dataset(username: str) -> None:
 
             sample_number += 1
             output_path = dataset_directory / f"{sample_number}.jpg"
-            cv2.imwrite(str(output_path), frame)
+            success, buffer = cv2.imencode(".jpg", frame)
+            if not success:
+                logger.warning("Failed to encode captured frame %s for %s", sample_number, username)
+                continue
+
+            try:
+                encrypted_frame = encrypt_bytes(buffer.tobytes())
+            except Exception as exc:  # pragma: no cover - defensive programming
+                logger.error("Failed to encrypt frame %s for %s: %s", sample_number, username, exc)
+                continue
+
+            try:
+                with output_path.open("wb") as image_file:
+                    image_file.write(encrypted_frame)
+            except OSError as exc:
+                logger.error(
+                    "Failed to persist encrypted frame %s for %s: %s", sample_number, username, exc
+                )
+                continue
 
             if not headless:
                 # Display the frame to the user and allow them to quit manually
@@ -879,7 +1037,6 @@ def _mark_attendance(request, check_in: bool):
     """
     vs = VideoStream(src=0).start()
     present = {}
-    db_path = str(TRAINING_DATASET_ROOT)
     headless = _is_headless_environment()
     max_frames = int(getattr(settings, "RECOGNITION_HEADLESS_ATTENDANCE_FRAMES", 30))
     frame_pause = float(getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01))
@@ -898,6 +1055,14 @@ def _mark_attendance(request, check_in: bool):
         else "Mark Attendance- Out - Press q to exit"
     )
 
+    dataset_index = _load_dataset_embeddings_for_matching(model_name, detector_backend)
+    if not dataset_index:
+        messages.error(
+            request,
+            "No encrypted training data available for matching. Please recreate the dataset.",
+        )
+        return redirect("home")
+
     spoof_detected = False
 
     try:
@@ -910,58 +1075,57 @@ def _mark_attendance(request, check_in: bool):
 
             try:
                 # Use DeepFace to find matching faces in the database
-                dfs = DeepFace.find(
+                representations = DeepFace.represent(
                     img_path=frame,
-                    db_path=db_path,
                     model_name=model_name,
                     detector_backend=detector_backend,
                     enforce_detection=False,
-                    silent=True,
                 )
 
-                # Ensure dfs is non-empty and the first element is a pandas DataFrame
-                # before accessing the DataFrame `.empty` attribute. This avoids
-                # type errors when DeepFace returns non-DataFrame values.
-                if dfs and len(dfs) > 0 and isinstance(dfs[0], pd.DataFrame) and not dfs[0].empty:
-                    df = dfs[0]
-                    # Sort by distance to get the best match
-                    if "distance" in df.columns:
-                        df = df.sort_values(by="distance")
+                embedding_vector, facial_area = _extract_first_embedding(representations)
+                if embedding_vector is None:
+                    continue
 
-                    match = df.iloc[0]
-                    distance = match.get("distance", 0.0)
-                    try:
-                        distance_value = float(distance)
-                    except (TypeError, ValueError):
-                        distance_value = 0.0
+                frame_embedding = np.array(embedding_vector, dtype=float)
+                match = _find_closest_dataset_match(frame_embedding, dataset_index)
+                if match is None:
+                    continue
 
-                    username, spoofed, normalized_region = _evaluate_recognition_match(
-                        frame, match, distance_threshold
+                username, distance_value, identity_path = match
+                normalized_region = _normalize_face_region(facial_area)
+                spoofed = not _passes_liveness_check(frame, normalized_region)
+
+                if distance_value > distance_threshold:
+                    logger.info(
+                        "Ignoring potential match for '%s' due to high distance %.4f",
+                        Path(identity_path).parent.name,
+                        distance_value,
+                    )
+                    continue
+
+                if spoofed:
+                    spoof_detected = True
+                    logger.warning(
+                        "Spoofing attempt blocked while marking attendance for '%s'",
+                        username or Path(identity_path).parent.name,
                     )
 
-                    if spoofed:
-                        spoof_detected = True
-                        logger.warning(
-                            "Spoofing attempt blocked while marking attendance for '%s'",
-                            username or Path(match.get("identity", "unknown")).parent.name,
+                    if normalized_region:
+                        x = int(normalized_region["x"])
+                        y = int(normalized_region["y"])
+                        w = int(normalized_region["w"])
+                        h = int(normalized_region["h"])
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                        cv2.putText(
+                            frame,
+                            "Spoof detected",
+                            (x, max(y - 10, 0)),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            0.7,
+                            (0, 0, 255),
+                            2,
                         )
-
-                        if normalized_region:
-                            x = int(normalized_region["x"])
-                            y = int(normalized_region["y"])
-                            w = int(normalized_region["w"])
-                            h = int(normalized_region["h"])
-                            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-                            cv2.putText(
-                                frame,
-                                "Spoof detected",
-                                (x, max(y - 10, 0)),
-                                cv2.FONT_HERSHEY_SIMPLEX,
-                                0.7,
-                                (0, 0, 255),
-                                2,
-                            )
-                        continue
+                    continue
 
                     if username:
                         present[username] = True
@@ -984,12 +1148,6 @@ def _mark_attendance(request, check_in: bool):
                                 (0, 255, 0),
                                 2,
                             )
-                    else:
-                        logger.info(
-                            "Ignoring potential match for '%s' due to high distance %.4f",
-                            Path(match.get("identity", "unknown")).parent.name,
-                            distance_value,
-                        )
 
             except Exception as e:
                 logger.error("Error during face recognition loop: %s", e)
@@ -1275,15 +1433,49 @@ def train_view(request):
     logger.info("Training of the model has been initiated by %s.", request.user)
 
     # --- 1. Data Preparation ---
-    image_paths = list(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
-    # convert Path objects to strings for DeepFace.represent
-    image_paths_str = [str(p) for p in image_paths]
+    image_paths = sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
     if not image_paths:
         messages.error(request, "No training data found. Please add photos for users.")
         return render(request, "recognition/train.html", {"trained": False})
 
-    class_names = [p.parent.name for p in image_paths]
-    unique_classes = sorted(list(set(class_names)))
+    embedding_vectors: list[list[float]] = []
+    class_names: list[str] = []
+
+    model_name = _get_face_recognition_model()
+    detector_backend = _get_face_detection_backend()
+
+    for image_path in image_paths:
+        image = _load_encrypted_image(image_path)
+        if image is None:
+            continue
+
+        try:
+            representations = DeepFace.represent(
+                img_path=image,
+                model_name=model_name,
+                detector_backend=detector_backend,
+                enforce_detection=False,
+            )
+        except Exception as exc:
+            logger.error("Failed to extract embedding for %s: %s", image_path, exc)
+            continue
+
+        embedding_vector, _ = _extract_first_embedding(representations)
+        if embedding_vector is None:
+            logger.debug("Skipping image %s because no embedding was produced.", image_path)
+            continue
+
+        embedding_vectors.append(list(embedding_vector))
+        class_names.append(image_path.parent.name)
+
+    if not embedding_vectors:
+        messages.error(
+            request,
+            "No usable training data found after decrypting images. Please recreate the dataset.",
+        )
+        return render(request, "recognition/train.html", {"trained": False})
+
+    unique_classes = sorted(set(class_names))
 
     if len(unique_classes) < 2:
         messages.error(
@@ -1293,47 +1485,7 @@ def train_view(request):
         )
         return render(request, "recognition/train.html", {"trained": False})
 
-    # --- 2. Feature Extraction ---
-    try:
-        logger.info("Extracting embeddings from %d images...", len(image_paths))
-        embeddings = DeepFace.represent(
-            img_path=image_paths_str,
-            model_name=_get_face_recognition_model(),
-            detector_backend=_get_face_detection_backend(),
-            enforce_detection=False,
-        )
-        # Normalize embeddings into a list of vectors regardless of DeepFace return type.
-        # DeepFace.represent may return a numpy.ndarray (n x emb_dim) or a list of dicts
-        # where each dict contains 'embedding' and possibly 'facial_area'.
-        embedding_vectors = []
-        if isinstance(embeddings, np.ndarray) and embeddings.ndim == 2:
-            # ndarray of shape (n_samples, emb_dim)
-            embedding_vectors = [list(vec) for vec in embeddings]
-        elif isinstance(embeddings, list):
-            for item in embeddings:
-                if isinstance(item, dict) and "embedding" in item:
-                    embedding_vectors.append(item["embedding"])
-                elif isinstance(item, (list, tuple, np.ndarray)):
-                    embedding_vectors.append(list(item))
-                else:
-                    # Try to coerce unknown iterable-like items
-                    try:
-                        embedding_vectors.append(list(item))
-                    except Exception:
-                        logger.debug(
-                            "Skipping unrecognized embedding item during training: %r", item
-                        )
-        else:
-            logger.error("Unexpected embeddings type from DeepFace.represent: %s", type(embeddings))
-            raise TypeError("Unexpected embeddings format from DeepFace.represent")
-        logger.info("Successfully extracted embeddings.")
-    except Exception as e:
-        logger.error("Failed to extract embeddings during training: %s", e)
-        messages.error(
-            request,
-            "An error occurred during face embedding extraction. " "Check logs for details.",
-        )
-        return render(request, "recognition/train.html", {"trained": False})
+    logger.info("Successfully extracted embeddings from %d encrypted images.", len(embedding_vectors))
 
     # --- 3. Data Splitting ---
     test_split_ratio = _get_recognition_training_test_split_ratio()
@@ -1366,14 +1518,18 @@ def train_view(request):
 
     # --- 6. Save Artifacts ---
     try:
+        DATA_ROOT.mkdir(parents=True, exist_ok=True)
+
         # Save the trained model
         model_path = DATA_ROOT / "svc.sav"
-        with model_path.open("wb") as f:
-            pickle.dump(model, f)
+        model_bytes = pickle.dumps(model)
+        model_path.write_bytes(encrypt_bytes(model_bytes))
 
         # Save the class names
         classes_path = DATA_ROOT / "classes.npy"
-        np.save(classes_path, unique_classes)
+        buffer = io.BytesIO()
+        np.save(buffer, unique_classes)
+        classes_path.write_bytes(encrypt_bytes(buffer.getvalue()))
 
         # Save the evaluation report
         report_path = DATA_ROOT / "classification_report.txt"
@@ -1433,9 +1589,11 @@ def mark_attendance_view(request, attendance_type):
     try:
         model_path = DATA_ROOT / "svc.sav"
         classes_path = DATA_ROOT / "classes.npy"
-        with model_path.open("rb") as f:
-            model = pickle.load(f)  # noqa: F841
-        class_names = np.load(classes_path)
+        encrypted_model = model_path.read_bytes()
+        model = pickle.loads(decrypt_bytes(encrypted_model))  # noqa: F841
+
+        encrypted_classes = classes_path.read_bytes()
+        class_names = np.load(io.BytesIO(decrypt_bytes(encrypted_classes)), allow_pickle=True)
     except FileNotFoundError:
         messages.error(
             request, "Model not found. Please train the model before marking attendance."
