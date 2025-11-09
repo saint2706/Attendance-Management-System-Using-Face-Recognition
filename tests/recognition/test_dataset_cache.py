@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 import os
+import pickle
 import shutil
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import django
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 import numpy as np
+from cryptography.fernet import Fernet
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 
@@ -19,8 +21,12 @@ sys.modules.setdefault("cv2", _fake_cv2)
 django.setup()
 
 from recognition import views  # noqa: E402
+from src.common.face_data_encryption import FaceDataEncryption  # noqa: E402
+
+TEST_FACE_KEY = Fernet.generate_key()
 
 
+@override_settings(FACE_DATA_ENCRYPTION_KEY=TEST_FACE_KEY)
 class DatasetEmbeddingCacheTests(TestCase):
     def setUp(self):
         self.dataset_root = views.TRAINING_DATASET_ROOT
@@ -86,3 +92,45 @@ class DatasetEmbeddingCacheTests(TestCase):
         self.assertIs(first, updated_index)
         self.assertIs(second, refreshed_index)
         self.assertEqual(mock_builder.call_count, 2)
+
+    def test_cache_files_encrypted_and_round_trip(self):
+        image_path = self._seed_dataset()
+
+        dataset_index = [
+            {"identity": str(image_path), "embedding": np.array([0.3, 0.4], dtype=float)}
+        ]
+
+        with patch.object(
+            views,
+            "_build_dataset_embeddings_for_matching",
+            autospec=True,
+            return_value=dataset_index,
+        ):
+            views._load_dataset_embeddings_for_matching("Facenet", "ssd", True)
+
+        cache_file = views._dataset_embedding_cache._cache_file_path("Facenet", "ssd", True)
+        self.assertTrue(cache_file.exists())
+
+        encrypted_payload = cache_file.read_bytes()
+        helper = FaceDataEncryption(TEST_FACE_KEY)
+        decrypted_payload = helper.decrypt(encrypted_payload)
+        self.assertNotEqual(encrypted_payload, decrypted_payload)
+
+        payload = pickle.loads(decrypted_payload)
+        stored_index = payload["dataset_index"]
+        self.assertIsInstance(stored_index, list)
+        self.assertIsInstance(stored_index[0]["embedding"], list)
+
+        views._dataset_embedding_cache._memory_cache.clear()
+
+        with patch.object(
+            views,
+            "_build_dataset_embeddings_for_matching",
+            side_effect=AssertionError("should not rebuild"),
+        ):
+            round_tripped = views._load_dataset_embeddings_for_matching("Facenet", "ssd", True)
+
+        self.assertEqual(len(round_tripped), 1)
+        restored_embedding = round_tripped[0]["embedding"]
+        self.assertIsInstance(restored_embedding, np.ndarray)
+        np.testing.assert_allclose(restored_embedding, dataset_index[0]["embedding"])

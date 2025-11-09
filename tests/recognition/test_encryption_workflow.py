@@ -26,9 +26,10 @@ _fake_cv2 = MagicMock(name="cv2")
 sys.modules.setdefault("cv2", _fake_cv2)
 
 from recognition import views  # noqa: E402
-from src.common import decrypt_bytes, encrypt_bytes  # noqa: E402
+from src.common import FaceDataEncryption, decrypt_bytes, encrypt_bytes  # noqa: E402
 
 TEST_FERNET_KEY = Fernet.generate_key()
+TEST_FACE_FERNET_KEY = Fernet.generate_key()
 
 
 class DummyModel:
@@ -62,8 +63,20 @@ class EncryptionWorkflowTests(TestCase):
         shutil.rmtree(self.dataset_root, ignore_errors=True)
         shutil.rmtree(self.data_root, ignore_errors=True)
 
+    @override_settings(FACE_DATA_ENCRYPTION_KEY=TEST_FACE_FERNET_KEY)
+    def test_face_data_encryption_helper_round_trip(self):
+        helper = FaceDataEncryption()
+        encoding = np.array([0.1, 0.2, 0.3], dtype=np.float64)
+
+        encrypted = helper.encrypt_encoding(encoding)
+        decrypted = helper.decrypt_encoding(encrypted)
+
+        self.assertIsInstance(decrypted, np.ndarray)
+        np.testing.assert_allclose(decrypted, encoding)
+
     @override_settings(
         DATA_ENCRYPTION_KEY=TEST_FERNET_KEY,
+        FACE_DATA_ENCRYPTION_KEY=TEST_FACE_FERNET_KEY,
         RECOGNITION_HEADLESS=True,
         RECOGNITION_HEADLESS_DATASET_FRAMES=1,
     )
@@ -105,6 +118,7 @@ class EncryptionWorkflowTests(TestCase):
 
     @override_settings(
         DATA_ENCRYPTION_KEY=TEST_FERNET_KEY,
+        FACE_DATA_ENCRYPTION_KEY=TEST_FACE_FERNET_KEY,
         RECOGNITION_HEADLESS=True,
         RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=1,
     )

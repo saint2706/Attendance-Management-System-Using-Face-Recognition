@@ -51,6 +51,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 
 from src.common import InvalidToken, decrypt_bytes, encrypt_bytes
+from src.common.face_data_encryption import FaceDataEncryption
 from users.models import Present, Time
 
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
@@ -133,7 +134,13 @@ LAST_WEEK_PATH = ATTENDANCE_GRAPHS_ROOT / "last_week" / "1.png"
 class DatasetEmbeddingCache:
     """Cache DeepFace embeddings for the encrypted training dataset."""
 
-    def __init__(self, dataset_root: Path, cache_root: Path) -> None:
+    def __init__(
+        self,
+        dataset_root: Path,
+        cache_root: Path,
+        *,
+        encryption: FaceDataEncryption | None = None,
+    ) -> None:
         self._dataset_root = dataset_root
         self._cache_root = cache_root
         self._lock = threading.RLock()
@@ -141,6 +148,7 @@ class DatasetEmbeddingCache:
             Tuple[str, str, bool], Tuple[Tuple[Tuple[str, int, int], ...], list[dict]]
         ]
         self._memory_cache = {}
+        self._encryption = encryption or FaceDataEncryption()
 
     def _cache_file_path(
         self, model_name: str, detector_backend: str, enforce_detection: bool
@@ -176,9 +184,24 @@ class DatasetEmbeddingCache:
             return None
 
         try:
-            payload = pickle.loads(cache_file.read_bytes())
+            encrypted_bytes = cache_file.read_bytes()
         except Exception as exc:  # pragma: no cover - defensive programming
             logger.warning("Failed to read cached embeddings %s: %s", cache_file, exc)
+            return None
+
+        try:
+            decrypted_bytes = self._encryption.decrypt(encrypted_bytes)
+        except InvalidToken:
+            logger.warning("Invalid cache encryption token for %s", cache_file)
+            return None
+        except Exception as exc:  # pragma: no cover - defensive programming
+            logger.warning("Failed to decrypt cached embeddings %s: %s", cache_file, exc)
+            return None
+
+        try:
+            payload = pickle.loads(decrypted_bytes)
+        except Exception as exc:  # pragma: no cover - defensive programming
+            logger.warning("Failed to deserialize cached embeddings %s: %s", cache_file, exc)
             return None
 
         dataset_state = payload.get("dataset_state")
@@ -186,7 +209,24 @@ class DatasetEmbeddingCache:
         if not isinstance(dataset_state, tuple) or not isinstance(dataset_index, list):
             return None
 
-        return dataset_state, dataset_index
+        normalized_index: list[dict] = []
+        for entry in dataset_index:
+            if not isinstance(entry, dict):
+                continue
+            normalized = dict(entry)
+            embedding = normalized.get("embedding")
+            if embedding is not None and not isinstance(embedding, np.ndarray):
+                try:
+                    normalized["embedding"] = np.array(embedding, dtype=float)
+                except Exception:  # pragma: no cover - defensive programming
+                    logger.debug("Failed to coerce cached embedding to ndarray: %r", embedding)
+                    continue
+            normalized_index.append(normalized)
+
+        if len(normalized_index) != len(dataset_index):
+            return None
+
+        return dataset_state, normalized_index
 
     def _save_to_disk(
         self,
@@ -199,11 +239,23 @@ class DatasetEmbeddingCache:
         cache_file = self._cache_file_path(model_name, detector_backend, enforce_detection)
         try:
             cache_file.parent.mkdir(parents=True, exist_ok=True)
+            payload_index: list[dict] = []
+            for entry in dataset_index:
+                normalized = dict(entry)
+                embedding = normalized.get("embedding")
+                if isinstance(embedding, np.ndarray):
+                    normalized["embedding"] = embedding.astype(float).tolist()
+                elif isinstance(embedding, (list, tuple)):
+                    normalized["embedding"] = [float(value) for value in embedding]
+                payload_index.append(normalized)
+
             payload = {
                 "dataset_state": dataset_state,
-                "dataset_index": dataset_index,
+                "dataset_index": payload_index,
             }
-            cache_file.write_bytes(pickle.dumps(payload))
+            serialized = pickle.dumps(payload)
+            encrypted = self._encryption.encrypt(serialized)
+            cache_file.write_bytes(encrypted)
         except Exception as exc:  # pragma: no cover - defensive programming
             logger.warning("Failed to persist cached embeddings %s: %s", cache_file, exc)
 

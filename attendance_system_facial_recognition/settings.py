@@ -91,6 +91,31 @@ def _load_data_encryption_key() -> bytes:
 
 DATA_ENCRYPTION_KEY = _load_data_encryption_key()
 
+
+def _load_face_data_encryption_key() -> bytes:
+    """Load the Fernet key used to encrypt cached facial encodings."""
+
+    key = os.environ.get("FACE_DATA_ENCRYPTION_KEY")
+    if key:
+        key_bytes = key.encode()
+        try:
+            Fernet(key_bytes)
+        except (ValueError, TypeError) as exc:  # pragma: no cover - defensive programming
+            raise ImproperlyConfigured(
+                "FACE_DATA_ENCRYPTION_KEY must be a valid 32-byte base64-encoded Fernet key."
+            ) from exc
+        return key_bytes
+
+    if DEBUG or TESTING:
+        return Fernet.generate_key()
+
+    raise ImproperlyConfigured(
+        "FACE_DATA_ENCRYPTION_KEY environment variable must be set in production environments."
+    )
+
+
+FACE_DATA_ENCRYPTION_KEY = _load_face_data_encryption_key()
+
 # ALLOWED_HOSTS: A list of strings representing the host/domain names that this Django site can serve.
 # When DJANGO_DEBUG is False the value must be explicitly provided.
 allowed_hosts_env = os.environ.get("DJANGO_ALLOWED_HOSTS")
