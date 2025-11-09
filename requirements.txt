@@ -16,3 +16,4 @@ pandas==2.3.3
 scipy==1.16.3
 PyYAML==6.0.2
 pytest-playwright==0.4.4
+cryptography
