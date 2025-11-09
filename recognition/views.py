@@ -45,6 +45,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import django_rq
 from deepface import DeepFace
 from django_pandas.io import read_frame
 from django_ratelimit.core import is_ratelimited
@@ -865,6 +866,7 @@ def create_dataset(username: str) -> None:
     frame_pause = float(getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01))
 
     sample_number = 0
+    saved_paths: list[Path] = []
     try:
         while True:
             # Read a frame from the video stream
@@ -889,6 +891,7 @@ def create_dataset(username: str) -> None:
             try:
                 with output_path.open("wb") as image_file:
                     image_file.write(encrypted_frame)
+                saved_paths.append(output_path)
             except OSError as exc:
                 logger.error(
                     "Failed to persist encrypted frame %s for %s: %s", sample_number, username, exc
@@ -911,7 +914,18 @@ def create_dataset(username: str) -> None:
         video_stream.stop()
         if not headless:
             cv2.destroyAllWindows()
-        _dataset_embedding_cache.invalidate()
+
+        if saved_paths:
+            try:
+                from .tasks import incremental_face_training
+
+                django_rq.enqueue(
+                    incremental_face_training, username, [str(path) for path in saved_paths]
+                )
+            except Exception as exc:  # pragma: no cover - defensive programming
+                logger.error(
+                    "Failed to enqueue incremental training for %s: %s", username, exc
+                )
 
 
 def update_attendance_in_db_in(present: Dict[str, bool]) -> None:

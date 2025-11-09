@@ -4,6 +4,7 @@ django-crispy-forms==2.1
 crispy-bootstrap5==2024.2
 django-pandas==0.6.7
 django-ratelimit==4.1.0
+django-rq==2.10.2
 deepface==0.0.93
 imutils==0.5.4
 matplotlib==3.8.4
@@ -15,6 +16,7 @@ tf-keras==2.20.1
 numpy>=1.26.0,<2.0.0
 pandas==2.3.3
 scipy==1.16.3
+rq==1.16.2
 PyYAML==6.0.2
 pytest-playwright==0.4.4
 cryptography

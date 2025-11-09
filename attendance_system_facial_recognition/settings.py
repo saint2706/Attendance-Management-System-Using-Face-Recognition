@@ -47,6 +47,24 @@ def _get_int_env(var_name: str, default: int) -> int:
     return value
 
 
+def _parse_int_env(var_name: str, default: int, *, minimum: int | None = None) -> int:
+    """Return an integer from the environment, enforcing an optional minimum."""
+
+    raw_value = os.environ.get(var_name)
+    if raw_value is None:
+        return default
+
+    try:
+        value = int(raw_value)
+    except ValueError as exc:  # pragma: no cover - defensive programming
+        raise ImproperlyConfigured(f"{var_name} must be an integer if provided.") from exc
+
+    if minimum is not None and value < minimum:
+        raise ImproperlyConfigured(f"{var_name} must be >= {minimum} if provided.")
+
+    return value
+
+
 # Detect if we're running tests
 TESTING = "test" in sys.argv or (len(sys.argv) > 0 and "pytest" in sys.argv[0])
 
@@ -136,6 +154,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "recognition.apps.RecognitionConfig",
     # Third-party packages
+    "django_rq",
     "django_ratelimit",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -218,6 +237,47 @@ CACHES = {
         "LOCATION": "unique-snowflake",
     }
 }
+
+
+# --- RQ (Redis Queue) Configuration ---
+
+
+def _build_rq_queue_settings() -> dict[str, dict[str, object]]:
+    """Return the django-rq queue configuration sourced from the environment."""
+
+    default_async = not TESTING and _get_bool_env("RQ_ASYNC", default=True)
+    default_timeout = _parse_int_env("RQ_DEFAULT_TIMEOUT", 300, minimum=1)
+
+    redis_url = os.environ.get("REDIS_URL")
+    if redis_url:
+        default_queue: dict[str, object] = {
+            "URL": redis_url,
+            "DEFAULT_TIMEOUT": default_timeout,
+            "ASYNC": default_async,
+        }
+        return {"default": default_queue}
+
+    host = os.environ.get("REDIS_HOST", "127.0.0.1")
+    port = _parse_int_env("REDIS_PORT", 6379, minimum=1)
+    db_index = _parse_int_env("REDIS_DB", 0, minimum=0)
+    password = os.environ.get("REDIS_PASSWORD")
+
+    default_queue = {
+        "HOST": host,
+        "PORT": port,
+        "DB": db_index,
+        "DEFAULT_TIMEOUT": default_timeout,
+        "ASYNC": default_async,
+    }
+
+    if password:
+        default_queue["PASSWORD"] = password
+
+    return {"default": default_queue}
+
+
+RQ_QUEUES = _build_rq_queue_settings()
+RQ_SHOW_ADMIN = _get_bool_env("RQ_SHOW_ADMIN", default=False)
 
 
 # --- Password Validation ---
