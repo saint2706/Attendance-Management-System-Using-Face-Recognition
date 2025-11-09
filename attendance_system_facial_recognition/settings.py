@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "recognition.apps.RecognitionConfig",
     # Third-party packages
+    "django_ratelimit",
     "crispy_forms",
     "crispy_bootstrap5",
     # Core Django applications
@@ -225,3 +226,18 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = _get_bool_env(
 # Lower values (e.g., 0.3) mean stricter matching, while higher values (e.g., 0.5)
 # are more permissive. This can be overridden via an environment variable.
 RECOGNITION_DISTANCE_THRESHOLD = float(os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4"))
+
+# Rate limiting configuration for attendance endpoints. Uses django-ratelimit's
+# default cache to track request counts.
+RATELIMIT_USE_CACHE = "default"
+DEFAULT_ATTENDANCE_RATE_LIMIT = "5/m"
+RECOGNITION_ATTENDANCE_RATE_LIMIT = os.environ.get(
+    "RECOGNITION_ATTENDANCE_RATE_LIMIT", DEFAULT_ATTENDANCE_RATE_LIMIT
+)
+_attendance_methods = os.environ.get("RECOGNITION_ATTENDANCE_RATE_LIMIT_METHODS")
+if _attendance_methods:
+    RECOGNITION_ATTENDANCE_RATE_LIMIT_METHODS = tuple(
+        method.strip().upper() for method in _attendance_methods.split(",") if method.strip()
+    )
+else:
+    RECOGNITION_ATTENDANCE_RATE_LIMIT_METHODS = ("POST",)

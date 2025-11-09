@@ -15,6 +15,7 @@ import os
 import pickle
 import sys
 import time
+from functools import wraps
 from pathlib import Path
 from typing import Dict, Optional, Sequence, Tuple
 from urllib.parse import urljoin
@@ -24,6 +25,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Count, QuerySet
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
@@ -36,6 +38,7 @@ import pandas as pd
 import seaborn as sns
 from deepface import DeepFace
 from django_pandas.io import read_frame
+from django_ratelimit.core import is_ratelimited
 from imutils.video import VideoStream
 from matplotlib import rcParams
 from pandas.plotting import register_matplotlib_converters
@@ -52,6 +55,56 @@ mpl.use("Agg")
 
 # Initialize logger for the module
 logger = logging.getLogger(__name__)
+
+
+# Rate limit helper utilities -------------------------------------------------
+
+
+def _attendance_rate_limit_methods() -> tuple[str, ...]:
+    """Return the normalized HTTP methods subject to attendance rate limiting."""
+
+    methods = getattr(settings, "RECOGNITION_ATTENDANCE_RATE_LIMIT_METHODS", ("POST",))
+    if isinstance(methods, str):
+        methods = (methods,)
+    return tuple(method.upper() for method in methods)
+
+
+def attendance_rate_limited(view_func):
+    """Apply django-ratelimit protection to attendance endpoints."""
+
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        rate = getattr(settings, "RECOGNITION_ATTENDANCE_RATE_LIMIT", "5/m")
+        if not rate:
+            return view_func(request, *args, **kwargs)
+
+        methods = _attendance_rate_limit_methods()
+        request_method = request.method.upper()
+        if methods and request_method not in methods:
+            return view_func(request, *args, **kwargs)
+
+        was_limited = is_ratelimited(
+            request=request,
+            group="recognition.attendance",
+            key="user_or_ip",
+            rate=rate,
+            method=methods or None,
+            increment=True,
+        )
+
+        if was_limited:
+            logger.warning(
+                "Attendance rate limit triggered for %s via %s",
+                request.user
+                if getattr(request, "user", None) and request.user.is_authenticated
+                else request.META.get("REMOTE_ADDR", "unknown"),
+                request_method,
+            )
+            return HttpResponse("Too many attendance attempts. Please wait.", status=429)
+
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped
 
 
 # Define root directories for data storage
@@ -969,12 +1022,14 @@ def _mark_attendance(request, check_in: bool):
 
 
 @login_required
+@attendance_rate_limited
 def mark_your_attendance(request):
     """View to handle marking time-in."""
     return _mark_attendance(request, check_in=True)
 
 
 @login_required
+@attendance_rate_limited
 def mark_your_attendance_out(request):
     """View to handle marking time-out."""
     return _mark_attendance(request, check_in=False)
