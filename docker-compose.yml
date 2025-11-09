@@ -10,6 +10,7 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
   redis:
     image: redis:7-alpine
     restart: unless-stopped
@@ -17,22 +18,56 @@ services:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
-  celery:
-    image: python:3.12-slim
+
+  web:
+    build:
+      context: .
+    image: attendance-system:latest
     restart: unless-stopped
-    working_dir: /app
-    command: >-
-      sh -c "pip install --no-cache-dir -r requirements.txt && celery -A attendance_system_facial_recognition worker --loglevel=info"
-    environment:
-      DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
-      CELERY_BROKER_URL: redis://redis:6379/0
-      CELERY_RESULT_BACKEND: redis://redis:6379/1
-      PYTHONUNBUFFERED: "1"
-    volumes:
-      - .:/app
     depends_on:
       - postgres
       - redis
+    ports:
+      - "${WEB_PORT:-8000}:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings.production
+      DJANGO_DEBUG: "0"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY must be set}
+      DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?DATA_ENCRYPTION_KEY must be set}
+      FACE_DATA_ENCRYPTION_KEY: ${FACE_DATA_ENCRYPTION_KEY:?FACE_DATA_ENCRYPTION_KEY must be set}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DB_NAME: ${POSTGRES_DB:-attendance}
+      DB_USER: ${POSTGRES_USER:-attendance}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-attendance}
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+
+  celery:
+    image: attendance-system:latest
+    restart: unless-stopped
+    working_dir: /app
+    command: >-
+      celery -A attendance_system_facial_recognition worker --loglevel=info
+    environment:
+      DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings.production
+      DJANGO_DEBUG: "0"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY must be set}
+      DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?DATA_ENCRYPTION_KEY must be set}
+      FACE_DATA_ENCRYPTION_KEY: ${FACE_DATA_ENCRYPTION_KEY:?FACE_DATA_ENCRYPTION_KEY must be set}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DB_NAME: ${POSTGRES_DB:-attendance}
+      DB_USER: ${POSTGRES_USER:-attendance}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-attendance}
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    depends_on:
+      - postgres
+      - redis
+
 volumes:
   postgres_data:
   redis_data:
