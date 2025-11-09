@@ -16,7 +16,7 @@ import pickle
 import sys
 import time
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Sequence, Tuple
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -565,6 +565,239 @@ def add_photos(request):
 DEFAULT_DISTANCE_THRESHOLD = 0.4
 
 
+LIVENESS_FAILURE_MESSAGE = (
+    "Spoofing attempt detected. Please ensure a live person is present before marking "
+    "attendance."
+)
+
+
+def _normalize_face_region(region: Optional[Dict[str, int]]) -> Optional[Dict[str, int]]:
+    """Normalize various facial area representations into ``x, y, w, h`` form."""
+
+    if not isinstance(region, dict):
+        return None
+
+    keys = {key.lower(): value for key, value in region.items() if value is not None}
+
+    def _get_value(*aliases: str) -> Optional[int]:
+        for alias in aliases:
+            if alias in keys:
+                try:
+                    return int(keys[alias])
+                except (TypeError, ValueError):
+                    return None
+        return None
+
+    x = _get_value("x", "left")
+    y = _get_value("y", "top")
+    w = _get_value("w", "width")
+    h = _get_value("h", "height")
+
+    if None not in (x, y, w, h):
+        return {"x": x, "y": y, "w": w, "h": h}
+
+    right = _get_value("right")
+    bottom = _get_value("bottom")
+    if None not in (x, right, y, bottom):
+        width = right - x
+        height = bottom - y
+        if width > 0 and height > 0:
+            return {"x": x, "y": y, "w": width, "h": height}
+
+    return None
+
+
+def _crop_face_region(frame: np.ndarray, region: Optional[Dict[str, int]]) -> np.ndarray:
+    """Return a cropped face image given a bounding box region."""
+
+    if frame is None or not hasattr(frame, "shape"):
+        return frame
+
+    normalized = _normalize_face_region(region)
+    if not normalized:
+        return frame
+
+    height, width = frame.shape[:2]
+    x = max(normalized.get("x", 0), 0)
+    y = max(normalized.get("y", 0), 0)
+    w = max(normalized.get("w", 0), 0)
+    h = max(normalized.get("h", 0), 0)
+
+    if w <= 0 or h <= 0:
+        return frame
+
+    x2 = min(x + w, width)
+    y2 = min(y + h, height)
+    if x >= x2 or y >= y2:
+        return frame
+
+    return frame[y:y2, x:x2]
+
+
+def _interpret_deepface_liveness_result(result: object) -> Optional[bool]:
+    """Best-effort interpretation of DeepFace anti-spoofing output."""
+
+    if isinstance(result, (list, tuple)):
+        if not result:
+            return None
+        return _interpret_deepface_liveness_result(result[0])
+
+    if not isinstance(result, dict):
+        return None
+
+    bool_keys = (
+        "is_real",
+        "is_real_face",
+        "is_live",
+        "is_genuine",
+        "real",
+        "live",
+        "genuine",
+    )
+    for key in bool_keys:
+        value = result.get(key)
+        if isinstance(value, (bool, np.bool_)):
+            return bool(value)
+
+    score_keys = ("real", "live", "genuine")
+    threshold = float(getattr(settings, "RECOGNITION_LIVENESS_SCORE_THRESHOLD", 0.5))
+    for key in score_keys:
+        value = result.get(key)
+        if isinstance(value, (int, float)):
+            return value >= threshold
+
+    face_type = result.get("face_type")
+    if isinstance(face_type, str):
+        return face_type.lower() in {"real", "live", "genuine"}
+    if isinstance(face_type, dict):
+        label = face_type.get("type") or face_type.get("value")
+        if isinstance(label, str):
+            return label.lower() in {"real", "live", "genuine"}
+
+    return None
+
+
+def _deepface_liveness_check(frame: np.ndarray) -> Optional[bool]:
+    """Run DeepFace anti-spoofing on the provided frame."""
+
+    try:
+        analysis = DeepFace.analyze(  # type: ignore[call-arg]
+            img_path=frame,
+            actions=("anti-spoof",),
+            enforce_detection=False,
+            detector_backend=_get_face_detection_backend(),
+            silent=True,
+        )
+    except Exception as exc:
+        logger.warning("Liveness check failed: %s", exc)
+        return None
+
+    decision = _interpret_deepface_liveness_result(analysis)
+    if decision is None:
+        logger.warning("Could not interpret DeepFace anti-spoofing result: %s", analysis)
+    return decision
+
+
+def _passes_liveness_check(
+    frame: np.ndarray,
+    face_region: Optional[Dict[str, int]] = None,
+) -> bool:
+    """Return ``True`` when the supplied frame passes the liveness gate."""
+
+    custom_checker = getattr(settings, "RECOGNITION_LIVENESS_CHECKER", None)
+    if callable(custom_checker):
+        try:
+            decision = custom_checker(frame=frame, face_region=face_region)
+            if decision is not None:
+                return bool(decision)
+        except Exception as exc:
+            logger.warning("Custom liveness checker raised an exception: %s", exc)
+
+    cropped = _crop_face_region(frame, face_region)
+    decision = _deepface_liveness_check(cropped)
+    return bool(decision)
+
+
+def _evaluate_recognition_match(
+    frame: np.ndarray,
+    match: pd.Series,
+    distance_threshold: float,
+) -> Tuple[Optional[str], bool, Optional[Dict[str, int]]]:
+    """Evaluate a DeepFace match result and run the liveness gate."""
+
+    try:
+        distance = float(match.get("distance", 0.0))
+    except (TypeError, ValueError):
+        distance = 0.0
+
+    if distance > distance_threshold:
+        return None, False, None
+
+    identity_value = match.get("identity")
+    username: Optional[str] = None
+    if identity_value:
+        try:
+            identity_path = Path(str(identity_value))
+            parent_name = identity_path.parent.name
+            if parent_name:
+                username = parent_name
+        except Exception as exc:
+            logger.debug("Could not parse identity path '%s': %s", identity_value, exc)
+
+    face_region = {
+        "x": match.get("source_x"),
+        "y": match.get("source_y"),
+        "w": match.get("source_w"),
+        "h": match.get("source_h"),
+    }
+    normalized_region = _normalize_face_region(face_region)
+
+    if not _passes_liveness_check(frame, normalized_region):
+        return username, True, normalized_region
+
+    return username, False, normalized_region
+
+
+def _predict_identity_from_embedding(
+    frame: np.ndarray,
+    embedding_vector: Sequence[float],
+    facial_area: Optional[Dict[str, int]],
+    model,
+    class_names: Sequence[str],
+    attendance_type: str,
+) -> Tuple[Optional[str], bool, Optional[Dict[str, int]]]:
+    """Run liveness verification and model prediction for an embedding."""
+
+    normalized_region = _normalize_face_region(facial_area)
+    if not _passes_liveness_check(frame, normalized_region):
+        logger.warning(
+            "Spoofing attempt blocked during '%s' attendance.", attendance_type
+        )
+        return None, True, normalized_region
+
+    try:
+        prediction = model.predict(np.array([embedding_vector]))
+    except Exception as exc:
+        logger.warning("Failed to classify embedding: %s", exc)
+        return None, False, normalized_region
+
+    if isinstance(prediction, (list, tuple, np.ndarray)) and len(prediction) > 0:
+        predicted_index = int(prediction[0])
+    else:
+        try:
+            predicted_index = int(prediction)
+        except (TypeError, ValueError):
+            logger.warning("Received unexpected prediction output: %s", prediction)
+            return None, False, normalized_region
+
+    if 0 <= predicted_index < len(class_names):
+        predicted_name = str(class_names[predicted_index])
+        return predicted_name, False, normalized_region
+
+    logger.warning("Predicted index %s out of range", predicted_index)
+    return None, False, normalized_region
+
+
 def _is_headless_environment() -> bool:
     """Return ``True`` when no graphical display is available."""
 
@@ -612,6 +845,8 @@ def _mark_attendance(request, check_in: bool):
         else "Mark Attendance- Out - Press q to exit"
     )
 
+    spoof_detected = False
+
     try:
         while True:
             frame = vs.read()
@@ -642,36 +877,65 @@ def _mark_attendance(request, check_in: bool):
 
                     match = df.iloc[0]
                     distance = match.get("distance", 0.0)
+                    try:
+                        distance_value = float(distance)
+                    except (TypeError, ValueError):
+                        distance_value = 0.0
 
-                    # Check if the match is within the confidence threshold
-                    if distance <= distance_threshold:
-                        identity_path = Path(match["identity"])
-                        username = identity_path.parent.name
+                    username, spoofed, normalized_region = _evaluate_recognition_match(
+                        frame, match, distance_threshold
+                    )
+
+                    if spoofed:
+                        spoof_detected = True
+                        logger.warning(
+                            "Spoofing attempt blocked while marking attendance for '%s'",
+                            username or Path(match.get("identity", "unknown")).parent.name,
+                        )
+
+                        if normalized_region:
+                            x = int(normalized_region["x"])
+                            y = int(normalized_region["y"])
+                            w = int(normalized_region["w"])
+                            h = int(normalized_region["h"])
+                            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                            cv2.putText(
+                                frame,
+                                "Spoof detected",
+                                (x, max(y - 10, 0)),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.7,
+                                (0, 0, 255),
+                                2,
+                            )
+                        continue
+
+                    if username:
                         present[username] = True
-                        logger.info("Recognized %s with distance %.4f", username, distance)
+                        logger.info(
+                            "Recognized %s with distance %.4f", username, distance_value
+                        )
 
-                        # Draw a bounding box and name on the frame
-                        x, y, w, h = (
-                            int(match["source_x"]),
-                            int(match["source_y"]),
-                            int(match["source_w"]),
-                            int(match["source_h"]),
-                        )
-                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                        cv2.putText(
-                            frame,
-                            username,
-                            (x, y - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.9,
-                            (0, 255, 0),
-                            2,
-                        )
+                        if normalized_region:
+                            x = int(normalized_region["x"])
+                            y = int(normalized_region["y"])
+                            w = int(normalized_region["w"])
+                            h = int(normalized_region["h"])
+                            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                            cv2.putText(
+                                frame,
+                                username,
+                                (x, max(y - 10, 0)),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.9,
+                                (0, 255, 0),
+                                2,
+                            )
                     else:
                         logger.info(
                             "Ignoring potential match for '%s' due to high distance %.4f",
-                            Path(match["identity"]).parent.name,
-                            distance,
+                            Path(match.get("identity", "unknown")).parent.name,
+                            distance_value,
                         )
 
             except Exception as e:
@@ -691,6 +955,9 @@ def _mark_attendance(request, check_in: bool):
         vs.stop()
         if not headless:
             cv2.destroyAllWindows()
+
+    if spoof_detected:
+        messages.error(request, LIVENESS_FAILURE_MESSAGE)
 
     # Update the database based on whether it's a check-in or check-out
     if check_in:
@@ -1129,6 +1396,7 @@ def mark_attendance_view(request, attendance_type):
     time.sleep(2.0)  # Allow camera to warm up
 
     present = {name: False for name in class_names}
+    spoof_detected = False
     headless = _is_headless_environment()
     max_frames = int(getattr(settings, "RECOGNITION_HEADLESS_ATTENDANCE_FRAMES", 100))
     frame_pause = float(getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01))
@@ -1174,9 +1442,52 @@ def mark_attendance_view(request, attendance_type):
                             embedding_vector = None
 
                 if embedding_vector is not None:
-                    # proceed with prediction using the extracted vector
-                    # facial_area may be None (skip drawing box in that case)
-                    pass
+                    predicted_name, spoofed, normalized_region = _predict_identity_from_embedding(
+                        frame,
+                        embedding_vector,
+                        facial_area if isinstance(facial_area, dict) else None,
+                        model,
+                        class_names,
+                        attendance_type,
+                    )
+
+                    if spoofed:
+                        spoof_detected = True
+                        if normalized_region:
+                            x = int(normalized_region["x"])
+                            y = int(normalized_region["y"])
+                            w = int(normalized_region["w"])
+                            h = int(normalized_region["h"])
+                            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                            cv2.putText(
+                                frame,
+                                "Spoof detected",
+                                (x, max(y - 10, 0)),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.7,
+                                (0, 0, 255),
+                                2,
+                            )
+                        continue
+
+                    if predicted_name:
+                        present[predicted_name] = True
+
+                        if normalized_region:
+                            x = int(normalized_region["x"])
+                            y = int(normalized_region["y"])
+                            w = int(normalized_region["w"])
+                            h = int(normalized_region["h"])
+                            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                            cv2.putText(
+                                frame,
+                                predicted_name,
+                                (x, max(y - 10, 0)),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.7,
+                                (0, 255, 0),
+                                2,
+                            )
 
             except Exception as e:
                 logger.warning("Could not process frame for recognition: %s", e)
@@ -1195,6 +1506,9 @@ def mark_attendance_view(request, attendance_type):
         video_stream.stop()
         if not headless:
             cv2.destroyAllWindows()
+
+    if spoof_detected:
+        messages.error(request, LIVENESS_FAILURE_MESSAGE)
 
     # --- Update Database ---
     if attendance_type == "in":
