@@ -36,25 +36,42 @@ class DeepFaceAttendanceTest(TestCase):
         self.db_path = Path(views.TRAINING_DATASET_ROOT)
         (self.db_path / "tester").mkdir(parents=True, exist_ok=True)
 
-    def _setup_mocks(self, mock_videostream, mock_cv2):
+    def _setup_mocks(self, mock_manager_factory, mock_cv2, frames=None):
         """Configure common mocks for video processing to isolate view logic."""
-        mock_stream = MagicMock()
-        mock_stream.start.return_value = mock_stream
-        # Return a mock black image frame
-        mock_stream.read.return_value = np.zeros((480, 640, 3), dtype=np.uint8)
-        mock_videostream.return_value = mock_stream
+
+        manager = MagicMock()
+        consumer = MagicMock()
+        consumer.__enter__.return_value = consumer
+        consumer.__exit__.return_value = False
+
+        if frames is None:
+            frames = [np.zeros((480, 640, 3), dtype=np.uint8)]
+        frame_iter = iter(frames)
+
+        def _read(*args, **kwargs):
+            try:
+                frame = next(frame_iter)
+            except StopIteration:
+                return None
+            return frame
+
+        consumer.read.side_effect = _read
+        manager.frame_consumer.return_value = consumer
+        mock_manager_factory.return_value = manager
 
         # Simulate pressing 'q' to ensure the video loop terminates immediately
         mock_cv2.waitKey.return_value = ord("q")
+
+        return manager, consumer
 
     @patch("recognition.views.update_attendance_in_db_in")
     @patch("recognition.views._load_dataset_embeddings_for_matching")
     @patch("recognition.views.DeepFace.represent")
     @patch("recognition.views.cv2")
-    @patch("recognition.views.VideoStream")
+    @patch("recognition.views.get_webcam_manager")
     def test_mark_attendance_in_recognizes_user(
         self,
-        mock_videostream,
+        mock_get_manager,
         mock_cv2,
         mock_deepface_represent,
         mock_dataset_loader,
@@ -63,7 +80,7 @@ class DeepFaceAttendanceTest(TestCase):
         """Verify that a recognized user is correctly marked for check-in."""
         request = self.factory.get("/mark_attendance/")
         request.user = self.user
-        self._setup_mocks(mock_videostream, mock_cv2)
+        self._setup_mocks(mock_get_manager, mock_cv2)
 
         mock_dataset_loader.return_value = [
             {
@@ -89,10 +106,10 @@ class DeepFaceAttendanceTest(TestCase):
     @patch("recognition.views._load_dataset_embeddings_for_matching")
     @patch("recognition.views.DeepFace.represent")
     @patch("recognition.views.cv2")
-    @patch("recognition.views.VideoStream")
+    @patch("recognition.views.get_webcam_manager")
     def test_mark_attendance_out_recognizes_user(
         self,
-        mock_videostream,
+        mock_get_manager,
         mock_cv2,
         mock_deepface_represent,
         mock_dataset_loader,
@@ -101,7 +118,7 @@ class DeepFaceAttendanceTest(TestCase):
         """Verify that a recognized user is correctly marked for check-out."""
         request = self.factory.get("/mark_attendance_out/")
         request.user = self.user
-        self._setup_mocks(mock_videostream, mock_cv2)
+        self._setup_mocks(mock_get_manager, mock_cv2)
 
         # Simulate DeepFace finding a user with a low distance score (high confidence)
         mock_dataset_loader.return_value = [
@@ -126,10 +143,10 @@ class DeepFaceAttendanceTest(TestCase):
     @patch("recognition.views._load_dataset_embeddings_for_matching")
     @patch("recognition.views.DeepFace.represent")
     @patch("recognition.views.cv2")
-    @patch("recognition.views.VideoStream")
+    @patch("recognition.views.get_webcam_manager")
     def test_mark_attendance_in_ignores_low_confidence(
         self,
-        mock_videostream,
+        mock_get_manager,
         mock_cv2,
         mock_deepface_represent,
         mock_dataset_loader,
@@ -138,7 +155,7 @@ class DeepFaceAttendanceTest(TestCase):
         """Ensure that matches with high distance (low confidence) are ignored."""
         request = self.factory.get("/mark_attendance/")
         request.user = self.user
-        self._setup_mocks(mock_videostream, mock_cv2)
+        self._setup_mocks(mock_get_manager, mock_cv2)
 
         # Simulate a match with a distance score above the threshold
         mock_dataset_loader.return_value = [
@@ -168,10 +185,10 @@ class DeepFaceAttendanceTest(TestCase):
     @patch("recognition.views._load_dataset_embeddings_for_matching")
     @patch("recognition.views.DeepFace.represent", return_value=[])
     @patch("recognition.views.cv2")
-    @patch("recognition.views.VideoStream")
+    @patch("recognition.views.get_webcam_manager")
     def test_mark_attendance_in_headless_exits(
         self,
-        mock_videostream,
+        mock_get_manager,
         mock_cv2,
         _mock_deepface_represent,
         mock_dataset_loader,
@@ -183,7 +200,8 @@ class DeepFaceAttendanceTest(TestCase):
 
         request = self.factory.get("/mark_attendance/")
         request.user = self.user
-        self._setup_mocks(mock_videostream, mock_cv2)
+        frames = [np.zeros((480, 640, 3), dtype=np.uint8) for _ in range(3)]
+        self._setup_mocks(mock_get_manager, mock_cv2, frames=frames)
 
         mock_dataset_loader.return_value = [
             {
@@ -206,10 +224,10 @@ class DeepFaceAttendanceTest(TestCase):
     @patch("recognition.views._load_dataset_embeddings_for_matching")
     @patch("recognition.views.DeepFace.represent", return_value=[])
     @patch("recognition.views.cv2")
-    @patch("recognition.views.VideoStream")
+    @patch("recognition.views.get_webcam_manager")
     def test_mark_attendance_out_headless_exits(
         self,
-        mock_videostream,
+        mock_get_manager,
         mock_cv2,
         _mock_deepface_represent,
         mock_dataset_loader,
@@ -221,7 +239,8 @@ class DeepFaceAttendanceTest(TestCase):
 
         request = self.factory.get("/mark_attendance_out/")
         request.user = self.user
-        self._setup_mocks(mock_videostream, mock_cv2)
+        frames = [np.zeros((480, 640, 3), dtype=np.uint8) for _ in range(2)]
+        self._setup_mocks(mock_get_manager, mock_cv2, frames=frames)
 
         mock_dataset_loader.return_value = [
             {

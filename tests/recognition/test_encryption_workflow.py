@@ -170,9 +170,12 @@ class EncryptionWorkflowTests(TestCase):
         mock_deepface.represent.reset_mock()
         mock_deepface.represent.side_effect = lambda *args, **kwargs: np.array([[0.1, 0.2]])
 
-        stream = MagicMock()
-        stream.start.return_value = stream
-        stream.read.return_value = np.zeros((10, 10, 3), dtype=np.uint8)
+        consumer = MagicMock()
+        consumer.__enter__.return_value = consumer
+        consumer.__exit__.return_value = False
+        consumer.read.side_effect = [np.zeros((10, 10, 3), dtype=np.uint8), None]
+        manager = MagicMock()
+        manager.frame_consumer.return_value = consumer
 
         request_mark = self.factory.get("/mark_attendance/")
         request_mark.user = staff_user
@@ -183,7 +186,7 @@ class EncryptionWorkflowTests(TestCase):
         captured_models: list[DummyModel] = []
 
         with (
-            patch.object(views, "VideoStream", return_value=stream),
+            patch.object(views, "get_webcam_manager", return_value=manager),
             patch.object(views, "cv2") as mock_cv2,
             patch.object(views, "_is_headless_environment", return_value=True),
             patch.object(views, "time") as mock_time,
