@@ -15,10 +15,11 @@ import math
 import os
 import pickle
 import sys
+import threading
 import time
 from functools import wraps
 from pathlib import Path
-from typing import Dict, Optional, Sequence, Tuple
+from typing import Callable, Dict, Optional, Sequence, Tuple
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -125,6 +126,123 @@ THIS_WEEK_PATH = ATTENDANCE_GRAPHS_ROOT / "this_week" / "1.png"
 LAST_WEEK_PATH = ATTENDANCE_GRAPHS_ROOT / "last_week" / "1.png"
 
 
+class DatasetEmbeddingCache:
+    """Cache DeepFace embeddings for the encrypted training dataset."""
+
+    def __init__(self, dataset_root: Path, cache_root: Path) -> None:
+        self._dataset_root = dataset_root
+        self._cache_root = cache_root
+        self._lock = threading.RLock()
+        self._memory_cache: Dict[Tuple[str, str], Tuple[Tuple[Tuple[str, int, int], ...], list[dict]]]
+        self._memory_cache = {}
+
+    def _cache_file_path(self, model_name: str, detector_backend: str) -> Path:
+        safe_model = model_name.replace("/", "_").replace(" ", "_")
+        safe_detector = detector_backend.replace("/", "_").replace(" ", "_")
+        filename = f"representations_{safe_model.lower()}_{safe_detector.lower()}.pkl"
+        return self._cache_root / filename
+
+    def _current_dataset_state(self) -> Tuple[Tuple[str, int, int], ...]:
+        entries: list[Tuple[str, int, int]] = []
+        if not self._dataset_root.exists():
+            return tuple()
+
+        for image_path in sorted(self._dataset_root.glob("*/*.jpg")):
+            try:
+                stat_result = image_path.stat()
+            except FileNotFoundError:
+                continue
+            relative = image_path.relative_to(self._dataset_root).as_posix()
+            entries.append((relative, int(stat_result.st_mtime_ns), int(stat_result.st_size)))
+        return tuple(entries)
+
+    def _load_from_disk(
+        self, model_name: str, detector_backend: str
+    ) -> Optional[Tuple[Tuple[Tuple[str, int, int], ...], list[dict]]]:
+        cache_file = self._cache_file_path(model_name, detector_backend)
+        if not cache_file.exists():
+            return None
+
+        try:
+            payload = pickle.loads(cache_file.read_bytes())
+        except Exception as exc:  # pragma: no cover - defensive programming
+            logger.warning("Failed to read cached embeddings %s: %s", cache_file, exc)
+            return None
+
+        dataset_state = payload.get("dataset_state")
+        dataset_index = payload.get("dataset_index")
+        if not isinstance(dataset_state, tuple) or not isinstance(dataset_index, list):
+            return None
+
+        return dataset_state, dataset_index
+
+    def _save_to_disk(
+        self,
+        model_name: str,
+        detector_backend: str,
+        dataset_state: Tuple[Tuple[str, int, int], ...],
+        dataset_index: list[dict],
+    ) -> None:
+        cache_file = self._cache_file_path(model_name, detector_backend)
+        try:
+            cache_file.parent.mkdir(parents=True, exist_ok=True)
+            payload = {
+                "dataset_state": dataset_state,
+                "dataset_index": dataset_index,
+            }
+            cache_file.write_bytes(pickle.dumps(payload))
+        except Exception as exc:  # pragma: no cover - defensive programming
+            logger.warning("Failed to persist cached embeddings %s: %s", cache_file, exc)
+
+    def get_dataset_index(
+        self,
+        model_name: str,
+        detector_backend: str,
+        builder: Callable[[], list[dict]],
+    ) -> list[dict]:
+        """Return cached embeddings, building them if the dataset has changed."""
+
+        key = (model_name, detector_backend)
+        current_state = self._current_dataset_state()
+
+        with self._lock:
+            memory_entry = self._memory_cache.get(key)
+            if memory_entry and memory_entry[0] == current_state:
+                return memory_entry[1]
+
+            disk_entry = self._load_from_disk(model_name, detector_backend)
+            if disk_entry and disk_entry[0] == current_state:
+                self._memory_cache[key] = disk_entry
+                return disk_entry[1]
+
+        dataset_index = builder()
+        refreshed_state = self._current_dataset_state()
+
+        with self._lock:
+            entry = (refreshed_state, dataset_index)
+            self._memory_cache[key] = entry
+            self._save_to_disk(model_name, detector_backend, refreshed_state, dataset_index)
+
+        return dataset_index
+
+    def invalidate(self) -> None:
+        """Clear the in-memory cache and remove cached files from disk."""
+
+        with self._lock:
+            self._memory_cache.clear()
+
+        for cache_file in self._cache_root.glob("representations_*.pkl"):
+            try:
+                cache_file.unlink()
+            except FileNotFoundError:
+                continue
+            except Exception as exc:  # pragma: no cover - defensive programming
+                logger.warning("Failed to delete cache file %s: %s", cache_file, exc)
+
+
+_dataset_embedding_cache = DatasetEmbeddingCache(TRAINING_DATASET_ROOT, DATA_ROOT)
+
+
 def _ensure_directory(path: Path) -> None:
     """
     Ensure the parent directory for the given path exists.
@@ -228,7 +346,7 @@ def _extract_first_embedding(representations) -> Tuple[Optional[Sequence[float]]
     return normalized, facial_area
 
 
-def _load_dataset_embeddings_for_matching(model_name: str, detector_backend: str):
+def _build_dataset_embeddings_for_matching(model_name: str, detector_backend: str):
     """Build embeddings for the encrypted training dataset."""
 
     dataset_index = []
@@ -264,6 +382,16 @@ def _load_dataset_embeddings_for_matching(model_name: str, detector_backend: str
         )
 
     return dataset_index
+
+
+def _load_dataset_embeddings_for_matching(model_name: str, detector_backend: str):
+    """Return embeddings from the cache, computing them if necessary."""
+
+    return _dataset_embedding_cache.get_dataset_index(
+        model_name,
+        detector_backend,
+        lambda: _build_dataset_embeddings_for_matching(model_name, detector_backend),
+    )
 
 
 def _find_closest_dataset_match(
@@ -378,6 +506,7 @@ def create_dataset(username: str) -> None:
         video_stream.stop()
         if not headless:
             cv2.destroyAllWindows()
+        _dataset_embedding_cache.invalidate()
 
 
 def update_attendance_in_db_in(present: Dict[str, bool]) -> None:
@@ -1587,6 +1716,15 @@ def mark_attendance_view(request, attendance_type):
         attendance_type,
         request.user,
     )
+
+    # --- Load cached embeddings to avoid rebuilding them per frame ---
+    model_name = _get_face_recognition_model()
+    detector_backend = _get_face_detection_backend()
+    dataset_index = _load_dataset_embeddings_for_matching(model_name, detector_backend)
+    if not dataset_index:
+        logger.warning(
+            "Cached embeddings are empty while marking attendance via SVC; continuing with model predictions."
+        )
 
     # --- Load Model ---
     try:
