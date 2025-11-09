@@ -102,6 +102,40 @@ When deploying to staging or production, configure the following environment var
 
 Ensure these variables are present in the staging and production deployment manifests (e.g., `.env` files, container secrets, or platform configuration) before rolling out new builds.
 
+### Containerized deployment workflow
+
+The repository ships with a production-ready `Dockerfile` and Compose definition so you can build and run the stack with minimal host dependencies. The commands below assume Docker Engine 24+ and Docker Compose v2 are installed locally.
+
+1. **Prepare environment variables**
+   - Create a secrets file (for example, `.env.production`) that exports:
+     - `DJANGO_SECRET_KEY` — a strong, unique secret key.
+     - `DATA_ENCRYPTION_KEY` and `FACE_DATA_ENCRYPTION_KEY` — Fernet keys. Generate each with `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`.
+     - `DJANGO_ALLOWED_HOSTS` — comma-separated hostnames served by the deployment.
+     - Database credentials (`POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`) if you override the defaults.
+   - Load the file automatically by placing it next to `docker-compose.yml` and referencing it with `docker compose --env-file .env.production ...`.
+
+2. **Build the application image**
+   ```bash
+   docker compose --env-file .env.production build web
+   ```
+
+3. **Apply database migrations inside the container image**
+   ```bash
+   docker compose --env-file .env.production run --rm web python manage.py migrate
+   ```
+
+4. **Start the web and worker services**
+   ```bash
+   docker compose --env-file .env.production up -d web celery
+   ```
+
+5. **Tail logs for troubleshooting**
+   ```bash
+   docker compose logs -f web celery
+   ```
+
+The `web` service serves the Django application through Gunicorn on port `8000`, while the `celery` service reuses the same image to execute asynchronous jobs. Static assets are collected during the image build, so no additional setup is required before exposing the container behind a reverse proxy.
+
 ### Database migration & testing workflow
 
 1.  **Local development:**

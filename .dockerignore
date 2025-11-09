@@ -1,0 +1,55 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+.env
+.venv
+venv/
+env/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Node/npm artifacts
+node_modules/
+
+# Editor/OS files
+.DS_Store
+.idea/
+.vscode/
+
+# Local data directories
+media/
+staticfiles/
+logs/
+/tmp/
+
+# Docker and Compose related overrides
+Dockerfile.dev
+docker-compose.override.yml
+
+# Tests and coverage outputs
+reports/
+coverage.xml
+pytestdebug.log
+
+# Git metadata
+.git
+.gitignore
+
+# Miscellaneous cache directories
+.cache/
+.mypy_cache/
+
+# Machine learning artifacts
+recognition/models/
+recognition/datasets/
