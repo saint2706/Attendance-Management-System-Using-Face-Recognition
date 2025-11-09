@@ -17,7 +17,7 @@ from cryptography.fernet import Fernet
 
 # Define the project's base directory.
 # `BASE_DIR` points to the root of the Django project.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # --- Security Settings ---
