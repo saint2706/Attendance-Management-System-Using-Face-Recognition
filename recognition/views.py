@@ -19,7 +19,7 @@ import threading
 import time
 from functools import wraps
 from pathlib import Path
-from typing import Callable, Dict, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -133,13 +133,21 @@ class DatasetEmbeddingCache:
         self._dataset_root = dataset_root
         self._cache_root = cache_root
         self._lock = threading.RLock()
-        self._memory_cache: Dict[Tuple[str, str], Tuple[Tuple[Tuple[str, int, int], ...], list[dict]]]
+        self._memory_cache: Dict[
+            Tuple[str, str, bool], Tuple[Tuple[Tuple[str, int, int], ...], list[dict]]
+        ]
         self._memory_cache = {}
 
-    def _cache_file_path(self, model_name: str, detector_backend: str) -> Path:
+    def _cache_file_path(
+        self, model_name: str, detector_backend: str, enforce_detection: bool
+    ) -> Path:
         safe_model = model_name.replace("/", "_").replace(" ", "_")
         safe_detector = detector_backend.replace("/", "_").replace(" ", "_")
-        filename = f"representations_{safe_model.lower()}_{safe_detector.lower()}.pkl"
+        enforcement_suffix = "enf" if enforce_detection else "noenf"
+        filename = (
+            f"representations_{safe_model.lower()}_{safe_detector.lower()}_"
+            f"{enforcement_suffix}.pkl"
+        )
         return self._cache_root / filename
 
     def _current_dataset_state(self) -> Tuple[Tuple[str, int, int], ...]:
@@ -157,9 +165,9 @@ class DatasetEmbeddingCache:
         return tuple(entries)
 
     def _load_from_disk(
-        self, model_name: str, detector_backend: str
+        self, model_name: str, detector_backend: str, enforce_detection: bool
     ) -> Optional[Tuple[Tuple[Tuple[str, int, int], ...], list[dict]]]:
-        cache_file = self._cache_file_path(model_name, detector_backend)
+        cache_file = self._cache_file_path(model_name, detector_backend, enforce_detection)
         if not cache_file.exists():
             return None
 
@@ -180,10 +188,11 @@ class DatasetEmbeddingCache:
         self,
         model_name: str,
         detector_backend: str,
+        enforce_detection: bool,
         dataset_state: Tuple[Tuple[str, int, int], ...],
         dataset_index: list[dict],
     ) -> None:
-        cache_file = self._cache_file_path(model_name, detector_backend)
+        cache_file = self._cache_file_path(model_name, detector_backend, enforce_detection)
         try:
             cache_file.parent.mkdir(parents=True, exist_ok=True)
             payload = {
@@ -198,11 +207,12 @@ class DatasetEmbeddingCache:
         self,
         model_name: str,
         detector_backend: str,
+        enforce_detection: bool,
         builder: Callable[[], list[dict]],
     ) -> list[dict]:
         """Return cached embeddings, building them if the dataset has changed."""
 
-        key = (model_name, detector_backend)
+        key = (model_name, detector_backend, enforce_detection)
         current_state = self._current_dataset_state()
 
         with self._lock:
@@ -210,7 +220,7 @@ class DatasetEmbeddingCache:
             if memory_entry and memory_entry[0] == current_state:
                 return memory_entry[1]
 
-            disk_entry = self._load_from_disk(model_name, detector_backend)
+            disk_entry = self._load_from_disk(model_name, detector_backend, enforce_detection)
             if disk_entry and disk_entry[0] == current_state:
                 self._memory_cache[key] = disk_entry
                 return disk_entry[1]
@@ -221,7 +231,13 @@ class DatasetEmbeddingCache:
         with self._lock:
             entry = (refreshed_state, dataset_index)
             self._memory_cache[key] = entry
-            self._save_to_disk(model_name, detector_backend, refreshed_state, dataset_index)
+            self._save_to_disk(
+                model_name,
+                detector_backend,
+                enforce_detection,
+                refreshed_state,
+                dataset_index,
+            )
 
         return dataset_index
 
@@ -346,7 +362,9 @@ def _extract_first_embedding(representations) -> Tuple[Optional[Sequence[float]]
     return normalized, facial_area
 
 
-def _build_dataset_embeddings_for_matching(model_name: str, detector_backend: str):
+def _build_dataset_embeddings_for_matching(
+    model_name: str, detector_backend: str, enforce_detection: bool
+):
     """Build embeddings for the encrypted training dataset."""
 
     dataset_index = []
@@ -362,7 +380,7 @@ def _build_dataset_embeddings_for_matching(model_name: str, detector_backend: st
                 img_path=image,
                 model_name=model_name,
                 detector_backend=detector_backend,
-                enforce_detection=False,
+                enforce_detection=enforce_detection,
             )
         except Exception as exc:
             logger.debug("Failed to generate embedding for %s: %s", image_path, exc)
@@ -384,18 +402,56 @@ def _build_dataset_embeddings_for_matching(model_name: str, detector_backend: st
     return dataset_index
 
 
-def _load_dataset_embeddings_for_matching(model_name: str, detector_backend: str):
+def _load_dataset_embeddings_for_matching(
+    model_name: str, detector_backend: str, enforce_detection: bool
+):
     """Return embeddings from the cache, computing them if necessary."""
 
     return _dataset_embedding_cache.get_dataset_index(
         model_name,
         detector_backend,
-        lambda: _build_dataset_embeddings_for_matching(model_name, detector_backend),
+        enforce_detection,
+        lambda: _build_dataset_embeddings_for_matching(
+            model_name, detector_backend, enforce_detection
+        ),
     )
 
 
+def _calculate_embedding_distance(
+    candidate: np.ndarray, embedding_vector: np.ndarray, metric: str
+) -> Optional[float]:
+    """Compute a distance score between embeddings for the provided metric."""
+
+    metric = metric.lower()
+    try:
+        if metric in {"cosine", "cosine_similarity"}:
+            candidate_norm = float(np.linalg.norm(candidate))
+            vector_norm = float(np.linalg.norm(embedding_vector))
+            if candidate_norm == 0.0 or vector_norm == 0.0:
+                return None
+            similarity = float(np.dot(candidate, embedding_vector) / (candidate_norm * vector_norm))
+            return 1.0 - similarity
+
+        if metric in {"euclidean", "euclidean_l2", "l2"}:
+            return float(np.linalg.norm(candidate - embedding_vector))
+
+        if metric in {"manhattan", "l1", "euclidean_l1"}:
+            return float(np.sum(np.abs(candidate - embedding_vector)))
+
+    except Exception as exc:  # pragma: no cover - defensive programming
+        logger.debug("Failed to compute %s distance: %s", metric, exc)
+        return None
+
+    # Default to Euclidean L2 if metric is unrecognized
+    try:
+        return float(np.linalg.norm(candidate - embedding_vector))
+    except Exception as exc:  # pragma: no cover - defensive programming
+        logger.debug("Failed to compute fallback distance: %s", exc)
+        return None
+
+
 def _find_closest_dataset_match(
-    embedding_vector: np.ndarray, dataset_index
+    embedding_vector: np.ndarray, dataset_index, metric: str
 ) -> Optional[Tuple[str, float, str]]:
     """Return the nearest neighbour match for the provided embedding."""
 
@@ -410,10 +466,8 @@ def _find_closest_dataset_match(
         if candidate is None:
             continue
 
-        try:
-            distance = float(np.linalg.norm(candidate - embedding_vector))
-        except Exception as exc:  # pragma: no cover - defensive programming
-            logger.debug("Failed to compute distance for %s: %s", entry.get("identity"), exc)
+        distance = _calculate_embedding_distance(candidate, embedding_vector, metric)
+        if distance is None:
             continue
 
         if best_distance is None or distance < best_distance:
@@ -1045,6 +1099,9 @@ def _passes_liveness_check(
 ) -> bool:
     """Return ``True`` when the supplied frame passes the liveness gate."""
 
+    if not _is_liveness_enabled():
+        return True
+
     custom_checker = getattr(settings, "RECOGNITION_LIVENESS_CHECKER", None)
     if callable(custom_checker):
         try:
@@ -1173,11 +1230,13 @@ def _mark_attendance(request, check_in: bool):
     frames_processed = 0
 
     # Configure DeepFace settings
-    model_name = "Facenet"
-    detector_backend = "ssd"
+    model_name = _get_face_recognition_model()
+    detector_backend = _get_face_detection_backend()
+    enforce_detection = _should_enforce_detection()
     distance_threshold = getattr(
         settings, "RECOGNITION_DISTANCE_THRESHOLD", DEFAULT_DISTANCE_THRESHOLD
     )
+    distance_metric = _get_deepface_distance_metric()
 
     window_title = (
         "Mark Attendance - In - Press q to exit"
@@ -1185,7 +1244,9 @@ def _mark_attendance(request, check_in: bool):
         else "Mark Attendance- Out - Press q to exit"
     )
 
-    dataset_index = _load_dataset_embeddings_for_matching(model_name, detector_backend)
+    dataset_index = _load_dataset_embeddings_for_matching(
+        model_name, detector_backend, enforce_detection
+    )
     if not dataset_index:
         messages.error(
             request,
@@ -1210,7 +1271,7 @@ def _mark_attendance(request, check_in: bool):
                         img_path=frame,
                         model_name=model_name,
                         detector_backend=detector_backend,
-                        enforce_detection=False,
+                        enforce_detection=enforce_detection,
                     )
 
                     embedding_vector, facial_area = _extract_first_embedding(representations)
@@ -1218,7 +1279,9 @@ def _mark_attendance(request, check_in: bool):
                         continue
 
                     frame_embedding = np.array(embedding_vector, dtype=float)
-                    match = _find_closest_dataset_match(frame_embedding, dataset_index)
+                    match = _find_closest_dataset_match(
+                        frame_embedding, dataset_index, distance_metric
+                    )
                     if match is None:
                         continue
 
@@ -1495,6 +1558,42 @@ def view_my_attendance_employee_login(request):
     return render(request, "recognition/view_my_attendance_employee_login.html", context)
 
 
+def _get_deepface_options() -> Dict[str, Any]:
+    """Return the configured DeepFace options merged with defaults."""
+
+    defaults: Dict[str, Any] = {
+        "backend": "opencv",
+        "model": "Facenet",
+        "detector_backend": "ssd",
+        "distance_metric": "euclidean_l2",
+        "enforce_detection": False,
+        "anti_spoofing": True,
+    }
+
+    configured = getattr(settings, "DEEPFACE_OPTIMIZATIONS", {})
+    if not isinstance(configured, dict):
+        configured = {}
+
+    options = defaults | configured
+    distance_metric = str(options.get("distance_metric", "euclidean_l2")).lower()
+    options["distance_metric"] = distance_metric
+
+    enforce_value = options.get("enforce_detection", False)
+    if isinstance(enforce_value, str):
+        enforce_value = enforce_value.lower() in {"1", "true", "yes", "on"}
+    else:
+        enforce_value = bool(enforce_value)
+    options["enforce_detection"] = enforce_value
+
+    spoof_value = options.get("anti_spoofing", True)
+    if isinstance(spoof_value, str):
+        spoof_value = spoof_value.lower() in {"1", "true", "yes", "on"}
+    else:
+        spoof_value = bool(spoof_value)
+    options["anti_spoofing"] = spoof_value
+    return options
+
+
 def _get_face_detection_backend() -> str:
     """
     Return the configured face detection backend for DeepFace.
@@ -1504,7 +1603,7 @@ def _get_face_detection_backend() -> str:
     Returns:
         The name of the backend (e.g., 'opencv', 'ssd', 'dlib').
     """
-    return getattr(settings, "RECOGNITION_FACE_DETECTION_BACKEND", "opencv")
+    return str(_get_deepface_options().get("detector_backend", "opencv"))
 
 
 def _get_face_recognition_model() -> str:
@@ -1516,7 +1615,25 @@ def _get_face_recognition_model() -> str:
     Returns:
         The name of the face recognition model.
     """
-    return getattr(settings, "RECOGNITION_FACE_MODEL", "VGG-Face")
+    return str(_get_deepface_options().get("model", "VGG-Face"))
+
+
+def _should_enforce_detection() -> bool:
+    """Return whether DeepFace should enforce detection failures."""
+
+    return bool(_get_deepface_options().get("enforce_detection", False))
+
+
+def _get_deepface_distance_metric() -> str:
+    """Return the configured embedding distance metric."""
+
+    return str(_get_deepface_options().get("distance_metric", "euclidean_l2"))
+
+
+def _is_liveness_enabled() -> bool:
+    """Return whether anti-spoofing checks are enabled."""
+
+    return bool(_get_deepface_options().get("anti_spoofing", True))
 
 
 def _get_recognition_training_test_split_ratio() -> float:
@@ -1575,6 +1692,7 @@ def train_view(request):
 
     model_name = _get_face_recognition_model()
     detector_backend = _get_face_detection_backend()
+    enforce_detection = _should_enforce_detection()
 
     for image_path in image_paths:
         image = _load_encrypted_image(image_path)
@@ -1586,7 +1704,7 @@ def train_view(request):
                 img_path=image,
                 model_name=model_name,
                 detector_backend=detector_backend,
-                enforce_detection=False,
+                enforce_detection=enforce_detection,
             )
         except Exception as exc:
             logger.error("Failed to extract embedding for %s: %s", image_path, exc)
@@ -1720,7 +1838,10 @@ def mark_attendance_view(request, attendance_type):
     # --- Load cached embeddings to avoid rebuilding them per frame ---
     model_name = _get_face_recognition_model()
     detector_backend = _get_face_detection_backend()
-    dataset_index = _load_dataset_embeddings_for_matching(model_name, detector_backend)
+    enforce_detection = _should_enforce_detection()
+    dataset_index = _load_dataset_embeddings_for_matching(
+        model_name, detector_backend, enforce_detection
+    )
     if not dataset_index:
         logger.warning(
             "Cached embeddings are empty while marking attendance via SVC; continuing with model predictions."
@@ -1767,9 +1888,9 @@ def mark_attendance_view(request, attendance_type):
                     # --- Face Recognition ---
                     embeddings = DeepFace.represent(
                         img_path=frame,
-                        model_name=_get_face_recognition_model(),
-                        detector_backend=_get_face_detection_backend(),
-                        enforce_detection=False,
+                        model_name=model_name,
+                        detector_backend=detector_backend,
+                        enforce_detection=enforce_detection,
                     )
 
                     # Normalize and safely extract the first embedding + facial_area

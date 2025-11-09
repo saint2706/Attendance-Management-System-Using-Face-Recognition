@@ -36,6 +36,34 @@ class DeepFaceAttendanceTest(TestCase):
         self.db_path = Path(views.TRAINING_DATASET_ROOT)
         (self.db_path / "tester").mkdir(parents=True, exist_ok=True)
 
+    def test_default_deepface_configuration(self):
+        """Defaults should mirror the legacy DeepFace configuration."""
+
+        self.assertEqual(views._get_face_recognition_model(), "Facenet")
+        self.assertEqual(views._get_face_detection_backend(), "ssd")
+        self.assertEqual(views._get_deepface_distance_metric(), "euclidean_l2")
+        self.assertFalse(views._should_enforce_detection())
+        self.assertTrue(views._is_liveness_enabled())
+
+    def test_deepface_configuration_overrides(self):
+        """Environment or settings overrides should cascade through helpers."""
+
+        overrides = {
+            "backend": "opencv",
+            "model": "ArcFace",
+            "detector_backend": "retinaface",
+            "distance_metric": "cosine",
+            "enforce_detection": True,
+            "anti_spoofing": False,
+        }
+
+        with self.settings(DEEPFACE_OPTIMIZATIONS=overrides):
+            self.assertEqual(views._get_face_recognition_model(), "ArcFace")
+            self.assertEqual(views._get_face_detection_backend(), "retinaface")
+            self.assertEqual(views._get_deepface_distance_metric(), "cosine")
+            self.assertTrue(views._should_enforce_detection())
+            self.assertFalse(views._is_liveness_enabled())
+
     def _setup_mocks(self, mock_manager_factory, mock_cv2, frames=None):
         """Configure common mocks for video processing to isolate view logic."""
 
@@ -63,6 +91,16 @@ class DeepFaceAttendanceTest(TestCase):
         mock_cv2.waitKey.return_value = ord("q")
 
         return manager, consumer
+
+    @patch("recognition.views.DeepFace.analyze")
+    def test_liveness_disabled_bypasses_analyze(self, mock_analyze):
+        """Disabling anti-spoofing should skip DeepFace.analyze entirely."""
+
+        frame = np.zeros((10, 10, 3), dtype=np.uint8)
+        with self.settings(DEEPFACE_OPTIMIZATIONS={"anti_spoofing": False}):
+            self.assertTrue(views._passes_liveness_check(frame))
+
+        mock_analyze.assert_not_called()
 
     @patch("recognition.views.update_attendance_in_db_in")
     @patch("recognition.views._load_dataset_embeddings_for_matching")
@@ -101,6 +139,68 @@ class DeepFaceAttendanceTest(TestCase):
 
         # Assert that the database update function was called with the correct user
         mock_update_db.assert_called_once_with({"tester": True})
+
+    @patch("recognition.views.update_attendance_in_db_in")
+    @patch("recognition.views._find_closest_dataset_match")
+    @patch("recognition.views._load_dataset_embeddings_for_matching")
+    @patch("recognition.views.DeepFace.represent")
+    @patch("recognition.views.cv2")
+    @patch("recognition.views.get_webcam_manager")
+    def test_mark_attendance_respects_configured_parameters(
+        self,
+        mock_get_manager,
+        mock_cv2,
+        mock_deepface_represent,
+        mock_dataset_loader,
+        mock_find_match,
+        mock_update_db,
+    ):
+        """Attendance marking should honour DeepFace configuration overrides."""
+
+        overrides = {
+            "backend": "opencv",
+            "model": "SFace",
+            "detector_backend": "mtcnn",
+            "distance_metric": "cosine",
+            "enforce_detection": True,
+            "anti_spoofing": False,
+        }
+
+        request = self.factory.get("/mark_attendance/")
+        request.user = self.user
+        self._setup_mocks(mock_get_manager, mock_cv2)
+
+        mock_dataset_loader.return_value = [
+            {
+                "identity": str(self.db_path / "tester" / "1.jpg"),
+                "embedding": np.array([0.1, 0.2], dtype=float),
+                "username": "tester",
+            }
+        ]
+        mock_find_match.return_value = (
+            "tester",
+            0.05,
+            str(self.db_path / "tester" / "1.jpg"),
+        )
+        mock_deepface_represent.return_value = [
+            {
+                "embedding": [0.1, 0.2],
+                "facial_area": {"x": 10, "y": 10, "w": 50, "h": 50},
+            }
+        ]
+
+        with self.settings(DEEPFACE_OPTIMIZATIONS=overrides):
+            views.mark_your_attendance(request)
+
+        mock_update_db.assert_called_once_with({"tester": True})
+
+        _, kwargs = mock_deepface_represent.call_args
+        self.assertEqual(kwargs["model_name"], "SFace")
+        self.assertEqual(kwargs["detector_backend"], "mtcnn")
+        self.assertTrue(kwargs["enforce_detection"])
+
+        args, _ = mock_find_match.call_args
+        self.assertEqual(args[2], "cosine")
 
     @patch("recognition.views.update_attendance_in_db_out")
     @patch("recognition.views._load_dataset_embeddings_for_matching")
