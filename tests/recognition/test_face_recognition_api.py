@@ -4,11 +4,12 @@ import sys
 from unittest.mock import MagicMock
 
 import django
-import numpy as np
-import pytest
 from django.core.cache import cache
 from django.test import override_settings
 from django.urls import reverse
+
+import numpy as np
+import pytest
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 
@@ -16,8 +17,7 @@ sys.modules.setdefault("cv2", MagicMock())
 
 django.setup()
 
-from recognition import views
-
+from recognition import views  # noqa: E402
 
 pytestmark = pytest.mark.django_db
 

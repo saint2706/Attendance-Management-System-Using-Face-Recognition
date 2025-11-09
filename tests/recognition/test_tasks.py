@@ -1,16 +1,17 @@
 import os
 
-import pytest
 from django.utils import timezone
+
+import pytest
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 
-import django
+import django  # noqa: E402
 
 django.setup()
 
-from recognition.tasks import process_attendance_batch
-from users.models import Present, Time
+from recognition.tasks import process_attendance_batch  # noqa: E402
+from users.models import Present, Time  # noqa: E402
 
 
 @pytest.mark.django_db(transaction=True)

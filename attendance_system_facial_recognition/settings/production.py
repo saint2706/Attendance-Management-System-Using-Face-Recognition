@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import os
 
+from django.core.exceptions import ImproperlyConfigured
+
 from . import base as base_settings
 from .base import *  # noqa: F401,F403
+from .base import DATABASES  # noqa: F401
 
 
 def _get_db_setting(var_name: str, *, default: str | None = None) -> str:
