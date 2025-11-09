@@ -1,5 +1,5 @@
 {% extends "recognition/base.html" %}
-{% load crispy_forms_tags %}
+{% load static crispy_forms_tags %}
 
 {% block title %}Add Photos - Smart Attendance System{% endblock %}
 
@@ -28,6 +28,14 @@
                         <button class="btn btn-primary" type="submit" style="padding: var(--space-4) var(--space-6); font-size: var(--font-size-lg);">
                             <i class="fas fa-camera" aria-hidden="true"></i> Start Camera
                         </button>
+                        <button
+                            class="btn btn-outline-primary"
+                            type="button"
+                            data-camera-preview-trigger
+                            style="padding: var(--space-4) var(--space-6); font-size: var(--font-size-lg);"
+                        >
+                            <i class="fas fa-video" aria-hidden="true"></i> Preview Camera
+                        </button>
                         <a href="{% url 'dashboard' %}" class="btn btn-secondary" style="padding: var(--space-4) var(--space-6);">
                             <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Dashboard
                         </a>
@@ -35,6 +43,45 @@
                 </form>
             </div>
         </article>
+
+        <!-- Camera Preview Modal -->
+        <div
+            class="modal fade"
+            id="cameraPreviewModal"
+            tabindex="-1"
+            aria-labelledby="cameraPreviewModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title h5" id="cameraPreviewModalLabel">Camera Preview</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="ratio ratio-4x3 bg-dark rounded" style="--bs-aspect-ratio: 75%;">
+                            <video
+                                id="cameraPreview"
+                                class="w-100 h-100 rounded"
+                                autoplay
+                                muted
+                                playsinline
+                                data-camera-preview
+                            ></video>
+                        </div>
+                        <div class="alert alert-danger mt-3 d-none" role="alert" data-camera-error></div>
+                        <p class="text-muted small mt-3 mb-0">
+                            Grant camera permissions when prompted. The preview stops automatically once you close this dialog.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-xmark" aria-hidden="true"></i> Close Preview
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <!-- Instructions Card -->
         <div class="card mt-4" style="margin-top: var(--space-6); border-left: 4px solid var(--color-info);">
@@ -71,4 +118,82 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script type="module">
+    import { CameraManager } from "{% static 'js/camera.js' %}";
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const modalElement = document.getElementById("cameraPreviewModal");
+        const previewButton = document.querySelector("[data-camera-preview-trigger]");
+        const errorAlert = modalElement?.querySelector("[data-camera-error]");
+        const previewVideo = modalElement?.querySelector("[data-camera-preview]");
+
+        if (!modalElement || !window.bootstrap) {
+            return;
+        }
+
+        const cameraManager = new CameraManager();
+        const bootstrapModal = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+
+        const hideError = () => {
+            if (errorAlert) {
+                errorAlert.classList.add("d-none");
+                errorAlert.textContent = "";
+            }
+        };
+
+        const showError = (message) => {
+            if (!errorAlert) {
+                return;
+            }
+            errorAlert.textContent = message;
+            errorAlert.classList.remove("d-none");
+        };
+
+        if (previewButton) {
+            const cameraSupported = Boolean(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+            if (!cameraSupported) {
+                previewButton.disabled = true;
+                previewButton.title = "Camera preview is not supported in this browser.";
+            }
+
+            previewButton.addEventListener("click", (event) => {
+                event.preventDefault();
+                hideError();
+                bootstrapModal.show();
+            });
+        }
+
+        modalElement.addEventListener("shown.bs.modal", async () => {
+            hideError();
+            if (!previewVideo) {
+                return;
+            }
+
+            try {
+                await cameraManager.start(previewVideo);
+            } catch (error) {
+                cameraManager.stop();
+                showError(error?.message || "Unable to access the camera. Please check your browser permissions.");
+            }
+        });
+
+        const teardown = () => {
+            hideError();
+            cameraManager.stop();
+        };
+
+        modalElement.addEventListener("hidden.bs.modal", teardown);
+
+        window.addEventListener("beforeunload", () => cameraManager.stop());
+        window.addEventListener("pagehide", () => cameraManager.stop());
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "hidden") {
+                cameraManager.stop();
+            }
+        });
+    });
+</script>
 {% endblock %}
