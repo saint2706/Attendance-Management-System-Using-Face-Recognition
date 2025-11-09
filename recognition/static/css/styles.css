@@ -85,3 +85,51 @@
     color: #0d6efd;
     text-decoration: underline;
 }
+
+/* Camera preview modal */
+.camera-modal {
+    max-width: 720px;
+    width: min(92vw, 720px);
+}
+
+.camera-modal .modal-content {
+    border-radius: 1rem;
+}
+
+.camera-preview {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: #0b132b;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+}
+
+.camera-preview video,
+.camera-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@media (max-width: 576px) {
+    .camera-modal {
+        margin: 0;
+        width: 100vw;
+        max-width: none;
+        height: 100%;
+        padding: 1rem;
+    }
+
+    .camera-modal .modal-content {
+        border-radius: 0.75rem;
+        height: auto;
+    }
+
+    .camera-preview {
+        aspect-ratio: 3 / 4;
+    }
+}

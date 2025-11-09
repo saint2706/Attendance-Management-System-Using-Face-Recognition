@@ -44,7 +44,7 @@
             </div>
         </article>
 
-        <!-- Camera Preview Modal -->
+        <!-- Camera Preview Modal (camera-modal/camera-preview classes keep responsive sizing) -->
         <div
             class="modal fade"
             id="cameraPreviewModal"
@@ -52,17 +52,17 @@
             aria-labelledby="cameraPreviewModalLabel"
             aria-hidden="true"
         >
-            <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-dialog modal-dialog-centered modal-lg camera-modal">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 class="modal-title h5" id="cameraPreviewModalLabel">Camera Preview</h2>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="ratio ratio-4x3 bg-dark rounded" style="--bs-aspect-ratio: 75%;">
+                        <div class="camera-preview">
                             <video
                                 id="cameraPreview"
-                                class="w-100 h-100 rounded"
+                                class="w-100 h-100"
                                 autoplay
                                 muted
                                 playsinline
