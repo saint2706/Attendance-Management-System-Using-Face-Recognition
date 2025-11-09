@@ -10,6 +10,7 @@ import os
 import sys
 from pathlib import Path
 
+import dj_database_url
 from cryptography.fernet import Fernet
 from django.core.exceptions import ImproperlyConfigured
 
@@ -159,11 +160,30 @@ WSGI_APPLICATION = "attendance_system_facial_recognition.wsgi.application"
 # --- Database Configuration ---
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+default_db_url = os.environ.get(
+    "DATABASE_URL", f"sqlite:///{(BASE_DIR / 'db.sqlite3').as_posix()}"
+)
+
+conn_max_age_raw = os.environ.get("DATABASE_CONN_MAX_AGE")
+if conn_max_age_raw is None:
+    conn_max_age = 0
+else:
+    try:
+        conn_max_age = int(conn_max_age_raw)
+    except ValueError as exc:  # pragma: no cover - defensive programming
+        raise ImproperlyConfigured(
+            "DATABASE_CONN_MAX_AGE must be an integer if provided."
+        ) from exc
+    if conn_max_age < 0:
+        raise ImproperlyConfigured("DATABASE_CONN_MAX_AGE must be zero or positive.")
+
+database_config = dj_database_url.parse(default_db_url, conn_max_age=conn_max_age)
+
+if _get_bool_env("DATABASE_SSL_REQUIRE", default=False):
+    database_config.setdefault("OPTIONS", {})["sslmode"] = "require"
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": database_config,
 }
 
 

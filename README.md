@@ -20,7 +20,7 @@ This project is a fully refactored and modernized smart attendance system that l
 - **Face Recognition:** DeepFace (wrapping Facenet)
 - **Frontend:** HTML5, CSS3, Bootstrap 5, Custom CSS Design System
 - **JavaScript:** Vanilla JS (no framework dependencies)
-- **Database:** SQLite (default, configurable in Django)
+- **Database:** Configurable via `DATABASE_URL` (PostgreSQL recommended; falls back to SQLite for local development)
 - **Testing:** Django's built-in test framework, Playwright (planned)
 
 ## Getting Started
@@ -49,18 +49,25 @@ This project is a fully refactored and modernized smart attendance system that l
     pip install -r requirements.txt
     ```
 
-4.  **Run database migrations:**
+4.  **Configure environment variables:**
+    - Copy `.env.example` to `.env`.
+    - (Optional) Start the bundled Postgres service if you want to run against PostgreSQL instead of SQLite:
+      ```bash
+      docker compose up -d postgres
+      ```
+
+5.  **Run database migrations:**
     ```bash
     python manage.py migrate
     ```
 
-5.  **Create a superuser (admin account):**
+6.  **Create a superuser (admin account):**
     ```bash
     python manage.py createsuperuser
     ```
     Follow the prompts to create your admin username, email, and password.
 
-6.  **Run the development server:**
+7.  **Run the development server:**
     ```bash
     python manage.py runserver
     ```
@@ -83,6 +90,9 @@ When deploying to staging or production, configure the following environment var
 
 | Environment variable | Purpose | Recommended staging value | Recommended production value |
 | --- | --- | --- | --- |
+| `DATABASE_URL` | Connection string parsed with [`dj-database-url`](https://github.com/jazzband/dj-database-url). | `postgres://user:pass@db:5432/attendance` | `postgres://user:pass@db:5432/attendance` |
+| `DATABASE_CONN_MAX_AGE` | Persistent connection lifetime in seconds (`0` disables pooling). | `60` | `600` |
+| `DATABASE_SSL_REQUIRE` | Force `sslmode=require` for managed Postgres providers. | `false` | `true` |
 | `DJANGO_SESSION_COOKIE_SECURE` | Send the session cookie only over HTTPS. | `true` | `true` |
 | `DJANGO_SESSION_COOKIE_HTTPONLY` | Prevent client-side scripts from reading the session cookie. | `true` | `true` |
 | `DJANGO_CSRF_COOKIE_SECURE` | Send the CSRF cookie only over HTTPS. | `true` | `true` |
@@ -91,6 +101,24 @@ When deploying to staging or production, configure the following environment var
 | `DJANGO_SESSION_EXPIRE_AT_BROWSER_CLOSE` | Drop the session when the browser closes. | `true` | `true` |
 
 Ensure these variables are present in the staging and production deployment manifests (e.g., `.env` files, container secrets, or platform configuration) before rolling out new builds.
+
+### Database migration & testing workflow
+
+1.  **Local development:**
+    - Copy `.env.example` to `.env` and adjust credentials.
+    - Start the Postgres service from the provided Docker Compose profile:
+      ```bash
+      docker compose up -d postgres
+      ```
+    - Apply schema migrations against Postgres and run the Django test suite:
+      ```bash
+      python manage.py migrate
+      pytest
+      ```
+
+2.  **Continuous Integration:** Configure the CI job to export `DATABASE_URL` (for example, `postgres://postgres:postgres@localhost:5432/postgres`) before invoking `pytest` so the same migrations and tests execute against Postgres automatically.
+
+3.  **Production deployments:** Run `python manage.py migrate` as part of the release pipeline after setting the new database variables. Review logs for schema drift and keep a recent backup of the managed Postgres instance before upgrading.
 
 ## License
 
