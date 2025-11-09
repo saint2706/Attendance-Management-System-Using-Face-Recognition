@@ -273,7 +273,56 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = _get_bool_env(
 # Threshold for accepting DeepFace matches when marking attendance.
 # Lower values (e.g., 0.3) mean stricter matching, while higher values (e.g., 0.5)
 # are more permissive. This can be overridden via an environment variable.
-RECOGNITION_DISTANCE_THRESHOLD = float(os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4"))
+RECOGNITION_DISTANCE_THRESHOLD = float(
+    os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4")
+)
+
+
+def _build_deepface_optimizations() -> dict[str, object]:
+    """Return DeepFace tuning parameters with environment overrides."""
+
+    defaults: dict[str, object] = {
+        "backend": "opencv",
+        "model": "Facenet",
+        "detector_backend": "ssd",
+        "distance_metric": "euclidean_l2",
+        "enforce_detection": False,
+        "anti_spoofing": True,
+    }
+
+    env_overrides: dict[str, object] = {}
+
+    backend = os.environ.get("RECOGNITION_DEEPFACE_BACKEND")
+    if backend:
+        env_overrides["backend"] = backend
+
+    model = os.environ.get("RECOGNITION_DEEPFACE_MODEL")
+    if model:
+        env_overrides["model"] = model
+
+    detector_backend = os.environ.get("RECOGNITION_DEEPFACE_DETECTOR")
+    if detector_backend:
+        env_overrides["detector_backend"] = detector_backend
+
+    distance_metric = os.environ.get("RECOGNITION_DEEPFACE_DISTANCE_METRIC")
+    if distance_metric:
+        env_overrides["distance_metric"] = distance_metric
+
+    env_overrides["enforce_detection"] = _get_bool_env(
+        "RECOGNITION_DEEPFACE_ENFORCE_DETECTION",
+        default=bool(defaults["enforce_detection"]),
+    )
+    env_overrides["anti_spoofing"] = _get_bool_env(
+        "RECOGNITION_DEEPFACE_ANTI_SPOOFING",
+        default=bool(defaults["anti_spoofing"]),
+    )
+
+    merged = defaults.copy()
+    merged.update(env_overrides)
+    return merged
+
+
+DEEPFACE_OPTIMIZATIONS = _build_deepface_optimizations()
 
 # Rate limiting configuration for attendance endpoints. Uses django-ratelimit's
 # default cache to track request counts.
