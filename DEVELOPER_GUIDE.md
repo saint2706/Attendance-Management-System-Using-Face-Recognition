@@ -114,3 +114,29 @@ CI pipelines must export `DATABASE_URL` before running `pytest` so Django connec
 ```
 
 Running tests against Postgres ensures migrations stay compatible with the production backend and catches issues that do not appear with SQLite.
+
+## 8. Frontend utilities
+
+### CameraManager helper
+
+Use the `CameraManager` utility (`recognition/static/js/camera.js`) to initialise and tear down shared camera streams in templates. The helper reuses a single `MediaStream` and automatically releases tracks when you call `stop()`.
+
+```html
+{% load static %}
+<script type="module">
+  import { CameraManager } from "{% static 'js/camera.js' %}";
+
+  const cameraManager = new CameraManager();
+  const preview = document.querySelector("video");
+
+  async function openPreview() {
+    await cameraManager.start(preview);
+  }
+
+  function closePreview() {
+    cameraManager.stop();
+  }
+</script>
+```
+
+Always pair preview components with lifecycle events (`hidden.bs.modal`, `beforeunload`, etc.) that call `stop()` so the browser can release the webcam promptly.
