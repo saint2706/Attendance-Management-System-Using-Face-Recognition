@@ -10,6 +10,7 @@ import os
 import sys
 from pathlib import Path
 
+from cryptography.fernet import Fernet
 from django.core.exceptions import ImproperlyConfigured
 
 # Define the project's base directory.
@@ -62,6 +63,33 @@ if SECRET_KEY == DEFAULT_SECRET_KEY and not DEBUG:
     raise ImproperlyConfigured(
         "DJANGO_SECRET_KEY must be set to a secure value when DJANGO_DEBUG is not enabled."
     )
+
+
+def _load_data_encryption_key() -> bytes:
+    """Load the symmetric encryption key used for sensitive assets."""
+
+    key = os.environ.get("DATA_ENCRYPTION_KEY")
+    if key:
+        key_bytes = key.encode()
+        try:
+            Fernet(key_bytes)
+        except (ValueError, TypeError) as exc:  # pragma: no cover - defensive programming
+            raise ImproperlyConfigured(
+                "DATA_ENCRYPTION_KEY must be a valid 32-byte base64-encoded Fernet key."
+            ) from exc
+        return key_bytes
+
+    if DEBUG or TESTING:
+        # During development and automated tests fall back to an ephemeral key
+        # to avoid leaking plaintext assets to disk.
+        return Fernet.generate_key()
+
+    raise ImproperlyConfigured(
+        "DATA_ENCRYPTION_KEY environment variable must be set in production environments."
+    )
+
+
+DATA_ENCRYPTION_KEY = _load_data_encryption_key()
 
 # ALLOWED_HOSTS: A list of strings representing the host/domain names that this Django site can serve.
 # When DJANGO_DEBUG is False the value must be explicitly provided.

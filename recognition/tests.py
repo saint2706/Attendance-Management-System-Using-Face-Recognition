@@ -17,7 +17,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 import numpy as np
-import pandas as pd
 
 # Mock the cv2 module before it's imported by views to avoid installation in test environments
 sys.modules.setdefault("cv2", MagicMock())
@@ -49,31 +48,36 @@ class DeepFaceAttendanceTest(TestCase):
         mock_cv2.waitKey.return_value = ord("q")
 
     @patch("recognition.views.update_attendance_in_db_in")
-    @patch("recognition.views.DeepFace.find")
+    @patch("recognition.views._load_dataset_embeddings_for_matching")
+    @patch("recognition.views.DeepFace.represent")
     @patch("recognition.views.cv2")
     @patch("recognition.views.VideoStream")
     def test_mark_attendance_in_recognizes_user(
-        self, mock_videostream, mock_cv2, mock_deepface_find, mock_update_db
+        self,
+        mock_videostream,
+        mock_cv2,
+        mock_deepface_represent,
+        mock_dataset_loader,
+        mock_update_db,
     ):
         """Verify that a recognized user is correctly marked for check-in."""
         request = self.factory.get("/mark_attendance/")
         request.user = self.user
         self._setup_mocks(mock_videostream, mock_cv2)
 
-        # Simulate DeepFace successfully finding a matching user
-        mock_df = pd.DataFrame(
-            [
-                {
-                    "identity": str(self.db_path / "tester" / "1.jpg"),
-                    "source_x": 10,
-                    "source_y": 10,
-                    "source_w": 50,
-                    "source_h": 50,
-                    "distance": 0.3,
-                }
-            ]
-        )
-        mock_deepface_find.return_value = [mock_df]
+        mock_dataset_loader.return_value = [
+            {
+                "identity": str(self.db_path / "tester" / "1.jpg"),
+                "embedding": np.array([0.1, 0.2], dtype=float),
+                "username": "tester",
+            }
+        ]
+        mock_deepface_represent.return_value = [
+            {
+                "embedding": [0.1, 0.2],
+                "facial_area": {"x": 10, "y": 10, "w": 50, "h": 50},
+            }
+        ]
 
         # Call the view function
         views.mark_your_attendance(request)
@@ -82,11 +86,17 @@ class DeepFaceAttendanceTest(TestCase):
         mock_update_db.assert_called_once_with({"tester": True})
 
     @patch("recognition.views.update_attendance_in_db_out")
-    @patch("recognition.views.DeepFace.find")
+    @patch("recognition.views._load_dataset_embeddings_for_matching")
+    @patch("recognition.views.DeepFace.represent")
     @patch("recognition.views.cv2")
     @patch("recognition.views.VideoStream")
     def test_mark_attendance_out_recognizes_user(
-        self, mock_videostream, mock_cv2, mock_deepface_find, mock_update_db
+        self,
+        mock_videostream,
+        mock_cv2,
+        mock_deepface_represent,
+        mock_dataset_loader,
+        mock_update_db,
     ):
         """Verify that a recognized user is correctly marked for check-out."""
         request = self.factory.get("/mark_attendance_out/")
@@ -94,30 +104,36 @@ class DeepFaceAttendanceTest(TestCase):
         self._setup_mocks(mock_videostream, mock_cv2)
 
         # Simulate DeepFace finding a user with a low distance score (high confidence)
-        mock_df = pd.DataFrame(
-            [
-                {
-                    "identity": str(self.db_path / "tester" / "1.jpg"),
-                    "source_x": 10,
-                    "source_y": 10,
-                    "source_w": 50,
-                    "source_h": 50,
-                    "distance": 0.2,
-                }
-            ]
-        )
-        mock_deepface_find.return_value = [mock_df]
+        mock_dataset_loader.return_value = [
+            {
+                "identity": str(self.db_path / "tester" / "1.jpg"),
+                "embedding": np.array([0.1, 0.2], dtype=float),
+                "username": "tester",
+            }
+        ]
+        mock_deepface_represent.return_value = [
+            {
+                "embedding": [0.1, 0.2],
+                "facial_area": {"x": 10, "y": 10, "w": 50, "h": 50},
+            }
+        ]
 
         views.mark_your_attendance_out(request)
 
         mock_update_db.assert_called_once_with({"tester": True})
 
     @patch("recognition.views.update_attendance_in_db_in")
-    @patch("recognition.views.DeepFace.find")
+    @patch("recognition.views._load_dataset_embeddings_for_matching")
+    @patch("recognition.views.DeepFace.represent")
     @patch("recognition.views.cv2")
     @patch("recognition.views.VideoStream")
     def test_mark_attendance_in_ignores_low_confidence(
-        self, mock_videostream, mock_cv2, mock_deepface_find, mock_update_db
+        self,
+        mock_videostream,
+        mock_cv2,
+        mock_deepface_represent,
+        mock_dataset_loader,
+        mock_update_db,
     ):
         """Ensure that matches with high distance (low confidence) are ignored."""
         request = self.factory.get("/mark_attendance/")
@@ -125,19 +141,19 @@ class DeepFaceAttendanceTest(TestCase):
         self._setup_mocks(mock_videostream, mock_cv2)
 
         # Simulate a match with a distance score above the threshold
-        low_confidence_df = pd.DataFrame(
-            [
-                {
-                    "identity": str(self.db_path / "tester" / "1.jpg"),
-                    "source_x": 10,
-                    "source_y": 10,
-                    "source_w": 50,
-                    "source_h": 50,
-                    "distance": 0.9,  # High distance means low confidence
-                }
-            ]
-        )
-        mock_deepface_find.return_value = [low_confidence_df]
+        mock_dataset_loader.return_value = [
+            {
+                "identity": str(self.db_path / "tester" / "1.jpg"),
+                "embedding": np.array([5.0, 5.0], dtype=float),
+                "username": "tester",
+            }
+        ]
+        mock_deepface_represent.return_value = [
+            {
+                "embedding": [0.0, 0.0],
+                "facial_area": {"x": 10, "y": 10, "w": 50, "h": 50},
+            }
+        ]
 
         # Temporarily set the distance threshold for this test
         with self.settings(RECOGNITION_DISTANCE_THRESHOLD=0.4):
@@ -149,14 +165,16 @@ class DeepFaceAttendanceTest(TestCase):
     @patch("recognition.views.time.sleep", return_value=None)
     @patch("recognition.views._is_headless_environment", return_value=True)
     @patch("recognition.views.update_attendance_in_db_in")
-    @patch("recognition.views.DeepFace.find", return_value=[])
+    @patch("recognition.views._load_dataset_embeddings_for_matching")
+    @patch("recognition.views.DeepFace.represent", return_value=[])
     @patch("recognition.views.cv2")
     @patch("recognition.views.VideoStream")
     def test_mark_attendance_in_headless_exits(
         self,
         mock_videostream,
         mock_cv2,
-        mock_deepface_find,
+        _mock_deepface_represent,
+        mock_dataset_loader,
         mock_update_db,
         _mock_headless,
         _mock_sleep,
@@ -166,6 +184,14 @@ class DeepFaceAttendanceTest(TestCase):
         request = self.factory.get("/mark_attendance/")
         request.user = self.user
         self._setup_mocks(mock_videostream, mock_cv2)
+
+        mock_dataset_loader.return_value = [
+            {
+                "identity": str(self.db_path / "tester" / "1.jpg"),
+                "embedding": np.array([0.0, 0.0], dtype=float),
+                "username": "tester",
+            }
+        ]
 
         with self.settings(RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=2):
             views.mark_your_attendance(request)
@@ -177,14 +203,16 @@ class DeepFaceAttendanceTest(TestCase):
     @patch("recognition.views.time.sleep", return_value=None)
     @patch("recognition.views._is_headless_environment", return_value=True)
     @patch("recognition.views.update_attendance_in_db_out")
-    @patch("recognition.views.DeepFace.find", return_value=[])
+    @patch("recognition.views._load_dataset_embeddings_for_matching")
+    @patch("recognition.views.DeepFace.represent", return_value=[])
     @patch("recognition.views.cv2")
     @patch("recognition.views.VideoStream")
     def test_mark_attendance_out_headless_exits(
         self,
         mock_videostream,
         mock_cv2,
-        mock_deepface_find,
+        _mock_deepface_represent,
+        mock_dataset_loader,
         mock_update_db,
         _mock_headless,
         _mock_sleep,
@@ -194,6 +222,14 @@ class DeepFaceAttendanceTest(TestCase):
         request = self.factory.get("/mark_attendance_out/")
         request.user = self.user
         self._setup_mocks(mock_videostream, mock_cv2)
+
+        mock_dataset_loader.return_value = [
+            {
+                "identity": str(self.db_path / "tester" / "1.jpg"),
+                "embedding": np.array([0.0, 0.0], dtype=float),
+                "username": "tester",
+            }
+        ]
 
         with self.settings(RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=1):
             views.mark_your_attendance_out(request)
