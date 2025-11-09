@@ -17,6 +17,7 @@ dependencies = [
     "Django==5.1.14",
     "django-crispy-forms==2.1",
     "crispy-bootstrap5==2024.2",
+    "django-ratelimit==4.1.0",
     "django-pandas==0.6.7",
     "deepface==0.0.93",
     "imutils==0.5.4",
