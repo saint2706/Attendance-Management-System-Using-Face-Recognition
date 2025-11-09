@@ -98,7 +98,7 @@ class EncryptionWorkflowTests(TestCase):
             patch.object(views, "_is_headless_environment", return_value=True),
             patch.object(views, "time") as mock_time,
             patch.object(views, "cv2") as mock_cv2,
-            patch.object(views._dataset_embedding_cache, "invalidate") as mock_invalidate,
+            patch.object(views.django_rq, "enqueue") as mock_enqueue,
         ):
             mock_time.sleep.return_value = None
             mock_cv2.imencode.return_value = (True, encoded_bytes)
@@ -108,7 +108,11 @@ class EncryptionWorkflowTests(TestCase):
         stored_files = sorted(output_dir.glob("*.jpg"))
         self.assertEqual(len(stored_files), 1)
 
-        mock_invalidate.assert_called_once()
+        mock_enqueue.assert_called_once()
+        queued_args, queued_kwargs = mock_enqueue.call_args
+        self.assertEqual(queued_args[1], "alice")
+        self.assertEqual(len(queued_args[2]), 1)
+        self.assertFalse(queued_kwargs)
 
         encrypted_payload = stored_files[0].read_bytes()
         self.assertNotEqual(encrypted_payload, bytes(encoded_bytes))
