@@ -8,7 +8,7 @@ The application is built on the following core components:
 
 -   **Django**: The web framework that provides the application's structure, including the models, views, and templates.
 -   **DeepFace**: A lightweight face recognition and facial attribute analysis (age, gender, emotion, and race) library for Python. It is used to power the face recognition functionality of the application.
--   **SQLite**: The default database for the application. It is used to store the application's data, including the user accounts and attendance records.
+-   **PostgreSQL (via `DATABASE_URL`)**: Primary relational database for production deployments. The application falls back to SQLite when no external database URL is provided, which is useful for quick prototyping.
 -   **Bootstrap**: The front-end framework that is used to create the application's responsive web interface.
 
 ## 2. Architecture Diagram
@@ -17,7 +17,7 @@ The following diagram provides a high-level overview of the application's archit
 
 ```
 +-----------------+      +-----------------+      +-----------------+
-|   Web Browser   | <--> |     Django      | <--> |     SQLite      |
+|   Web Browser   | <--> |     Django      | <--> |   PostgreSQL    |
 +-----------------+      +-----------------+      +-----------------+
                            |
                            v
@@ -365,7 +365,7 @@ Face Recognition Data --> prepare_splits --> Train/Val/Test Splits
               +----------------+----------------+       |
                                |                        |
               +----------------v------------------------v-----+
-              |                    SQLite                     |
+              |                PostgreSQL / SQLite            |
               |  +------------------+  +------------------+   |
               |  | User Records     |  | Attendance       |   |
               |  |                  |  | Records          |   |
@@ -441,7 +441,7 @@ The complete technology stack now includes:
 - **argparse**: CLI argument parsing
 
 ### Database & Frontend
-- **SQLite**: Default database
+- **PostgreSQL**: Recommended production database (falls back to SQLite when `DATABASE_URL` is unset)
 - **Bootstrap 5**: Frontend framework
 - **HTML5/CSS3**: Web technologies
 

@@ -81,4 +81,36 @@ For a complete reference of all API endpoints and command-line tools, please see
 
 ## 6. Configuration
 
-The system can be configured using environment variables. For a detailed list of all configuration options, please see the [main README file](README.md#configuration).
+The system can be configured using environment variables. For a detailed list of all configuration options, please see the [main README file](README.md#deployment-configuration).
+
+## 7. Database backends
+
+### Local PostgreSQL with Docker Compose
+
+1. Copy `.env.example` to `.env` and update the secrets as required. The default values match the credentials exported by the Compose profile.
+2. Start the containerised database:
+   ```bash
+   docker compose up -d postgres
+   ```
+3. Run migrations and tests against the running Postgres instance:
+   ```bash
+   python manage.py migrate
+   pytest
+   ```
+4. Tear the database down when you are finished:
+   ```bash
+   docker compose down
+   ```
+
+### Continuous Integration
+
+CI pipelines must export `DATABASE_URL` before running `pytest` so Django connects to Postgres instead of the default SQLite fallback. A typical GitHub Actions job includes a Postgres service container and the following step:
+
+```yaml
+- name: Run tests
+  env:
+    DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+  run: pytest
+```
+
+Running tests against Postgres ensures migrations stay compatible with the production backend and catches issues that do not appear with SQLite.
