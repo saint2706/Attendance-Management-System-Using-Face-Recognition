@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import Union
 
-import numpy as np
-from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+
+import numpy as np
+from cryptography.fernet import Fernet, InvalidToken
 
 BytesLike = Union[bytes, bytearray, memoryview]
 
@@ -63,7 +64,9 @@ class FaceDataEncryption:
             raise TypeError("encrypt_encoding expects a numpy.ndarray")
         return self.encrypt(encoding.astype(np.float64).tobytes())
 
-    def decrypt_encoding(self, encrypted_data: BytesLike, dtype: np.dtype = np.float64) -> np.ndarray:
+    def decrypt_encoding(
+        self, encrypted_data: BytesLike, dtype: np.dtype = np.float64
+    ) -> np.ndarray:
         """Decrypt an encrypted encoding back into a numpy array."""
 
         decrypted = self.decrypt(encrypted_data)

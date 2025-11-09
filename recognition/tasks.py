@@ -142,7 +142,9 @@ def _load_existing_model() -> SGDClassifier | None:
     return None
 
 
-def _train_classifier(features: np.ndarray, labels: np.ndarray, classes: np.ndarray) -> SGDClassifier:
+def _train_classifier(
+    features: np.ndarray, labels: np.ndarray, classes: np.ndarray
+) -> SGDClassifier:
     """Train or update the incremental classifier on the provided dataset."""
 
     existing_model = _load_existing_model()
@@ -180,7 +182,9 @@ def incremental_face_training(employee_id: str, new_images: Sequence[str]) -> No
         logger.debug("No new images supplied for %s; skipping incremental training.", employee_id)
         return
 
-    logger.info("Starting incremental training for %s with %d images.", employee_id, len(new_images))
+    logger.info(
+        "Starting incremental training for %s with %d images.", employee_id, len(new_images)
+    )
 
     new_vectors: list[np.ndarray] = []
     for image in new_images:
@@ -191,7 +195,9 @@ def incremental_face_training(employee_id: str, new_images: Sequence[str]) -> No
         new_vectors.append(embedding.astype(np.float64))
 
     if not new_vectors:
-        logger.info("No embeddings produced for %s; skipping persistence and training.", employee_id)
+        logger.info(
+            "No embeddings produced for %s; skipping persistence and training.", employee_id
+        )
         return
 
     existing = load_existing_encodings(employee_id)
@@ -279,7 +285,9 @@ async def process_single_attendance(record: Mapping[str, Any]) -> dict[str, Any]
 
 
 @shared_task(bind=True)
-def process_attendance_batch(self, records: Sequence[Mapping[str, Any]] | None = None) -> dict[str, Any]:
+def process_attendance_batch(
+    self, records: Sequence[Mapping[str, Any]] | None = None
+) -> dict[str, Any]:
     """Process a batch of attendance records using asyncio within a Celery task."""
 
     normalized_records = list(records or [])
@@ -340,4 +348,3 @@ __all__ = [
     "process_single_attendance",
     "process_attendance_batch",
 ]
-

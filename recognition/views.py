@@ -38,15 +38,15 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from celery.result import AsyncResult
 import cv2
+import django_rq
 import imutils
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import django_rq
+from celery.result import AsyncResult
 from deepface import DeepFace
 from django_pandas.io import read_frame
 from django_ratelimit.core import is_ratelimited
@@ -980,9 +980,7 @@ def create_dataset(username: str) -> None:
                     incremental_face_training, username, [str(path) for path in saved_paths]
                 )
             except Exception as exc:  # pragma: no cover - defensive programming
-                logger.error(
-                    "Failed to enqueue incremental training for %s: %s", username, exc
-                )
+                logger.error("Failed to enqueue incremental training for %s: %s", username, exc)
 
 
 def update_attendance_in_db_in(present: Dict[str, bool]) -> None:
