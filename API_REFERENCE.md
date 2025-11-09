@@ -36,6 +36,7 @@ This document outlines all the URL patterns for the project and explains the pur
 |-------------------------------|------------------------------------|------------------------------|--------------------------------------------------------|
 | `/mark_your_attendance`       | `recog_views.mark_your_attendance` | `mark-your-attendance`       | Handles marking time-in using face recognition.        |
 | `/mark_your_attendance_out`   | `recog_views.mark_your_attendance_out` | `mark-your-attendance-out`   | Handles marking time-out using face recognition.       |
+| `/api/face-recognition/`      | `recog_views.FaceRecognitionAPI`    | `face-recognition-api`       | JSON API that evaluates submitted embeddings or images and returns the closest enrolled identity. Rate limited to 5 requests per minute per IP address. |
 
 ## Attendance Viewing
 
