@@ -51,6 +51,7 @@ from src.common import InvalidToken, decrypt_bytes, encrypt_bytes
 from users.models import Present, Time
 
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
+from .webcam_manager import get_webcam_manager
 
 # Use 'Agg' backend for Matplotlib to avoid GUI-related issues in a web server environment
 mpl.use("Agg")
@@ -1035,7 +1036,7 @@ def _mark_attendance(request, check_in: bool):
         request: The Django HttpRequest object.
         check_in: True for marking time-in, False for time-out.
     """
-    vs = VideoStream(src=0).start()
+    manager = get_webcam_manager()
     present = {}
     headless = _is_headless_environment()
     max_frames = int(getattr(settings, "RECOGNITION_HEADLESS_ATTENDANCE_FRAMES", 30))
@@ -1066,66 +1067,67 @@ def _mark_attendance(request, check_in: bool):
     spoof_detected = False
 
     try:
-        while True:
-            frame = vs.read()
-            if frame is None:
-                continue
-            frame = imutils.resize(frame, width=800)
-            frames_processed += 1
-
-            try:
-                # Use DeepFace to find matching faces in the database
-                representations = DeepFace.represent(
-                    img_path=frame,
-                    model_name=model_name,
-                    detector_backend=detector_backend,
-                    enforce_detection=False,
-                )
-
-                embedding_vector, facial_area = _extract_first_embedding(representations)
-                if embedding_vector is None:
+        with manager.frame_consumer() as consumer:
+            while True:
+                frame = consumer.read(timeout=1.0)
+                if frame is None:
                     continue
+                frame = imutils.resize(frame, width=800)
+                frames_processed += 1
 
-                frame_embedding = np.array(embedding_vector, dtype=float)
-                match = _find_closest_dataset_match(frame_embedding, dataset_index)
-                if match is None:
-                    continue
-
-                username, distance_value, identity_path = match
-                normalized_region = _normalize_face_region(facial_area)
-                spoofed = not _passes_liveness_check(frame, normalized_region)
-
-                if distance_value > distance_threshold:
-                    logger.info(
-                        "Ignoring potential match for '%s' due to high distance %.4f",
-                        Path(identity_path).parent.name,
-                        distance_value,
-                    )
-                    continue
-
-                if spoofed:
-                    spoof_detected = True
-                    logger.warning(
-                        "Spoofing attempt blocked while marking attendance for '%s'",
-                        username or Path(identity_path).parent.name,
+                try:
+                    # Use DeepFace to find matching faces in the database
+                    representations = DeepFace.represent(
+                        img_path=frame,
+                        model_name=model_name,
+                        detector_backend=detector_backend,
+                        enforce_detection=False,
                     )
 
-                    if normalized_region:
-                        x = int(normalized_region["x"])
-                        y = int(normalized_region["y"])
-                        w = int(normalized_region["w"])
-                        h = int(normalized_region["h"])
-                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-                        cv2.putText(
-                            frame,
-                            "Spoof detected",
-                            (x, max(y - 10, 0)),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.7,
-                            (0, 0, 255),
-                            2,
+                    embedding_vector, facial_area = _extract_first_embedding(representations)
+                    if embedding_vector is None:
+                        continue
+
+                    frame_embedding = np.array(embedding_vector, dtype=float)
+                    match = _find_closest_dataset_match(frame_embedding, dataset_index)
+                    if match is None:
+                        continue
+
+                    username, distance_value, identity_path = match
+                    normalized_region = _normalize_face_region(facial_area)
+                    spoofed = not _passes_liveness_check(frame, normalized_region)
+
+                    if distance_value > distance_threshold:
+                        logger.info(
+                            "Ignoring potential match for '%s' due to high distance %.4f",
+                            Path(identity_path).parent.name,
+                            distance_value,
                         )
-                    continue
+                        continue
+
+                    if spoofed:
+                        spoof_detected = True
+                        logger.warning(
+                            "Spoofing attempt blocked while marking attendance for '%s'",
+                            username or Path(identity_path).parent.name,
+                        )
+
+                        if normalized_region:
+                            x = int(normalized_region["x"])
+                            y = int(normalized_region["y"])
+                            w = int(normalized_region["w"])
+                            h = int(normalized_region["h"])
+                            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                            cv2.putText(
+                                frame,
+                                "Spoof detected",
+                                (x, max(y - 10, 0)),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.7,
+                                (0, 0, 255),
+                                2,
+                            )
+                        continue
 
                     if username:
                         present[username] = True
@@ -1149,21 +1151,22 @@ def _mark_attendance(request, check_in: bool):
                                 2,
                             )
 
-            except Exception as e:
-                logger.error("Error during face recognition loop: %s", e)
+                except Exception as e:
+                    logger.error("Error during face recognition loop: %s", e)
 
-            if not headless:
-                cv2.imshow(window_title, frame)
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break
-            else:
-                if frame_pause:
-                    time.sleep(frame_pause)
-                if frames_processed >= max_frames:
-                    logger.info("Headless mode reached frame limit of %d frames", max_frames)
-                    break
+                if not headless:
+                    cv2.imshow(window_title, frame)
+                    if cv2.waitKey(1) & 0xFF == ord("q"):
+                        break
+                else:
+                    if frame_pause:
+                        time.sleep(frame_pause)
+                    if frames_processed >= max_frames:
+                        logger.info(
+                            "Headless mode reached frame limit of %d frames", max_frames
+                        )
+                        break
     finally:
-        vs.stop()
         if not headless:
             cv2.destroyAllWindows()
 
@@ -1605,9 +1608,7 @@ def mark_attendance_view(request, attendance_type):
         return redirect("train")
 
     # --- Video Stream ---
-    video_stream = VideoStream(src=0).start()
-    time.sleep(2.0)  # Allow camera to warm up
-
+    manager = get_webcam_manager()
     present = {name: False for name in class_names}
     spoof_detected = False
     headless = _is_headless_environment()
@@ -1616,107 +1617,107 @@ def mark_attendance_view(request, attendance_type):
 
     frame_count = 0
     try:
-        while True:
-            frame = video_stream.read()
-            if frame is None:
-                continue
-            frame = imutils.resize(frame, width=800)
-            frame_count += 1
+        with manager.frame_consumer() as consumer:
+            while True:
+                frame = consumer.read(timeout=1.0)
+                if frame is None:
+                    continue
+                frame = imutils.resize(frame, width=800)
+                frame_count += 1
 
-            try:
-                # --- Face Recognition ---
-                embeddings = DeepFace.represent(
-                    img_path=frame,
-                    model_name=_get_face_recognition_model(),
-                    detector_backend=_get_face_detection_backend(),
-                    enforce_detection=False,
-                )
-
-                # Normalize and safely extract the first embedding + facial_area
-                embedding_vector = None
-                facial_area = None
-                if (
-                    isinstance(embeddings, np.ndarray)
-                    and embeddings.ndim == 2
-                    and len(embeddings) > 0
-                ):
-                    embedding_vector = list(embeddings[0])
-                elif isinstance(embeddings, list) and len(embeddings) > 0:
-                    first = embeddings[0]
-                    if isinstance(first, dict):
-                        embedding_vector = first.get("embedding")
-                        facial_area = first.get("facial_area")  # noqa: F841
-                    elif isinstance(first, (list, tuple, np.ndarray)):
-                        embedding_vector = list(first)
-                    else:
-                        try:
-                            embedding_vector = list(first)
-                        except Exception:
-                            embedding_vector = None
-
-                if embedding_vector is not None:
-                    predicted_name, spoofed, normalized_region = _predict_identity_from_embedding(
-                        frame,
-                        embedding_vector,
-                        facial_area if isinstance(facial_area, dict) else None,
-                        model,
-                        class_names,
-                        attendance_type,
+                try:
+                    # --- Face Recognition ---
+                    embeddings = DeepFace.represent(
+                        img_path=frame,
+                        model_name=_get_face_recognition_model(),
+                        detector_backend=_get_face_detection_backend(),
+                        enforce_detection=False,
                     )
 
-                    if spoofed:
-                        spoof_detected = True
-                        if normalized_region:
-                            x = int(normalized_region["x"])
-                            y = int(normalized_region["y"])
-                            w = int(normalized_region["w"])
-                            h = int(normalized_region["h"])
-                            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-                            cv2.putText(
-                                frame,
-                                "Spoof detected",
-                                (x, max(y - 10, 0)),
-                                cv2.FONT_HERSHEY_SIMPLEX,
-                                0.7,
-                                (0, 0, 255),
-                                2,
-                            )
-                        continue
+                    # Normalize and safely extract the first embedding + facial_area
+                    embedding_vector = None
+                    facial_area = None
+                    if (
+                        isinstance(embeddings, np.ndarray)
+                        and embeddings.ndim == 2
+                        and len(embeddings) > 0
+                    ):
+                        embedding_vector = list(embeddings[0])
+                    elif isinstance(embeddings, list) and len(embeddings) > 0:
+                        first = embeddings[0]
+                        if isinstance(first, dict):
+                            embedding_vector = first.get("embedding")
+                            facial_area = first.get("facial_area")  # noqa: F841
+                        elif isinstance(first, (list, tuple, np.ndarray)):
+                            embedding_vector = list(first)
+                        else:
+                            try:
+                                embedding_vector = list(first)
+                            except Exception:
+                                embedding_vector = None
 
-                    if predicted_name:
-                        present[predicted_name] = True
+                    if embedding_vector is not None:
+                        predicted_name, spoofed, normalized_region = _predict_identity_from_embedding(
+                            frame,
+                            embedding_vector,
+                            facial_area if isinstance(facial_area, dict) else None,
+                            model,
+                            class_names,
+                            attendance_type,
+                        )
 
-                        if normalized_region:
-                            x = int(normalized_region["x"])
-                            y = int(normalized_region["y"])
-                            w = int(normalized_region["w"])
-                            h = int(normalized_region["h"])
-                            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                            cv2.putText(
-                                frame,
-                                predicted_name,
-                                (x, max(y - 10, 0)),
-                                cv2.FONT_HERSHEY_SIMPLEX,
-                                0.7,
-                                (0, 255, 0),
-                                2,
-                            )
+                        if spoofed:
+                            spoof_detected = True
+                            if normalized_region:
+                                x = int(normalized_region["x"])
+                                y = int(normalized_region["y"])
+                                w = int(normalized_region["w"])
+                                h = int(normalized_region["h"])
+                                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                                cv2.putText(
+                                    frame,
+                                    "Spoof detected",
+                                    (x, max(y - 10, 0)),
+                                    cv2.FONT_HERSHEY_SIMPLEX,
+                                    0.7,
+                                    (0, 0, 255),
+                                    2,
+                                )
+                            continue
 
-            except Exception as e:
-                logger.warning("Could not process frame for recognition: %s", e)
+                        if predicted_name:
+                            present[predicted_name] = True
 
-            if not headless:
-                cv2.imshow(f"Marking Attendance ({attendance_type})", frame)
-                if cv2.waitKey(1) & 0xFF == ord("q"):
+                            if normalized_region:
+                                x = int(normalized_region["x"])
+                                y = int(normalized_region["y"])
+                                w = int(normalized_region["w"])
+                                h = int(normalized_region["h"])
+                                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                                cv2.putText(
+                                    frame,
+                                    predicted_name,
+                                    (x, max(y - 10, 0)),
+                                    cv2.FONT_HERSHEY_SIMPLEX,
+                                    0.7,
+                                    (0, 255, 0),
+                                    2,
+                                )
+
+                except Exception as e:
+                    logger.warning("Could not process frame for recognition: %s", e)
+
+                if not headless:
+                    cv2.imshow(f"Marking Attendance ({attendance_type})", frame)
+                    if cv2.waitKey(1) & 0xFF == ord("q"):
+                        break
+                else:
+                    if frame_pause:
+                        time.sleep(frame_pause)
+
+                if frame_count >= max_frames:
                     break
-            else:
-                if frame_pause:
-                    time.sleep(frame_pause)
-
-            if frame_count >= max_frames:
-                break
     finally:
-        video_stream.stop()
         if not headless:
             cv2.destroyAllWindows()
 
