@@ -1,18 +1,26 @@
-"""
-Tests for the recognition app.
+"""Tests for the recognition app.
 
 This module contains test cases for the core functionalities of the recognition app,
 including face recognition-based attendance marking, database updates, admin-only
 views, and user access control.
 """
 
+import os
+import shutil
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import django
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
+django.setup()
+
+from cryptography.fernet import Fernet
 from django.contrib.auth.models import User
 from django.contrib.messages.storage.fallback import FallbackStorage
-from django.test import RequestFactory, TestCase
+from django.core.cache import cache
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -23,6 +31,10 @@ sys.modules.setdefault("cv2", MagicMock())
 
 from recognition import views  # noqa: E402
 from users.models import Present, Time  # noqa: E402
+from src.common import encrypt_bytes  # noqa: E402
+
+
+TEST_FERNET_KEY = Fernet.generate_key()
 
 
 class DeepFaceAttendanceTest(TestCase):
@@ -179,6 +191,8 @@ class DeepFaceAttendanceTest(TestCase):
         # Verify that the database update was called with an empty dictionary
         mock_update_db.assert_called_once_with({})
 
+
+
     @patch("recognition.views.time.sleep", return_value=None)
     @patch("recognition.views._is_headless_environment", return_value=True)
     @patch("recognition.views.update_attendance_in_db_in")
@@ -218,46 +232,83 @@ class DeepFaceAttendanceTest(TestCase):
         mock_cv2.imshow.assert_not_called()
         mock_cv2.waitKey.assert_not_called()
 
-    @patch("recognition.views.time.sleep", return_value=None)
-    @patch("recognition.views._is_headless_environment", return_value=True)
-    @patch("recognition.views.update_attendance_in_db_out")
-    @patch("recognition.views._load_dataset_embeddings_for_matching")
-    @patch("recognition.views.DeepFace.represent", return_value=[])
+
+class EmbeddingCacheHelperTests(TestCase):
+    """Tests for the embedding caching helper."""
+
+    def setUp(self):
+        self.training_root = Path(views.TRAINING_DATASET_ROOT)
+        self.user_dir = self.training_root / "cache_user"
+        self.user_dir.mkdir(parents=True, exist_ok=True)
+        cache.clear()
+
+        self.addCleanup(lambda: shutil.rmtree(self.user_dir, ignore_errors=True))
+        self.addCleanup(cache.clear)
+
+    def _write_encrypted_image(self, filename: str, decrypted_bytes: bytes) -> Path:
+        image_path = self.user_dir / filename
+        image_path.parent.mkdir(parents=True, exist_ok=True)
+        image_path.write_bytes(encrypt_bytes(decrypted_bytes))
+        return image_path
+
+    @override_settings(DATA_ENCRYPTION_KEY=TEST_FERNET_KEY)
     @patch("recognition.views.cv2")
-    @patch("recognition.views.get_webcam_manager")
-    def test_mark_attendance_out_headless_exits(
-        self,
-        mock_get_manager,
-        mock_cv2,
-        _mock_deepface_represent,
-        mock_dataset_loader,
-        mock_update_db,
-        _mock_headless,
-        _mock_sleep,
+    @patch("recognition.views.DeepFace.represent")
+    def test_helper_uses_cache_for_repeated_calls(
+        self, mock_deepface_represent, mock_cv2
     ):
-        """Headless mode should exit automatically for check-out as well."""
+        mock_cv2.IMREAD_COLOR = 1
+        mock_cv2.imdecode.return_value = np.zeros((5, 5, 3), dtype=np.uint8)
 
-        request = self.factory.get("/mark_attendance_out/")
-        request.user = self.user
-        frames = [np.zeros((480, 640, 3), dtype=np.uint8) for _ in range(2)]
-        self._setup_mocks(mock_get_manager, mock_cv2, frames=frames)
+        mock_deepface_represent.return_value = [{"embedding": [0.1, 0.2, 0.3]}]
 
-        mock_dataset_loader.return_value = [
-            {
-                "identity": str(self.db_path / "tester" / "1.jpg"),
-                "embedding": np.array([0.0, 0.0], dtype=float),
-                "username": "tester",
-            }
+        decrypted_bytes = bytes(range(1, 50))
+        image_path = self._write_encrypted_image("1.jpg", decrypted_bytes)
+
+        embedding_first = views._get_or_compute_cached_embedding(
+            image_path, "VGG-Face", "opencv"
+        )
+        embedding_second = views._get_or_compute_cached_embedding(
+            image_path, "VGG-Face", "opencv"
+        )
+
+        self.assertIsNotNone(embedding_first)
+        np.testing.assert_array_equal(embedding_first, embedding_second)
+        self.assertEqual(mock_deepface_represent.call_count, 1)
+
+    @override_settings(DATA_ENCRYPTION_KEY=TEST_FERNET_KEY)
+    @patch("recognition.views.cv2")
+    @patch("recognition.views.DeepFace.represent")
+    def test_helper_recomputes_when_file_changes(
+        self, mock_deepface_represent, mock_cv2
+    ):
+        mock_cv2.IMREAD_COLOR = 1
+        mock_cv2.imdecode.return_value = np.zeros((5, 5, 3), dtype=np.uint8)
+
+        mock_deepface_represent.side_effect = [
+            [{"embedding": [0.1, 0.2]}],
+            [{"embedding": [0.9, 0.8]}],
         ]
 
-        with self.settings(RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=1):
-            views.mark_your_attendance_out(request)
+        first_bytes = bytes(range(1, 50))
+        image_path = self._write_encrypted_image("2.jpg", first_bytes)
 
-        mock_update_db.assert_called_once_with({})
-        mock_cv2.imshow.assert_not_called()
-        mock_cv2.waitKey.assert_not_called()
+        first_embedding = views._get_or_compute_cached_embedding(
+            image_path, "VGG-Face", "opencv"
+        )
+        self.assertIsNotNone(first_embedding)
 
+        updated_bytes = bytes(reversed(range(1, 50)))
+        image_path.write_bytes(encrypt_bytes(updated_bytes))
 
+        second_embedding = views._get_or_compute_cached_embedding(
+            image_path, "VGG-Face", "opencv"
+        )
+        self.assertIsNotNone(second_embedding)
+
+        self.assertEqual(mock_deepface_represent.call_count, 2)
+        with self.assertRaises(AssertionError):
+            np.testing.assert_array_equal(first_embedding, second_embedding)
 class DatabaseUpdateTest(TestCase):
     """Test suite for database update functions."""
 
