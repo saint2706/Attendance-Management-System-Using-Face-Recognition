@@ -8,6 +8,8 @@ django-rq==2.10.2
 deepface==0.0.93
 imutils==0.5.4
 matplotlib==3.8.4
+celery==5.4.0
+redis==5.2.1
 seaborn==0.13.2
 Pillow==10.3.0
 opencv-python==4.9.0.80

@@ -134,6 +134,9 @@ def _load_face_data_encryption_key() -> bytes:
 
 FACE_DATA_ENCRYPTION_KEY = _load_face_data_encryption_key()
 
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379/1")
+
 # ALLOWED_HOSTS: A list of strings representing the host/domain names that this Django site can serve.
 # When DJANGO_DEBUG is False the value must be explicitly provided.
 allowed_hosts_env = os.environ.get("DJANGO_ALLOWED_HOSTS")

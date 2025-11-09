@@ -38,6 +38,7 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 
+from celery.result import AsyncResult
 import cv2
 import imutils
 import matplotlib as mpl
@@ -121,6 +122,14 @@ def attendance_rate_limited(view_func):
         return view_func(request, *args, **kwargs)
 
     return _wrapped
+
+
+def _enqueue_attendance_records(records: Sequence[Dict[str, Any]]) -> AsyncResult:
+    """Submit attendance records for asynchronous processing via Celery."""
+
+    from .tasks import process_attendance_batch
+
+    return process_attendance_batch.delay(records)
 
 
 @method_decorator(ratelimit(key="ip", rate="5/m", method="POST", block=False), name="post")
@@ -350,6 +359,54 @@ class FaceRecognitionAPI(View):
             response_payload["recognized"] = bool(distance_value <= distance_threshold)
 
         return JsonResponse(response_payload)
+
+
+@login_required
+@attendance_rate_limited
+def enqueue_attendance_batch(request):
+    """Accept a batch of attendance records and enqueue them for Celery processing."""
+
+    if request.method.upper() != "POST":
+        return JsonResponse({"detail": "Method not allowed."}, status=405)
+
+    try:
+        raw_body = request.body.decode(request.encoding or "utf-8") if request.body else "{}"
+    except UnicodeDecodeError:
+        return JsonResponse({"detail": "Request body must be UTF-8 encoded."}, status=400)
+
+    try:
+        payload = json.loads(raw_body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"detail": "Invalid JSON payload."}, status=400)
+
+    records = payload.get("records")
+    if not isinstance(records, list):
+        return JsonResponse({"detail": "'records' must be a list."}, status=400)
+
+    normalized_records: list[Dict[str, Any]] = []
+    for index, record in enumerate(records):
+        if not isinstance(record, dict):
+            return JsonResponse(
+                {"detail": f"Record at index {index} must be a JSON object."}, status=400
+            )
+        normalized_records.append(record)
+
+    try:
+        async_result = _enqueue_attendance_records(normalized_records)
+    except Exception:  # pragma: no cover - defensive programming
+        logger.exception("Failed to enqueue attendance batch via API.")
+        return JsonResponse(
+            {"detail": "Unable to enqueue attendance batch at this time."}, status=503
+        )
+
+    return JsonResponse(
+        {
+            "task_id": async_result.id,
+            "status": async_result.status,
+            "total": len(normalized_records),
+        },
+        status=202,
+    )
 
 
 # Define root directories for data storage
@@ -1724,11 +1781,26 @@ def _mark_attendance(request, check_in: bool):
     if spoof_detected:
         messages.error(request, LIVENESS_FAILURE_MESSAGE)
 
-    # Update the database based on whether it's a check-in or check-out
-    if check_in:
-        update_attendance_in_db_in(present)
-    else:
-        update_attendance_in_db_out(present)
+    if present:
+        record = {
+            "direction": "in" if check_in else "out",
+            "present": present,
+        }
+        try:
+            async_result = _enqueue_attendance_records([record])
+            logger.info(
+                "Queued attendance batch %s for %s event.",
+                async_result.id,
+                record["direction"],
+            )
+        except Exception:  # pragma: no cover - defensive programming
+            logger.exception(
+                "Failed to enqueue attendance processing; falling back to synchronous update."
+            )
+            if check_in:
+                update_attendance_in_db_in(present)
+            else:
+                update_attendance_in_db_out(present)
 
     return redirect("home")
 
@@ -2330,12 +2402,36 @@ def mark_attendance_view(request, attendance_type):
     if spoof_detected:
         messages.error(request, LIVENESS_FAILURE_MESSAGE)
 
-    # --- Update Database ---
-    if attendance_type == "in":
-        update_attendance_in_db_in(present)
-        messages.success(request, "Checked-in users have been marked present.")
-    elif attendance_type == "out":
-        update_attendance_in_db_out(present)
-        messages.success(request, "Checked-out users have been marked.")
+    if present:
+        record = {"direction": attendance_type, "present": present}
+        try:
+            async_result = _enqueue_attendance_records([record])
+            logger.info(
+                "Queued attendance batch %s for %s event via API.",
+                async_result.id,
+                attendance_type,
+            )
+            if attendance_type == "in":
+                messages.success(
+                    request,
+                    "Checked-in users are being processed in the background.",
+                )
+            elif attendance_type == "out":
+                messages.success(
+                    request,
+                    "Checked-out users are being processed in the background.",
+                )
+        except Exception:  # pragma: no cover - defensive programming
+            logger.exception(
+                "Failed to enqueue attendance processing via API; applying updates synchronously."
+            )
+            if attendance_type == "in":
+                update_attendance_in_db_in(present)
+                messages.success(request, "Checked-in users have been marked present.")
+            elif attendance_type == "out":
+                update_attendance_in_db_out(present)
+                messages.success(request, "Checked-out users have been marked.")
+    else:
+        messages.info(request, "No recognized users to update attendance for.")
 
     return redirect("home")

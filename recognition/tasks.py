@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import asyncio
 import io
 import logging
 import pickle
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 
 import numpy as np
+from asgiref.sync import sync_to_async
+from celery import shared_task
 from django_rq import job
 from sklearn.linear_model import SGDClassifier
 
@@ -22,6 +25,8 @@ from .views import (
     _get_face_recognition_model,
     _get_or_compute_cached_embedding,
     _should_enforce_detection,
+    update_attendance_in_db_in,
+    update_attendance_in_db_out,
 )
 
 logger = logging.getLogger(__name__)
@@ -232,10 +237,107 @@ def incremental_face_training(employee_id: str, new_images: Sequence[str]) -> No
         _dataset_embedding_cache.invalidate()
 
 
+async def process_single_attendance(record: Mapping[str, Any]) -> dict[str, Any]:
+    """Process a single attendance record asynchronously."""
+
+    direction = str(record.get("direction", "in")).lower()
+    payload = record.get("present") or record.get("payload") or {}
+
+    result: dict[str, Any] = {
+        "direction": direction,
+        "processed": 0,
+        "status": "success",
+    }
+
+    if direction not in {"in", "out"}:
+        result["status"] = "error"
+        result["error"] = "direction must be either 'in' or 'out'"
+        return result
+
+    if not isinstance(payload, Mapping):
+        result["status"] = "error"
+        result["error"] = "present payload must be a mapping"
+        return result
+
+    present_payload = dict(payload)
+    result["processed"] = len(present_payload)
+
+    if not present_payload:
+        return result
+
+    update_fn = update_attendance_in_db_in if direction == "in" else update_attendance_in_db_out
+    update_async = sync_to_async(update_fn, thread_sensitive=True)
+
+    try:
+        await update_async(present_payload)
+    except Exception as exc:  # pragma: no cover - defensive programming
+        logger.exception("Failed to process %s attendance payload: %s", direction, exc)
+        result["status"] = "error"
+        result["error"] = str(exc)
+
+    return result
+
+
+@shared_task(bind=True)
+def process_attendance_batch(self, records: Sequence[Mapping[str, Any]] | None = None) -> dict[str, Any]:
+    """Process a batch of attendance records using asyncio within a Celery task."""
+
+    normalized_records = list(records or [])
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        if normalized_records:
+            raw_results = loop.run_until_complete(
+                asyncio.gather(
+                    *(process_single_attendance(record) for record in normalized_records),
+                    return_exceptions=True,
+                )
+            )
+        else:
+            raw_results = []
+
+        results: list[dict[str, Any]] = []
+        for index, outcome in enumerate(raw_results):
+            if isinstance(outcome, Exception):
+                logger.exception(
+                    "Attendance batch entry %d raised an exception.",
+                    index,
+                    exc_info=outcome,
+                )
+                record_direction = str(
+                    normalized_records[index].get("direction", "unknown")
+                ).lower()
+                results.append(
+                    {
+                        "direction": record_direction,
+                        "processed": 0,
+                        "status": "error",
+                        "error": str(outcome),
+                    }
+                )
+            else:
+                results.append(outcome)
+    finally:
+        try:
+            loop.run_until_complete(loop.shutdown_asyncgens())
+        except Exception:  # pragma: no cover - defensive programming
+            logger.debug("Async generator shutdown encountered an issue.")
+        asyncio.set_event_loop(None)
+        loop.close()
+
+    return {
+        "results": results,
+        "total": len(normalized_records),
+    }
+
+
 __all__ = [
     "incremental_face_training",
     "compute_face_encoding",
     "load_existing_encodings",
     "save_employee_encodings",
+    "process_single_attendance",
+    "process_attendance_batch",
 ]
 

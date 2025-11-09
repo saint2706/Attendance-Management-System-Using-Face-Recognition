@@ -61,6 +61,11 @@ urlpatterns = [
         recog_views.FaceRecognitionAPI.as_view(),
         name="face-recognition-api",
     ),
+    path(
+        "api/attendance/batch/",
+        recog_views.enqueue_attendance_batch,
+        name="attendance-batch",
+    ),
     # Attendance Viewing
     path(
         "view_attendance_home",
