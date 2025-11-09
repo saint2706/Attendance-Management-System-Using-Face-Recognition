@@ -9,6 +9,7 @@ marking attendance, and displaying attendance data.
 from __future__ import annotations
 
 import datetime
+import hashlib
 import io
 import logging
 import math
@@ -26,6 +27,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db.models import Count, QuerySet
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -278,9 +280,8 @@ def _save_plot_to_media(path: Path) -> str:
     return _media_url_for(path)
 
 
-def _load_encrypted_image(image_path: Path) -> Optional[np.ndarray]:
-    """Decrypt and load an encrypted image stored on disk."""
-
+def _decrypt_image_bytes(image_path: Path) -> Optional[bytes]:
+    """Return decrypted bytes for the encrypted image stored on disk."""
     try:
         encrypted_bytes = image_path.read_bytes()
     except FileNotFoundError:
@@ -299,17 +300,39 @@ def _load_encrypted_image(image_path: Path) -> Optional[np.ndarray]:
         logger.error("Unexpected error decrypting %s: %s", image_path, exc)
         return None
 
+    return decrypted_bytes
+
+
+def _decode_image_bytes(decrypted_bytes: bytes, *, source: Optional[Path] = None) -> Optional[np.ndarray]:
+    """Decode decrypted image bytes into a numpy array."""
+
     frame_array = np.frombuffer(decrypted_bytes, dtype=np.uint8)
     if frame_array.size == 0:
-        logger.warning("Decrypted image %s is empty.", image_path)
+        if source is not None:
+            logger.warning("Decrypted image %s is empty.", source)
+        else:
+            logger.warning("Encountered empty decrypted image payload.")
         return None
 
     imread_flag = getattr(cv2, "IMREAD_COLOR", 1)
     image = cv2.imdecode(frame_array, imread_flag)
     if image is None:
-        logger.warning("Failed to decode decrypted image %s", image_path)
+        if source is not None:
+            logger.warning("Failed to decode decrypted image %s", source)
+        else:
+            logger.warning("Failed to decode decrypted image payload.")
         return None
     return image
+
+
+def _load_encrypted_image(image_path: Path) -> Optional[np.ndarray]:
+    """Decrypt and load an encrypted image stored on disk."""
+
+    decrypted_bytes = _decrypt_image_bytes(image_path)
+    if decrypted_bytes is None:
+        return None
+
+    return _decode_image_bytes(decrypted_bytes, source=image_path)
 
 
 def _extract_first_embedding(representations) -> Tuple[Optional[Sequence[float]], Optional[Dict[str, int]]]:
@@ -346,6 +369,55 @@ def _extract_first_embedding(representations) -> Tuple[Optional[Sequence[float]]
     return normalized, facial_area
 
 
+def _get_or_compute_cached_embedding(
+    image_path: Path, model_name: str, detector_backend: str
+) -> Optional[np.ndarray]:
+    """Return the embedding for an encrypted image using Django's cache."""
+
+    decrypted_bytes = _decrypt_image_bytes(image_path)
+    if decrypted_bytes is None:
+        return None
+
+    payload_hash = hashlib.sha256(decrypted_bytes).hexdigest()
+    cache_key = f"recognition:embedding:{model_name}:{detector_backend}:{payload_hash}"
+
+    cached_embedding = cache.get(cache_key)
+    if cached_embedding is not None:
+        try:
+            return np.array(cached_embedding, dtype=float)
+        except Exception:  # pragma: no cover - defensive programming
+            logger.debug("Failed to coerce cached embedding for %s into an array", image_path)
+
+    image = _decode_image_bytes(decrypted_bytes, source=image_path)
+    if image is None:
+        return None
+
+    try:
+        representations = DeepFace.represent(
+            img_path=image,
+            model_name=model_name,
+            detector_backend=detector_backend,
+            enforce_detection=False,
+        )
+    except Exception as exc:
+        logger.debug("Failed to generate embedding for %s: %s", image_path, exc)
+        return None
+
+    embedding_vector, _ = _extract_first_embedding(representations)
+    if embedding_vector is None:
+        logger.debug("No embedding produced for %s", image_path)
+        return None
+
+    embedding_array = np.array(embedding_vector, dtype=float)
+
+    try:
+        cache.set(cache_key, embedding_array.tolist(), timeout=None)
+    except Exception:  # pragma: no cover - defensive programming
+        logger.debug("Failed to store embedding for %s in cache", image_path)
+
+    return embedding_array
+
+
 def _build_dataset_embeddings_for_matching(model_name: str, detector_backend: str):
     """Build embeddings for the encrypted training dataset."""
 
@@ -353,30 +425,14 @@ def _build_dataset_embeddings_for_matching(model_name: str, detector_backend: st
     image_paths = sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
 
     for image_path in image_paths:
-        image = _load_encrypted_image(image_path)
-        if image is None:
-            continue
-
-        try:
-            representations = DeepFace.represent(
-                img_path=image,
-                model_name=model_name,
-                detector_backend=detector_backend,
-                enforce_detection=False,
-            )
-        except Exception as exc:
-            logger.debug("Failed to generate embedding for %s: %s", image_path, exc)
-            continue
-
-        embedding_vector, _ = _extract_first_embedding(representations)
-        if embedding_vector is None:
-            logger.debug("No embedding produced for %s", image_path)
+        embedding_array = _get_or_compute_cached_embedding(image_path, model_name, detector_backend)
+        if embedding_array is None:
             continue
 
         dataset_index.append(
             {
                 "identity": str(image_path),
-                "embedding": np.array(embedding_vector, dtype=float),
+                "embedding": embedding_array,
                 "username": image_path.parent.name,
             }
         )
@@ -1577,27 +1633,12 @@ def train_view(request):
     detector_backend = _get_face_detection_backend()
 
     for image_path in image_paths:
-        image = _load_encrypted_image(image_path)
-        if image is None:
-            continue
-
-        try:
-            representations = DeepFace.represent(
-                img_path=image,
-                model_name=model_name,
-                detector_backend=detector_backend,
-                enforce_detection=False,
-            )
-        except Exception as exc:
-            logger.error("Failed to extract embedding for %s: %s", image_path, exc)
-            continue
-
-        embedding_vector, _ = _extract_first_embedding(representations)
-        if embedding_vector is None:
+        embedding_array = _get_or_compute_cached_embedding(image_path, model_name, detector_backend)
+        if embedding_array is None:
             logger.debug("Skipping image %s because no embedding was produced.", image_path)
             continue
 
-        embedding_vectors.append(list(embedding_vector))
+        embedding_vectors.append(embedding_array.tolist())
         class_names.append(image_path.parent.name)
 
     if not embedding_vectors:
