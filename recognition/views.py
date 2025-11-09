@@ -8,9 +8,12 @@ marking attendance, and displaying attendance data.
 
 from __future__ import annotations
 
+import base64
+import binascii
 import datetime
 import hashlib
 import io
+import json
 import logging
 import math
 import os
@@ -29,9 +32,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.db.models import Count, QuerySet
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views import View
 
 import cv2
 import imutils
@@ -43,6 +48,7 @@ import seaborn as sns
 from deepface import DeepFace
 from django_pandas.io import read_frame
 from django_ratelimit.core import is_ratelimited
+from django_ratelimit.decorators import ratelimit
 from imutils.video import VideoStream
 from matplotlib import rcParams
 from pandas.plotting import register_matplotlib_converters
@@ -114,6 +120,235 @@ def attendance_rate_limited(view_func):
         return view_func(request, *args, **kwargs)
 
     return _wrapped
+
+
+@method_decorator(ratelimit(key="ip", rate="5/m", method="POST", block=False), name="post")
+class FaceRecognitionAPI(View):
+    """Handle face recognition requests submitted via HTTP POST."""
+
+    http_method_names = ["post", "options"]
+
+    def _parse_payload(self, request) -> Dict[str, Any]:
+        """Return the JSON or form payload supplied with the request."""
+
+        content_type = request.META.get("CONTENT_TYPE", "")
+        if "application/json" in content_type:
+            try:
+                raw_body = request.body.decode(request.encoding or "utf-8")
+            except UnicodeDecodeError as exc:
+                raise ValueError("Request body must be UTF-8 encoded JSON.") from exc
+
+            try:
+                return json.loads(raw_body or "{}")
+            except json.JSONDecodeError as exc:  # pragma: no cover - defensive programming
+                raise ValueError("Invalid JSON payload supplied.") from exc
+
+        if request.POST:
+            return request.POST.dict()
+
+        if not request.body:
+            return {}
+
+        try:
+            raw_body = request.body.decode(request.encoding or "utf-8")
+        except UnicodeDecodeError as exc:  # pragma: no cover - defensive programming
+            raise ValueError("Unable to decode request body.") from exc
+
+        try:
+            return json.loads(raw_body or "{}")
+        except json.JSONDecodeError:
+            return {}
+
+    def _coerce_embedding(self, raw_embedding) -> Optional[np.ndarray]:
+        """Convert the submitted embedding payload into a NumPy array."""
+
+        if raw_embedding is None:
+            return None
+
+        if isinstance(raw_embedding, str):
+            stripped = raw_embedding.strip()
+            if not stripped:
+                return None
+            try:
+                raw_embedding = json.loads(stripped)
+            except json.JSONDecodeError:
+                parts = [segment for segment in stripped.split(",") if segment.strip()]
+                try:
+                    raw_embedding = [float(segment) for segment in parts]
+                except ValueError as exc:
+                    raise ValueError("'embedding' must contain numeric values.") from exc
+
+        if not isinstance(raw_embedding, (list, tuple)):
+            raise ValueError("'embedding' must be provided as a list of numbers.")
+
+        try:
+            vector = np.array([float(value) for value in raw_embedding], dtype=float)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("'embedding' must contain only numeric values.") from exc
+
+        if vector.size == 0:
+            raise ValueError("'embedding' must contain at least one value.")
+
+        return vector
+
+    def _extract_image_bytes(self, request, payload: Dict[str, Any]) -> Optional[bytes]:
+        """Return raw image bytes from either an upload or base64 string."""
+
+        uploaded = request.FILES.get("image") if hasattr(request, "FILES") else None
+        if uploaded is not None:
+            return uploaded.read()
+
+        raw_image = payload.get("image")
+        if not raw_image:
+            return None
+
+        if isinstance(raw_image, (bytes, bytearray)):
+            return bytes(raw_image)
+
+        if not isinstance(raw_image, str):
+            raise ValueError("Unsupported image payload supplied.")
+
+        image_data = raw_image.strip()
+        if not image_data:
+            return None
+
+        if image_data.startswith("data:"):
+            _, _, image_data = image_data.partition(",")
+
+        try:
+            return base64.b64decode(image_data, validate=True)
+        except (binascii.Error, ValueError) as exc:
+            raise ValueError("Invalid base64-encoded image payload supplied.") from exc
+
+    def post(self, request, *args, **kwargs):  # pylint: disable=unused-argument
+        if getattr(request, "limited", False):
+            return JsonResponse({"error": "Too many requests."}, status=429)
+
+        try:
+            payload = self._parse_payload(request)
+        except ValueError as exc:
+            return JsonResponse({"error": str(exc)}, status=400)
+
+        model_name = _get_face_recognition_model()
+        detector_backend = _get_face_detection_backend()
+        enforce_detection = _should_enforce_detection()
+
+        embedding_vector = None
+        frame = None
+        facial_area: Optional[Dict[str, int]] = None
+
+        try:
+            embedding_vector = self._coerce_embedding(payload.get("embedding"))
+        except ValueError as exc:
+            return JsonResponse({"error": str(exc)}, status=400)
+
+        if embedding_vector is None:
+            try:
+                image_bytes = self._extract_image_bytes(request, payload)
+            except ValueError as exc:
+                return JsonResponse({"error": str(exc)}, status=400)
+
+            if not image_bytes:
+                return JsonResponse(
+                    {"error": "Provide either an 'embedding' array or an 'image' payload."},
+                    status=400,
+                )
+
+            frame = _decode_image_bytes(image_bytes)
+            if frame is None:
+                return JsonResponse({"error": "Unable to decode the supplied image."}, status=400)
+
+            try:
+                representations = DeepFace.represent(
+                    img_path=frame,
+                    model_name=model_name,
+                    detector_backend=detector_backend,
+                    enforce_detection=enforce_detection,
+                )
+            except Exception as exc:  # pragma: no cover - deepface may fail unexpectedly
+                logger.error("Failed to extract embedding from API request: %s", exc)
+                return JsonResponse(
+                    {"error": "Failed to analyse the provided image."},
+                    status=500,
+                )
+
+            extracted_embedding, facial_area = _extract_first_embedding(representations)
+            if extracted_embedding is None:
+                return JsonResponse(
+                    {"error": "No face embedding could be extracted from the image."},
+                    status=400,
+                )
+
+            try:
+                embedding_vector = np.array(extracted_embedding, dtype=float)
+            except (TypeError, ValueError) as exc:  # pragma: no cover - defensive
+                logger.warning("Received invalid embedding from DeepFace: %s", exc)
+                return JsonResponse({"error": "Invalid embedding generated."}, status=500)
+
+        dataset_index = _load_dataset_embeddings_for_matching(
+            model_name, detector_backend, enforce_detection
+        )
+        normalized_index = []
+        for entry in dataset_index:
+            candidate = entry.get("embedding") if isinstance(entry, dict) else None
+            if candidate is None:
+                continue
+            if not isinstance(candidate, np.ndarray):
+                try:
+                    candidate_array = np.array(candidate, dtype=float)
+                except Exception:  # pragma: no cover - defensive conversion
+                    continue
+            else:
+                candidate_array = candidate
+            normalized_entry = dict(entry)
+            normalized_entry["embedding"] = candidate_array
+            normalized_index.append(normalized_entry)
+
+        if not normalized_index:
+            return JsonResponse(
+                {"error": "No enrolled face embeddings are available for comparison."},
+                status=503,
+            )
+
+        distance_metric = _get_deepface_distance_metric()
+        match = _find_closest_dataset_match(embedding_vector, normalized_index, distance_metric)
+
+        distance_threshold = getattr(
+            settings, "RECOGNITION_DISTANCE_THRESHOLD", DEFAULT_DISTANCE_THRESHOLD
+        )
+
+        normalized_region = _normalize_face_region(facial_area)
+        spoofed = False
+        if frame is not None:
+            spoofed = not _passes_liveness_check(frame, normalized_region)
+
+        response_payload: Dict[str, Any] = {
+            "recognized": False,
+            "threshold": float(distance_threshold),
+            "distance_metric": distance_metric,
+        }
+
+        if match is None:
+            if spoofed:
+                response_payload["spoofed"] = True
+            return JsonResponse(response_payload)
+
+        username, distance_value, identity_path = match
+        response_payload.update(
+            {
+                "distance": float(distance_value),
+                "identity": identity_path,
+            }
+        )
+        if username:
+            response_payload["username"] = username
+
+        if spoofed:
+            response_payload["spoofed"] = True
+        else:
+            response_payload["recognized"] = bool(distance_value <= distance_threshold)
+
+        return JsonResponse(response_payload)
 
 
 # Define root directories for data storage

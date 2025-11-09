@@ -56,6 +56,11 @@ urlpatterns = [
         recog_views.mark_your_attendance_out,
         name="mark-your-attendance-out",
     ),
+    path(
+        "api/face-recognition/",
+        recog_views.FaceRecognitionAPI.as_view(),
+        name="face-recognition-api",
+    ),
     # Attendance Viewing
     path(
         "view_attendance_home",
