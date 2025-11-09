@@ -29,6 +29,23 @@ def _get_bool_env(var_name: str, default: bool = False) -> bool:
     return raw_value.lower() in {"1", "true", "yes", "on"}
 
 
+def _get_int_env(var_name: str, default: int) -> int:
+    """Return a positive integer from an environment variable."""
+
+    raw_value = os.environ.get(var_name)
+    if raw_value is None:
+        return default
+    try:
+        value = int(raw_value)
+    except ValueError as exc:  # pragma: no cover - defensive programming
+        raise ImproperlyConfigured(
+            f"{var_name} must be an integer if provided."
+        ) from exc
+    if value <= 0:
+        raise ImproperlyConfigured(f"{var_name} must be a positive integer.")
+    return value
+
+
 # Detect if we're running tests
 TESTING = "test" in sys.argv or (len(sys.argv) > 0 and "pytest" in sys.argv[0])
 
@@ -176,6 +193,33 @@ LOGIN_REDIRECT_URL = "dashboard"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- Custom Application Settings ---
+
+# --- Session & Cookie Settings ---
+
+SESSION_COOKIE_SECURE = _get_bool_env(
+    "DJANGO_SESSION_COOKIE_SECURE", default=not DEBUG
+)
+SESSION_COOKIE_HTTPONLY = _get_bool_env(
+    "DJANGO_SESSION_COOKIE_HTTPONLY", default=True
+)
+CSRF_COOKIE_SECURE = _get_bool_env("DJANGO_CSRF_COOKIE_SECURE", default=not DEBUG)
+
+_session_cookie_samesite = os.environ.get("DJANGO_SESSION_COOKIE_SAMESITE")
+if _session_cookie_samesite:
+    _normalized_samesite = _session_cookie_samesite.strip().lower()
+    _valid_samesite_values = {"lax": "Lax", "strict": "Strict", "none": "None"}
+    if _normalized_samesite not in _valid_samesite_values:
+        raise ImproperlyConfigured(
+            "DJANGO_SESSION_COOKIE_SAMESITE must be one of: Lax, Strict, or None."
+        )
+    SESSION_COOKIE_SAMESITE = _valid_samesite_values[_normalized_samesite]
+else:
+    SESSION_COOKIE_SAMESITE = "Lax"
+
+SESSION_COOKIE_AGE = _get_int_env("DJANGO_SESSION_COOKIE_AGE", default=1800)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = _get_bool_env(
+    "DJANGO_SESSION_EXPIRE_AT_BROWSER_CLOSE", default=False
+)
 
 # Threshold for accepting DeepFace matches when marking attendance.
 # Lower values (e.g., 0.3) mean stricter matching, while higher values (e.g., 0.5)
