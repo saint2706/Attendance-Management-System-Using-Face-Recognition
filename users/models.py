@@ -22,10 +22,15 @@ class Present(models.Model):
     """
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, help_text="The user this attendance record belongs to."
+        User,
+        on_delete=models.CASCADE,
+        help_text="The user this attendance record belongs to.",
+        db_index=True,
     )
     date = models.DateField(
-        default=timezone.localdate, help_text="The date of the attendance record."
+        default=timezone.localdate,
+        help_text="The date of the attendance record.",
+        db_index=True,
     )
     present = models.BooleanField(
         default=False, help_text="Indicates if the user was present on this date."
@@ -36,6 +41,12 @@ class Present(models.Model):
     time_out: datetime.datetime | None = None
     hours: str | int = "0 hrs 0 mins"
     break_hours: str | float = "0 hrs 0 mins"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["user", "date"], name="users_present_user_date_idx"),
+            models.Index(fields=["date", "user"], name="users_present_date_user_idx"),
+        ]
 
     def __str__(self):
         """Return a string representation of the attendance record."""
@@ -52,13 +63,31 @@ class Time(models.Model):
     """
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, help_text="The user this time entry belongs to."
+        User,
+        on_delete=models.CASCADE,
+        help_text="The user this time entry belongs to.",
+        db_index=True,
     )
-    date = models.DateField(default=timezone.localdate, help_text="The date of the time entry.")
-    time = models.DateTimeField(null=True, blank=True, help_text="The exact time of the event.")
+    date = models.DateField(
+        default=timezone.localdate,
+        help_text="The date of the time entry.",
+        db_index=True,
+    )
+    time = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="The exact time of the event.",
+        db_index=True,
+    )
     out = models.BooleanField(
         default=False, help_text="False for a time-in event, True for a time-out event."
     )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["user", "date"], name="users_time_user_date_idx"),
+            models.Index(fields=["date", "user"], name="users_time_date_user_idx"),
+        ]
 
     def __str__(self):
         """Return a string representation of the time entry."""
