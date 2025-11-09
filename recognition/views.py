@@ -101,9 +101,11 @@ def attendance_rate_limited(view_func):
         if was_limited:
             logger.warning(
                 "Attendance rate limit triggered for %s via %s",
-                request.user
-                if getattr(request, "user", None) and request.user.is_authenticated
-                else request.META.get("REMOTE_ADDR", "unknown"),
+                (
+                    request.user
+                    if getattr(request, "user", None) and request.user.is_authenticated
+                    else request.META.get("REMOTE_ADDR", "unknown")
+                ),
                 request_method,
             )
             return HttpResponse("Too many attendance attempts. Please wait.", status=429)
@@ -319,7 +321,9 @@ def _decrypt_image_bytes(image_path: Path) -> Optional[bytes]:
     return decrypted_bytes
 
 
-def _decode_image_bytes(decrypted_bytes: bytes, *, source: Optional[Path] = None) -> Optional[np.ndarray]:
+def _decode_image_bytes(
+    decrypted_bytes: bytes, *, source: Optional[Path] = None
+) -> Optional[np.ndarray]:
     """Decode decrypted image bytes into a numpy array."""
 
     frame_array = np.frombuffer(decrypted_bytes, dtype=np.uint8)
@@ -351,7 +355,9 @@ def _load_encrypted_image(image_path: Path) -> Optional[np.ndarray]:
     return _decode_image_bytes(decrypted_bytes, source=image_path)
 
 
-def _extract_first_embedding(representations) -> Tuple[Optional[Sequence[float]], Optional[Dict[str, int]]]:
+def _extract_first_embedding(
+    representations,
+) -> Tuple[Optional[Sequence[float]], Optional[Dict[str, int]]]:
     """Normalize DeepFace representations to a single embedding and facial area."""
 
     embedding_vector: Optional[Sequence[float]] = None
@@ -386,7 +392,7 @@ def _extract_first_embedding(representations) -> Tuple[Optional[Sequence[float]]
 
 
 def _get_or_compute_cached_embedding(
-    image_path: Path, model_name: str, detector_backend: str
+    image_path: Path, model_name: str, detector_backend: str, enforce_detection: bool = False
 ) -> Optional[np.ndarray]:
     """Return the embedding for an encrypted image using Django's cache."""
 
@@ -413,7 +419,7 @@ def _get_or_compute_cached_embedding(
             img_path=image,
             model_name=model_name,
             detector_backend=detector_backend,
-            enforce_detection=False,
+            enforce_detection=enforce_detection,
         )
     except Exception as exc:
         logger.debug("Failed to generate embedding for %s: %s", image_path, exc)
@@ -434,14 +440,18 @@ def _get_or_compute_cached_embedding(
     return embedding_array
 
 
-def _build_dataset_embeddings_for_matching(model_name: str, detector_backend: str):
+def _build_dataset_embeddings_for_matching(
+    model_name: str, detector_backend: str, enforce_detection: bool = False
+):
     """Build embeddings for the encrypted training dataset."""
 
     dataset_index = []
     image_paths = sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
 
     for image_path in image_paths:
-        embedding_array = _get_or_compute_cached_embedding(image_path, model_name, detector_backend)
+        embedding_array = _get_or_compute_cached_embedding(
+            image_path, model_name, detector_backend, enforce_detection
+        )
         if embedding_array is None:
             continue
 
@@ -1222,9 +1232,7 @@ def _predict_identity_from_embedding(
 
     normalized_region = _normalize_face_region(facial_area)
     if not _passes_liveness_check(frame, normalized_region):
-        logger.warning(
-            "Spoofing attempt blocked during '%s' attendance.", attendance_type
-        )
+        logger.warning("Spoofing attempt blocked during '%s' attendance.", attendance_type)
         return None, True, normalized_region
 
     try:
@@ -1377,9 +1385,7 @@ def _mark_attendance(request, check_in: bool):
 
                     if username:
                         present[username] = True
-                        logger.info(
-                            "Recognized %s with distance %.4f", username, distance_value
-                        )
+                        logger.info("Recognized %s with distance %.4f", username, distance_value)
 
                         if normalized_region:
                             x = int(normalized_region["x"])
@@ -1408,9 +1414,7 @@ def _mark_attendance(request, check_in: bool):
                     if frame_pause:
                         time.sleep(frame_pause)
                     if frames_processed >= max_frames:
-                        logger.info(
-                            "Headless mode reached frame limit of %d frames", max_frames
-                        )
+                        logger.info("Headless mode reached frame limit of %d frames", max_frames)
                         break
     finally:
         if not headless:
@@ -1746,7 +1750,6 @@ def train_view(request):
 
     model_name = _get_face_recognition_model()
     detector_backend = _get_face_detection_backend()
-    enforce_detection = _should_enforce_detection()
 
     for image_path in image_paths:
         embedding_array = _get_or_compute_cached_embedding(image_path, model_name, detector_backend)
@@ -1774,7 +1777,9 @@ def train_view(request):
         )
         return render(request, "recognition/train.html", {"trained": False})
 
-    logger.info("Successfully extracted embeddings from %d encrypted images.", len(embedding_vectors))
+    logger.info(
+        "Successfully extracted embeddings from %d encrypted images.", len(embedding_vectors)
+    )
 
     # --- 3. Data Splitting ---
     test_split_ratio = _get_recognition_training_test_split_ratio()
@@ -1955,13 +1960,15 @@ def mark_attendance_view(request, attendance_type):
                                 embedding_vector = None
 
                     if embedding_vector is not None:
-                        predicted_name, spoofed, normalized_region = _predict_identity_from_embedding(
-                            frame,
-                            embedding_vector,
-                            facial_area if isinstance(facial_area, dict) else None,
-                            model,
-                            class_names,
-                            attendance_type,
+                        predicted_name, spoofed, normalized_region = (
+                            _predict_identity_from_embedding(
+                                frame,
+                                embedding_vector,
+                                facial_area if isinstance(facial_area, dict) else None,
+                                model,
+                                class_names,
+                                attendance_type,
+                            )
                         )
 
                         if spoofed:

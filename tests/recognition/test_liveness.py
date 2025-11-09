@@ -3,17 +3,13 @@ import sys
 from types import ModuleType, SimpleNamespace
 
 import django
-import numpy as np
-import pandas as pd
-from django.conf import settings
-from django.contrib.messages import get_messages
 from django.contrib.messages.storage.fallback import FallbackStorage
-from django.http import HttpResponse
 from django.test import RequestFactory
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-)
+import numpy as np
+import pandas as pd
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 django.setup()
 
 _fake_cv2 = ModuleType("cv2")
@@ -29,7 +25,7 @@ _fake_cv2.destroyAllWindows = lambda *args, **kwargs: None
 _fake_cv2.__getattr__ = lambda name: 0
 sys.modules.setdefault("cv2", _fake_cv2)
 
-from recognition import views
+from recognition import views  # noqa: E402
 
 
 class _DummyStream:

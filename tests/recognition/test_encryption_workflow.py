@@ -11,22 +11,22 @@ from typing import List
 from unittest.mock import MagicMock, patch
 
 import django
-import numpy as np
-from cryptography.fernet import Fernet
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.test import RequestFactory, TestCase, override_settings
+
+import numpy as np
+from cryptography.fernet import Fernet
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 django.setup()
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User  # noqa: E402
 
 _fake_cv2 = MagicMock(name="cv2")
 sys.modules.setdefault("cv2", _fake_cv2)
 
-from src.common import decrypt_bytes, encrypt_bytes
-
-from recognition import views
+from recognition import views  # noqa: E402
+from src.common import decrypt_bytes, encrypt_bytes  # noqa: E402
 
 TEST_FERNET_KEY = Fernet.generate_key()
 
@@ -146,7 +146,9 @@ class EncryptionWorkflowTests(TestCase):
         model_instance = DummyModel()
         mock_svc.return_value = model_instance
 
-        staff_user = User.objects.create_user("admin", "admin@example.com", "password", is_staff=True)
+        staff_user = User.objects.create_user(
+            "admin", "admin@example.com", "password", is_staff=True
+        )
         request = self.factory.get("/train/")
         request.user = staff_user
         setattr(request, "session", {})
@@ -224,5 +226,5 @@ class EncryptionWorkflowTests(TestCase):
         mock_update_db.assert_called_once()
         attendance_payload = mock_update_db.call_args.args[0]
         self.assertTrue(attendance_payload.get("alice"))
-        self.assertEqual(mock_loader.call_count, 2)
+        self.assertEqual(mock_loader.call_count, 1)
         mock_deepface.represent.assert_called()

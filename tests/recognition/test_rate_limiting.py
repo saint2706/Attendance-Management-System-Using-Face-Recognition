@@ -2,15 +2,14 @@ import os
 import sys
 from unittest.mock import MagicMock, patch
 
-import pytest
 import django
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.urls import reverse
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-)
+import pytest
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 
 sys.modules.setdefault("cv2", MagicMock())
 
