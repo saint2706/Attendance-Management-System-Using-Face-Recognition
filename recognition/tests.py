@@ -16,23 +16,22 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 django.setup()
 
-from cryptography.fernet import Fernet
-from django.contrib.auth.models import User
-from django.contrib.messages.storage.fallback import FallbackStorage
-from django.core.cache import cache
-from django.test import RequestFactory, TestCase, override_settings
-from django.urls import reverse
-from django.utils import timezone
+from django.contrib.auth.models import User  # noqa: E402
+from django.contrib.messages.storage.fallback import FallbackStorage  # noqa: E402
+from django.core.cache import cache  # noqa: E402
+from django.test import RequestFactory, TestCase, override_settings  # noqa: E402
+from django.urls import reverse  # noqa: E402
+from django.utils import timezone  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
+from cryptography.fernet import Fernet  # noqa: E402
 
 # Mock the cv2 module before it's imported by views to avoid installation in test environments
 sys.modules.setdefault("cv2", MagicMock())
 
 from recognition import views  # noqa: E402
-from users.models import Present, Time  # noqa: E402
 from src.common import encrypt_bytes  # noqa: E402
-
+from users.models import Present, Time  # noqa: E402
 
 TEST_FERNET_KEY = Fernet.generate_key()
 
@@ -291,8 +290,6 @@ class DeepFaceAttendanceTest(TestCase):
         # Verify that the database update was called with an empty dictionary
         mock_update_db.assert_called_once_with({})
 
-
-
     @patch("recognition.views.time.sleep", return_value=None)
     @patch("recognition.views._is_headless_environment", return_value=True)
     @patch("recognition.views.update_attendance_in_db_in")
@@ -354,9 +351,7 @@ class EmbeddingCacheHelperTests(TestCase):
     @override_settings(DATA_ENCRYPTION_KEY=TEST_FERNET_KEY)
     @patch("recognition.views.cv2")
     @patch("recognition.views.DeepFace.represent")
-    def test_helper_uses_cache_for_repeated_calls(
-        self, mock_deepface_represent, mock_cv2
-    ):
+    def test_helper_uses_cache_for_repeated_calls(self, mock_deepface_represent, mock_cv2):
         mock_cv2.IMREAD_COLOR = 1
         mock_cv2.imdecode.return_value = np.zeros((5, 5, 3), dtype=np.uint8)
 
@@ -365,12 +360,8 @@ class EmbeddingCacheHelperTests(TestCase):
         decrypted_bytes = bytes(range(1, 50))
         image_path = self._write_encrypted_image("1.jpg", decrypted_bytes)
 
-        embedding_first = views._get_or_compute_cached_embedding(
-            image_path, "VGG-Face", "opencv"
-        )
-        embedding_second = views._get_or_compute_cached_embedding(
-            image_path, "VGG-Face", "opencv"
-        )
+        embedding_first = views._get_or_compute_cached_embedding(image_path, "VGG-Face", "opencv")
+        embedding_second = views._get_or_compute_cached_embedding(image_path, "VGG-Face", "opencv")
 
         self.assertIsNotNone(embedding_first)
         np.testing.assert_array_equal(embedding_first, embedding_second)
@@ -379,9 +370,7 @@ class EmbeddingCacheHelperTests(TestCase):
     @override_settings(DATA_ENCRYPTION_KEY=TEST_FERNET_KEY)
     @patch("recognition.views.cv2")
     @patch("recognition.views.DeepFace.represent")
-    def test_helper_recomputes_when_file_changes(
-        self, mock_deepface_represent, mock_cv2
-    ):
+    def test_helper_recomputes_when_file_changes(self, mock_deepface_represent, mock_cv2):
         mock_cv2.IMREAD_COLOR = 1
         mock_cv2.imdecode.return_value = np.zeros((5, 5, 3), dtype=np.uint8)
 
@@ -393,22 +382,20 @@ class EmbeddingCacheHelperTests(TestCase):
         first_bytes = bytes(range(1, 50))
         image_path = self._write_encrypted_image("2.jpg", first_bytes)
 
-        first_embedding = views._get_or_compute_cached_embedding(
-            image_path, "VGG-Face", "opencv"
-        )
+        first_embedding = views._get_or_compute_cached_embedding(image_path, "VGG-Face", "opencv")
         self.assertIsNotNone(first_embedding)
 
         updated_bytes = bytes(reversed(range(1, 50)))
         image_path.write_bytes(encrypt_bytes(updated_bytes))
 
-        second_embedding = views._get_or_compute_cached_embedding(
-            image_path, "VGG-Face", "opencv"
-        )
+        second_embedding = views._get_or_compute_cached_embedding(image_path, "VGG-Face", "opencv")
         self.assertIsNotNone(second_embedding)
 
         self.assertEqual(mock_deepface_represent.call_count, 2)
         with self.assertRaises(AssertionError):
             np.testing.assert_array_equal(first_embedding, second_embedding)
+
+
 class DatabaseUpdateTest(TestCase):
     """Test suite for database update functions."""
 

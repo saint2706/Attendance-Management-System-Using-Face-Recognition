@@ -172,4 +172,3 @@ def reset_webcam_manager() -> None:
 
 
 atexit.register(reset_webcam_manager)
-

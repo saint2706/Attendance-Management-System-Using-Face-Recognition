@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-import numpy as np
 from django.test import SimpleTestCase
+
+import numpy as np
 
 from recognition.webcam_manager import get_webcam_manager, reset_webcam_manager
 
@@ -58,4 +59,3 @@ class WebcamManagerLifecycleTests(SimpleTestCase):
         self.assertIsNot(manager_first, manager_second)
         with manager_second.frame_consumer() as consumer:
             self.assertIsNotNone(consumer.read(timeout=0.1))
-

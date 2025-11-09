@@ -7,8 +7,9 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import django
-import numpy as np
 from django.test import TestCase
+
+import numpy as np
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 
@@ -17,7 +18,7 @@ sys.modules.setdefault("cv2", _fake_cv2)
 
 django.setup()
 
-from recognition import views
+from recognition import views  # noqa: E402
 
 
 class DatasetEmbeddingCacheTests(TestCase):

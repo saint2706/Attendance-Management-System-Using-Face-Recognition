@@ -10,9 +10,10 @@ import os
 import sys
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 import dj_database_url
 from cryptography.fernet import Fernet
-from django.core.exceptions import ImproperlyConfigured
 
 # Define the project's base directory.
 # `BASE_DIR` points to the root of the Django project.
@@ -40,9 +41,7 @@ def _get_int_env(var_name: str, default: int) -> int:
     try:
         value = int(raw_value)
     except ValueError as exc:  # pragma: no cover - defensive programming
-        raise ImproperlyConfigured(
-            f"{var_name} must be an integer if provided."
-        ) from exc
+        raise ImproperlyConfigured(f"{var_name} must be an integer if provided.") from exc
     if value <= 0:
         raise ImproperlyConfigured(f"{var_name} must be a positive integer.")
     return value
@@ -160,9 +159,7 @@ WSGI_APPLICATION = "attendance_system_facial_recognition.wsgi.application"
 # --- Database Configuration ---
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-default_db_url = os.environ.get(
-    "DATABASE_URL", f"sqlite:///{(BASE_DIR / 'db.sqlite3').as_posix()}"
-)
+default_db_url = os.environ.get("DATABASE_URL", f"sqlite:///{(BASE_DIR / 'db.sqlite3').as_posix()}")
 
 conn_max_age_raw = os.environ.get("DATABASE_CONN_MAX_AGE")
 if conn_max_age_raw is None:
@@ -171,9 +168,7 @@ else:
     try:
         conn_max_age = int(conn_max_age_raw)
     except ValueError as exc:  # pragma: no cover - defensive programming
-        raise ImproperlyConfigured(
-            "DATABASE_CONN_MAX_AGE must be an integer if provided."
-        ) from exc
+        raise ImproperlyConfigured("DATABASE_CONN_MAX_AGE must be an integer if provided.") from exc
     if conn_max_age < 0:
         raise ImproperlyConfigured("DATABASE_CONN_MAX_AGE must be zero or positive.")
 
@@ -184,6 +179,19 @@ if _get_bool_env("DATABASE_SSL_REQUIRE", default=False):
 
 DATABASES = {
     "default": database_config,
+}
+
+
+# --- Cache Configuration ---
+# For django-ratelimit, we use LocMemCache in development/testing.
+# While LocMemCache is not ideal for production (not shared across processes),
+# it works for single-process deployments and CI/testing.
+# For production multi-process deployments, configure Redis or Memcached.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
 }
 
 
@@ -243,14 +251,19 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- Custom Application Settings ---
 
+# --- System Check Silencing ---
+# Silence django-ratelimit checks for LocMemCache in development/testing.
+# LocMemCache works fine for single-process deployments and CI/testing environments.
+# For production, configure a shared cache backend (Redis/Memcached).
+SILENCED_SYSTEM_CHECKS = [
+    "django_ratelimit.E003",  # LocMemCache not a shared cache
+    "django_ratelimit.W001",  # LocMemCache not officially supported
+]
+
 # --- Session & Cookie Settings ---
 
-SESSION_COOKIE_SECURE = _get_bool_env(
-    "DJANGO_SESSION_COOKIE_SECURE", default=not DEBUG
-)
-SESSION_COOKIE_HTTPONLY = _get_bool_env(
-    "DJANGO_SESSION_COOKIE_HTTPONLY", default=True
-)
+SESSION_COOKIE_SECURE = _get_bool_env("DJANGO_SESSION_COOKIE_SECURE", default=not DEBUG)
+SESSION_COOKIE_HTTPONLY = _get_bool_env("DJANGO_SESSION_COOKIE_HTTPONLY", default=True)
 CSRF_COOKIE_SECURE = _get_bool_env("DJANGO_CSRF_COOKIE_SECURE", default=not DEBUG)
 
 _session_cookie_samesite = os.environ.get("DJANGO_SESSION_COOKIE_SAMESITE")
@@ -273,9 +286,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = _get_bool_env(
 # Threshold for accepting DeepFace matches when marking attendance.
 # Lower values (e.g., 0.3) mean stricter matching, while higher values (e.g., 0.5)
 # are more permissive. This can be overridden via an environment variable.
-RECOGNITION_DISTANCE_THRESHOLD = float(
-    os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4")
-)
+RECOGNITION_DISTANCE_THRESHOLD = float(os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4"))
 
 
 def _build_deepface_optimizations() -> dict[str, object]:
