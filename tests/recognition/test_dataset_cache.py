@@ -53,8 +53,8 @@ class DatasetEmbeddingCacheTests(TestCase):
             autospec=True,
             return_value=fake_index,
         ) as mock_builder:
-            first = views._load_dataset_embeddings_for_matching("Facenet", "ssd")
-            second = views._load_dataset_embeddings_for_matching("Facenet", "ssd")
+            first = views._load_dataset_embeddings_for_matching("Facenet", "ssd", True)
+            second = views._load_dataset_embeddings_for_matching("Facenet", "ssd", True)
 
         self.assertIs(first, fake_index)
         self.assertIs(second, fake_index)
@@ -77,11 +77,11 @@ class DatasetEmbeddingCacheTests(TestCase):
             autospec=True,
             side_effect=[updated_index, refreshed_index],
         ) as mock_builder:
-            first = views._load_dataset_embeddings_for_matching("Facenet", "ssd")
+            first = views._load_dataset_embeddings_for_matching("Facenet", "ssd", True)
             (self.dataset_root / "bob").mkdir(parents=True, exist_ok=True)
             new_image = self.dataset_root / "bob" / "1.jpg"
             new_image.write_bytes(b"dummy2")
-            second = views._load_dataset_embeddings_for_matching("Facenet", "ssd")
+            second = views._load_dataset_embeddings_for_matching("Facenet", "ssd", True)
 
         self.assertIs(first, updated_index)
         self.assertIs(second, refreshed_index)

@@ -392,7 +392,7 @@ def _extract_first_embedding(
 
 
 def _get_or_compute_cached_embedding(
-    image_path: Path, model_name: str, detector_backend: str
+    image_path: Path, model_name: str, detector_backend: str, enforce_detection: bool = False
 ) -> Optional[np.ndarray]:
     """Return the embedding for an encrypted image using Django's cache."""
 
@@ -419,7 +419,7 @@ def _get_or_compute_cached_embedding(
             img_path=image,
             model_name=model_name,
             detector_backend=detector_backend,
-            enforce_detection=False,
+            enforce_detection=enforce_detection,
         )
     except Exception as exc:
         logger.debug("Failed to generate embedding for %s: %s", image_path, exc)
@@ -440,14 +440,18 @@ def _get_or_compute_cached_embedding(
     return embedding_array
 
 
-def _build_dataset_embeddings_for_matching(model_name: str, detector_backend: str):
+def _build_dataset_embeddings_for_matching(
+    model_name: str, detector_backend: str, enforce_detection: bool = False
+):
     """Build embeddings for the encrypted training dataset."""
 
     dataset_index = []
     image_paths = sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
 
     for image_path in image_paths:
-        embedding_array = _get_or_compute_cached_embedding(image_path, model_name, detector_backend)
+        embedding_array = _get_or_compute_cached_embedding(
+            image_path, model_name, detector_backend, enforce_detection
+        )
         if embedding_array is None:
             continue
 

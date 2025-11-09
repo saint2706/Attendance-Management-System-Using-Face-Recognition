@@ -226,5 +226,5 @@ class EncryptionWorkflowTests(TestCase):
         mock_update_db.assert_called_once()
         attendance_payload = mock_update_db.call_args.args[0]
         self.assertTrue(attendance_payload.get("alice"))
-        self.assertEqual(mock_loader.call_count, 2)
+        self.assertEqual(mock_loader.call_count, 1)
         mock_deepface.represent.assert_called()
