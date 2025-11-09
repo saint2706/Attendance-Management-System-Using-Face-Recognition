@@ -86,7 +86,7 @@ For more detailed information, please refer to the full documentation:
 
 ## Deployment Configuration
 
-When deploying to staging or production, configure the following environment variables so that session cookies remain secure and expire after periods of inactivity. Boolean values accept `1`, `true`, `yes`, or `on` (case-insensitive).
+When deploying to staging or production, configure the following environment variables so that session cookies remain secure and expire after periods of inactivity. Boolean values accept `1`, `true`, `yes`, or `on` (case-insensitive). Use the development settings module (`attendance_system_facial_recognition.settings`) locally and for automated tests. Production deployments should set `DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production` so the hardened database configuration is loaded.
 
 | Environment variable | Purpose | Recommended staging value | Recommended production value |
 | --- | --- | --- | --- |
