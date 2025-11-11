@@ -62,6 +62,11 @@ urlpatterns = [
     ),
     path("admin/ablation/", recog_admin_views.ablation_results, name="admin_ablation_results"),
     path("admin/failures/", recog_admin_views.failure_analysis, name="admin_failure_analysis"),
+    path(
+        "admin/recognition-attempts/",
+        recog_admin_views.recognition_attempt_summary,
+        name="admin_recognition_attempt_summary",
+    ),
     # Core pages
     path("", recog_views.home, name="home"),
     path("dashboard/", recog_views.dashboard, name="dashboard"),

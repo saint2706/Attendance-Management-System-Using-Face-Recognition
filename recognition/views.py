@@ -23,7 +23,7 @@ import threading
 import time
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -60,7 +60,7 @@ from sklearn.svm import SVC
 
 from src.common import InvalidToken, decrypt_bytes, encrypt_bytes
 from src.common.face_data_encryption import FaceDataEncryption
-from users.models import Present, Time
+from users.models import Present, RecognitionAttempt, Time
 
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
 from .webcam_manager import get_webcam_manager
@@ -70,6 +70,112 @@ mpl.use("Agg")
 
 # Initialize logger for the module
 logger = logging.getLogger(__name__)
+
+
+class _RecognitionAttemptLogger:
+    """Utility for creating recognition attempt records with shared metadata."""
+
+    __slots__ = (
+        "_direction",
+        "_site",
+        "_source",
+        "_start_time",
+        "_successes",
+        "_recorded_keys",
+        "records",
+    )
+
+    def __init__(self, direction: str, site: str, source: str) -> None:
+        self._direction = direction
+        self._site = site
+        self._source = source
+        self._start_time = time.monotonic()
+        self._successes: dict[str, RecognitionAttempt] = {}
+        self._recorded_keys: set[str] = set()
+        self.records: list[RecognitionAttempt] = []
+
+    def _latency_ms(self) -> float:
+        return max(0.0, (time.monotonic() - self._start_time) * 1000.0)
+
+    def _log(self, *, username: Optional[str], success: bool, spoofed: bool, error: str = "") -> RecognitionAttempt:
+        attempt = RecognitionAttempt(
+            username=username or "",
+            direction=self._direction,
+            site=self._site,
+            source=self._source,
+            successful=success,
+            spoof_detected=spoofed,
+            latency_ms=self._latency_ms(),
+            error_message=error,
+        )
+        attempt.save()
+        self.records.append(attempt)
+        return attempt
+
+    def log_success(self, username: str) -> RecognitionAttempt:
+        if not username:
+            raise ValueError("Username must be provided for successful attempts.")
+        if username in self._successes:
+            return self._successes[username]
+        attempt = self._log(username=username, success=True, spoofed=False)
+        self._successes[username] = attempt
+        self._recorded_keys.add(username)
+        return attempt
+
+    def log_failure(
+        self,
+        username: Optional[str],
+        *,
+        spoofed: bool,
+        error: str,
+    ) -> Optional[RecognitionAttempt]:
+        key = username or "__generic__"
+        if key in self._recorded_keys:
+            return None
+        attempt = self._log(username=username, success=False, spoofed=spoofed, error=error)
+        self._recorded_keys.add(key)
+        return attempt
+
+    def ensure_generic_failure(self, message: str) -> None:
+        if not self.records:
+            self.log_failure(None, spoofed=False, error=message)
+
+    @property
+    def success_attempt_ids(self) -> Dict[str, int]:
+        return {username: attempt.id for username, attempt in self._successes.items()}
+
+
+def _resolve_recognition_site(request) -> str:
+    """Best-effort lookup for the site identifier associated with a request."""
+
+    header_keys = ("HTTP_X_RECOGNITION_SITE", "HTTP_X_SITE_CODE", "HTTP_X_SITE")
+    for header in header_keys:
+        value = request.META.get(header)
+        if value:
+            return str(value)
+
+    site_setting = getattr(settings, "RECOGNITION_SITE_CODE", "")
+    if site_setting:
+        return str(site_setting)
+
+    try:
+        return request.get_host()
+    except Exception:  # pragma: no cover - request may not have host in tests
+        return ""
+
+
+def _attach_attempt_user(attempt: RecognitionAttempt | None, username: Optional[str]) -> None:
+    """Persist a user relation on the attempt when a username is known."""
+
+    if not attempt or not username:
+        return
+
+    user = User.objects.filter(username=username).first()
+    if not user:
+        return
+
+    attempt.user = user
+    attempt.save(update_fields=["user"])
 
 
 # Rate limit helper utilities -------------------------------------------------
@@ -231,17 +337,57 @@ class FaceRecognitionAPI(View):
             raise ValueError("Invalid base64-encoded image payload supplied.") from exc
 
     def post(self, request, *args, **kwargs):  # pylint: disable=unused-argument
+        site_code = _resolve_recognition_site(request)
+        default_direction = RecognitionAttempt.Direction.IN.value
+
         if getattr(request, "limited", False):
+            attempt_logger = _RecognitionAttemptLogger(
+                default_direction,
+                site_code,
+                source="api",
+            )
+            attempt_logger.log_failure(
+                getattr(request.user, "username", None),
+                spoofed=False,
+                error="Too many requests.",
+            )
             return JsonResponse({"error": "Too many requests."}, status=429)
 
         try:
             payload = self._parse_payload(request)
         except ValueError as exc:
+            attempt_logger = _RecognitionAttemptLogger(
+                default_direction,
+                site_code,
+                source="api",
+            )
+            attempt_logger.log_failure(
+                getattr(request.user, "username", None),
+                spoofed=False,
+                error=str(exc),
+            )
             return JsonResponse({"error": str(exc)}, status=400)
+
+        raw_direction = payload.get("direction")
+        if isinstance(raw_direction, str):
+            direction = raw_direction.lower()
+        else:
+            direction = default_direction
+
+        if direction not in {
+            RecognitionAttempt.Direction.IN.value,
+            RecognitionAttempt.Direction.OUT.value,
+        }:
+            direction = default_direction
+
+        attempt_logger = _RecognitionAttemptLogger(direction, site_code, source="api")
 
         model_name = _get_face_recognition_model()
         detector_backend = _get_face_detection_backend()
         enforce_detection = _should_enforce_detection()
+
+        raw_username = payload.get("username")
+        submitted_username = raw_username.strip() if isinstance(raw_username, str) else None
 
         embedding_vector = None
         frame = None
@@ -250,15 +396,22 @@ class FaceRecognitionAPI(View):
         try:
             embedding_vector = self._coerce_embedding(payload.get("embedding"))
         except ValueError as exc:
+            attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
             return JsonResponse({"error": str(exc)}, status=400)
 
         if embedding_vector is None:
             try:
                 image_bytes = self._extract_image_bytes(request, payload)
             except ValueError as exc:
+                attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
                 return JsonResponse({"error": str(exc)}, status=400)
 
             if not image_bytes:
+                attempt_logger.log_failure(
+                    submitted_username,
+                    spoofed=False,
+                    error="Provide either an 'embedding' array or an 'image' payload.",
+                )
                 return JsonResponse(
                     {"error": "Provide either an 'embedding' array or an 'image' payload."},
                     status=400,
@@ -266,6 +419,11 @@ class FaceRecognitionAPI(View):
 
             frame = _decode_image_bytes(image_bytes)
             if frame is None:
+                attempt_logger.log_failure(
+                    submitted_username,
+                    spoofed=False,
+                    error="Unable to decode the supplied image.",
+                )
                 return JsonResponse({"error": "Unable to decode the supplied image."}, status=400)
 
             try:
@@ -277,6 +435,11 @@ class FaceRecognitionAPI(View):
                 )
             except Exception as exc:  # pragma: no cover - deepface may fail unexpectedly
                 logger.error("Failed to extract embedding from API request: %s", exc)
+                attempt_logger.log_failure(
+                    submitted_username,
+                    spoofed=False,
+                    error="Failed to analyse the provided image.",
+                )
                 return JsonResponse(
                     {"error": "Failed to analyse the provided image."},
                     status=500,
@@ -284,6 +447,11 @@ class FaceRecognitionAPI(View):
 
             extracted_embedding, facial_area = _extract_first_embedding(representations)
             if extracted_embedding is None:
+                attempt_logger.log_failure(
+                    submitted_username,
+                    spoofed=False,
+                    error="No face embedding could be extracted from the image.",
+                )
                 return JsonResponse(
                     {"error": "No face embedding could be extracted from the image."},
                     status=400,
@@ -293,6 +461,11 @@ class FaceRecognitionAPI(View):
                 embedding_vector = np.array(extracted_embedding, dtype=float)
             except (TypeError, ValueError) as exc:  # pragma: no cover - defensive
                 logger.warning("Received invalid embedding from DeepFace: %s", exc)
+                attempt_logger.log_failure(
+                    submitted_username,
+                    spoofed=False,
+                    error="Invalid embedding generated.",
+                )
                 return JsonResponse({"error": "Invalid embedding generated."}, status=500)
 
         dataset_index = _load_dataset_embeddings_for_matching(
@@ -315,6 +488,11 @@ class FaceRecognitionAPI(View):
             normalized_index.append(normalized_entry)
 
         if not normalized_index:
+            attempt_logger.log_failure(
+                submitted_username,
+                spoofed=False,
+                error="No enrolled face embeddings are available for comparison.",
+            )
             return JsonResponse(
                 {"error": "No enrolled face embeddings are available for comparison."},
                 status=503,
@@ -341,6 +519,12 @@ class FaceRecognitionAPI(View):
         if match is None:
             if spoofed:
                 response_payload["spoofed"] = True
+            attempt = attempt_logger.log_failure(
+                submitted_username,
+                spoofed=spoofed,
+                error="No matching identity found for the provided embedding.",
+            )
+            _attach_attempt_user(attempt, submitted_username)
             return JsonResponse(response_payload)
 
         username, distance_value, identity_path = match
@@ -353,10 +537,36 @@ class FaceRecognitionAPI(View):
         if username:
             response_payload["username"] = username
 
+        resolved_username = username or submitted_username
+        if not resolved_username and identity_path:
+            resolved_username = Path(identity_path).stem
+
         if spoofed:
             response_payload["spoofed"] = True
+            attempt = attempt_logger.log_failure(
+                resolved_username,
+                spoofed=True,
+                error="Liveness check failed.",
+            )
+            _attach_attempt_user(attempt, resolved_username)
+            return JsonResponse(response_payload)
         else:
-            response_payload["recognized"] = bool(distance_value <= distance_threshold)
+            recognized = bool(distance_value <= distance_threshold)
+            response_payload["recognized"] = recognized
+
+            if recognized:
+                attempt = attempt_logger.log_success(resolved_username or "unknown")
+                _attach_attempt_user(attempt, resolved_username)
+            else:
+                attempt = attempt_logger.log_failure(
+                    resolved_username,
+                    spoofed=False,
+                    error=(
+                        "Distance %.4f exceeded threshold %.4f"
+                        % (distance_value, distance_threshold)
+                    ),
+                )
+                _attach_attempt_user(attempt, resolved_username)
 
         return JsonResponse(response_payload)
 
@@ -983,7 +1193,11 @@ def create_dataset(username: str) -> None:
                 logger.error("Failed to enqueue incremental training for %s: %s", username, exc)
 
 
-def update_attendance_in_db_in(present: Dict[str, bool]) -> None:
+def update_attendance_in_db_in(
+    present: Dict[str, bool],
+    *,
+    attempt_ids: Mapping[str, int] | None = None,
+) -> None:
     """
     Persist check-in attendance information for the provided users.
 
@@ -995,6 +1209,7 @@ def update_attendance_in_db_in(present: Dict[str, bool]) -> None:
     """
     today = timezone.localdate()
     current_time = timezone.now()
+    attempt_ids = attempt_ids or {}
     for person, is_present in present.items():
         user = User.objects.filter(username=person).first()
         if user is None:
@@ -1003,6 +1218,12 @@ def update_attendance_in_db_in(present: Dict[str, bool]) -> None:
                 "Training data may be stale.",
                 person,
             )
+            attempt_id = attempt_ids.get(person)
+            if attempt_id:
+                RecognitionAttempt.objects.filter(id=attempt_id).update(
+                    successful=False,
+                    error_message="User not found while persisting check-in.",
+                )
             continue
 
         # Find or create the attendance record for the day
@@ -1017,10 +1238,28 @@ def update_attendance_in_db_in(present: Dict[str, bool]) -> None:
 
         if is_present:
             # Record the check-in time
-            Time.objects.create(user=user, date=today, time=current_time, out=False)
+            time_record = Time.objects.create(
+                user=user, date=today, time=current_time, out=False
+            )
+        else:
+            time_record = None
+
+        attempt_id = attempt_ids.get(person)
+        if attempt_id:
+            attempt_updates: Dict[str, Any] = {
+                "user": user,
+                "present_record": qs,
+            }
+            if time_record is not None:
+                attempt_updates["time_record"] = time_record
+            RecognitionAttempt.objects.filter(id=attempt_id).update(**attempt_updates)
 
 
-def update_attendance_in_db_out(present: Dict[str, bool]) -> None:
+def update_attendance_in_db_out(
+    present: Dict[str, bool],
+    *,
+    attempt_ids: Mapping[str, int] | None = None,
+) -> None:
     """
     Persist check-out attendance information for the provided users.
 
@@ -1032,6 +1271,7 @@ def update_attendance_in_db_out(present: Dict[str, bool]) -> None:
     """
     today = timezone.localdate()
     current_time = timezone.now()
+    attempt_ids = attempt_ids or {}
     for person, is_present in present.items():
         if not is_present:
             continue
@@ -1043,9 +1283,28 @@ def update_attendance_in_db_out(present: Dict[str, bool]) -> None:
                 "Training data may be stale.",
                 person,
             )
+            attempt_id = attempt_ids.get(person)
+            if attempt_id:
+                RecognitionAttempt.objects.filter(id=attempt_id).update(
+                    successful=False,
+                    error_message="User not found while persisting check-out.",
+                )
             continue
         # Record the check-out time
-        Time.objects.create(user=user, date=today, time=current_time, out=True)
+        time_record = Time.objects.create(
+            user=user, date=today, time=current_time, out=True
+        )
+
+        attempt_id = attempt_ids.get(person)
+        if attempt_id:
+            present_record = Present.objects.filter(user=user, date=today).first()
+            attempt_updates: Dict[str, Any] = {
+                "user": user,
+                "time_record": time_record,
+            }
+            if present_record is not None:
+                attempt_updates["present_record"] = present_record
+            RecognitionAttempt.objects.filter(id=attempt_id).update(**attempt_updates)
 
 
 def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
@@ -1647,6 +1906,15 @@ def _mark_attendance(request, check_in: bool):
     frame_pause = float(getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01))
     frames_processed = 0
 
+    direction_choice = (
+        RecognitionAttempt.Direction.IN if check_in else RecognitionAttempt.Direction.OUT
+    )
+    attempt_logger = _RecognitionAttemptLogger(
+        direction_choice.value,
+        _resolve_recognition_site(request),
+        source="webcam",
+    )
+
     # Configure DeepFace settings
     model_name = _get_face_recognition_model()
     detector_backend = _get_face_detection_backend()
@@ -1666,6 +1934,11 @@ def _mark_attendance(request, check_in: bool):
         model_name, detector_backend, enforce_detection
     )
     if not dataset_index:
+        attempt_logger.log_failure(
+            getattr(request.user, "username", None),
+            spoofed=False,
+            error="No encrypted training data available for matching.",
+        )
         messages.error(
             request,
             "No encrypted training data available for matching. Please recreate the dataset.",
@@ -1713,6 +1986,15 @@ def _mark_attendance(request, check_in: bool):
                             Path(identity_path).parent.name,
                             distance_value,
                         )
+                        fallback_username = username or Path(identity_path).parent.name
+                        attempt_logger.log_failure(
+                            fallback_username,
+                            spoofed=False,
+                            error=(
+                                "Distance %.4f exceeded threshold %.4f"
+                                % (distance_value, distance_threshold)
+                            ),
+                        )
                         continue
 
                     if spoofed:
@@ -1720,6 +2002,12 @@ def _mark_attendance(request, check_in: bool):
                         logger.warning(
                             "Spoofing attempt blocked while marking attendance for '%s'",
                             username or Path(identity_path).parent.name,
+                        )
+                        fallback_username = username or Path(identity_path).parent.name
+                        attempt_logger.log_failure(
+                            fallback_username,
+                            spoofed=True,
+                            error="Spoofing detected by liveness gate.",
                         )
 
                         if normalized_region:
@@ -1742,6 +2030,7 @@ def _mark_attendance(request, check_in: bool):
                     if username:
                         present[username] = True
                         logger.info("Recognized %s with distance %.4f", username, distance_value)
+                        attempt_logger.log_success(username)
 
                         if normalized_region:
                             x = int(normalized_region["x"])
@@ -1776,14 +2065,21 @@ def _mark_attendance(request, check_in: bool):
         if not headless:
             cv2.destroyAllWindows()
 
+    attempt_logger.ensure_generic_failure(
+        "No faces were recognized during the attendance session."
+    )
+
     if spoof_detected:
         messages.error(request, LIVENESS_FAILURE_MESSAGE)
 
     if present:
-        record = {
-            "direction": "in" if check_in else "out",
+        record: Dict[str, Any] = {
+            "direction": direction_choice.value,
             "present": present,
         }
+        attempt_ids = attempt_logger.success_attempt_ids
+        if attempt_ids:
+            record["attempt_ids"] = attempt_ids
         try:
             async_result = _enqueue_attendance_records([record])
             logger.info(
@@ -1796,9 +2092,9 @@ def _mark_attendance(request, check_in: bool):
                 "Failed to enqueue attendance processing; falling back to synchronous update."
             )
             if check_in:
-                update_attendance_in_db_in(present)
+                update_attendance_in_db_in(present, attempt_ids=attempt_ids)
             else:
-                update_attendance_in_db_out(present)
+                update_attendance_in_db_out(present, attempt_ids=attempt_ids)
 
     return redirect("home")
 
@@ -2250,6 +2546,17 @@ def mark_attendance_view(request, attendance_type):
         request.user,
     )
 
+    direction_choice = (
+        RecognitionAttempt.Direction.IN
+        if attendance_type == "in"
+        else RecognitionAttempt.Direction.OUT
+    )
+    attempt_logger = _RecognitionAttemptLogger(
+        direction_choice.value,
+        _resolve_recognition_site(request),
+        source="svc",
+    )
+
     # --- Load cached embeddings to avoid rebuilding them per frame ---
     model_name = _get_face_recognition_model()
     detector_backend = _get_face_detection_backend()
@@ -2260,6 +2567,11 @@ def mark_attendance_view(request, attendance_type):
     if not dataset_index:
         logger.warning(
             "Cached embeddings are empty while marking attendance via SVC; continuing with model predictions."
+        )
+        attempt_logger.log_failure(
+            getattr(request.user, "username", None),
+            spoofed=False,
+            error="Cached embeddings unavailable while marking attendance.",
         )
 
     # --- Load Model ---
@@ -2344,6 +2656,11 @@ def mark_attendance_view(request, attendance_type):
 
                         if spoofed:
                             spoof_detected = True
+                            attempt_logger.log_failure(
+                                str(predicted_name) if predicted_name else None,
+                                spoofed=True,
+                                error="Spoofing detected by liveness gate.",
+                            )
                             if normalized_region:
                                 x = int(normalized_region["x"])
                                 y = int(normalized_region["y"])
@@ -2363,6 +2680,7 @@ def mark_attendance_view(request, attendance_type):
 
                         if predicted_name:
                             present[predicted_name] = True
+                            attempt_logger.log_success(str(predicted_name))
 
                             if normalized_region:
                                 x = int(normalized_region["x"])
@@ -2400,8 +2718,24 @@ def mark_attendance_view(request, attendance_type):
     if spoof_detected:
         messages.error(request, LIVENESS_FAILURE_MESSAGE)
 
-    if present:
-        record = {"direction": attendance_type, "present": present}
+    attempt_logger.ensure_generic_failure(
+        "No faces were recognized during the attendance session."
+    )
+
+    recognized_present = {name: True for name, value in present.items() if value}
+
+    if recognized_present:
+        record: Dict[str, Any] = {
+            "direction": attendance_type,
+            "present": recognized_present,
+        }
+        attempt_ids = {
+            username: attempt_id
+            for username, attempt_id in attempt_logger.success_attempt_ids.items()
+            if recognized_present.get(username)
+        }
+        if attempt_ids:
+            record["attempt_ids"] = attempt_ids
         try:
             async_result = _enqueue_attendance_records([record])
             logger.info(
@@ -2424,10 +2758,14 @@ def mark_attendance_view(request, attendance_type):
                 "Failed to enqueue attendance processing via API; applying updates synchronously."
             )
             if attendance_type == "in":
-                update_attendance_in_db_in(present)
+                update_attendance_in_db_in(
+                    recognized_present, attempt_ids=attempt_ids
+                )
                 messages.success(request, "Checked-in users have been marked present.")
             elif attendance_type == "out":
-                update_attendance_in_db_out(present)
+                update_attendance_in_db_out(
+                    recognized_present, attempt_ids=attempt_ids
+                )
                 messages.success(request, "Checked-out users have been marked.")
     else:
         messages.info(request, "No recognized users to update attendance for.")

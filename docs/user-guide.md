@@ -191,6 +191,16 @@ The main attendance dashboard shows:
 - **Employees Present Today**: How many have marked attendance today
 - **Weekly Graphs**: Visual charts showing attendance trends
 
+### Recognition Attempt Analytics
+
+Administrators can review system-wide recognition health from the **Recognition Attempt Summary** page (Admin → Recognition Attempts). The dashboard provides:
+
+- **Per-Site Breakdown**: Success, failure, and spoofing rates for each physical location.
+- **Employee-Level Metrics**: How often each employee was recognized, blocked for spoofing, or failed to match.
+- **Latency Insights**: Each attempt records the end-to-end processing time, helping you spot slow hardware or network bottlenecks.
+
+Use these metrics alongside the analytics documentation to validate deployments, identify problematic cameras, and plan follow-up training for employees who frequently fail to match.
+
 ---
 
 ## Using Dark Mode

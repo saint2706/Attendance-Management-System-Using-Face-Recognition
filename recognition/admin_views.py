@@ -7,7 +7,11 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Count, Q
+from django.db.models.functions import Coalesce
 from django.shortcuts import render
+
+from users.models import RecognitionAttempt
 
 
 @staff_member_required
@@ -120,3 +124,52 @@ def failure_analysis(request):
         context["subgroups_available"] = True
 
     return render(request, "recognition/admin/failure_analysis.html", context)
+
+
+@staff_member_required
+def recognition_attempt_summary(request):
+    """Display aggregated recognition attempt metrics per site and employee."""
+
+    attempts = RecognitionAttempt.objects.all()
+
+    site_summary = list(
+        attempts.values("site")
+        .annotate(
+            total=Count("id"),
+            successes=Count("id", filter=Q(successful=True)),
+            failures=Count("id", filter=Q(successful=False)),
+            spoofed=Count("id", filter=Q(spoof_detected=True)),
+        )
+        .order_by("site")
+    )
+    for entry in site_summary:
+        total = entry.get("total") or 0
+        entry["success_rate"] = (
+            (entry.get("successes", 0) / total) * 100 if total else None
+        )
+
+    employee_summary = list(
+        attempts.annotate(
+            resolved_username=Coalesce("user__username", "username")
+        )
+        .values("site", "resolved_username")
+        .annotate(
+            total=Count("id"),
+            successes=Count("id", filter=Q(successful=True)),
+            failures=Count("id", filter=Q(successful=False)),
+            spoofed=Count("id", filter=Q(spoof_detected=True)),
+        )
+        .order_by("site", "resolved_username")
+    )
+    for entry in employee_summary:
+        total = entry.get("total") or 0
+        entry["success_rate"] = (
+            (entry.get("successes", 0) / total) * 100 if total else None
+        )
+
+    context = {
+        "site_summary": site_summary,
+        "employee_summary": employee_summary,
+    }
+
+    return render(request, "recognition/admin/recognition_attempt_summary.html", context)

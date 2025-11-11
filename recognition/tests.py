@@ -31,7 +31,7 @@ sys.modules.setdefault("cv2", MagicMock())
 
 from recognition import views  # noqa: E402
 from src.common import encrypt_bytes  # noqa: E402
-from users.models import Present, Time  # noqa: E402
+from users.models import Present, RecognitionAttempt, Time  # noqa: E402
 
 TEST_FERNET_KEY = Fernet.generate_key()
 
@@ -114,6 +114,7 @@ class DeepFaceAttendanceTest(TestCase):
         mock_analyze.assert_not_called()
 
     @patch("recognition.views.update_attendance_in_db_in")
+    @patch("recognition.views._enqueue_attendance_records")
     @patch("recognition.views._load_dataset_embeddings_for_matching")
     @patch("recognition.views.DeepFace.represent")
     @patch("recognition.views.cv2")
@@ -124,6 +125,7 @@ class DeepFaceAttendanceTest(TestCase):
         mock_cv2,
         mock_deepface_represent,
         mock_dataset_loader,
+        mock_enqueue,
         mock_update_db,
     ):
         """Verify that a recognized user is correctly marked for check-in."""
@@ -145,13 +147,19 @@ class DeepFaceAttendanceTest(TestCase):
             }
         ]
 
+        mock_enqueue.side_effect = RuntimeError("celery offline")
+
         # Call the view function
         views.mark_your_attendance(request)
 
         # Assert that the database update function was called with the correct user
-        mock_update_db.assert_called_once_with({"tester": True})
+        mock_update_db.assert_called_once()
+        args, kwargs = mock_update_db.call_args
+        self.assertEqual(args[0], {"tester": True})
+        self.assertIn("tester", kwargs.get("attempt_ids", {}))
 
     @patch("recognition.views.update_attendance_in_db_in")
+    @patch("recognition.views._enqueue_attendance_records")
     @patch("recognition.views._find_closest_dataset_match")
     @patch("recognition.views._load_dataset_embeddings_for_matching")
     @patch("recognition.views.DeepFace.represent")
@@ -164,6 +172,7 @@ class DeepFaceAttendanceTest(TestCase):
         mock_deepface_represent,
         mock_dataset_loader,
         mock_find_match,
+        mock_enqueue,
         mock_update_db,
     ):
         """Attendance marking should honour DeepFace configuration overrides."""
@@ -200,10 +209,15 @@ class DeepFaceAttendanceTest(TestCase):
             }
         ]
 
+        mock_enqueue.side_effect = RuntimeError("celery offline")
+
         with self.settings(DEEPFACE_OPTIMIZATIONS=overrides):
             views.mark_your_attendance(request)
 
-        mock_update_db.assert_called_once_with({"tester": True})
+        mock_update_db.assert_called_once()
+        args, kwargs = mock_update_db.call_args
+        self.assertEqual(args[0], {"tester": True})
+        self.assertIn("tester", kwargs.get("attempt_ids", {}))
 
         _, kwargs = mock_deepface_represent.call_args
         self.assertEqual(kwargs["model_name"], "SFace")
@@ -214,6 +228,7 @@ class DeepFaceAttendanceTest(TestCase):
         self.assertEqual(args[2], "cosine")
 
     @patch("recognition.views.update_attendance_in_db_out")
+    @patch("recognition.views._enqueue_attendance_records")
     @patch("recognition.views._load_dataset_embeddings_for_matching")
     @patch("recognition.views.DeepFace.represent")
     @patch("recognition.views.cv2")
@@ -224,6 +239,7 @@ class DeepFaceAttendanceTest(TestCase):
         mock_cv2,
         mock_deepface_represent,
         mock_dataset_loader,
+        mock_enqueue,
         mock_update_db,
     ):
         """Verify that a recognized user is correctly marked for check-out."""
@@ -246,9 +262,14 @@ class DeepFaceAttendanceTest(TestCase):
             }
         ]
 
+        mock_enqueue.side_effect = RuntimeError("celery offline")
+
         views.mark_your_attendance_out(request)
 
-        mock_update_db.assert_called_once_with({"tester": True})
+        mock_update_db.assert_called_once()
+        args, kwargs = mock_update_db.call_args
+        self.assertEqual(args[0], {"tester": True})
+        self.assertIn("tester", kwargs.get("attempt_ids", {}))
 
     @patch("recognition.views.update_attendance_in_db_in")
     @patch("recognition.views._load_dataset_embeddings_for_matching")
@@ -287,8 +308,8 @@ class DeepFaceAttendanceTest(TestCase):
         with self.settings(RECOGNITION_DISTANCE_THRESHOLD=0.4):
             views.mark_your_attendance(request)
 
-        # Verify that the database update was called with an empty dictionary
-        mock_update_db.assert_called_once_with({})
+        # Verify that no attendance update was triggered
+        mock_update_db.assert_not_called()
 
     @patch("recognition.views.time.sleep", return_value=None)
     @patch("recognition.views._is_headless_environment", return_value=True)
@@ -325,9 +346,56 @@ class DeepFaceAttendanceTest(TestCase):
         with self.settings(RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=2):
             views.mark_your_attendance(request)
 
-        mock_update_db.assert_called_once_with({})
+        mock_update_db.assert_not_called()
         mock_cv2.imshow.assert_not_called()
         mock_cv2.waitKey.assert_not_called()
+
+    @patch("recognition.views._enqueue_attendance_records")
+    @patch("recognition.views._load_dataset_embeddings_for_matching")
+    @patch("recognition.views.DeepFace.represent")
+    @patch("recognition.views.cv2")
+    @patch("recognition.views.get_webcam_manager")
+    def test_recognition_attempt_log_created(
+        self,
+        mock_get_manager,
+        mock_cv2,
+        mock_deepface_represent,
+        mock_dataset_loader,
+        mock_enqueue,
+    ):
+        """A successful recognition should create a linked attempt record."""
+
+        request = self.factory.get("/mark_attendance/")
+        request.user = self.user
+        self._setup_mocks(mock_get_manager, mock_cv2)
+
+        mock_dataset_loader.return_value = [
+            {
+                "identity": str(self.db_path / "tester" / "1.jpg"),
+                "embedding": np.array([0.1, 0.2], dtype=float),
+                "username": "tester",
+            }
+        ]
+        mock_deepface_represent.return_value = [
+            {
+                "embedding": [0.1, 0.2],
+                "facial_area": {"x": 10, "y": 10, "w": 50, "h": 50},
+            }
+        ]
+        mock_enqueue.side_effect = RuntimeError("celery offline")
+
+        views.mark_your_attendance(request)
+
+        attempt = RecognitionAttempt.objects.get()
+        self.assertEqual(attempt.username, "tester")
+        self.assertTrue(attempt.successful)
+        self.assertFalse(attempt.spoof_detected)
+        self.assertEqual(attempt.direction, RecognitionAttempt.Direction.IN)
+        self.assertEqual(attempt.site, "testserver")
+        self.assertIsNotNone(attempt.time_record)
+        self.assertIsNotNone(attempt.present_record)
+        self.assertEqual(attempt.user, self.user)
+        self.assertIsNotNone(attempt.latency_ms)
 
 
 class EmbeddingCacheHelperTests(TestCase):
@@ -432,6 +500,46 @@ class DatabaseUpdateTest(TestCase):
         self.assertFalse(Present.objects.filter(date=self.today).exists())
         self.assertFalse(Time.objects.filter(date=self.today).exists())
 
+    def test_update_attendance_in_db_in_links_attempt(self):
+        """Attempt IDs should be linked to persisted attendance records."""
+
+        attempt = RecognitionAttempt.objects.create(
+            username="testuser",
+            direction=RecognitionAttempt.Direction.IN,
+            site="lab",
+            source="unit-test",
+            successful=True,
+        )
+
+        views.update_attendance_in_db_in(
+            {"testuser": True}, attempt_ids={"testuser": attempt.id}
+        )
+
+        attempt.refresh_from_db()
+        self.assertEqual(attempt.user, self.user)
+        self.assertIsNotNone(attempt.present_record)
+        self.assertIsNotNone(attempt.time_record)
+
+    def test_update_attendance_in_db_out_links_attempt(self):
+        """Attempt IDs should resolve to checkout time entries."""
+
+        attempt = RecognitionAttempt.objects.create(
+            username="testuser",
+            direction=RecognitionAttempt.Direction.OUT,
+            site="lab",
+            source="unit-test",
+            successful=True,
+        )
+
+        views.update_attendance_in_db_out(
+            {"testuser": True}, attempt_ids={"testuser": attempt.id}
+        )
+
+        attempt.refresh_from_db()
+        self.assertEqual(attempt.user, self.user)
+        self.assertIsNotNone(attempt.time_record)
+        self.assertTrue(attempt.time_record.out)
+
 
 class AddPhotosTest(TestCase):
     """Test suite for the 'add_photos' view."""
@@ -516,6 +624,12 @@ class AdminAccessViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "recognition/view_attendance_date.html")
 
+        response = self.client.get(reverse("admin_recognition_attempt_summary"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "recognition/admin/recognition_attempt_summary.html"
+        )
+
     def test_view_attendance_home_employee_count_excludes_admin_accounts(self):
         """Verify that the total employee count correctly excludes admins and superusers."""
         self.client.force_login(self.staff_user)
@@ -549,6 +663,7 @@ class AdminAccessViewsTest(TestCase):
             "view-attendance-date",
             "view-attendance-employee",
             "train",
+            "admin_recognition_attempt_summary",
         ]
 
         for url_name in admin_urls:

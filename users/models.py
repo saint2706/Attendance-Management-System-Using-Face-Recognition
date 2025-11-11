@@ -98,3 +98,100 @@ class Time(models.Model):
             formatted_time = "No timestamp recorded"
 
         return f"{self.user.username} - {formatted_time} - {event_type}"
+
+
+class RecognitionAttempt(models.Model):
+    """Persist metadata for each recognition attempt."""
+
+    class Direction(models.TextChoices):
+        """Supported attendance directions for recognition attempts."""
+
+        IN = "in", "Check-in"
+        OUT = "out", "Check-out"
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When the recognition attempt was recorded.",
+        db_index=True,
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="Timestamp for the last update to this record.",
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="recognition_attempts",
+        help_text="Resolved user for the attempt, if available.",
+    )
+    username = models.CharField(
+        max_length=150,
+        blank=True,
+        help_text="Username inferred at recognition time (may be empty on failure).",
+    )
+    direction = models.CharField(
+        max_length=3,
+        choices=Direction.choices,
+        help_text="Whether the attempt was for a check-in or check-out event.",
+    )
+    site = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Physical location or site identifier for the attempt.",
+    )
+    source = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="System component that initiated the attempt (e.g. webcam, API).",
+    )
+    successful = models.BooleanField(
+        default=False,
+        help_text="True when the attempt resulted in a successful recognition.",
+    )
+    spoof_detected = models.BooleanField(
+        default=False,
+        help_text="True when anti-spoofing blocked the attempt.",
+    )
+    latency_ms = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="End-to-end latency in milliseconds measured for the attempt.",
+    )
+    present_record = models.ForeignKey(
+        Present,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="recognition_attempts",
+        help_text="Linked daily presence record when one was created.",
+    )
+    time_record = models.ForeignKey(
+        Time,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="recognition_attempts",
+        help_text="Linked time entry created for the attempt, if applicable.",
+    )
+    error_message = models.TextField(
+        blank=True,
+        help_text="Optional diagnostic information describing failures.",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["site", "direction"], name="users_attempt_site_dir_idx"),
+            models.Index(fields=["user", "direction"], name="users_attempt_user_dir_idx"),
+            models.Index(fields=["created_at"], name="users_attempt_created_idx"),
+        ]
+
+    def __str__(self) -> str:
+        """Return a human readable representation for the attempt."""
+
+        label = self.username or (self.user.username if self.user else "unknown")
+        status = "success" if self.successful else "failure"
+        direction = self.get_direction_display()
+        return f"{label} - {direction} - {status}"

@@ -10,9 +10,7 @@ from typing import Callable
 
 import numpy as np
 import pytest
-from django.db import connection
 from django.test import RequestFactory, override_settings
-from django.test.utils import CaptureQueriesContext
 
 import django
 
@@ -21,9 +19,13 @@ os.environ.setdefault(
 )
 django.setup()
 
+from django.contrib.auth import get_user_model
 from recognition import tasks
 from recognition import views as recognition_views
 from recognition import webcam_manager as webcam_module
+from users.models import RecognitionAttempt
+
+User = get_user_model()
 
 
 @pytest.mark.django_db
@@ -107,10 +109,8 @@ class TestFaceRecognitionWorkflow:
         view = recognition_views.FaceRecognitionAPI.as_view()
         request_factory = self._make_request()
 
-        with CaptureQueriesContext(connection) as first_queries:
-            first_response = view(request_factory())
-        with CaptureQueriesContext(connection) as second_queries:
-            second_response = view(request_factory())
+        first_response = view(request_factory())
+        second_response = view(request_factory())
 
         assert first_response.status_code == 200
         assert second_response.status_code == 200
@@ -120,8 +120,64 @@ class TestFaceRecognitionWorkflow:
 
         assert first_payload["recognized"] is True
         assert second_payload["recognized"] is False
-        assert first_queries.captured_queries == []
-        assert second_queries.captured_queries == []
+
+        attempts = list(RecognitionAttempt.objects.order_by("id"))
+        assert len(attempts) == 2
+        assert attempts[0].successful is True
+        assert attempts[1].successful is False
+        assert attempts[0].direction == RecognitionAttempt.Direction.IN
+
+    @override_settings(
+        RECOGNITION_DISTANCE_THRESHOLD=0.5,
+        DEEPFACE_OPTIMIZATIONS={
+            "distance_metric": "euclidean_l2",
+            "model": "Facenet",
+            "detector_backend": "opencv",
+            "enforce_detection": False,
+            "anti_spoofing": False,
+        },
+    )
+    def test_api_logs_attempt_metadata(self, monkeypatch) -> None:
+        """Recognition attempts logged via the API should capture metadata."""
+
+        user = User.objects.create_user(username="jane", password="testpass")
+
+        dataset_entry = {
+            "embedding": np.array([0.1, 0.2, 0.3], dtype=float),
+            "username": "jane",
+            "identity": "jane/reference.jpg",
+        }
+        monkeypatch.setattr(
+            recognition_views,
+            "_load_dataset_embeddings_for_matching",
+            lambda *args, **kwargs: [dataset_entry],
+        )
+
+        monkeypatch.setattr(
+            recognition_views,
+            "_find_closest_dataset_match",
+            lambda *_args, **_kwargs: ("jane", 0.25, "jane/reference.jpg"),
+        )
+        monkeypatch.setattr(
+            recognition_views,
+            "_passes_liveness_check",
+            lambda *args, **kwargs: True,
+        )
+
+        view = recognition_views.FaceRecognitionAPI.as_view()
+        request = self._make_request()()
+        request.META["HTTP_X_RECOGNITION_SITE"] = "hq"
+
+        response = view(request)
+        assert response.status_code == 200
+
+        attempt = RecognitionAttempt.objects.get()
+        assert attempt.successful is True
+        assert attempt.username == "jane"
+        assert attempt.user == user
+        assert attempt.site == "hq"
+        assert attempt.direction == RecognitionAttempt.Direction.IN
+        assert attempt.source == "api"
 
     def test_concurrent_attendance_requests(self, monkeypatch):
         """Concurrent consumers should receive advancing frames and clean up."""

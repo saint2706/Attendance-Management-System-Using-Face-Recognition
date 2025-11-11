@@ -248,6 +248,9 @@ async def process_single_attendance(record: Mapping[str, Any]) -> dict[str, Any]
 
     direction = str(record.get("direction", "in")).lower()
     payload = record.get("present") or record.get("payload") or {}
+    attempt_ids = record.get("attempt_ids")
+    if not isinstance(attempt_ids, Mapping):
+        attempt_ids = {}
 
     result: dict[str, Any] = {
         "direction": direction,
@@ -275,7 +278,7 @@ async def process_single_attendance(record: Mapping[str, Any]) -> dict[str, Any]
     update_async = sync_to_async(update_fn, thread_sensitive=True)
 
     try:
-        await update_async(present_payload)
+        await update_async(present_payload, attempt_ids=attempt_ids)
     except Exception as exc:  # pragma: no cover - defensive programming
         logger.exception("Failed to process %s attendance payload: %s", direction, exc)
         result["status"] = "error"
