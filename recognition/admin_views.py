@@ -8,6 +8,10 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render
+from django.urls import reverse
+
+
+from . import monitoring
 
 
 @staff_member_required
@@ -120,3 +124,15 @@ def failure_analysis(request):
         context["subgroups_available"] = True
 
     return render(request, "recognition/admin/failure_analysis.html", context)
+
+
+@staff_member_required
+def system_health_dashboard(request):
+    """Render current webcam and recognition health signals for admins."""
+
+    snapshot = monitoring.get_health_snapshot()
+    context = {
+        "snapshot": snapshot,
+        "metrics_url": request.build_absolute_uri(reverse("monitoring-metrics")),
+    }
+    return render(request, "recognition/admin/system_health.html", context)
