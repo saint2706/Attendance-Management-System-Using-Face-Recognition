@@ -9,6 +9,7 @@ from django.core.exceptions import ImproperlyConfigured
 from . import base as base_settings
 from .base import *  # noqa: F401,F403
 from .base import DATABASES  # noqa: F401
+from .sentry import initialize_sentry
 
 
 def _get_db_setting(var_name: str, *, default: str | None = None) -> str:
@@ -36,3 +37,6 @@ DATABASES["default"] = {
 
 if base_settings._get_bool_env("DB_SSL_REQUIRE", default=False):
     DATABASES["default"].setdefault("OPTIONS", {})["sslmode"] = "require"
+
+
+initialize_sentry()

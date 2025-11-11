@@ -128,6 +128,27 @@ The Progressive Web App resources are exposed at `/manifest.json` and `/sw.js`. 
 
 Ensure these variables are present in the staging and production deployment manifests (e.g., `.env` files, container secrets, or platform configuration) before rolling out new builds.
 
+### Observability and error tracking
+
+The production settings initialise [Sentry](https://sentry.io/) automatically when the DSN is supplied. Configure the following environment variables to tailor telemetry to each deployment target:
+
+| Environment variable | Purpose | Recommended staging value | Recommended production value |
+| --- | --- | --- | --- |
+| `SENTRY_DSN` | Enables Sentry ingestion for the project. | `https://<public>@sentry.io/<project>` | `https://<public>@sentry.io/<project>` |
+| `SENTRY_ENVIRONMENT` | Distinguishes environments inside the Sentry dashboards. | `staging` | `production` |
+| `SENTRY_RELEASE` | Associates events with build artefacts for source maps and regression tracking. | Git commit SHA | Git tag or release identifier |
+| `SENTRY_TRACES_SAMPLE_RATE` | Fraction (0.0–1.0) of requests captured for APM tracing. | `0.1` | `0.2` |
+| `SENTRY_PROFILES_SAMPLE_RATE` | Fraction (0.0–1.0) of traces that include profiling data. | `0.0` | `0.05` |
+| `SENTRY_SEND_DEFAULT_PII` | Toggle for sending user-identifiable attributes; defaults to scrubbing PII. | `false` | `false` |
+
+With `SENTRY_SEND_DEFAULT_PII` disabled, the integration strips cookies, authorisation headers, and user attributes before dispatching events so that production telemetry complies with internal privacy requirements. Operators that need richer context can opt in by setting `SENTRY_SEND_DEFAULT_PII=true` after completing a privacy impact assessment.
+
+#### Operational dashboards
+
+- **Issues**: Monitor unhandled exceptions and message breadcrumbs from the Sentry *Issues* dashboard. Pin the view filtered by `environment:production` to quickly detect regressions after each deployment.
+- **Performance**: Track request latency, throughput, and slow transactions with the *Performance* dashboard. Enable sampling via `SENTRY_TRACES_SAMPLE_RATE` to populate the charts and configure alerts for p95 latency regressions.
+- **Real-time**: For incident response, use Sentry's *Releases* view to correlate deploys with spikes in error volume, and subscribe the operations channel to release health alerts.
+
 ### Containerized deployment workflow
 
 The repository ships with a production-ready `Dockerfile` and Compose definition so you can build and run the stack with minimal host dependencies. The commands below assume Docker Engine 24+ and Docker Compose v2 are installed locally.
