@@ -1,0 +1,102 @@
+{% extends "admin/base_site.html" %}
+{% load tz %}
+
+{% block title %}Recognition Accuracy Trends{% endblock %}
+
+{% block content %}
+<h1>Recognition Accuracy Trends</h1>
+
+<p>
+    {% if retention_days_numeric %}
+        Recognition outcomes are retained for {{ retention_days_numeric }} day{{ retention_days_numeric|pluralize }}.
+    {% else %}
+        Recognition outcomes are retained {{ retention_days }}.
+    {% endif %}
+    Use these tables to monitor how often recognition attempts are accepted before attendance
+    updates are queued.
+</p>
+
+<div class="module">
+    <h2>Daily Accuracy</h2>
+    {% if daily_trend %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Total Attempts</th>
+                    <th>Accepted</th>
+                    <th>Rejected</th>
+                    <th>Accuracy</th>
+                    <th>Average Confidence</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in daily_trend %}
+                <tr>
+                    <td>{{ row.period|date:"Y-m-d" }}</td>
+                    <td>{{ row.total }}</td>
+                    <td>{{ row.accepted }}</td>
+                    <td>{{ row.rejected }}</td>
+                    <td>{{ row.accuracy|floatformat:2 }}</td>
+                    <td>
+                        {% if row.average_confidence %}
+                            {{ row.average_confidence|floatformat:2 }}
+                        {% else %}
+                            –
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No recognition outcomes have been recorded yet.</p>
+    {% endif %}
+</div>
+
+<div class="module">
+    <h2>Weekly Accuracy</h2>
+    {% if weekly_trend %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Week Starting</th>
+                    <th>Total Attempts</th>
+                    <th>Accepted</th>
+                    <th>Rejected</th>
+                    <th>Accuracy</th>
+                    <th>Average Confidence</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in weekly_trend %}
+                <tr>
+                    <td>{{ row.period|date:"Y-m-d" }}</td>
+                    <td>{{ row.total }}</td>
+                    <td>{{ row.accepted }}</td>
+                    <td>{{ row.rejected }}</td>
+                    <td>{{ row.accuracy|floatformat:2 }}</td>
+                    <td>
+                        {% if row.average_confidence %}
+                            {{ row.average_confidence|floatformat:2 }}
+                        {% else %}
+                            –
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No weekly aggregates are available yet.</p>
+    {% endif %}
+</div>
+
+<div class="module">
+    <h2>Next Steps</h2>
+    <ul>
+        <li><a href="{% url 'admin_evaluation_dashboard' %}">Back to Evaluation Dashboard</a></li>
+        <li><a href="{% url 'admin:index' %}">Go to Django Admin</a></li>
+    </ul>
+</div>
+{% endblock %}

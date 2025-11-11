@@ -7,7 +7,11 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Avg, Count, Q
+from django.db.models.functions import TruncDate, TruncWeek
 from django.shortcuts import render
+
+from .models import RecognitionOutcome
 
 
 @staff_member_required
@@ -56,6 +60,64 @@ def evaluation_dashboard(request):
         context["figures_available"] = len(available_figures) > 0
 
     return render(request, "recognition/admin/evaluation_dashboard.html", context)
+
+
+def _prepare_accuracy_trend(time_trunc_func):
+    """Aggregate accuracy information using the provided truncation function."""
+
+    aggregates = (
+        RecognitionOutcome.objects.annotate(period=time_trunc_func("created_at"))
+        .values("period")
+        .order_by("period")
+        .annotate(
+            total=Count("id"),
+            accepted=Count("id", filter=Q(accepted=True)),
+            average_confidence=Avg("confidence"),
+        )
+    )
+
+    trend = []
+    for entry in aggregates:
+        total = entry.get("total") or 0
+        accepted = entry.get("accepted") or 0
+        accuracy = float(accepted) / float(total) if total else 0.0
+        trend.append(
+            {
+                "period": entry.get("period"),
+                "total": total,
+                "accepted": accepted,
+                "rejected": total - accepted,
+                "accuracy": accuracy,
+                "average_confidence": entry.get("average_confidence"),
+            }
+        )
+    return trend
+
+
+@staff_member_required
+def recognition_accuracy_trends(request):
+    """Display daily and weekly accuracy aggregates for recognition outcomes."""
+
+    retention_setting = getattr(settings, "RECOGNITION_OUTCOME_RETENTION_DAYS", 30)
+    retention_days_numeric = None
+    retention_label = "indefinitely"
+    if retention_setting not in (None, "none", ""):
+        try:
+            retention_days_numeric = int(retention_setting)
+            if retention_days_numeric <= 0:
+                retention_days_numeric = None
+            else:
+                retention_label = str(retention_days_numeric)
+        except (TypeError, ValueError):  # pragma: no cover - defensive casting
+            retention_label = str(retention_setting)
+
+    context = {
+        "daily_trend": _prepare_accuracy_trend(TruncDate),
+        "weekly_trend": _prepare_accuracy_trend(TruncWeek),
+        "retention_days": retention_label,
+        "retention_days_numeric": retention_days_numeric,
+    }
+    return render(request, "recognition/admin/recognition_trends.html", context)
 
 
 @staff_member_required

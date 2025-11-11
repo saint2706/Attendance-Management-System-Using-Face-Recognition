@@ -125,6 +125,11 @@ To compute these metrics, the system compares predicted labels (who the model th
    - Admins can view summaries and export attendance logs from the dashboard.
    - Admins can also access the evaluation dashboard to see system performance metrics.
 
+9. **Monitor Recognition Analytics**
+   - Visit **Admin → Recognition Accuracy Trends** (`/admin/recognition-trends/`) to see daily and weekly acceptance rates for recognition attempts before they are queued for attendance updates.
+   - The page also surfaces the average confidence for each period so you can spot drifts in embedding quality.
+   - Recognition outcomes are retained for 30 days by default. Adjust the window with the `RECOGNITION_OUTCOME_RETENTION_DAYS` setting in your environment if you need a shorter or longer history.
+
 
 ### 6a. Understanding the New Evaluation Features
 

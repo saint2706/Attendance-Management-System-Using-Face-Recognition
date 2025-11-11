@@ -1,10 +1,16 @@
-"""
-Registers the models for the recognition app with the Django admin site.
+"""Admin registrations for the recognition app."""
 
-This file is used to display and manage the app's models in the Django
-admin interface. By registering models here, you can perform CRUD
-(Create, Read, Update, Delete) operations on them through a user-friendly
-interface.
-"""
+from django.contrib import admin
 
-# Register your models here.
+from .models import RecognitionOutcome
+
+
+@admin.register(RecognitionOutcome)
+class RecognitionOutcomeAdmin(admin.ModelAdmin):
+    """Expose persisted recognition outcomes for auditing."""
+
+    list_display = ("created_at", "username", "direction", "accepted", "confidence", "source")
+    list_filter = ("accepted", "direction", "source")
+    search_fields = ("username", "source")
+    ordering = ("-created_at",)
+    readonly_fields = ("created_at",)

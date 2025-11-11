@@ -52,8 +52,6 @@ def progressive_web_app_service_worker(request):
 urlpatterns = [
     path("manifest.json", progressive_web_app_manifest, name="pwa-manifest"),
     path("sw.js", progressive_web_app_service_worker, name="service-worker"),
-    # Admin Site
-    path("admin/", admin.site.urls),
     # Custom Admin Views
     path(
         "admin/evaluation/",
@@ -62,6 +60,13 @@ urlpatterns = [
     ),
     path("admin/ablation/", recog_admin_views.ablation_results, name="admin_ablation_results"),
     path("admin/failures/", recog_admin_views.failure_analysis, name="admin_failure_analysis"),
+    path(
+        "admin/recognition-trends/",
+        recog_admin_views.recognition_accuracy_trends,
+        name="admin_recognition_trends",
+    ),
+    # Admin Site
+    path("admin/", admin.site.urls),
     # Core pages
     path("", recog_views.home, name="home"),
     path("dashboard/", recog_views.dashboard, name="dashboard"),

@@ -29,6 +29,7 @@ This document outlines all the URL patterns for the project and explains the pur
 | URL Path            | View Function                      | Name                      | Description                                                                 |
 |---------------------|------------------------------------|---------------------------|-----------------------------------------------------------------------------|
 | `/admin/evaluation/`| `recog_admin_views.evaluation_dashboard` | `admin:evaluation_dashboard` | Displays comprehensive evaluation metrics, confidence intervals, performance visualizations, and links to detailed reports. Shows ROC AUC, EER, FAR/TPR metrics with bootstrap confidence intervals. |
+| `/admin/recognition-trends/` | `recog_admin_views.recognition_accuracy_trends` | `admin_recognition_trends` | Summarises per-day and per-week acceptance rates for attendance recognition events, including average confidence values and data retention guidance. |
 
 ## Face Recognition and Attendance Marking
 
