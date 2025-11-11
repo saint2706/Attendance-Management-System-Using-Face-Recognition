@@ -90,6 +90,7 @@ For more detailed information, please refer to the full documentation:
 - **[API Reference](API_REFERENCE.md)**: Details on URL patterns, API endpoints, and command-line tools.
 - **[Architecture Overview](ARCHITECTURE.md)**: A high-level overview of the system architecture and data flows.
 - **[Data Card](DATA_CARD.md)**: Comprehensive documentation on the dataset, including privacy policies and data splits.
+- **[Deployment Guide](docs/deployment-guide.md)**: Step-by-step instructions for building the Docker image, configuring Compose services, managing environment variables, and hardening production deployments.
 
 ## Deployment Configuration
 
