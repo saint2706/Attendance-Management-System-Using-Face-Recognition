@@ -1,0 +1,87 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Recognition Attempts" %}{% endblock %}
+
+{% block content %}
+<h1 class="page-title">{% trans "Recognition Attempt Summary" %}</h1>
+<p class="help">{% trans "Aggregated success, failure, and spoofing rates for each site and employee." %}</p>
+
+<h2>{% trans "Per Site" %}</h2>
+{% if site_summary %}
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>{% trans "Site" %}</th>
+            <th>{% trans "Attempts" %}</th>
+            <th>{% trans "Successes" %}</th>
+            <th>{% trans "Failures" %}</th>
+            <th>{% trans "Spoofed" %}</th>
+            <th>{% trans "Success Rate" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in site_summary %}
+        <tr>
+            <td>{{ entry.site|default:_("Unassigned") }}</td>
+            <td>{{ entry.total }}</td>
+            <td>{{ entry.successes }}</td>
+            <td>{{ entry.failures }}</td>
+            <td>{{ entry.spoofed }}</td>
+            <td>
+                {% if entry.success_rate is not None %}
+                    {{ entry.success_rate|floatformat:2 }}%
+                {% else %}
+                    {% trans "n/a" %}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>{% trans "No recognition attempts have been recorded yet." %}</p>
+{% endif %}
+
+<h2 class="mt-4">{% trans "Per Site and Employee" %}</h2>
+{% if employee_summary %}
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>{% trans "Site" %}</th>
+            <th>{% trans "Employee" %}</th>
+            <th>{% trans "Attempts" %}</th>
+            <th>{% trans "Successes" %}</th>
+            <th>{% trans "Failures" %}</th>
+            <th>{% trans "Spoofed" %}</th>
+            <th>{% trans "Success Rate" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in employee_summary %}
+        <tr>
+            <td>{{ entry.site|default:_("Unassigned") }}</td>
+            <td>{{ entry.resolved_username|default:_("Unknown") }}</td>
+            <td>{{ entry.total }}</td>
+            <td>{{ entry.successes }}</td>
+            <td>{{ entry.failures }}</td>
+            <td>{{ entry.spoofed }}</td>
+            <td>
+                {% if entry.success_rate is not None %}
+                    {{ entry.success_rate|floatformat:2 }}%
+                {% else %}
+                    {% trans "n/a" %}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>{% trans "No employee-level data is available." %}</p>
+{% endif %}
+
+<p class="help mt-4">
+    {% trans "Use these metrics to monitor the health of deployments and feed the analytics documentation." %}
+</p>
+{% endblock %}

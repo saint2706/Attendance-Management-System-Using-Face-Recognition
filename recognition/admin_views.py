@@ -17,6 +17,8 @@ from . import monitoring
 
 from .models import RecognitionOutcome
 
+from users.models import RecognitionAttempt
+
 
 @staff_member_required
 def evaluation_dashboard(request):
