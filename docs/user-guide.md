@@ -367,6 +367,12 @@ When reporting a problem, include:
 
 ## Tips for Success
 
+### Monitor Recognition Analytics (Admins)
+
+- Open **Admin → Recognition Accuracy Trends** to review how many recognition attempts were accepted or rejected each day and week.
+- Use the average confidence values on the page to spot when embedding quality starts to drift.
+- Analytics history is kept for 30 days by default; set `RECOGNITION_OUTCOME_RETENTION_DAYS` in the environment to keep data longer or shorter.
+
 ### For Best Experience
 
 1. **Use a Modern Browser**: Chrome, Firefox, Safari, or Edge (latest versions)

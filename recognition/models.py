@@ -1,38 +1,80 @@
-"""
-Defines the database models for the recognition app.
+"""Database models for the recognition app."""
 
-This file is the central place to define the data structure of the recognition
-app. Each model in this file corresponds to a table in the database. Django's
-Object-Relational Mapping (ORM) uses these models to interact with the
-underlying database, allowing you to create, retrieve, update, and delete
-records using Python objects.
+from __future__ import annotations
 
-Attributes:
-    Each model contains fields that represent database columns, such as
-    `CharField` for text, `DateTimeField` for timestamps, and `ForeignKey`
-    for relationships with other models. These fields are defined with
-    various options to control their behavior, such as `max_length`,
-    `default` values, and `on_delete` policies.
+import logging
+from datetime import timedelta
+from typing import Optional
 
-Example Usage:
-    To create a new model, you would define a class that inherits from
-    `django.db.models.Model` and add the desired fields. For example:
+from django.conf import settings
+from django.db import models
+from django.utils import timezone
 
-    ```python
-    from django.contrib.auth.models import User
+logger = logging.getLogger(__name__)
 
-    class Attendance(models.Model):
-        user = models.ForeignKey(User, on_delete=models.CASCADE)
-        timestamp = models.DateTimeField(auto_now_add=True)
-        is_time_in = models.BooleanField(default=True)
-    ```
 
-After defining or modifying a model, you must run the following commands
-to apply the changes to the database:
-    - `python manage.py makemigrations`
-    - `python manage.py migrate`
+class RecognitionOutcomeQuerySet(models.QuerySet["RecognitionOutcome"]):
+    """Custom queryset with helpers for outcome analytics."""
 
-This ensures that the database schema is kept in sync with your models.
-"""
+    def accepted(self) -> "RecognitionOutcomeQuerySet":
+        """Return only accepted recognition outcomes."""
 
-# Create your models here.
+        return self.filter(accepted=True)
+
+    def rejected(self) -> "RecognitionOutcomeQuerySet":
+        """Return only rejected recognition outcomes."""
+
+        return self.filter(accepted=False)
+
+
+class RecognitionOutcome(models.Model):
+    """Persisted snapshot of a recognition decision made during attendance flows."""
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    username = models.CharField(max_length=150, blank=True)
+    direction = models.CharField(max_length=12, blank=True)
+    source = models.CharField(max_length=32, blank=True)
+    accepted = models.BooleanField()
+    confidence = models.FloatField(null=True, blank=True)
+    distance = models.FloatField(null=True, blank=True)
+    threshold = models.FloatField(null=True, blank=True)
+
+    objects: RecognitionOutcomeQuerySet = RecognitionOutcomeQuerySet.as_manager()
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["created_at", "direction"]),
+            models.Index(fields=["accepted", "created_at"]),
+        ]
+
+    def __str__(self) -> str:  # pragma: no cover - human readability
+        status = "accepted" if self.accepted else "rejected"
+        username = self.username or "unknown"
+        return f"{username} {status} @ {self.created_at:%Y-%m-%d %H:%M:%S}"
+
+    @classmethod
+    def prune_expired(cls) -> None:
+        """Delete outcomes older than the configured retention window."""
+
+        retention_days: Optional[int] = getattr(
+            settings, "RECOGNITION_OUTCOME_RETENTION_DAYS", 30
+        )
+        if retention_days in (None, "none", ""):
+            return
+
+        try:
+            days = int(retention_days)
+        except (TypeError, ValueError):  # pragma: no cover - defensive
+            logger.debug(
+                "Invalid RECOGNITION_OUTCOME_RETENTION_DAYS=%r; skipping prune.",
+                retention_days,
+            )
+            return
+
+        if days <= 0:
+            logger.debug("Retention set to %s days; skipping prune.", days)
+            return
+
+        cutoff = timezone.now() - timedelta(days=days)
+        cls.objects.filter(created_at__lt=cutoff).delete()

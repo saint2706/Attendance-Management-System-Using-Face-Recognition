@@ -65,6 +65,7 @@ from users.models import Present, Time
 
 from . import monitoring
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
+from .metrics_store import log_recognition_outcome
 from .webcam_manager import get_webcam_manager
 
 # Use 'Agg' backend for Matplotlib to avoid GUI-related issues in a web server environment
@@ -1644,6 +1645,22 @@ def _mark_attendance(request, check_in: bool):
     """
     manager = get_webcam_manager()
     present = {}
+    recorded_outcomes: set[tuple[str, bool]] = set()
+    direction = "in" if check_in else "out"
+
+    def _log_outcome(candidate: Optional[str], *, accepted: bool, distance: float | None) -> None:
+        key = (candidate or "", accepted)
+        if key in recorded_outcomes:
+            return
+        recorded_outcomes.add(key)
+        log_recognition_outcome(
+            username=candidate,
+            accepted=accepted,
+            direction=direction,
+            distance=distance,
+            threshold=distance_threshold,
+            source="webcam",
+        )
     headless = _is_headless_environment()
     max_frames = int(getattr(settings, "RECOGNITION_HEADLESS_ATTENDANCE_FRAMES", 30))
     frame_pause = float(getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01))
@@ -1729,6 +1746,14 @@ def _mark_attendance(request, check_in: bool):
                         continue
 
                     username, distance_value, identity_path = match
+                    candidate_name: Optional[str] = None
+                    if username:
+                        candidate_name = username
+                    elif identity_path:
+                        try:
+                            candidate_name = Path(identity_path).parent.name
+                        except Exception:  # pragma: no cover - defensive parsing
+                            candidate_name = None
                     normalized_region = _normalize_face_region(facial_area)
                     spoofed = not _passes_liveness_check(frame, normalized_region)
 
@@ -1738,10 +1763,12 @@ def _mark_attendance(request, check_in: bool):
                             Path(identity_path).parent.name,
                             distance_value,
                         )
+                        _log_outcome(candidate_name, accepted=False, distance=distance_value)
                         continue
 
                     if spoofed:
                         spoof_detected = True
+                        _log_outcome(candidate_name, accepted=False, distance=distance_value)
                         logger.warning(
                             "Spoofing attempt blocked while marking attendance for '%s'",
                             username or Path(identity_path).parent.name,
@@ -1766,6 +1793,7 @@ def _mark_attendance(request, check_in: bool):
 
                     if username:
                         present[username] = True
+                        _log_outcome(username, accepted=True, distance=distance_value)
                         logger.info("Recognized %s with distance %.4f", username, distance_value)
 
                         if normalized_region:
@@ -2372,6 +2400,9 @@ def mark_attendance_view(request, attendance_type):
                             except Exception:
                                 embedding_vector = None
 
+                    predicted_name: Optional[str] = None
+                    spoofed = False
+                    normalized_region: Optional[Dict[str, int]] = None
                     if embedding_vector is not None:
                         predicted_name, spoofed, normalized_region = (
                             _predict_identity_from_embedding(
@@ -2386,6 +2417,7 @@ def mark_attendance_view(request, attendance_type):
 
                         if spoofed:
                             spoof_detected = True
+                            _log_outcome(predicted_name, accepted=False, distance=None)
                             if normalized_region:
                                 x = int(normalized_region["x"])
                                 y = int(normalized_region["y"])
@@ -2405,6 +2437,7 @@ def mark_attendance_view(request, attendance_type):
 
                         if predicted_name:
                             present[predicted_name] = True
+                            _log_outcome(predicted_name, accepted=True, distance=None)
 
                             if normalized_region:
                                 x = int(normalized_region["x"])
@@ -2421,6 +2454,8 @@ def mark_attendance_view(request, attendance_type):
                                     (0, 255, 0),
                                     2,
                                 )
+                        else:
+                            _log_outcome(None, accepted=False, distance=None)
 
                 except Exception as e:
                     logger.warning("Could not process frame for recognition: %s", e)

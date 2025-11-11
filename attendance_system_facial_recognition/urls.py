@@ -52,8 +52,6 @@ def progressive_web_app_service_worker(request):
 urlpatterns = [
     path("manifest.json", progressive_web_app_manifest, name="pwa-manifest"),
     path("sw.js", progressive_web_app_service_worker, name="service-worker"),
-    # Admin Site
-    path("admin/", admin.site.urls),
     # Custom Admin Views
     path(
         "admin/evaluation/",
