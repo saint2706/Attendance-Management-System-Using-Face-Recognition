@@ -121,6 +121,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+    {{ block.super }}
 <script type="module">
     import { CameraManager } from "{% static 'js/camera.js' %}";
 

@@ -11,6 +11,7 @@ This project is a fully refactored and modernized smart attendance system that l
 - **Admin Dashboard:** A powerful dashboard for administrators to manage employees, add user photos, and view comprehensive attendance reports.
 - **Employee Dashboard:** A personalized dashboard for employees to view their own attendance records.
 - **Automatic Training:** The face recognition model updates automatically when new employee photos are added.
+- **Offline-ready experience:** Installable progressive web app with background sync for attendance submissions and cached UI shell.
 - **Performance Optimized:** Utilizes the efficient "Facenet" model and "SSD" detector for a fast and responsive recognition experience.
 - **Continuous Integration:** Includes a GitHub Actions workflow to automatically run tests, ensuring code quality and stability.
 
@@ -73,6 +74,12 @@ This project is a fully refactored and modernized smart attendance system that l
     ```
     The application will be available at `http://127.0.0.1:8000/`.
 
+8.  **Collect static assets (including the PWA shell) before packaging builds:**
+    ```bash
+    python manage.py collectstatic
+    ```
+    This ensures the generated icons, `manifest.json`, and `sw.js` are published alongside the rest of the static files when you deploy with WhiteNoise or another static file server.
+
 ## Documentation
 
 For more detailed information, please refer to the full documentation:
@@ -87,6 +94,8 @@ For more detailed information, please refer to the full documentation:
 ## Deployment Configuration
 
 When deploying to staging or production, configure the following environment variables so that session cookies remain secure and expire after periods of inactivity. Boolean values accept `1`, `true`, `yes`, or `on` (case-insensitive). Use the development settings module (`attendance_system_facial_recognition.settings`) locally and for automated tests. Production deployments should set `DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production` so the hardened database configuration is loaded.
+
+The Progressive Web App resources are exposed at `/manifest.json` and `/sw.js`. Ensure these paths are routed to Django so the manifest and service worker can be cached by browsers during install.
 
 | Environment variable | Purpose | Recommended staging value | Recommended production value |
 | --- | --- | --- | --- |

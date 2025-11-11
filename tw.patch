@@ -1,0 +1,968 @@
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/README.md b/README.md
+index 3b1baa2ab763ba8d03b1e08ca30cb55178c252c1..6b5b9a430e55c181b286d2638dcfb96c2b819af9 100644
+--- a/README.md
++++ b/README.md
+@@ -1,38 +1,39 @@
+ # Modern Smart Attendance System
+ 
+ This project is a fully refactored and modernized smart attendance system that leverages deep learning for face recognition. It provides a seamless and automated way to track employee attendance, eliminating the need for manual record-keeping. The system is built with a responsive web interface for a great user experience on any device.
+ 
+ ![Home Page Light Theme](docs/images/home-light.png)
+ 
+ ## Features
+ 
+ - **Automated Attendance:** Mark time-in and time-out effortlessly using real-time face recognition.
+ - **Responsive Web Interface:** A clean, modern, and intuitive UI that works beautifully on desktops, tablets, and mobile devices.
+ - **Admin Dashboard:** A powerful dashboard for administrators to manage employees, add user photos, and view comprehensive attendance reports.
+ - **Employee Dashboard:** A personalized dashboard for employees to view their own attendance records.
+ - **Automatic Training:** The face recognition model updates automatically when new employee photos are added.
++- **Offline-ready experience:** Installable progressive web app with background sync for attendance submissions and cached UI shell.
+ - **Performance Optimized:** Utilizes the efficient "Facenet" model and "SSD" detector for a fast and responsive recognition experience.
+ - **Continuous Integration:** Includes a GitHub Actions workflow to automatically run tests, ensuring code quality and stability.
+ 
+ ## Technical Stack
+ 
+ - **Backend:** Django 5+
+ - **Face Recognition:** DeepFace (wrapping Facenet)
+ - **Frontend:** HTML5, CSS3, Bootstrap 5, Custom CSS Design System
+ - **JavaScript:** Vanilla JS (no framework dependencies)
+ - **Database:** Configurable via `DATABASE_URL` (PostgreSQL recommended; falls back to SQLite for local development)
+ - **Testing:** Django's built-in test framework, Playwright (planned)
+ 
+ ## Getting Started
+ 
+ ### Prerequisites
+ 
+ - Python 3.12 or higher
+ - A webcam for face recognition
+ 
+ ### Installation
+ 
+ 1.  **Clone the repository:**
+     ```bash
+     git clone https://github.com/your-username/smart-attendance-system.git
+     cd smart-attendance-system
+@@ -51,65 +52,73 @@ This project is a fully refactored and modernized smart attendance system that l
+ 
+ 4.  **Configure environment variables:**
+     - Copy `.env.example` to `.env`.
+     - (Optional) Start the bundled Postgres service if you want to run against PostgreSQL instead of SQLite:
+       ```bash
+       docker compose up -d postgres
+       ```
+ 
+ 5.  **Run database migrations:**
+     ```bash
+     python manage.py migrate
+     ```
+ 
+ 6.  **Create a superuser (admin account):**
+     ```bash
+     python manage.py createsuperuser
+     ```
+     Follow the prompts to create your admin username, email, and password.
+ 
+ 7.  **Run the development server:**
+     ```bash
+     python manage.py runserver
+     ```
+     The application will be available at `http://127.0.0.1:8000/`.
+ 
++8.  **Collect static assets (including the PWA shell) before packaging builds:**
++    ```bash
++    python manage.py collectstatic
++    ```
++    This ensures the generated icons, `manifest.json`, and `sw.js` are published alongside the rest of the static files when you deploy with WhiteNoise or another static file server.
++
+ ## Documentation
+ 
+ For more detailed information, please refer to the full documentation:
+ 
+ - **[User Guide](USER_GUIDE.md)**: A comprehensive guide for non-programmers on using and understanding the system.
+ - **[Developer Guide](DEVELOPER_GUIDE.md)**: Information for developers on the system's architecture, evaluation pipeline, and management commands.
+ - **[Contributing Guide](CONTRIBUTING.md)**: Instructions for setting up the development environment and contributing to the project.
+ - **[API Reference](API_REFERENCE.md)**: Details on URL patterns, API endpoints, and command-line tools.
+ - **[Architecture Overview](ARCHITECTURE.md)**: A high-level overview of the system architecture and data flows.
+ - **[Data Card](DATA_CARD.md)**: Comprehensive documentation on the dataset, including privacy policies and data splits.
+ 
+ ## Deployment Configuration
+ 
+ When deploying to staging or production, configure the following environment variables so that session cookies remain secure and expire after periods of inactivity. Boolean values accept `1`, `true`, `yes`, or `on` (case-insensitive). Use the development settings module (`attendance_system_facial_recognition.settings`) locally and for automated tests. Production deployments should set `DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production` so the hardened database configuration is loaded.
+ 
++The Progressive Web App resources are exposed at `/manifest.json` and `/sw.js`. Ensure these paths are routed to Django so the manifest and service worker can be cached by browsers during install.
++
+ | Environment variable | Purpose | Recommended staging value | Recommended production value |
+ | --- | --- | --- | --- |
+ | `DATABASE_URL` | Connection string parsed with [`dj-database-url`](https://github.com/jazzband/dj-database-url). | `postgres://user:pass@db:5432/attendance` | `postgres://user:pass@db:5432/attendance` |
+ | `DATABASE_CONN_MAX_AGE` | Persistent connection lifetime in seconds (`0` disables pooling). | `60` | `600` |
+ | `DATABASE_SSL_REQUIRE` | Force `sslmode=require` for managed Postgres providers. | `false` | `true` |
+ | `DJANGO_SESSION_COOKIE_SECURE` | Send the session cookie only over HTTPS. | `true` | `true` |
+ | `DJANGO_SESSION_COOKIE_HTTPONLY` | Prevent client-side scripts from reading the session cookie. | `true` | `true` |
+ | `DJANGO_CSRF_COOKIE_SECURE` | Send the CSRF cookie only over HTTPS. | `true` | `true` |
+ | `DJANGO_SESSION_COOKIE_SAMESITE` | Restrict cross-site cookie usage. | `Lax` | `Lax` |
+ | `DJANGO_SESSION_COOKIE_AGE` | Maximum session age (seconds) before inactivity timeout. | `1800` (30 minutes) | `1800` (30 minutes) |
+ | `DJANGO_SESSION_EXPIRE_AT_BROWSER_CLOSE` | Drop the session when the browser closes. | `true` | `true` |
+ 
+ Ensure these variables are present in the staging and production deployment manifests (e.g., `.env` files, container secrets, or platform configuration) before rolling out new builds.
+ 
+ ### Containerized deployment workflow
+ 
+ The repository ships with a production-ready `Dockerfile` and Compose definition so you can build and run the stack with minimal host dependencies. The commands below assume Docker Engine 24+ and Docker Compose v2 are installed locally.
+ 
+ 1. **Prepare environment variables**
+    - Create a secrets file (for example, `.env.production`) that exports:
+      - `DJANGO_SECRET_KEY` — a strong, unique secret key.
+      - `DATA_ENCRYPTION_KEY` and `FACE_DATA_ENCRYPTION_KEY` — Fernet keys. Generate each with `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`.
+      - `DJANGO_ALLOWED_HOSTS` — comma-separated hostnames served by the deployment.
+      - Database credentials (`POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`) if you override the defaults.
+    - Load the file automatically by placing it next to `docker-compose.yml` and referencing it with `docker compose --env-file .env.production ...`.
+diff --git a/attendance_system_facial_recognition/urls.py b/attendance_system_facial_recognition/urls.py
+index c3fefd29559fc628f35dcc6ee59900bac7cf68b6..d4a15f3835d622c5a256b4431156f23cae5151c9 100644
+--- a/attendance_system_facial_recognition/urls.py
++++ b/attendance_system_facial_recognition/urls.py
+@@ -1,44 +1,79 @@
+ """
+ Main URL configuration for the Smart Attendance System project.
+ 
+ This module defines the primary URL routing for the entire application. It maps
+ URL paths to their corresponding view functions from the `recognition` and `users`
+ apps, as well as to Django's built-in authentication views.
+ """
+ 
++from pathlib import Path
++
+ from django.conf import settings
+ from django.conf.urls.static import static
+ from django.contrib import admin
+ from django.contrib.auth import views as auth_views
++from django.http import FileResponse, Http404
+ from django.urls import path
+ 
+ from recognition import admin_views as recog_admin_views
+ from recognition import views as recog_views
+ from users import views as users_views
+ 
++
++def _serve_static_asset(relative_path: str, *, content_type: str) -> FileResponse:
++    """Stream a collected static asset so it can be cached by the browser."""
++
++    file_path = Path(settings.BASE_DIR, relative_path)
++    if not file_path.exists():
++        raise Http404(f"Static asset not found: {relative_path}")
++
++    return FileResponse(file_path.open("rb"), content_type=content_type)
++
++
++def progressive_web_app_manifest(request):
++    """Expose the web manifest with the correct MIME type."""
++
++    return _serve_static_asset(
++        "recognition/static/manifest.json",
++        content_type="application/manifest+json",
++    )
++
++
++def progressive_web_app_service_worker(request):
++    """Serve the service worker from the site root so it can control all pages."""
++
++    response = _serve_static_asset(
++        "recognition/static/js/sw.js",
++        content_type="application/javascript",
++    )
++    response["Service-Worker-Allowed"] = "/"
++    return response
++
+ urlpatterns = [
++    path("manifest.json", progressive_web_app_manifest, name="pwa-manifest"),
++    path("sw.js", progressive_web_app_service_worker, name="service-worker"),
+     # Admin Site
+     path("admin/", admin.site.urls),
+     # Custom Admin Views
+     path(
+         "admin/evaluation/",
+         recog_admin_views.evaluation_dashboard,
+         name="admin_evaluation_dashboard",
+     ),
+     path("admin/ablation/", recog_admin_views.ablation_results, name="admin_ablation_results"),
+     path("admin/failures/", recog_admin_views.failure_analysis, name="admin_failure_analysis"),
+     # Core pages
+     path("", recog_views.home, name="home"),
+     path("dashboard/", recog_views.dashboard, name="dashboard"),
+     # Authentication views
+     path(
+         "login/",
+         auth_views.LoginView.as_view(template_name="users/login.html"),
+         name="login",
+     ),
+     path(
+         "logout/",
+         auth_views.LogoutView.as_view(template_name="recognition/home.html"),
+         name="logout",
+     ),
+     # User and Photo Management (Admin-only)
+diff --git a/recognition/static/icons/icon-192.png b/recognition/static/icons/icon-192.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..f67ab7d944f06120a6a0d89528927bdd329f719a
+GIT binary patch
+literal 1316
+zcmb7EeN>WX6n|bod~trE$A+>1HFbS0vNX*E+^}*sG{4%3Em^s(g&EaaCJ3+Dj4b20
+zv&~Ew>OMTCZGEWWsR>!SGMiW#CA27WR$$5?C4~1KZ2NoX^v8YfJ@-E6{_efc@41IE
+zd29T9!h8S#erapDS#GWI2uyUJS%yMy00^cuZc0vZ{e(WH=#5lL#lxQd*tLnNU-QR^
+zhWY0!B|b~e_MS$niOZ&K1E1%*h96kl$g%ey@Q3}U^pi5@%MIn38Rul+SQ_94gCPQE
+zITZNbtC_RQXT9(0P1mhv`a|uBZpnA9Nb|Orz*pLqJ}4f0^IKod6Jer^-r9RQ2UO%g
+zcsln~P)`s<K}+&TjW#9j*X~tR?9oZJ`Ye<q6BTZF$ygZ589vy%WkI(tOO4NwaLlbE
+zlf;jU!02GsSZNL1(0^Ib<}+DZ0zzmw>wpx?#vgM9WcV%H%XATu+Mm3PwsAvS@;Z{n
+z-c``|R)x2~DJihAoc^5lMkv8`Z}VfG0dT2vkXuUrk&(kxWa~RPkz==ld|@Zv)4Pd=
+z4AN;sVs;T|A|YFGjEy=V!Ok5#k+kcd`2UP)_Qj~)O#dhhI*?R_=@dJv!(jwldzb?*
+z{XrGq+|EEU`NR`}`+@4&RWi)bCYQ6Gxt&bK5xaFpnS{=ZgWY)WBOAts4lvQ{p4T9V
+z9O?|<{i&1g!4(O3n28|D>{C|(c{GCG<=7E}lrKf~u#t1ro-dq^1{;O7%`zb_!B@$e
+zA!{JJtxE}dqLk<<l3*XJlopA68H$a1GB4_Xst$k_UA50dx*HWN<zb~HL3p2<?P0)S
+zkz*zt@uJAsIL2{Mx!W-lh4dWxH<p^{`Yn)?(#JmPsUgpVwd`>yLg<>$L?IDO)Y616
+zPEz@hnR$g^vZ^$Xz{3(F@T&OEAu<J9wG%3wTQ}I~yB;#Ed`2cGxW+3<4UY~LIjyOL
+zsjJ!r6_=$ExMEwonOt^DT_Fb>TSLk$I&v^a7#A^>mYbdfP7TYAn|PS3*GoHc5tcY^
+z2ZwTmqmffjv$G3<m=d?GS;iiM%uCxAlkK*ag)5Oejx_>jN3XYbL{*2B5T<^ixnWJg
+zn%d+@CK?AD{YI}xAg_Ib>Ni72qmaD=lqQQJ1__`%wvddK>&f!%{!pP-T;Io5fcV&(
+zTY@xxC0s^Z7lB!A8H_=wp%Z6dqraHT_#uoSY8K*Ar)&IztjeMribI;0<craXW__$^
+zi|m8Jxm^&=_Jy&AD3em*ra6#VU{Y17X^{DfN;eNQ?FleGQNy=3OuAH%JR0<eSza*b
+z0cA?g7?Ck@8W?bf&9^ssm>Y)hk;SW@7ufw6I96;4omD1}j{@gG&A{E>b}ENZU)SNS
+z<g8m^W!8JH-lHCq;s>N)Ap7C{jDUuYuz>w%PF}PILG5|tW!n57_kI|S+(Gv-zoGfh
+zwoXgay+m0P;b#<;lN|-_VN2dOH2-yDQ#^8K8#|%11w~mmP^dE@`HHS){2H6Y&!wZ+
+zf}nc1u`_qItf&R>ey6un{^akp$D|WQ&nGUw&dpz_aD6p~FE(vmBJX||n;&S4{_kTQ
+fck|~J%;^>4>PqLOf`;$i+Yh9r^0+_0E!h7z9y2?E
+
+literal 0
+HcmV?d00001
+
+diff --git a/recognition/static/icons/icon-512.png b/recognition/static/icons/icon-512.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..f2150ca804dd3cf57fea14e9619a65e8a9b4b242
+GIT binary patch
+literal 4316
+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
+RjQT-<z%{|XSG@&?{|R1yBaQ$7
+
+literal 0
+HcmV?d00001
+
+diff --git a/recognition/static/js/attendance-offline.js b/recognition/static/js/attendance-offline.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..0a24a9a836865c790ba3a6d26b7e8d8cdb5404dd
+--- /dev/null
++++ b/recognition/static/js/attendance-offline.js
+@@ -0,0 +1,193 @@
++(function() {
++  'use strict';
++
++  if (!('fetch' in window) || !('indexedDB' in window)) {
++    return;
++  }
++
++  const originalFetch = window.fetch.bind(window);
++  const DB_NAME = 'attendance-offline';
++  const STORE_NAME = 'attendance-queue';
++  const ATTENDANCE_ENDPOINTS = [
++    '/mark_your_attendance',
++    '/mark_your_attendance_out'
++  ];
++
++  let dbPromise = null;
++
++  function openDb() {
++    if (dbPromise) {
++      return dbPromise;
++    }
++
++    dbPromise = new Promise((resolve, reject) => {
++      const request = indexedDB.open(DB_NAME, 1);
++
++      request.onupgradeneeded = () => {
++        const database = request.result;
++        if (!database.objectStoreNames.contains(STORE_NAME)) {
++          database.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
++        }
++      };
++
++      request.onsuccess = () => resolve(request.result);
++      request.onerror = () => reject(request.error);
++    });
++
++    return dbPromise;
++  }
++
++  function isAttendanceUrl(input) {
++    try {
++      const url = new URL(input, window.location.origin);
++      return ATTENDANCE_ENDPOINTS.some((endpoint) => url.pathname.includes(endpoint));
++    } catch (error) {
++      return false;
++    }
++  }
++
++  async function saveRequest(request) {
++    const database = await openDb();
++    const clone = request.clone();
++    const headers = {};
++    clone.headers.forEach((value, key) => {
++      headers[key] = value;
++    });
++
++    const body = clone.method === 'GET' || clone.method === 'HEAD' ? null : await clone.text();
++
++    await new Promise((resolve, reject) => {
++      const tx = database.transaction(STORE_NAME, 'readwrite');
++      tx.oncomplete = () => resolve();
++      tx.onerror = () => reject(tx.error);
++      tx.objectStore(STORE_NAME).add({
++        url: clone.url,
++        method: clone.method,
++        headers,
++        body,
++        timestamp: Date.now()
++      });
++    });
++
++    document.dispatchEvent(new CustomEvent('attendance-queued'));
++  }
++
++  async function flushQueue() {
++    try {
++      const database = await openDb();
++      const entries = await new Promise((resolve, reject) => {
++        const tx = database.transaction(STORE_NAME, 'readonly');
++        const request = tx.objectStore(STORE_NAME).getAll();
++        request.onsuccess = () => resolve(request.result || []);
++        request.onerror = () => reject(request.error);
++      });
++
++      for (const entry of entries) {
++        try {
++          const response = await originalFetch(entry.url, {
++            method: entry.method,
++            headers: entry.headers,
++            body: entry.body,
++            credentials: 'include'
++          });
++
++          if (!response.ok) {
++            throw new Error(`Server responded with ${response.status}`);
++          }
++
++          await new Promise((resolve, reject) => {
++            const tx = database.transaction(STORE_NAME, 'readwrite');
++            tx.oncomplete = () => resolve();
++            tx.onerror = () => reject(tx.error);
++            tx.objectStore(STORE_NAME).delete(entry.id);
++          });
++        } catch (error) {
++          console.warn('Attendance submission retry failed; will try again later.', error);
++          return;
++        }
++      }
++
++      document.dispatchEvent(new CustomEvent('attendance-synced'));
++    } catch (error) {
++      console.error('Unable to flush attendance queue', error);
++    }
++  }
++
++  async function offlineFetch(input, init) {
++    if (!isAttendanceUrl(typeof input === 'string' ? input : input.url)) {
++      return originalFetch(input, init);
++    }
++
++    if (navigator.onLine) {
++      return originalFetch(input, init);
++    }
++
++    const request = new Request(input, init);
++    await saveRequest(request);
++
++    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
++      navigator.serviceWorker.controller.postMessage({ type: 'FLUSH_ATTENDANCE_QUEUE' });
++    }
++
++    return new Response(
++      JSON.stringify({ queued: true, message: 'You appear to be offline. Attendance will be submitted automatically.' }),
++      {
++        status: 202,
++        headers: { 'Content-Type': 'application/json' }
++      }
++    );
++  }
++
++  window.fetch = function(input, init) {
++    return offlineFetch(input, init);
++  };
++
++  window.addEventListener('online', () => {
++    flushQueue();
++    if (navigator.serviceWorker?.ready) {
++      navigator.serviceWorker.ready.then((registration) => {
++        if ('sync' in registration) {
++          registration.sync.register('attendance-sync').catch(() => {
++            navigator.serviceWorker.controller?.postMessage({ type: 'FLUSH_ATTENDANCE_QUEUE' });
++          });
++        } else {
++          navigator.serviceWorker.controller?.postMessage({ type: 'FLUSH_ATTENDANCE_QUEUE' });
++        }
++      });
++    }
++  });
++
++  navigator.serviceWorker?.addEventListener('message', (event) => {
++    if (event.data?.type === 'attendance-synced') {
++      flushQueue();
++    }
++  });
++
++  window.AttendanceOffline = {
++    flushQueue,
++    enqueue: async (url, options) => {
++      const request = new Request(url, options);
++      await saveRequest(request);
++      if (navigator.serviceWorker?.ready) {
++        navigator.serviceWorker.ready.then((registration) => {
++          if ('sync' in registration) {
++            registration.sync.register('attendance-sync').catch(() => {
++              navigator.serviceWorker.controller?.postMessage({ type: 'FLUSH_ATTENDANCE_QUEUE' });
++            });
++          }
++        });
++      }
++    }
++  };
++
++  if (!navigator.onLine) {
++    // Attempt to resubmit any entries created before the current page load when the network returns.
++    document.addEventListener('visibilitychange', () => {
++      if (navigator.onLine && document.visibilityState === 'visible') {
++        flushQueue();
++      }
++    });
++  } else {
++    flushQueue();
++  }
++})();
+diff --git a/recognition/static/js/sw.js b/recognition/static/js/sw.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..ccc4e77fb555b0c3f01d37f2847da826e3f0442b
+--- /dev/null
++++ b/recognition/static/js/sw.js
+@@ -0,0 +1,198 @@
++const CACHE_NAME = 'attendance-shell-v1';
++const ATTENDANCE_DB = 'attendance-offline';
++const ATTENDANCE_STORE = 'attendance-queue';
++const ATTENDANCE_ENDPOINTS = [
++  '/mark_your_attendance',
++  '/mark_your_attendance_out'
++];
++
++const SHELL_ASSETS = [
++  '/',
++  '/static/css/app.css',
++  '/static/css/styles.css',
++  '/static/js/ui.js',
++  '/static/js/camera.js',
++  '/static/manifest.json',
++  '/static/icons/icon-192.png',
++  '/static/icons/icon-512.png'
++];
++
++self.addEventListener('install', (event) => {
++  event.waitUntil(
++    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS)).then(() => self.skipWaiting())
++  );
++});
++
++self.addEventListener('activate', (event) => {
++  event.waitUntil(
++    caches.keys().then((cacheNames) =>
++      Promise.all(
++        cacheNames
++          .filter((name) => name.startsWith('attendance-shell-') && name !== CACHE_NAME)
++          .map((name) => caches.delete(name))
++      )
++    ).then(() => self.clients.claim())
++  );
++});
++
++self.addEventListener('fetch', (event) => {
++  const { request } = event;
++  const url = new URL(request.url);
++
++  if (request.method === 'POST' && isAttendanceRequest(url)) {
++    event.respondWith(handleAttendanceSubmission(request));
++    return;
++  }
++
++  if (request.method === 'GET') {
++    if (request.mode === 'navigate') {
++      event.respondWith(
++        fetch(request).catch(() => caches.match('/'))
++      );
++      return;
++    }
++
++    event.respondWith(
++      caches.match(request).then((cached) => {
++        if (cached) {
++          return cached;
++        }
++        return fetch(request)
++          .then((response) => {
++            const clone = response.clone();
++            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
++            return response;
++          })
++          .catch(() => caches.match('/'));
++      })
++    );
++  }
++});
++
++self.addEventListener('sync', (event) => {
++  if (event.tag === 'attendance-sync') {
++    event.waitUntil(flushAttendanceQueue());
++  }
++});
++
++self.addEventListener('message', (event) => {
++  if (!event.data) {
++    return;
++  }
++  if (event.data === 'flushAttendanceQueue' || event.data?.type === 'FLUSH_ATTENDANCE_QUEUE') {
++    event.waitUntil(flushAttendanceQueue());
++  }
++});
++
++function isAttendanceRequest(url) {
++  return ATTENDANCE_ENDPOINTS.some((endpoint) => url.pathname.includes(endpoint));
++}
++
++async function handleAttendanceSubmission(request) {
++  try {
++    const networkResponse = await fetch(request.clone());
++    return networkResponse;
++  } catch (error) {
++    await queueAttendanceRequest(request);
++    broadcastToClients({ type: 'attendance-queued' });
++    return new Response(
++      JSON.stringify({ queued: true, message: 'Attendance request saved for retry when online.' }),
++      {
++        status: 202,
++        headers: { 'Content-Type': 'application/json' }
++      }
++    );
++  }
++}
++
++function openAttendanceDb() {
++  return new Promise((resolve, reject) => {
++    const request = indexedDB.open(ATTENDANCE_DB, 1);
++
++    request.onupgradeneeded = () => {
++      const db = request.result;
++      if (!db.objectStoreNames.contains(ATTENDANCE_STORE)) {
++        db.createObjectStore(ATTENDANCE_STORE, { keyPath: 'id', autoIncrement: true });
++      }
++    };
++
++    request.onsuccess = () => resolve(request.result);
++    request.onerror = () => reject(request.error);
++  });
++}
++
++async function queueAttendanceRequest(request) {
++  const db = await openAttendanceDb();
++  const cloned = request.clone();
++  const body = await cloned.text();
++  const headers = {};
++  cloned.headers.forEach((value, key) => {
++    headers[key] = value;
++  });
++
++  await new Promise((resolve, reject) => {
++    const tx = db.transaction(ATTENDANCE_STORE, 'readwrite');
++    tx.oncomplete = () => resolve();
++    tx.onerror = () => reject(tx.error);
++
++    tx.objectStore(ATTENDANCE_STORE).add({
++      url: cloned.url,
++      method: cloned.method,
++      headers,
++      body,
++      timestamp: Date.now()
++    });
++  });
++
++  db.close();
++}
++
++async function flushAttendanceQueue() {
++  const db = await openAttendanceDb();
++
++  const entries = await new Promise((resolve, reject) => {
++    const tx = db.transaction(ATTENDANCE_STORE, 'readonly');
++    const request = tx.objectStore(ATTENDANCE_STORE).getAll();
++    request.onsuccess = () => resolve(request.result || []);
++    request.onerror = () => reject(request.error);
++  });
++
++  for (const entry of entries) {
++    try {
++      const response = await fetch(entry.url, {
++        method: entry.method,
++        headers: entry.headers,
++        body: entry.body,
++        credentials: 'include'
++      });
++
++      if (!response.ok) {
++        throw new Error(`Failed with status ${response.status}`);
++      }
++
++      await removeEntry(db, entry.id);
++    } catch (error) {
++      // Leave the entry for a future retry
++      console.error('Retrying attendance submission later', error);
++      return;
++    }
++  }
++
++  broadcastToClients({ type: 'attendance-synced' });
++  db.close();
++}
++
++function removeEntry(db, id) {
++  return new Promise((resolve, reject) => {
++    const tx = db.transaction(ATTENDANCE_STORE, 'readwrite');
++    tx.oncomplete = () => resolve();
++    tx.onerror = () => reject(tx.error);
++    tx.objectStore(ATTENDANCE_STORE).delete(id);
++  });
++}
++
++function broadcastToClients(message) {
++  self.clients.matchAll({ includeUncontrolled: true, type: 'window' }).then((clients) => {
++    clients.forEach((client) => client.postMessage(message));
++  });
++}
+diff --git a/recognition/static/manifest.json b/recognition/static/manifest.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..64284c8f61226081b55fa1810c17a7a4817c05e2
+--- /dev/null
++++ b/recognition/static/manifest.json
+@@ -0,0 +1,38 @@
++{
++  "name": "Smart Attendance System",
++  "short_name": "Attendance",
++  "description": "Progressive web experience for the Smart Attendance System powered by face recognition.",
++  "start_url": "/",
++  "display": "standalone",
++  "background_color": "#f8f9fa",
++  "theme_color": "#0d6efd",
++  "lang": "en-US",
++  "icons": [
++    {
++      "src": "/static/icons/icon-192.png",
++      "type": "image/png",
++      "sizes": "192x192",
++      "purpose": "any maskable"
++    },
++    {
++      "src": "/static/icons/icon-512.png",
++      "type": "image/png",
++      "sizes": "512x512",
++      "purpose": "any maskable"
++    }
++  ],
++  "screenshots": [
++    {
++      "src": "/static/recognition/img/login.png",
++      "sizes": "960x540",
++      "type": "image/png",
++      "label": "Login to view dashboards"
++    },
++    {
++      "src": "/static/recognition/img/reports.png",
++      "sizes": "1280x720",
++      "type": "image/png",
++      "label": "Attendance insights"
++    }
++  ]
++}
+diff --git a/recognition/templates/recognition/add_photos.html b/recognition/templates/recognition/add_photos.html
+index 44c29a4b449f4bae0e02cdeae2c51a734dedaca1..a76b29a9b89cf8c04072732132f39718e0b6024e 100644
+--- a/recognition/templates/recognition/add_photos.html
++++ b/recognition/templates/recognition/add_photos.html
+@@ -99,50 +99,51 @@
+                 </ul>
+             </div>
+         </div>
+         
+         <!-- Security Note -->
+         <div class="card mt-4" style="margin-top: var(--space-6); background-color: var(--color-gray-50); border: 1px solid var(--color-border);">
+             <div class="card-body" style="padding: var(--space-5);">
+                 <div class="d-flex align-items-start gap-3">
+                     <i class="fas fa-shield-halved" style="font-size: 1.5rem; color: var(--color-success);" aria-hidden="true"></i>
+                     <div>
+                         <h3 style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-2); color: var(--color-text);">
+                             Privacy & Security
+                         </h3>
+                         <p class="text-muted mb-0" style="font-size: var(--font-size-sm);">
+                             All facial data is encrypted and stored securely. Photos are used solely for attendance recognition purposes and are protected according to data privacy regulations.
+                         </p>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
+ {% endblock %}
+ 
+ {% block extra_scripts %}
++    {{ block.super }}
+ <script type="module">
+     import { CameraManager } from "{% static 'js/camera.js' %}";
+ 
+     document.addEventListener("DOMContentLoaded", () => {
+         const modalElement = document.getElementById("cameraPreviewModal");
+         const previewButton = document.querySelector("[data-camera-preview-trigger]");
+         const errorAlert = modalElement?.querySelector("[data-camera-error]");
+         const previewVideo = modalElement?.querySelector("[data-camera-preview]");
+ 
+         if (!modalElement || !window.bootstrap) {
+             return;
+         }
+ 
+         const cameraManager = new CameraManager();
+         const bootstrapModal = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+ 
+         const hideError = () => {
+             if (errorAlert) {
+                 errorAlert.classList.add("d-none");
+                 errorAlert.textContent = "";
+             }
+         };
+ 
+         const showError = (message) => {
+             if (!errorAlert) {
+diff --git a/recognition/templates/recognition/base.html b/recognition/templates/recognition/base.html
+index 9eccecd63156fb61ccdae617e38fcecdc064a84e..f50905df019b01057e5f3fa2d5bc293cb4a279e9 100644
+--- a/recognition/templates/recognition/base.html
++++ b/recognition/templates/recognition/base.html
+@@ -1,45 +1,54 @@
+ {% load static %}
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <meta name="description" content="Smart Attendance System - Automated attendance tracking using face recognition technology">
+     <meta name="theme-color" content="#0d6efd">
++    <meta name="application-name" content="Smart Attendance System">
++    <meta name="apple-mobile-web-app-capable" content="yes">
++    <meta name="apple-mobile-web-app-status-bar-style" content="default">
++    <meta name="apple-mobile-web-app-title" content="Smart Attendance">
++    <meta name="mobile-web-app-capable" content="yes">
+     <title>{% block title %}Smart Attendance System{% endblock %}</title>
+-    
++
+     <!-- Bootstrap CSS (for compatibility with existing styles) -->
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+-    
++
+     <!-- Font Awesome Icons -->
+     <script src="https://kit.fontawesome.com/00148adc4d.js" crossorigin="anonymous"></script>
+-    
++
+     <!-- Custom Styles -->
+     <link rel="stylesheet" href="{% static 'css/app.css' %}">
+     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+-    
++    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'icons/icon-192.png' %}">
++    <link rel="icon" type="image/png" sizes="512x512" href="{% static 'icons/icon-512.png' %}">
++    <link rel="apple-touch-icon" href="{% static 'icons/icon-192.png' %}">
++    <link rel="manifest" href="{% url 'pwa-manifest' %}">
++
+     {% block extra_head %}{% endblock %}
+ </head>
+ <body>
+     <!-- Skip to main content link for accessibility -->
+     <a href="#main-content" class="skip-to-main">Skip to main content</a>
+     
+     <!-- Main Layout Wrapper -->
+     <div class="app-layout">
+         <!-- Navigation Bar -->
+         <nav class="app-navbar" role="navigation" aria-label="Main navigation">
+             <div class="navbar-container">
+                 <a class="navbar-brand" href="{% url 'home' %}" aria-label="Smart Attendance System Home">
+                     <i class="fas fa-user-check" aria-hidden="true"></i>
+                     <span>Smart Attendance</span>
+                 </a>
+                 
+                 <div class="d-flex align-items-center gap-4">
+                     <!-- Navigation Links -->
+                     <ul class="navbar-nav" id="navbar-nav" role="menubar">
+                         {% if user.is_authenticated %}
+                             <li class="nav-item" role="none">
+                                 <a class="nav-link" href="{% url 'dashboard' %}" role="menuitem">
+                                     <i class="fas fa-dashboard" aria-hidden="true"></i>
+                                     <span>Dashboard</span>
+                                 </a>
+@@ -116,29 +125,85 @@
+         </main>
+         
+         <!-- Footer -->
+         <footer class="app-footer no-print" role="contentinfo">
+             <div class="main-content">
+                 <div class="d-flex justify-content-between align-items-center flex-wrap" style="padding: var(--space-6) 0; border-top: 1px solid var(--color-border); margin-top: var(--space-8);">
+                     <p class="text-muted mb-0" style="font-size: var(--font-size-sm);">
+                         © 2024 Smart Attendance System. All rights reserved.
+                     </p>
+                     <div class="d-flex gap-4">
+                         <a href="{% url 'home' %}" class="text-muted text-decoration-none" style="font-size: var(--font-size-sm);">Home</a>
+                         {% if user.is_authenticated %}
+                             <a href="{% url 'dashboard' %}" class="text-muted text-decoration-none" style="font-size: var(--font-size-sm);">Dashboard</a>
+                         {% endif %}
+                     </div>
+                 </div>
+             </div>
+         </footer>
+     </div>
+     
+     <!-- Bootstrap JS (for compatibility) -->
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+     
+     <!-- Custom UI JavaScript -->
+     <script src="{% static 'js/ui.js' %}"></script>
+-    
+-    {% block extra_scripts %}{% endblock %}
++    <script src="{% static 'js/attendance-offline.js' %}"></script>
++
++    {% block extra_scripts %}
++    <script>
++        (function() {
++            const serviceWorkerPath = "{% url 'service-worker' %}";
++
++            const registerServiceWorker = async () => {
++                if (!('serviceWorker' in navigator)) {
++                    return null;
++                }
++
++                try {
++                    const registration = await navigator.serviceWorker.register(serviceWorkerPath, { scope: '/' });
++                    return registration;
++                } catch (error) {
++                    console.error('Service worker registration failed', error);
++                    return null;
++                }
++            };
++
++            const scheduleAttendanceSync = async () => {
++                if (!('serviceWorker' in navigator)) {
++                    return;
++                }
++
++                try {
++                    const registration = await navigator.serviceWorker.ready;
++                    if ('sync' in registration) {
++                        await registration.sync.register('attendance-sync');
++                    } else {
++                        registration.active?.postMessage({ type: 'FLUSH_ATTENDANCE_QUEUE' });
++                    }
++                } catch (error) {
++                    navigator.serviceWorker.controller?.postMessage({ type: 'FLUSH_ATTENDANCE_QUEUE' });
++                }
++            };
++
++            if ('serviceWorker' in navigator) {
++                window.addEventListener('load', registerServiceWorker);
++
++                navigator.serviceWorker.addEventListener('message', (event) => {
++                    if (event.data?.type === 'attendance-queued') {
++                        document.dispatchEvent(new CustomEvent('attendance-queued'));
++                    }
++                });
++            }
++
++            document.addEventListener('attendance-queued', () => {
++                scheduleAttendanceSync();
++            });
++
++            window.addEventListener('online', () => {
++                scheduleAttendanceSync();
++            });
++        })();
++    </script>
++    {% endblock %}
+ </body>
+ </html>
+ 
+EOF
+)

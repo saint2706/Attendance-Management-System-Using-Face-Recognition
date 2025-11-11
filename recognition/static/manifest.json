@@ -1,0 +1,38 @@
+{
+  "name": "Smart Attendance System",
+  "short_name": "Attendance",
+  "description": "Progressive web experience for the Smart Attendance System powered by face recognition.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#0d6efd",
+  "lang": "en-US",
+  "icons": [
+    {
+      "src": "/static/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/static/recognition/img/login.png",
+      "sizes": "960x540",
+      "type": "image/png",
+      "label": "Login to view dashboards"
+    },
+    {
+      "src": "/static/recognition/img/reports.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Attendance insights"
+    }
+  ]
+}

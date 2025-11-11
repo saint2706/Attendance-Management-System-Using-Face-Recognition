@@ -6,17 +6,52 @@ URL paths to their corresponding view functions from the `recognition` and `user
 apps, as well as to Django's built-in authentication views.
 """
 
+from pathlib import Path
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from django.http import FileResponse, Http404
 from django.urls import path
 
 from recognition import admin_views as recog_admin_views
 from recognition import views as recog_views
 from users import views as users_views
 
+
+def _serve_static_asset(relative_path: str, *, content_type: str) -> FileResponse:
+    """Stream a collected static asset so it can be cached by the browser."""
+
+    file_path = Path(settings.BASE_DIR, relative_path)
+    if not file_path.exists():
+        raise Http404(f"Static asset not found: {relative_path}")
+
+    return FileResponse(file_path.open("rb"), content_type=content_type)
+
+
+def progressive_web_app_manifest(request):
+    """Expose the web manifest with the correct MIME type."""
+
+    return _serve_static_asset(
+        "recognition/static/manifest.json",
+        content_type="application/manifest+json",
+    )
+
+
+def progressive_web_app_service_worker(request):
+    """Serve the service worker from the site root so it can control all pages."""
+
+    response = _serve_static_asset(
+        "recognition/static/js/sw.js",
+        content_type="application/javascript",
+    )
+    response["Service-Worker-Allowed"] = "/"
+    return response
+
 urlpatterns = [
+    path("manifest.json", progressive_web_app_manifest, name="pwa-manifest"),
+    path("sw.js", progressive_web_app_service_worker, name="service-worker"),
     # Admin Site
     path("admin/", admin.site.urls),
     # Custom Admin Views
