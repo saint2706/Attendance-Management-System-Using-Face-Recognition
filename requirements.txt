@@ -5,11 +5,13 @@ crispy-bootstrap5==2024.2
 django-pandas==0.6.7
 django-ratelimit==4.1.0
 django-rq==2.10.2
+django-silk==5.1.0
 deepface==0.0.93
 imutils==0.5.4
 matplotlib==3.8.4
 celery==5.4.0
 redis==5.2.1
+sentry-sdk[django]==2.43.0
 seaborn==0.13.2
 Pillow==10.3.0
 opencv-python==4.9.0.80
@@ -18,6 +20,7 @@ tf-keras==2.20.1
 numpy>=1.26.0,<2.0.0
 pandas==2.3.3
 scipy==1.16.3
+prometheus-client==0.20.0
 rq==1.16.2
 PyYAML==6.0.2
 pytest-playwright==0.4.4

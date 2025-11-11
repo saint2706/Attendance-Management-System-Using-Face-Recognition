@@ -3,12 +3,18 @@
 from __future__ import annotations
 
 import atexit
+import logging
 import threading
 import time
 from typing import Optional, Tuple
 
 import numpy as np
 from imutils.video import VideoStream
+
+from . import monitoring
+
+
+logger = logging.getLogger(__name__)
 
 
 class _FrameConsumer:
@@ -65,34 +71,71 @@ class WebcamManager:
         if self._running:
             return
 
-        self._stream = VideoStream(src=self._src).start()
-        if self._warmup_time:
-            time.sleep(self._warmup_time)
+        start_time = time.perf_counter()
+        try:
+            self._stream = VideoStream(src=self._src).start()
+            if self._warmup_time:
+                time.sleep(self._warmup_time)
 
-        self._running = True
-        self._thread = threading.Thread(target=self._capture_loop, daemon=True)
-        self._thread.start()
+            self._running = True
+            self._thread = threading.Thread(target=self._capture_loop, daemon=True)
+            self._thread.start()
+        except Exception as exc:
+            latency = time.perf_counter() - start_time
+            monitoring.record_camera_start(False, latency, error=str(exc))
+            logger.exception(
+                "Webcam manager start failed", extra={"event": "webcam_start", "status": "failure"}
+            )
+            raise
+        else:
+            latency = time.perf_counter() - start_time
+            monitoring.record_camera_start(True, latency)
 
     def shutdown(self) -> None:
         if not self._running:
             return
 
         self._running = False
+        stop_start = time.perf_counter()
         with self._frame_lock:
             self._frame_lock.notify_all()
 
+        join_timed_out = False
+        shutdown_success = True
+        shutdown_error: Optional[str] = None
+        shutdown_exception: Optional[Exception] = None
         if self._thread:
             self._thread.join(timeout=1.0)
+            if self._thread.is_alive():
+                join_timed_out = True
             self._thread = None
 
         if self._stream:
             try:
                 self._stream.stop()
+            except Exception as exc:
+                shutdown_success = False
+                shutdown_error = str(exc)
+                shutdown_exception = exc
+                logger.exception(
+                    "Webcam manager stop failed",
+                    extra={"event": "webcam_stop", "status": "failure"},
+                )
             finally:
                 self._stream = None
 
         self._latest_frame = None
         self._latest_frame_id = 0
+
+        latency = time.perf_counter() - stop_start
+        monitoring.record_camera_stop(
+            shutdown_success,
+            latency,
+            error=shutdown_error,
+            timed_out=join_timed_out,
+        )
+        if shutdown_exception is not None:
+            raise shutdown_exception
 
     # -- consumer helpers ---------------------------------------------
 
@@ -103,21 +146,33 @@ class WebcamManager:
     def _register_consumer(self) -> None:
         with self._consumer_lock:
             self._consumer_count += 1
+            monitoring.update_consumer_count(self._consumer_count)
 
     def _release_consumer(self) -> None:
         with self._consumer_lock:
             self._consumer_count = max(0, self._consumer_count - 1)
+            monitoring.update_consumer_count(self._consumer_count)
 
     # -- frame handling ------------------------------------------------
 
     def _capture_loop(self) -> None:
         assert self._stream is not None  # pragma: no cover - defensive
 
+        last_capture_monotonic = None
         while self._running and self._stream is not None:
             frame = self._stream.read()
             if frame is None:
+                monitoring.record_frame_drop()
                 time.sleep(0.01)
                 continue
+
+            capture_monotonic = time.monotonic()
+            if last_capture_monotonic is None:
+                frame_delay = 0.0
+            else:
+                frame_delay = capture_monotonic - last_capture_monotonic
+            last_capture_monotonic = capture_monotonic
+            monitoring.record_frame_delay(frame_delay, capture_time=time.time())
 
             with self._frame_lock:
                 self._latest_frame = frame.copy()

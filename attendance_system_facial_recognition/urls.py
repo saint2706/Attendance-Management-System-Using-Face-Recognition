@@ -13,7 +13,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.http import FileResponse, Http404
-from django.urls import path
+from django.urls import include, path
 
 from recognition import admin_views as recog_admin_views
 from recognition import views as recog_views
@@ -52,8 +52,6 @@ def progressive_web_app_service_worker(request):
 urlpatterns = [
     path("manifest.json", progressive_web_app_manifest, name="pwa-manifest"),
     path("sw.js", progressive_web_app_service_worker, name="service-worker"),
-    # Admin Site
-    path("admin/", admin.site.urls),
     # Custom Admin Views
     path(
         "admin/evaluation/",
@@ -62,11 +60,7 @@ urlpatterns = [
     ),
     path("admin/ablation/", recog_admin_views.ablation_results, name="admin_ablation_results"),
     path("admin/failures/", recog_admin_views.failure_analysis, name="admin_failure_analysis"),
-    path(
-        "admin/recognition-attempts/",
-        recog_admin_views.recognition_attempt_summary,
-        name="admin_recognition_attempt_summary",
-    ),
+    path("admin/health/", recog_admin_views.system_health_dashboard, name="admin_system_health"),
     # Core pages
     path("", recog_views.home, name="home"),
     path("dashboard/", recog_views.dashboard, name="dashboard"),
@@ -106,6 +100,7 @@ urlpatterns = [
         recog_views.enqueue_attendance_batch,
         name="attendance-batch",
     ),
+    path("monitoring/metrics/", recog_views.monitoring_metrics, name="monitoring-metrics"),
     # Attendance Viewing
     path(
         "view_attendance_home",
@@ -133,3 +128,6 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG or getattr(settings, "SILKY_AUTHORISATION", False):
+    urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]

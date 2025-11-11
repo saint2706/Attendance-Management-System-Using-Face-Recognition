@@ -81,7 +81,7 @@ For a complete reference of all API endpoints and command-line tools, please see
 
 ## 6. Configuration
 
-The system can be configured using environment variables. For a detailed list of all configuration options, please see the [main README file](README.md#deployment-configuration).
+The system can be configured using environment variables. For a detailed list of all configuration options, please see the [main README file](README.md#deployment-configuration). Operators planning production deployments should also review the [Deployment Guide](docs/deployment-guide.md) for Compose setup, migrations, and hardening recommendations.
 
 ## 7. Database backends
 

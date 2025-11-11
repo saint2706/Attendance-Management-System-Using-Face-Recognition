@@ -80,6 +80,20 @@ This project is a fully refactored and modernized smart attendance system that l
     ```
     This ensures the generated icons, `manifest.json`, and `sw.js` are published alongside the rest of the static files when you deploy with WhiteNoise or another static file server.
 
+## Performance Monitoring
+
+Silk is bundled to profile database queries, view timings, and cache usage without leaving the Django admin. The dependency is already pinned in `requirements.txt`/`pyproject.toml`, so installing the project requirements pulls it in automatically.
+
+1. **Apply Silk migrations** after installing dependencies any time new environments are set up:
+   ```bash
+   python manage.py migrate
+   ```
+   This creates the `silk_*` tables used to persist profiling results.
+2. **Accessing the dashboard:**
+   - In development (`DJANGO_DEBUG=1`) visit `http://127.0.0.1:8000/silk/` to inspect live profiles.
+   - In non-debug deployments Silk requires authentication and staff status. Log in with a staff or superuser account before visiting `/silk/`; non-staff users receive a permission error and unauthenticated visitors are redirected to the login page.
+3. **Production guardrails:** keep the middleware enabled only when you actively need profiling, and clear the Silk tables regularly in long-running environments to manage database size.
+
 ## Documentation
 
 For more detailed information, please refer to the full documentation:
@@ -90,10 +104,13 @@ For more detailed information, please refer to the full documentation:
 - **[API Reference](API_REFERENCE.md)**: Details on URL patterns, API endpoints, and command-line tools.
 - **[Architecture Overview](ARCHITECTURE.md)**: A high-level overview of the system architecture and data flows.
 - **[Data Card](DATA_CARD.md)**: Comprehensive documentation on the dataset, including privacy policies and data splits.
+- **[Deployment Guide](docs/deployment-guide.md)**: Step-by-step instructions for building the Docker image, configuring Compose services, managing environment variables, and hardening production deployments.
 
 ## Deployment Configuration
 
 When deploying to staging or production, configure the following environment variables so that session cookies remain secure and expire after periods of inactivity. Boolean values accept `1`, `true`, `yes`, or `on` (case-insensitive). Use the development settings module (`attendance_system_facial_recognition.settings`) locally and for automated tests. Production deployments should set `DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production` so the hardened database configuration is loaded.
+
+Review the [Security & Compliance Guide](docs/security.md) for secret management, HTTPS/SSL hardening, and operational checklists that build on these deployment notes.
 
 The Progressive Web App resources are exposed at `/manifest.json` and `/sw.js`. Ensure these paths are routed to Django so the manifest and service worker can be cached by browsers during install.
 
@@ -110,6 +127,27 @@ The Progressive Web App resources are exposed at `/manifest.json` and `/sw.js`. 
 | `DJANGO_SESSION_EXPIRE_AT_BROWSER_CLOSE` | Drop the session when the browser closes. | `true` | `true` |
 
 Ensure these variables are present in the staging and production deployment manifests (e.g., `.env` files, container secrets, or platform configuration) before rolling out new builds.
+
+### Observability and error tracking
+
+The production settings initialise [Sentry](https://sentry.io/) automatically when the DSN is supplied. Configure the following environment variables to tailor telemetry to each deployment target:
+
+| Environment variable | Purpose | Recommended staging value | Recommended production value |
+| --- | --- | --- | --- |
+| `SENTRY_DSN` | Enables Sentry ingestion for the project. | `https://<public>@sentry.io/<project>` | `https://<public>@sentry.io/<project>` |
+| `SENTRY_ENVIRONMENT` | Distinguishes environments inside the Sentry dashboards. | `staging` | `production` |
+| `SENTRY_RELEASE` | Associates events with build artefacts for source maps and regression tracking. | Git commit SHA | Git tag or release identifier |
+| `SENTRY_TRACES_SAMPLE_RATE` | Fraction (0.0–1.0) of requests captured for APM tracing. | `0.1` | `0.2` |
+| `SENTRY_PROFILES_SAMPLE_RATE` | Fraction (0.0–1.0) of traces that include profiling data. | `0.0` | `0.05` |
+| `SENTRY_SEND_DEFAULT_PII` | Toggle for sending user-identifiable attributes; defaults to scrubbing PII. | `false` | `false` |
+
+With `SENTRY_SEND_DEFAULT_PII` disabled, the integration strips cookies, authorisation headers, and user attributes before dispatching events so that production telemetry complies with internal privacy requirements. Operators that need richer context can opt in by setting `SENTRY_SEND_DEFAULT_PII=true` after completing a privacy impact assessment.
+
+#### Operational dashboards
+
+- **Issues**: Monitor unhandled exceptions and message breadcrumbs from the Sentry *Issues* dashboard. Pin the view filtered by `environment:production` to quickly detect regressions after each deployment.
+- **Performance**: Track request latency, throughput, and slow transactions with the *Performance* dashboard. Enable sampling via `SENTRY_TRACES_SAMPLE_RATE` to populate the charts and configure alerts for p95 latency regressions.
+- **Real-time**: For incident response, use Sentry's *Releases* view to correlate deploys with spikes in error volume, and subscribe the operations channel to release health alerts.
 
 ### Containerized deployment workflow
 

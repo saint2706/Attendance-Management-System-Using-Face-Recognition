@@ -7,9 +7,15 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.db.models import Count, Q
-from django.db.models.functions import Coalesce
+from django.db.models import Avg, Count, Q
+from django.db.models.functions import TruncDate, TruncWeek
 from django.shortcuts import render
+from django.urls import reverse
+
+
+from . import monitoring
+
+from .models import RecognitionOutcome
 
 from users.models import RecognitionAttempt
 
@@ -60,6 +66,64 @@ def evaluation_dashboard(request):
         context["figures_available"] = len(available_figures) > 0
 
     return render(request, "recognition/admin/evaluation_dashboard.html", context)
+
+
+def _prepare_accuracy_trend(time_trunc_func):
+    """Aggregate accuracy information using the provided truncation function."""
+
+    aggregates = (
+        RecognitionOutcome.objects.annotate(period=time_trunc_func("created_at"))
+        .values("period")
+        .order_by("period")
+        .annotate(
+            total=Count("id"),
+            accepted=Count("id", filter=Q(accepted=True)),
+            average_confidence=Avg("confidence"),
+        )
+    )
+
+    trend = []
+    for entry in aggregates:
+        total = entry.get("total") or 0
+        accepted = entry.get("accepted") or 0
+        accuracy = float(accepted) / float(total) if total else 0.0
+        trend.append(
+            {
+                "period": entry.get("period"),
+                "total": total,
+                "accepted": accepted,
+                "rejected": total - accepted,
+                "accuracy": accuracy,
+                "average_confidence": entry.get("average_confidence"),
+            }
+        )
+    return trend
+
+
+@staff_member_required
+def recognition_accuracy_trends(request):
+    """Display daily and weekly accuracy aggregates for recognition outcomes."""
+
+    retention_setting = getattr(settings, "RECOGNITION_OUTCOME_RETENTION_DAYS", 30)
+    retention_days_numeric = None
+    retention_label = "indefinitely"
+    if retention_setting not in (None, "none", ""):
+        try:
+            retention_days_numeric = int(retention_setting)
+            if retention_days_numeric <= 0:
+                retention_days_numeric = None
+            else:
+                retention_label = str(retention_days_numeric)
+        except (TypeError, ValueError):  # pragma: no cover - defensive casting
+            retention_label = str(retention_setting)
+
+    context = {
+        "daily_trend": _prepare_accuracy_trend(TruncDate),
+        "weekly_trend": _prepare_accuracy_trend(TruncWeek),
+        "retention_days": retention_label,
+        "retention_days_numeric": retention_days_numeric,
+    }
+    return render(request, "recognition/admin/recognition_trends.html", context)
 
 
 @staff_member_required
@@ -127,49 +191,12 @@ def failure_analysis(request):
 
 
 @staff_member_required
-def recognition_attempt_summary(request):
-    """Display aggregated recognition attempt metrics per site and employee."""
+def system_health_dashboard(request):
+    """Render current webcam and recognition health signals for admins."""
 
-    attempts = RecognitionAttempt.objects.all()
-
-    site_summary = list(
-        attempts.values("site")
-        .annotate(
-            total=Count("id"),
-            successes=Count("id", filter=Q(successful=True)),
-            failures=Count("id", filter=Q(successful=False)),
-            spoofed=Count("id", filter=Q(spoof_detected=True)),
-        )
-        .order_by("site")
-    )
-    for entry in site_summary:
-        total = entry.get("total") or 0
-        entry["success_rate"] = (
-            (entry.get("successes", 0) / total) * 100 if total else None
-        )
-
-    employee_summary = list(
-        attempts.annotate(
-            resolved_username=Coalesce("user__username", "username")
-        )
-        .values("site", "resolved_username")
-        .annotate(
-            total=Count("id"),
-            successes=Count("id", filter=Q(successful=True)),
-            failures=Count("id", filter=Q(successful=False)),
-            spoofed=Count("id", filter=Q(spoof_detected=True)),
-        )
-        .order_by("site", "resolved_username")
-    )
-    for entry in employee_summary:
-        total = entry.get("total") or 0
-        entry["success_rate"] = (
-            (entry.get("successes", 0) / total) * 100 if total else None
-        )
-
+    snapshot = monitoring.get_health_snapshot()
     context = {
-        "site_summary": site_summary,
-        "employee_summary": employee_summary,
+        "snapshot": snapshot,
+        "metrics_url": request.build_absolute_uri(reverse("monitoring-metrics")),
     }
-
-    return render(request, "recognition/admin/recognition_attempt_summary.html", context)
+    return render(request, "recognition/admin/system_health.html", context)

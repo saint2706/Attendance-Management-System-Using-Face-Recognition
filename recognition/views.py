@@ -28,6 +28,7 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.cache import cache
@@ -62,7 +63,9 @@ from src.common import InvalidToken, decrypt_bytes, encrypt_bytes
 from src.common.face_data_encryption import FaceDataEncryption
 from users.models import Present, RecognitionAttempt, Time
 
+from . import monitoring
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
+from .metrics_store import log_recognition_outcome
 from .webcam_manager import get_webcam_manager
 
 # Use 'Agg' backend for Matplotlib to avoid GUI-related issues in a web server environment
@@ -1901,6 +1904,22 @@ def _mark_attendance(request, check_in: bool):
     """
     manager = get_webcam_manager()
     present = {}
+    recorded_outcomes: set[tuple[str, bool]] = set()
+    direction = "in" if check_in else "out"
+
+    def _log_outcome(candidate: Optional[str], *, accepted: bool, distance: float | None) -> None:
+        key = (candidate or "", accepted)
+        if key in recorded_outcomes:
+            return
+        recorded_outcomes.add(key)
+        log_recognition_outcome(
+            username=candidate,
+            accepted=accepted,
+            direction=direction,
+            distance=distance,
+            threshold=distance_threshold,
+            source="webcam",
+        )
     headless = _is_headless_environment()
     max_frames = int(getattr(settings, "RECOGNITION_HEADLESS_ATTENDANCE_FRAMES", 30))
     frame_pause = float(getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01))
@@ -1930,8 +1949,15 @@ def _mark_attendance(request, check_in: bool):
         else "Mark Attendance- Out - Press q to exit"
     )
 
+    dataset_load_start = time.perf_counter()
     dataset_index = _load_dataset_embeddings_for_matching(
         model_name, detector_backend, enforce_detection
+    )
+    dataset_load_duration = time.perf_counter() - dataset_load_start
+    monitoring.observe_stage_duration(
+        "dataset_index_load",
+        dataset_load_duration,
+        threshold_key="model_load",
     )
     if not dataset_index:
         attempt_logger.log_failure(
@@ -1946,6 +1972,7 @@ def _mark_attendance(request, check_in: bool):
         return redirect("home")
 
     spoof_detected = False
+    model_warmed_up = False
 
     try:
         with manager.frame_consumer() as consumer:
@@ -1953,17 +1980,32 @@ def _mark_attendance(request, check_in: bool):
                 frame = consumer.read(timeout=1.0)
                 if frame is None:
                     continue
+                iteration_start = time.perf_counter()
                 frame = imutils.resize(frame, width=800)
                 frames_processed += 1
 
                 try:
                     # Use DeepFace to find matching faces in the database
+                    inference_start = time.perf_counter()
                     representations = DeepFace.represent(
                         img_path=frame,
                         model_name=model_name,
                         detector_backend=detector_backend,
                         enforce_detection=enforce_detection,
                     )
+                    inference_duration = time.perf_counter() - inference_start
+                    if not model_warmed_up:
+                        monitoring.observe_stage_duration(
+                            "deepface_warmup",
+                            inference_duration,
+                            threshold_key="warmup",
+                        )
+                        model_warmed_up = True
+                    else:
+                        monitoring.observe_stage_duration(
+                            "deepface_inference",
+                            inference_duration,
+                        )
 
                     embedding_vector, facial_area = _extract_first_embedding(representations)
                     if embedding_vector is None:
@@ -1977,6 +2019,14 @@ def _mark_attendance(request, check_in: bool):
                         continue
 
                     username, distance_value, identity_path = match
+                    candidate_name: Optional[str] = None
+                    if username:
+                        candidate_name = username
+                    elif identity_path:
+                        try:
+                            candidate_name = Path(identity_path).parent.name
+                        except Exception:  # pragma: no cover - defensive parsing
+                            candidate_name = None
                     normalized_region = _normalize_face_region(facial_area)
                     spoofed = not _passes_liveness_check(frame, normalized_region)
 
@@ -1986,19 +2036,12 @@ def _mark_attendance(request, check_in: bool):
                             Path(identity_path).parent.name,
                             distance_value,
                         )
-                        fallback_username = username or Path(identity_path).parent.name
-                        attempt_logger.log_failure(
-                            fallback_username,
-                            spoofed=False,
-                            error=(
-                                "Distance %.4f exceeded threshold %.4f"
-                                % (distance_value, distance_threshold)
-                            ),
-                        )
+                        _log_outcome(candidate_name, accepted=False, distance=distance_value)
                         continue
 
                     if spoofed:
                         spoof_detected = True
+                        _log_outcome(candidate_name, accepted=False, distance=distance_value)
                         logger.warning(
                             "Spoofing attempt blocked while marking attendance for '%s'",
                             username or Path(identity_path).parent.name,
@@ -2029,6 +2072,7 @@ def _mark_attendance(request, check_in: bool):
 
                     if username:
                         present[username] = True
+                        _log_outcome(username, accepted=True, distance=distance_value)
                         logger.info("Recognized %s with distance %.4f", username, distance_value)
                         attempt_logger.log_success(username)
 
@@ -2048,19 +2092,28 @@ def _mark_attendance(request, check_in: bool):
                                 2,
                             )
 
+                    if not headless:
+                        cv2.imshow(window_title, frame)
+                        if cv2.waitKey(1) & 0xFF == ord("q"):
+                            break
+                    else:
+                        if frame_pause:
+                            time.sleep(frame_pause)
+                        if frames_processed >= max_frames:
+                            logger.info(
+                                "Headless mode reached frame limit of %d frames", max_frames
+                            )
+                            break
+
                 except Exception as e:
                     logger.error("Error during face recognition loop: %s", e)
-
-                if not headless:
-                    cv2.imshow(window_title, frame)
-                    if cv2.waitKey(1) & 0xFF == ord("q"):
-                        break
-                else:
-                    if frame_pause:
-                        time.sleep(frame_pause)
-                    if frames_processed >= max_frames:
-                        logger.info("Headless mode reached frame limit of %d frames", max_frames)
-                        break
+                finally:
+                    iteration_duration = time.perf_counter() - iteration_start
+                    monitoring.observe_stage_duration(
+                        "recognition_iteration",
+                        iteration_duration,
+                        threshold_key="recognition_iteration",
+                    )
     finally:
         if not headless:
             cv2.destroyAllWindows()
@@ -2111,6 +2164,14 @@ def mark_your_attendance(request):
 def mark_your_attendance_out(request):
     """View to handle marking time-out."""
     return _mark_attendance(request, check_in=False)
+
+
+@staff_member_required
+def monitoring_metrics(request):
+    """Expose Prometheus metrics for the recognition system."""
+
+    payload = monitoring.export_metrics()
+    return HttpResponse(payload, content_type=monitoring.prometheus_content_type())
 
 
 @login_required
@@ -2642,6 +2703,9 @@ def mark_attendance_view(request, attendance_type):
                             except Exception:
                                 embedding_vector = None
 
+                    predicted_name: Optional[str] = None
+                    spoofed = False
+                    normalized_region: Optional[Dict[str, int]] = None
                     if embedding_vector is not None:
                         predicted_name, spoofed, normalized_region = (
                             _predict_identity_from_embedding(
@@ -2656,11 +2720,7 @@ def mark_attendance_view(request, attendance_type):
 
                         if spoofed:
                             spoof_detected = True
-                            attempt_logger.log_failure(
-                                str(predicted_name) if predicted_name else None,
-                                spoofed=True,
-                                error="Spoofing detected by liveness gate.",
-                            )
+                            _log_outcome(predicted_name, accepted=False, distance=None)
                             if normalized_region:
                                 x = int(normalized_region["x"])
                                 y = int(normalized_region["y"])
@@ -2680,7 +2740,7 @@ def mark_attendance_view(request, attendance_type):
 
                         if predicted_name:
                             present[predicted_name] = True
-                            attempt_logger.log_success(str(predicted_name))
+                            _log_outcome(predicted_name, accepted=True, distance=None)
 
                             if normalized_region:
                                 x = int(normalized_region["x"])
@@ -2697,6 +2757,8 @@ def mark_attendance_view(request, attendance_type):
                                     (0, 255, 0),
                                     2,
                                 )
+                        else:
+                            _log_outcome(None, accepted=False, distance=None)
 
                 except Exception as e:
                     logger.warning("Could not process frame for recognition: %s", e)
