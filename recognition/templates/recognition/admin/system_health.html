@@ -1,0 +1,163 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}System Health{% endblock %}
+
+{% block content %}
+<h1>System Health Dashboard</h1>
+<p>
+    Live Prometheus metrics are available at
+    <code><a href="{{ metrics_url }}" target="_blank" rel="noopener">{{ metrics_url }}</a></code>
+    (staff access required).
+</p>
+
+<div class="module">
+    <h2>Alert Thresholds</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Signal</th>
+                <th>Threshold (seconds)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key, value in snapshot.thresholds.items %}
+            <tr>
+                <td>{{ key|replace:"_"," "|title }}</td>
+                <td>{{ value|floatformat:3 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="module">
+    <h2>Webcam Lifecycle</h2>
+    <table>
+        <tr>
+            <th>Status</th>
+            <td>
+                {% if snapshot.camera.running %}
+                    <span style="color: #0a0;">Running</span>
+                {% else %}
+                    <span style="color: #a00;">Stopped</span>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Active Consumers</th>
+            <td>{{ snapshot.camera.consumers }}</td>
+        </tr>
+        <tr>
+            <th>Last Start</th>
+            <td>
+                {% if snapshot.camera.last_start %}
+                    {{ snapshot.camera.last_start.timestamp|default:"-" }}
+                    {% if snapshot.camera.last_start.latency is not None %}
+                        ({{ snapshot.camera.last_start.latency|floatformat:3 }}s)
+                    {% endif %}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Last Stop</th>
+            <td>
+                {% if snapshot.camera.last_stop %}
+                    {{ snapshot.camera.last_stop.timestamp|default:"-" }}
+                    {% if snapshot.camera.last_stop.latency is not None %}
+                        ({{ snapshot.camera.last_stop.latency|floatformat:3 }}s)
+                    {% endif %}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Last Error</th>
+            <td>{{ snapshot.camera.last_error|default:"-" }}</td>
+        </tr>
+    </table>
+    <h3>Start/Stop Counters</h3>
+    <ul>
+        <li>Starts — success: {{ snapshot.metrics.camera_start.success|floatformat:0 }}, failure: {{ snapshot.metrics.camera_start.failure|floatformat:0 }}</li>
+        <li>Stops — success: {{ snapshot.metrics.camera_stop.success|floatformat:0 }}, failure: {{ snapshot.metrics.camera_stop.failure|floatformat:0 }}, timeout: {{ snapshot.metrics.camera_stop.timeout|floatformat:0 }}</li>
+    </ul>
+</div>
+
+<div class="module">
+    <h2>Frame Flow</h2>
+    <table>
+        <tr>
+            <th>Last Frame</th>
+            <td>{{ snapshot.frames.last_frame_timestamp|default:"-" }}</td>
+        </tr>
+        <tr>
+            <th>Last Delay</th>
+            <td>
+                {% if snapshot.frames.last_frame_delay is not None %}
+                    {{ snapshot.frames.last_frame_delay|floatformat:3 }}s
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Frame Drops</th>
+            <td>{{ snapshot.metrics.frame_drop_total|floatformat:0 }}</td>
+        </tr>
+    </table>
+</div>
+
+<div class="module">
+    <h2>Recognition Stage Durations</h2>
+    {% if snapshot.stages %}
+    <table>
+        <thead>
+            <tr>
+                <th>Stage</th>
+                <th>Last Duration (s)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stage, data in snapshot.stages.items %}
+            <tr>
+                <td>{{ stage }}</td>
+                <td>{{ data.last_duration|floatformat:3 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No stage timings recorded yet.</p>
+    {% endif %}
+</div>
+
+<div class="module">
+    <h2>Recent Alerts</h2>
+    {% if snapshot.alerts %}
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Severity</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for alert in snapshot.alerts %}
+            <tr>
+                <td>{{ alert.timestamp }}</td>
+                <td>{{ alert.type }}</td>
+                <td>{{ alert.severity|title }}</td>
+                <td>{{ alert.message }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No alerts recorded.</p>
+    {% endif %}
+</div>
+{% endblock %}

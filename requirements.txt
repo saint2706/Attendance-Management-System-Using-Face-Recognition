@@ -18,6 +18,7 @@ tf-keras==2.20.1
 numpy>=1.26.0,<2.0.0
 pandas==2.3.3
 scipy==1.16.3
+prometheus-client==0.20.0
 rq==1.16.2
 PyYAML==6.0.2
 pytest-playwright==0.4.4
