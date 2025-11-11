@@ -95,6 +95,8 @@ For more detailed information, please refer to the full documentation:
 
 When deploying to staging or production, configure the following environment variables so that session cookies remain secure and expire after periods of inactivity. Boolean values accept `1`, `true`, `yes`, or `on` (case-insensitive). Use the development settings module (`attendance_system_facial_recognition.settings`) locally and for automated tests. Production deployments should set `DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production` so the hardened database configuration is loaded.
 
+Review the [Security & Compliance Guide](docs/security.md) for secret management, HTTPS/SSL hardening, and operational checklists that build on these deployment notes.
+
 The Progressive Web App resources are exposed at `/manifest.json` and `/sw.js`. Ensure these paths are routed to Django so the manifest and service worker can be cached by browsers during install.
 
 | Environment variable | Purpose | Recommended staging value | Recommended production value |
