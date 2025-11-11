@@ -157,6 +157,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "recognition.apps.RecognitionConfig",
     # Third-party packages
+    "silk",
     "django_rq",
     "django_ratelimit",
     "crispy_forms",
@@ -171,6 +172,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "silk.middleware.SilkyMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -331,6 +333,19 @@ LOGOUT_REDIRECT_URL = "home"
 
 # The default URL to redirect to after a user logs in.
 LOGIN_REDIRECT_URL = "dashboard"
+
+# --- Performance Monitoring (django-silk) ---
+
+
+def _silky_staff_only(user) -> bool:
+    """Restrict Silk dashboards to authenticated staff members."""
+
+    return bool(user and user.is_authenticated and user.is_staff)
+
+
+SILKY_AUTHENTICATION = True
+SILKY_AUTHORISATION = True
+SILKY_PERMISSIONS = _silky_staff_only
 
 # --- Model Field Configuration ---
 
