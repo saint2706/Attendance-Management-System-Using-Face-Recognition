@@ -13,7 +13,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.http import FileResponse, Http404
-from django.urls import path
+from django.urls import include, path
 
 from recognition import admin_views as recog_admin_views
 from recognition import views as recog_views
@@ -128,3 +128,6 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG or getattr(settings, "SILKY_AUTHORISATION", False):
+    urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]

@@ -80,6 +80,20 @@ This project is a fully refactored and modernized smart attendance system that l
     ```
     This ensures the generated icons, `manifest.json`, and `sw.js` are published alongside the rest of the static files when you deploy with WhiteNoise or another static file server.
 
+## Performance Monitoring
+
+Silk is bundled to profile database queries, view timings, and cache usage without leaving the Django admin. The dependency is already pinned in `requirements.txt`/`pyproject.toml`, so installing the project requirements pulls it in automatically.
+
+1. **Apply Silk migrations** after installing dependencies any time new environments are set up:
+   ```bash
+   python manage.py migrate
+   ```
+   This creates the `silk_*` tables used to persist profiling results.
+2. **Accessing the dashboard:**
+   - In development (`DJANGO_DEBUG=1`) visit `http://127.0.0.1:8000/silk/` to inspect live profiles.
+   - In non-debug deployments Silk requires authentication and staff status. Log in with a staff or superuser account before visiting `/silk/`; non-staff users receive a permission error and unauthenticated visitors are redirected to the login page.
+3. **Production guardrails:** keep the middleware enabled only when you actively need profiling, and clear the Silk tables regularly in long-running environments to manage database size.
+
 ## Documentation
 
 For more detailed information, please refer to the full documentation:
