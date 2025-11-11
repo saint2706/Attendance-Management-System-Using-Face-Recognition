@@ -65,6 +65,29 @@ def _parse_int_env(var_name: str, default: int, *, minimum: int | None = None) -
     return value
 
 
+def _get_float_env(
+    var_name: str,
+    default: float,
+    *,
+    minimum: float | None = None,
+) -> float:
+    """Return a float from the environment with optional lower bound enforcement."""
+
+    raw_value = os.environ.get(var_name)
+    if raw_value is None:
+        return default
+
+    try:
+        value = float(raw_value)
+    except ValueError as exc:  # pragma: no cover - defensive programming
+        raise ImproperlyConfigured(f"{var_name} must be a float if provided.") from exc
+
+    if minimum is not None and value < minimum:
+        raise ImproperlyConfigured(f"{var_name} must be >= {minimum} if provided.")
+
+    return value
+
+
 # Detect if we're running tests
 TESTING = "test" in sys.argv or (len(sys.argv) > 0 and "pytest" in sys.argv[0])
 
@@ -157,6 +180,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "recognition.apps.RecognitionConfig",
     # Third-party packages
+    "silk",
     "django_rq",
     "django_ratelimit",
     "crispy_forms",
@@ -171,6 +195,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "silk.middleware.SilkyMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -332,6 +357,19 @@ LOGOUT_REDIRECT_URL = "home"
 # The default URL to redirect to after a user logs in.
 LOGIN_REDIRECT_URL = "dashboard"
 
+# --- Performance Monitoring (django-silk) ---
+
+
+def _silky_staff_only(user) -> bool:
+    """Restrict Silk dashboards to authenticated staff members."""
+
+    return bool(user and user.is_authenticated and user.is_staff)
+
+
+SILKY_AUTHENTICATION = True
+SILKY_AUTHORISATION = True
+SILKY_PERMISSIONS = _silky_staff_only
+
 # --- Model Field Configuration ---
 
 # Specifies the default primary key field type for new models.
@@ -437,3 +475,34 @@ if _attendance_methods:
     )
 else:
     RECOGNITION_ATTENDANCE_RATE_LIMIT_METHODS = ("POST",)
+
+RECOGNITION_CAMERA_START_ALERT_SECONDS = _get_float_env(
+    "RECOGNITION_CAMERA_START_ALERT_SECONDS",
+    default=3.0,
+    minimum=0.0,
+)
+RECOGNITION_FRAME_DELAY_ALERT_SECONDS = _get_float_env(
+    "RECOGNITION_FRAME_DELAY_ALERT_SECONDS",
+    default=0.75,
+    minimum=0.0,
+)
+RECOGNITION_MODEL_LOAD_ALERT_SECONDS = _get_float_env(
+    "RECOGNITION_MODEL_LOAD_ALERT_SECONDS",
+    default=4.0,
+    minimum=0.0,
+)
+RECOGNITION_WARMUP_ALERT_SECONDS = _get_float_env(
+    "RECOGNITION_WARMUP_ALERT_SECONDS",
+    default=3.0,
+    minimum=0.0,
+)
+RECOGNITION_LOOP_ALERT_SECONDS = _get_float_env(
+    "RECOGNITION_LOOP_ALERT_SECONDS",
+    default=1.5,
+    minimum=0.0,
+)
+RECOGNITION_HEALTH_ALERT_HISTORY = _parse_int_env(
+    "RECOGNITION_HEALTH_ALERT_HISTORY",
+    default=50,
+    minimum=1,
+)

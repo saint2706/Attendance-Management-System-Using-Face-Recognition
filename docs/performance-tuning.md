@@ -1,0 +1,54 @@
+# Recognition Performance Tuning
+
+This guide explains how to tune the face-recognition pipeline via environment variables exposed in `attendance_system_facial_recognition/settings/base.py`. It summarizes what each flag controls, how it interacts with the recognition loop in `recognition/views.py`, and gives recommended values for development versus production deployments.
+
+## Environment variables
+
+| Variable | Default | Purpose | Recognition loop impact |
+| --- | --- | --- | --- |
+| `RECOGNITION_DISTANCE_THRESHOLD` | `0.4` | Controls the maximum embedding distance accepted as a match. Lower values are stricter (fewer false accepts) while higher values are more permissive (fewer false rejects).【F:attendance_system_facial_recognition/settings/base.py†L374-L377】 | Compared against the DeepFace match score before a user is marked present. Frames exceeding the threshold are ignored and not shown as recognized.【F:recognition/views.py†L1654-L1717】 |
+| `RECOGNITION_DEEPFACE_BACKEND` | `opencv` | Selects the DeepFace backend implementation (e.g., `opencv`, `mtcnn`, `retinaface`).【F:attendance_system_facial_recognition/settings/base.py†L383-L421】 | Determines how `_get_face_recognition_model()` resolves the backend and which detection graph DeepFace executes for each frame.【F:recognition/views.py†L1688-L1693】 |
+| `RECOGNITION_DEEPFACE_MODEL` | `Facenet` | Chooses the embedding model used during representation (e.g., `Facenet`, `ArcFace`).【F:attendance_system_facial_recognition/settings/base.py†L383-L421】 | Alters the embedding vector produced by `DeepFace.represent`, influencing both accuracy and latency for each frame.【F:recognition/views.py†L1688-L1704】 |
+| `RECOGNITION_DEEPFACE_DETECTOR` | `ssd` | Sets the detector used to crop faces before embedding (e.g., `ssd`, `mtcnn`, `retinaface`).【F:attendance_system_facial_recognition/settings/base.py†L383-L421】 | Controls detection robustness and speed during `DeepFace.represent`. A slower detector lengthens each recognition iteration.【F:recognition/views.py†L1688-L1704】 |
+| `RECOGNITION_DEEPFACE_DISTANCE_METRIC` | `euclidean_l2` | Specifies how embedding distances are computed (`cosine`, `euclidean_l2`, `manhattan`, etc.).【F:attendance_system_facial_recognition/settings/base.py†L383-L421】 | Propagated into `_find_closest_dataset_match` to score embeddings; different metrics shift the scale that the distance threshold operates on.【F:recognition/views.py†L1688-L1717】 |
+| `RECOGNITION_DEEPFACE_ENFORCE_DETECTION` | `False` | Toggles DeepFace's hard failure when no face is detected in a frame.【F:attendance_system_facial_recognition/settings/base.py†L383-L421】 | When `True`, `DeepFace.represent` raises if it cannot crop a face, causing the loop to skip frames instead of returning `None`. Useful for high-quality feeds but brittle for noisy input.【F:recognition/views.py†L1688-L1704】 |
+| `RECOGNITION_DEEPFACE_ANTI_SPOOFING` | `True` | Enables DeepFace's anti-spoof pipeline during representation.【F:attendance_system_facial_recognition/settings/base.py†L383-L421】 | Supports liveness gating inside `_passes_liveness_check`, helping reject spoofing attempts before recording attendance.【F:recognition/views.py†L1706-L1740】 |
+| `RECOGNITION_ATTENDANCE_RATE_LIMIT` | `5/m` | Applies django-ratelimit to the attendance endpoints with a default of 5 POSTs per minute.【F:attendance_system_facial_recognition/settings/base.py†L424-L433】 | The view respects this throttle to prevent brute-force attempts; higher limits allow more rapid retries but can expose the endpoint to abuse.【F:recognition/views.py†L1635-L1779】 |
+| `RECOGNITION_ATTENDANCE_RATE_LIMIT_METHODS` | `POST` | Comma-separated HTTP verbs subject to the above rate limit.【F:attendance_system_facial_recognition/settings/base.py†L433-L439】 | Expanding to `GET,POST` rate-limits both preview and submission flows. Keep POST-only for kiosks that poll status pages between scans.【F:recognition/views.py†L1635-L1779】 |
+| `RECOGNITION_HEADLESS` | _unset_ | Forces headless mode detection (no GUI) regardless of `DISPLAY` variables.【F:recognition/views.py†L1617-L1633】 | When true, the recognition loop and dataset capture suppress OpenCV windows and rely on frame counters/timeouts to exit.【F:recognition/views.py†L1635-L1774】【F:recognition/views.py†L905-L969】 |
+| `RECOGNITION_HEADLESS_DATASET_FRAMES` | `50` | Upper bound on frames saved per user while building datasets in headless environments.【F:recognition/views.py†L905-L969】 | Ensures automated pipelines do not hang collecting images; combined with `RECOGNITION_HEADLESS_FRAME_SLEEP` to pace reads.【F:recognition/views.py†L905-L969】 |
+| `RECOGNITION_HEADLESS_ATTENDANCE_FRAMES` | `30` (mark attendance) / `100` (enrollment preview) | Caps frames processed during automated attendance sessions without a GUI.【F:recognition/views.py†L1635-L1774】【F:recognition/views.py†L2289-L2290】 | Prevents CI tasks from looping indefinitely; increase for noisier feeds that need more frames to confirm identity.【F:recognition/views.py†L1679-L1774】【F:recognition/views.py†L2289-L2290】 |
+| `RECOGNITION_HEADLESS_FRAME_SLEEP` | `0.01` | Sleep (seconds) between frames when running headless.【F:recognition/views.py†L905-L969】【F:recognition/views.py†L1635-L1774】 | Reduces CPU usage in CI/containers at the cost of total throughput. Set to `0` for max speed when hardware resources are ample.【F:recognition/views.py†L1679-L1774】 |
+
+## How tuning affects recognition
+
+1. **Threshold trade-offs** – The loop discards matches whose distance exceeds `RECOGNITION_DISTANCE_THRESHOLD`, so lowering the threshold reduces false accepts but increases the chance of missing legitimate users. Adjust in tandem with the distance metric you select so evaluations stay calibrated.【F:recognition/views.py†L1654-L1717】 
+2. **Detector/backend choices** – The backend, detector, model, and enforce settings all flow into `DeepFace.represent` each iteration. Higher-capacity detectors like `retinaface` improve recall but slow down frame throughput; enforcing detection raises an exception instead of returning no match, which is safer in controlled lighting but noisier in public kiosks.【F:recognition/views.py†L1688-L1704】 
+3. **Anti-spoofing pipeline** – Keeping `RECOGNITION_DEEPFACE_ANTI_SPOOFING` enabled feeds liveness data into `_passes_liveness_check`, allowing the view to draw warning overlays and reject frames flagged as spoof attempts before any attendance update happens.【F:recognition/views.py†L1706-L1760】 
+4. **Headless automation** – Frame caps and sleeps are only applied when `_is_headless_environment()` resolves true or is forced via `RECOGNITION_HEADLESS`. This protects CI runs and remote servers without displays from stalling while still allowing interactive sessions to rely on window prompts for exit.【F:recognition/views.py†L1617-L1774】 
+5. **Rate limiting** – Changing `RECOGNITION_ATTENDANCE_RATE_LIMIT` or its methods adjusts how many recognition attempts the kiosk can make before django-ratelimit throttles the request, balancing responsiveness with abuse prevention during heavy usage windows.【F:attendance_system_facial_recognition/settings/base.py†L424-L439】【F:recognition/views.py†L1635-L1779】
+
+## Recommended values
+
+| Setting | Development | Production | Notes |
+| --- | --- | --- | --- |
+| `RECOGNITION_DISTANCE_THRESHOLD` | `0.45` – faster experimentation with more permissive matches. | `0.35–0.40` depending on evaluation results to keep false accepts < 1%. | Re-run `make evaluate` after adjustments to confirm accuracy shifts.【F:Makefile†L60-L75】 |
+| `RECOGNITION_DEEPFACE_BACKEND` | `opencv` (CPU-friendly, ships with OpenCV) | `retinaface` or `mtcnn` if GPUs/AVX are available for better detection recall. | Ensure drivers and dependencies are installed before switching. |
+| `RECOGNITION_DEEPFACE_MODEL` | `Facenet` | `Facenet` or `ArcFace` if evaluation shows improved ROC curves. | `ArcFace` requires more RAM; validate on staging. |
+| `RECOGNITION_DEEPFACE_DETECTOR` | `ssd` | `retinaface` for complex lighting, otherwise `ssd`. | Keep `ssd` for laptops lacking GPU support. |
+| `RECOGNITION_DEEPFACE_DISTANCE_METRIC` | `euclidean_l2` | `euclidean_l2` or `cosine` once threshold retuned. | Switching metrics demands re-running the evaluation workflow. |
+| `RECOGNITION_DEEPFACE_ENFORCE_DETECTION` | `False` | `True` only when cameras are fixed and lighting is controlled. | Misaligned feeds can otherwise crash the loop. |
+| `RECOGNITION_DEEPFACE_ANTI_SPOOFING` | `True` | `True` | Keep enabled everywhere; disable only when debugging DeepFace issues. |
+| `RECOGNITION_ATTENDANCE_RATE_LIMIT` | `10/m` to avoid throttling during manual testing. | `5/m` baseline; tighten to `3/m` for kiosk deployments with badge fallback. | Monitor admin dashboards for 429 spikes before adjusting.【F:USER_GUIDE.md†L320-L360】 |
+| `RECOGNITION_ATTENDANCE_RATE_LIMIT_METHODS` | `POST` | `POST` | Add `GET` only if exposing JSON polling endpoints publicly. |
+| `RECOGNITION_HEADLESS` | `True` inside CI, unset locally to keep OpenCV windows. | `True` on servers without GPUs/display; unset for kiosks with monitors. | Pair with frame caps below. |
+| `RECOGNITION_HEADLESS_DATASET_FRAMES` | `10` when running quick smoke tests. | `50` to gather a full dataset per user automatically. | Lowering speeds up automated tests at the cost of pose diversity.【F:recognition/views.py†L905-L969】 |
+| `RECOGNITION_HEADLESS_ATTENDANCE_FRAMES` | `15` for unit/integration tests. | `60` for production headless kiosks to allow more retries before timeout. | Increase if low-light environments produce intermittent matches.【F:recognition/views.py†L1635-L1774】 |
+| `RECOGNITION_HEADLESS_FRAME_SLEEP` | `0.02` to reduce CPU while running tests. | `0.005`–`0.01` to balance CPU load with responsiveness. | Monitor overall loop latency in the admin evaluation dashboards.【F:USER_GUIDE.md†L320-L360】 |
+
+After selecting new values, validate them by:
+
+- Running `make evaluate` (or `python manage.py eval`) to regenerate metrics and confirm false accept/false reject rates remain within policy.【F:Makefile†L60-L75】
+- Reviewing the admin evaluation dashboard for aggregate accuracy, spoofing incidents, and throughput trends after the change.【F:USER_GUIDE.md†L320-L360】
+
+Iterate on the tuning until both automated metrics and real-world usage meet your service-level objectives.

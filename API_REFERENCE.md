@@ -4,57 +4,87 @@ This document outlines all the URL patterns for the project and explains the pur
 
 ## Core Pages
 
-| URL Path      | View Function        | Name                 | Description                                                                                                                                                             |
-|---------------|----------------------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `/`           | `recog_views.home`   | `home`               | Renders the home page of the application.                                                                                                                               |
-| `/dashboard/` | `recog_views.dashboard`| `dashboard`          | Renders the dashboard, which differs for admins and regular employees.                                                                                                    |
+| URL Path      | View Function           | Name        | Description |
+|---------------|-------------------------|------------|-------------|
+| `/`           | `recog_views.home`      | `home`      | Landing page with quick actions for employees and admins. |
+| `/dashboard/` | `recog_views.dashboard` | `dashboard` | Role-aware dashboard summarizing attendance insights. |
+
+## Progressive Web App Assets
+
+| URL Path        | View Function                        | Name             | Description |
+|-----------------|--------------------------------------|------------------|-------------|
+| `/manifest.json`| `progressive_web_app_manifest`       | `pwa-manifest`   | Serves the PWA manifest so browsers can install the dashboard. |
+| `/sw.js`        | `progressive_web_app_service_worker` | `service-worker` | Exposes the service worker used for offline caching and push refreshes. |
 
 ## Authentication
 
-| URL Path   | View Function/Class             | Name    | Description                                                                 |
-|------------|---------------------------------|---------|-----------------------------------------------------------------------------|
-| `/login/`  | `auth_views.LoginView`          | `login` | Displays the login page and handles user authentication.                      |
-| `/logout/` | `auth_views.LogoutView`         | `logout`| Logs the user out and redirects them to the home page.                        |
+| URL Path   | View Function/Class     | Name    | Description |
+|------------|-------------------------|---------|-------------|
+| `/login/`  | `auth_views.LoginView`  | `login` | Displays the login form and signs the user in. |
+| `/logout/` | `auth_views.LogoutView` | `logout`| Logs the user out and redirects to the home page. |
 
 ## User and Photo Management (Admin-only)
 
-| URL Path        | View Function           | Name           | Description                                                                                                                                                    |
-|-----------------|-------------------------|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `/register/`    | `users_views.register`  | `register`     | Allows staff members or superusers to register new employee accounts.                                                                                           |
-| `/add_photos/`  | `recog_views.add_photos`| `add-photos`   | Handles the 'Add Photos' functionality for admins to create face datasets for users.                                                                           |
-| `/train/`       | `recog_views.train`     | `train`        | **Obsolete.** This view is no longer used, as the training process is now automatic. It redirects to the dashboard with an informational message.                  |
+| URL Path       | View Function            | Name         | Description |
+|----------------|--------------------------|--------------|-------------|
+| `/register/`   | `users_views.register`   | `register`   | Lets staff add employee accounts with default credentials. |
+| `/add_photos/` | `recog_views.add_photos` | `add-photos` | Captures enrollment photos and stores embeddings for employees. |
+| `/train/`      | `recog_views.train`      | `train`      | **Obsolete:** Redirects to the dashboard once automated training is available. |
 
 ## Evaluation and Analytics (Admin-only)
 
-| URL Path            | View Function                      | Name                      | Description                                                                 |
-|---------------------|------------------------------------|---------------------------|-----------------------------------------------------------------------------|
-| `/admin/evaluation/`| `recog_admin_views.evaluation_dashboard` | `admin:evaluation_dashboard` | Displays comprehensive evaluation metrics, confidence intervals, performance visualizations, and links to detailed reports. Shows ROC AUC, EER, FAR/TPR metrics with bootstrap confidence intervals. |
-| `/admin/recognition-trends/` | `recog_admin_views.recognition_accuracy_trends` | `admin_recognition_trends` | Summarises per-day and per-week acceptance rates for attendance recognition events, including average confidence values and data retention guidance. |
+| URL Path             | View Function                            | Name                      | Description |
+|----------------------|------------------------------------------|---------------------------|-------------|
+| `/admin/evaluation/` | `recog_admin_views.evaluation_dashboard` | `admin_evaluation_dashboard` | Displays metrics, trend charts, and confidence intervals. See the [Evaluation Dashboard](docs/user-guide.md#evaluation-dashboard) for a guided tour. |
+| `/admin/ablation/`   | `recog_admin_views.ablation_results`     | `admin_ablation_results`     | Compares feature flags and models via experiment matrices. Refer to the [Ablation Experiments Dashboard](docs/user-guide.md#ablation-experiments-dashboard) for usage notes. |
+| `/admin/failures/`   | `recog_admin_views.failure_analysis`     | `admin_failure_analysis`     | Highlights misclassifications with evidence packs. See the [Failure Analysis Dashboard](docs/user-guide.md#failure-analysis-dashboard) for investigation workflows. |
 
 ## Face Recognition and Attendance Marking
 
-| URL Path                      | View Function                      | Name                         | Description                                            |
-|-------------------------------|------------------------------------|------------------------------|--------------------------------------------------------|
-| `/mark_your_attendance`       | `recog_views.mark_your_attendance` | `mark-your-attendance`       | Handles marking time-in using face recognition.        |
-| `/mark_your_attendance_out`   | `recog_views.mark_your_attendance_out` | `mark-your-attendance-out`   | Handles marking time-out using face recognition.       |
-| `/api/face-recognition/`      | `recog_views.FaceRecognitionAPI`    | `face-recognition-api`       | JSON API that evaluates submitted embeddings or images and returns the closest enrolled identity. Rate limited to 5 requests per minute per IP address. |
+| URL Path                   | View Function                          | Name                     | Description |
+|----------------------------|----------------------------------------|--------------------------|-------------|
+| `/mark_your_attendance`    | `recog_views.mark_your_attendance`     | `mark-your-attendance`   | Launches the camera workflow to mark a time-in event. |
+| `/mark_your_attendance_out`| `recog_views.mark_your_attendance_out` | `mark-your-attendance-out` | Launches the camera workflow to mark a time-out event. |
+| `/api/face-recognition/`   | `recog_views.FaceRecognitionAPI`       | `face-recognition-api`   | Accepts embeddings or frames and returns the nearest enrolled identity. |
+| `/api/attendance/batch/`   | `recog_views.enqueue_attendance_batch` | `attendance-batch`       | Queues attendance records for asynchronous persistence via Celery. |
+
+### `POST /api/attendance/batch/`
+
+- **Authentication:** Required (session cookie).
+- **Rate limiting:** Shares the attendance throttling applied to recognition flows.
+- **Request body:** JSON object containing a `records` array. Each record must include:
+  - `direction` (`"in"` or `"out"`) – selects the check-in or check-out pipeline.
+  - `present` (object) or `payload` (object) – key/value pairs for employee identifiers and their attendance metadata (timestamps, device IDs, confidence scores, etc.).
+- **Success response:** `202 Accepted` with JSON payload:
+
+  ```json
+  {
+    "task_id": "4d7a2c64-3f37-4c5c-884f-0b9d27d9d6d3",
+    "status": "PENDING",
+    "total": 2
+  }
+  ```
+
+  The response confirms that processing was enqueued in Celery. Poll the task result backend (e.g., `/celery-progress/`) for completion details.
+- **Error responses:**
+  - `400 Bad Request` – invalid JSON or malformed `records` payload.
+  - `405 Method Not Allowed` – non-`POST` methods.
+  - `503 Service Unavailable` – Celery queue failures.
 
 ## Attendance Viewing
 
-| URL Path                     | View Function                                 | Name                                  | Description                                                                                                                                         |
-|------------------------------|-----------------------------------------------|---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `/view_attendance_home`      | `recog_views.view_attendance_home`            | `view-attendance-home`                | Renders the main attendance viewing page for admins.                                                                                                |
-| `/view_attendance_date`      | `recog_views.view_attendance_date`            | `view-attendance-date`                | Admin view to see attendance for all employees on a specific date.                                                                                   |
-| `/view_attendance_employee`  | `recog_views.view_attendance_employee`        | `view-attendance-employee`            | Admin view to see attendance for a specific employee over a date range.                                                                             |
-| `/view_my_attendance`        | `recog_views.view_my_attendance_employee_login` | `view-my-attendance-employee-login`   | Employee-specific view to see their own attendance over a date range.                                                                               |
+| URL Path                     | View Function                               | Name                             | Description |
+|------------------------------|---------------------------------------------|----------------------------------|-------------|
+| `/view_attendance_home`      | `recog_views.view_attendance_home`          | `view-attendance-home`           | Overview of attendance analytics for administrators. |
+| `/view_attendance_date`      | `recog_views.view_attendance_date`          | `view-attendance-date`           | Lists all attendance records for a selected date. |
+| `/view_attendance_employee`  | `recog_views.view_attendance_employee`      | `view-attendance-employee`       | Filters attendance history for a single employee. |
+| `/view_my_attendance`        | `recog_views.view_my_attendance_employee_login` | `view-my-attendance-employee-login` | Lets an employee review their own attendance timeline. |
 
 ## Error/Status Pages
 
-| URL Path           | View Function              | Name                 | Description                                                       |
-|--------------------|----------------------------|----------------------|-------------------------------------------------------------------|
-| `/not_authorised`  | `recog_views.not_authorised` | `not-authorised`     | Renders a page for users trying to access unauthorized areas.     |
-
-
+| URL Path        | View Function                 | Name             | Description |
+|-----------------|-------------------------------|------------------|-------------|
+| `/not_authorised` | `recog_views.not_authorised` | `not-authorised` | Shown when a user lacks permission to view a page. |
 ## Command-Line Tools
 
 The project includes several command-line tools for evaluation, testing, and analysis:

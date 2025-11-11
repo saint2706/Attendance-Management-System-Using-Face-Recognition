@@ -191,6 +191,33 @@ The main attendance dashboard shows:
 - **Employees Present Today**: How many have marked attendance today
 - **Weekly Graphs**: Visual charts showing attendance trends
 
+### Evaluation Dashboard
+
+The evaluation dashboard is available at `/admin/evaluation/` and is designed for admins who monitor model quality.
+
+- **Headline metrics**: View ROC AUC, EER, FAR, and TPR with confidence intervals so you can judge if accuracy meets policy thresholds.
+- **Time-series trends**: Compare evaluation runs to spot regressions after training updates.
+- **Download links**: Export the underlying CSV reports for deeper analysis or regulatory reviews.
+- **Tip**: Use the filters at the top-right to narrow by camera location or cohort before exporting.
+
+### Ablation Experiments Dashboard
+
+The ablation dashboard lives at `/admin/ablation/` and summarises all experiments executed through `manage.py ablation` or the Makefile shortcuts.
+
+- **Experiment matrix**: Rows represent toggled features or model variants; columns show precision/recall and latency deltas.
+- **Comparison charts**: Hover over bars to see exact score changes between the control and experiment variants.
+- **Download bundle**: Click **"Export Results"** to retrieve the generated reports for offline review or presentations.
+- **Tip**: Pair this view with the command history in `DEVELOPER_GUIDE.md` to reproduce the best-performing configuration.
+
+### Failure Analysis Dashboard
+
+The failure analysis dashboard is found at `/admin/failures/` and helps triage misclassifications or liveness violations.
+
+- **Top offenders**: Quickly identify employees or devices with the highest failure counts.
+- **Evidence viewer**: Drill into each case to inspect captured frames, spoofing signals, and confidence scores.
+- **Remediation tracker**: Mark items as resolved after re-enrolment or hardware adjustments to keep the queue tidy.
+- **Tip**: Use the **"Download Case Pack"** button to share findings with HR or security teams.
+
 ---
 
 ## Using Dark Mode

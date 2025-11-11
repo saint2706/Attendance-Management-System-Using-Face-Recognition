@@ -28,6 +28,7 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.cache import cache
@@ -62,6 +63,7 @@ from src.common import InvalidToken, decrypt_bytes, encrypt_bytes
 from src.common.face_data_encryption import FaceDataEncryption
 from users.models import Present, Time
 
+from . import monitoring
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
 from .metrics_store import log_recognition_outcome
 from .webcam_manager import get_webcam_manager
@@ -1679,8 +1681,15 @@ def _mark_attendance(request, check_in: bool):
         else "Mark Attendance- Out - Press q to exit"
     )
 
+    dataset_load_start = time.perf_counter()
     dataset_index = _load_dataset_embeddings_for_matching(
         model_name, detector_backend, enforce_detection
+    )
+    dataset_load_duration = time.perf_counter() - dataset_load_start
+    monitoring.observe_stage_duration(
+        "dataset_index_load",
+        dataset_load_duration,
+        threshold_key="model_load",
     )
     if not dataset_index:
         messages.error(
@@ -1690,6 +1699,7 @@ def _mark_attendance(request, check_in: bool):
         return redirect("home")
 
     spoof_detected = False
+    model_warmed_up = False
 
     try:
         with manager.frame_consumer() as consumer:
@@ -1697,17 +1707,32 @@ def _mark_attendance(request, check_in: bool):
                 frame = consumer.read(timeout=1.0)
                 if frame is None:
                     continue
+                iteration_start = time.perf_counter()
                 frame = imutils.resize(frame, width=800)
                 frames_processed += 1
 
                 try:
                     # Use DeepFace to find matching faces in the database
+                    inference_start = time.perf_counter()
                     representations = DeepFace.represent(
                         img_path=frame,
                         model_name=model_name,
                         detector_backend=detector_backend,
                         enforce_detection=enforce_detection,
                     )
+                    inference_duration = time.perf_counter() - inference_start
+                    if not model_warmed_up:
+                        monitoring.observe_stage_duration(
+                            "deepface_warmup",
+                            inference_duration,
+                            threshold_key="warmup",
+                        )
+                        model_warmed_up = True
+                    else:
+                        monitoring.observe_stage_duration(
+                            "deepface_inference",
+                            inference_duration,
+                        )
 
                     embedding_vector, facial_area = _extract_first_embedding(representations)
                     if embedding_vector is None:
@@ -1787,19 +1812,28 @@ def _mark_attendance(request, check_in: bool):
                                 2,
                             )
 
+                    if not headless:
+                        cv2.imshow(window_title, frame)
+                        if cv2.waitKey(1) & 0xFF == ord("q"):
+                            break
+                    else:
+                        if frame_pause:
+                            time.sleep(frame_pause)
+                        if frames_processed >= max_frames:
+                            logger.info(
+                                "Headless mode reached frame limit of %d frames", max_frames
+                            )
+                            break
+
                 except Exception as e:
                     logger.error("Error during face recognition loop: %s", e)
-
-                if not headless:
-                    cv2.imshow(window_title, frame)
-                    if cv2.waitKey(1) & 0xFF == ord("q"):
-                        break
-                else:
-                    if frame_pause:
-                        time.sleep(frame_pause)
-                    if frames_processed >= max_frames:
-                        logger.info("Headless mode reached frame limit of %d frames", max_frames)
-                        break
+                finally:
+                    iteration_duration = time.perf_counter() - iteration_start
+                    monitoring.observe_stage_duration(
+                        "recognition_iteration",
+                        iteration_duration,
+                        threshold_key="recognition_iteration",
+                    )
     finally:
         if not headless:
             cv2.destroyAllWindows()
@@ -1843,6 +1877,14 @@ def mark_your_attendance(request):
 def mark_your_attendance_out(request):
     """View to handle marking time-out."""
     return _mark_attendance(request, check_in=False)
+
+
+@staff_member_required
+def monitoring_metrics(request):
+    """Expose Prometheus metrics for the recognition system."""
+
+    payload = monitoring.export_metrics()
+    return HttpResponse(payload, content_type=monitoring.prometheus_content_type())
 
 
 @login_required
