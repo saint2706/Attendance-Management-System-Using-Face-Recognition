@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import os
 import logging
+import os
 from collections.abc import Mapping
 from typing import Any
 
@@ -34,9 +34,7 @@ def _get_sample_rate(var_name: str, default: float) -> float:
             f"{var_name} must be a floating point number between 0.0 and 1.0."
         ) from exc
     if not 0.0 <= value <= 1.0:
-        raise ImproperlyConfigured(
-            f"{var_name} must be between 0.0 and 1.0 when provided."
-        )
+        raise ImproperlyConfigured(f"{var_name} must be between 0.0 and 1.0 when provided.")
     return value
 
 
@@ -103,4 +101,3 @@ def initialize_sentry() -> None:
         send_default_pii=send_default_pii,
         before_send=_before_send,
     )
-

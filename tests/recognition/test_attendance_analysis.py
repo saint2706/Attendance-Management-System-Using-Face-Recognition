@@ -3,12 +3,11 @@
 import datetime
 import os
 
-import pytest
 from django.utils import timezone
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-)
+import pytest
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 
 import django  # noqa: E402
 
@@ -42,13 +41,25 @@ def test_get_daily_trends_with_breaks_and_filters():
     Present.objects.create(user=user, date=day1, present=True)
     Present.objects.create(user=user, date=day2, present=True)
 
-    Time.objects.create(user=user, date=day1, time=_aware(datetime.datetime(2024, 1, 2, 8, 45)), out=False)
-    Time.objects.create(user=user, date=day1, time=_aware(datetime.datetime(2024, 1, 2, 12, 0)), out=True)
-    Time.objects.create(user=user, date=day1, time=_aware(datetime.datetime(2024, 1, 2, 13, 0)), out=False)
-    Time.objects.create(user=user, date=day1, time=_aware(datetime.datetime(2024, 1, 2, 17, 5)), out=True)
+    Time.objects.create(
+        user=user, date=day1, time=_aware(datetime.datetime(2024, 1, 2, 8, 45)), out=False
+    )
+    Time.objects.create(
+        user=user, date=day1, time=_aware(datetime.datetime(2024, 1, 2, 12, 0)), out=True
+    )
+    Time.objects.create(
+        user=user, date=day1, time=_aware(datetime.datetime(2024, 1, 2, 13, 0)), out=False
+    )
+    Time.objects.create(
+        user=user, date=day1, time=_aware(datetime.datetime(2024, 1, 2, 17, 5)), out=True
+    )
 
-    Time.objects.create(user=user, date=day2, time=_aware(datetime.datetime(2024, 1, 3, 9, 25)), out=False)
-    Time.objects.create(user=user, date=day2, time=_aware(datetime.datetime(2024, 1, 3, 17, 0)), out=True)
+    Time.objects.create(
+        user=user, date=day2, time=_aware(datetime.datetime(2024, 1, 3, 9, 25)), out=False
+    )
+    Time.objects.create(
+        user=user, date=day2, time=_aware(datetime.datetime(2024, 1, 3, 17, 0)), out=True
+    )
 
     result = analytics.get_daily_trends(start_date=day1, end_date=day2)
     assert result["start_date"] == day1

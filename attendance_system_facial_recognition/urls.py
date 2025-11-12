@@ -49,6 +49,7 @@ def progressive_web_app_service_worker(request):
     response["Service-Worker-Allowed"] = "/"
     return response
 
+
 urlpatterns = [
     path("manifest.json", progressive_web_app_manifest, name="pwa-manifest"),
     path("sw.js", progressive_web_app_service_worker, name="service-worker"),

@@ -29,6 +29,7 @@ class RecognitionAttemptAdmin(admin.ModelAdmin):
     search_fields = ("username", "user__username", "site", "source")
     readonly_fields = ("created_at", "updated_at")
 
+
 # Register the Time model to make it available in the Django admin panel.
 admin.site.register(Time)
 

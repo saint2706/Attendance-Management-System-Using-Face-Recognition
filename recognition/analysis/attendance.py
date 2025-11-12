@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional
 
 from django.contrib.auth.models import Group
-from django.db.models import Min, Max, Q
+from django.db.models import Max, Min, Q
 from django.utils import timezone
 
 from recognition.views import check_validity_times
@@ -94,9 +94,7 @@ class AttendanceAnalytics:
             time_filters["user_id"] = employee_id
 
         present_records = (
-            Present.objects.filter(**filters)
-            .select_related("user")
-            .order_by("date", "user_id")
+            Present.objects.filter(**filters).select_related("user").order_by("date", "user_id")
         )
 
         if not present_records.exists():
@@ -143,9 +141,7 @@ class AttendanceAnalytics:
             summary = time_summary.get(key, {})
             first_in = summary.get("first_in")
 
-            workday_start = datetime.datetime.combine(
-                record.date, self.workday_start
-            )
+            workday_start = datetime.datetime.combine(record.date, self.workday_start)
             if timezone.is_naive(workday_start):
                 workday_start = timezone.make_aware(workday_start, current_tz)
 
@@ -160,9 +156,8 @@ class AttendanceAnalytics:
                 else:
                     day_data["on_time"] += 1
 
-            times_qs = (
-                Time.objects.filter(user_id=record.user_id, date=record.date)
-                .order_by("time")
+            times_qs = Time.objects.filter(user_id=record.user_id, date=record.date).order_by(
+                "time"
             )
             is_valid, break_hours = check_validity_times(times_qs)
             if is_valid:
@@ -172,11 +167,7 @@ class AttendanceAnalytics:
         for date_key in sorted(daily_metrics):
             data = daily_metrics[date_key]
             break_hours_list: List[float] = data["break_hours"]
-            avg_break = (
-                sum(break_hours_list) / len(break_hours_list)
-                if break_hours_list
-                else 0.0
-            )
+            avg_break = sum(break_hours_list) / len(break_hours_list) if break_hours_list else 0.0
             trends.append(
                 DailyTrend(
                     date=date_key,
@@ -254,12 +245,8 @@ class AttendanceAnalytics:
                 stats["present"] += 1
 
         overall_total = sum(stats["total"] for stats in department_stats.values())
-        overall_present = sum(
-            stats["present"] for stats in department_stats.values()
-        )
-        overall_rate = (
-            overall_present / overall_total if overall_total else 0.0
-        )
+        overall_present = sum(stats["present"] for stats in department_stats.values())
+        overall_rate = overall_present / overall_total if overall_total else 0.0
 
         departments: List[Dict[str, object]] = []
         for name, stats in sorted(department_stats.items()):
@@ -308,8 +295,7 @@ class AttendanceAnalytics:
             raise ValueError("window must be greater than zero")
 
         recent_records = list(
-            Present.objects.filter(user_id=employee_id)
-            .order_by("-date")[:window]
+            Present.objects.filter(user_id=employee_id).order_by("-date")[:window]
         )
 
         if not recent_records:
@@ -318,8 +304,7 @@ class AttendanceAnalytics:
                 "window": window,
                 "method": "moving_average",
                 "assumptions": (
-                    "Prediction unavailable because the employee has no "
-                    "attendance history."
+                    "Prediction unavailable because the employee has no " "attendance history."
                 ),
                 "prediction": None,
                 "confidence": 0.0,
@@ -333,10 +318,7 @@ class AttendanceAnalytics:
             "employee_id": employee_id,
             "window": window,
             "method": "moving_average",
-            "assumptions": (
-                "Recent attendance behaviour is representative of the near "
-                "future."
-            ),
+            "assumptions": ("Recent attendance behaviour is representative of the near " "future."),
             "prediction": prediction,
             "confidence": round(probability, 3),
             "history": [

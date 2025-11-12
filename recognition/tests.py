@@ -511,9 +511,7 @@ class DatabaseUpdateTest(TestCase):
             successful=True,
         )
 
-        views.update_attendance_in_db_in(
-            {"testuser": True}, attempt_ids={"testuser": attempt.id}
-        )
+        views.update_attendance_in_db_in({"testuser": True}, attempt_ids={"testuser": attempt.id})
 
         attempt.refresh_from_db()
         self.assertEqual(attempt.user, self.user)
@@ -531,9 +529,7 @@ class DatabaseUpdateTest(TestCase):
             successful=True,
         )
 
-        views.update_attendance_in_db_out(
-            {"testuser": True}, attempt_ids={"testuser": attempt.id}
-        )
+        views.update_attendance_in_db_out({"testuser": True}, attempt_ids={"testuser": attempt.id})
 
         attempt.refresh_from_db()
         self.assertEqual(attempt.user, self.user)
@@ -626,9 +622,7 @@ class AdminAccessViewsTest(TestCase):
 
         response = self.client.get(reverse("admin_recognition_attempt_summary"))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(
-            response, "recognition/admin/recognition_attempt_summary.html"
-        )
+        self.assertTemplateUsed(response, "recognition/admin/recognition_attempt_summary.html")
 
     def test_view_attendance_home_employee_count_excludes_admin_accounts(self):
         """Verify that the total employee count correctly excludes admins and superusers."""

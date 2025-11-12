@@ -13,7 +13,6 @@ from imutils.video import VideoStream
 
 from . import monitoring
 
-
 logger = logging.getLogger(__name__)
 
 

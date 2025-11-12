@@ -12,9 +12,7 @@ from .models import RecognitionOutcome
 logger = logging.getLogger(__name__)
 
 
-def _normalize_confidence(
-    distance: Optional[float], threshold: Optional[float]
-) -> Optional[float]:
+def _normalize_confidence(distance: Optional[float], threshold: Optional[float]) -> Optional[float]:
     """Return a bounded confidence value derived from a distance/threshold pair."""
 
     if distance is None or threshold in (None, 0):

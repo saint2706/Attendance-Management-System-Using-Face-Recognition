@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
 from django.conf import settings
+
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
     CollectorRegistry,
@@ -86,7 +87,9 @@ def _create_event(status: str, latency: Optional[float], error: Optional[str]) -
     }
 
 
-def _append_alert(event_type: str, severity: str, message: str, data: Optional[Dict[str, Any]] = None) -> None:
+def _append_alert(
+    event_type: str, severity: str, message: str, data: Optional[Dict[str, Any]] = None
+) -> None:
     payload = {
         "timestamp": _format_timestamp(_now_timestamp()),
         "type": event_type,
@@ -222,7 +225,9 @@ def _metric_value(name: str, labels: Optional[Dict[str, str]] = None) -> Optiona
     return sample
 
 
-def record_camera_start(success: bool, latency: Optional[float], error: Optional[str] = None) -> None:
+def record_camera_start(
+    success: bool, latency: Optional[float], error: Optional[str] = None
+) -> None:
     status = "success" if success else "failure"
     CAMERA_START_COUNTER.labels(status=status).inc()
     if latency is not None:
@@ -244,10 +249,10 @@ def record_camera_start(success: bool, latency: Optional[float], error: Optional
         logger.info("Webcam manager started", extra=log_extra)
         threshold = get_threshold("camera_start")
         if latency is not None and latency > threshold:
-            message = (
-                f"Webcam start latency {latency:.3f}s exceeded threshold {threshold:.3f}s"
+            message = f"Webcam start latency {latency:.3f}s exceeded threshold {threshold:.3f}s"
+            logger.warning(
+                message, extra={**log_extra, "severity": "warning", "threshold": threshold}
             )
-            logger.warning(message, extra={**log_extra, "severity": "warning", "threshold": threshold})
             _append_alert(
                 "camera_start_latency",
                 "warning",
@@ -347,7 +352,9 @@ def record_frame_delay(delay: float, capture_time: Optional[float]) -> None:
         )
 
 
-def observe_stage_duration(stage: str, duration: float, *, threshold_key: Optional[str] = None) -> None:
+def observe_stage_duration(
+    stage: str, duration: float, *, threshold_key: Optional[str] = None
+) -> None:
     STAGE_DURATION_HISTOGRAM.labels(stage=stage).observe(max(0.0, duration))
     with _STATE_LOCK:
         _STATE.stage_durations[stage] = duration
@@ -355,7 +362,8 @@ def observe_stage_duration(stage: str, duration: float, *, threshold_key: Option
         threshold = get_threshold(threshold_key)
         if duration > threshold:
             logger.warning(
-                "Recognition stage '%s' exceeded threshold", stage,
+                "Recognition stage '%s' exceeded threshold",
+                stage,
                 extra={
                     "event": "stage_duration",
                     "stage": stage,
@@ -394,8 +402,7 @@ def get_health_snapshot() -> Dict[str, Any]:
             "last_frame_delay": _STATE.last_frame_delay,
         }
         stages = {
-            stage: {"last_duration": duration}
-            for stage, duration in _STATE.stage_durations.items()
+            stage: {"last_duration": duration} for stage, duration in _STATE.stage_durations.items()
         }
         alerts = list(_ALERTS)
     metrics = {

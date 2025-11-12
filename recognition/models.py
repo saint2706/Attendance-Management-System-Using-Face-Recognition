@@ -57,9 +57,7 @@ class RecognitionOutcome(models.Model):
     def prune_expired(cls) -> None:
         """Delete outcomes older than the configured retention window."""
 
-        retention_days: Optional[int] = getattr(
-            settings, "RECOGNITION_OUTCOME_RETENTION_DAYS", 30
-        )
+        retention_days: Optional[int] = getattr(settings, "RECOGNITION_OUTCOME_RETENTION_DAYS", 30)
         if retention_days in (None, "none", ""):
             return
 
