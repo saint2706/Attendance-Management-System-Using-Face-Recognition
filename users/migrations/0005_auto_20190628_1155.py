@@ -11,14 +11,41 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='attendance',
-            name='time_in',
-            field=models.DateTimeField(default=datetime.datetime.now, null=True),
-        ),
-        migrations.AlterField(
-            model_name='attendance',
-            name='time_out',
-            field=models.DateTimeField(default=datetime.datetime.now, null=True),
+        # For PostgreSQL, we need to handle the conversion from TimeField to DateTimeField
+        # properly. Since direct casting from time to timestamptz is not supported,
+        # we drop and recreate the columns (they are nullable, so data loss is acceptable).
+        # Use SeparateDatabaseAndState to handle database changes separately from Django state.
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL(
+                    # Forward: Drop and recreate as timestamp with time zone
+                    sql=[
+                        'ALTER TABLE users_attendance DROP COLUMN IF EXISTS time_in CASCADE;',
+                        'ALTER TABLE users_attendance ADD COLUMN time_in TIMESTAMP WITH TIME ZONE NULL;',
+                        'ALTER TABLE users_attendance DROP COLUMN IF EXISTS time_out CASCADE;',
+                        'ALTER TABLE users_attendance ADD COLUMN time_out TIMESTAMP WITH TIME ZONE NULL;',
+                    ],
+                    # Reverse: Recreate as time without time zone
+                    reverse_sql=[
+                        'ALTER TABLE users_attendance DROP COLUMN IF EXISTS time_in CASCADE;',
+                        'ALTER TABLE users_attendance ADD COLUMN time_in TIME NULL;',
+                        'ALTER TABLE users_attendance DROP COLUMN IF EXISTS time_out CASCADE;',
+                        'ALTER TABLE users_attendance ADD COLUMN time_out TIME NULL;',
+                    ],
+                ),
+            ],
+            state_operations=[
+                # Update Django's model state without generating SQL
+                migrations.AlterField(
+                    model_name='attendance',
+                    name='time_in',
+                    field=models.DateTimeField(default=datetime.datetime.now, null=True),
+                ),
+                migrations.AlterField(
+                    model_name='attendance',
+                    name='time_out',
+                    field=models.DateTimeField(default=datetime.datetime.now, null=True),
+                ),
+            ],
         ),
     ]
