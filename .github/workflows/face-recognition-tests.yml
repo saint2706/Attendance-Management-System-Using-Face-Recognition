@@ -16,24 +16,26 @@ jobs:
     timeout-minutes: 60
     services:
       postgres:
-        image: postgres:13
+        image: postgres:16
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
+          POSTGRES_USER: ams
+          POSTGRES_PASSWORD: ams
+          POSTGRES_DB: ams
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres -d postgres"
+          --health-cmd="pg_isready -U ams -d ams"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
     env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      DATABASE_URL: postgresql://ams:ams@localhost:5432/ams
       DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
-      DJANGO_DEBUG: "True"
+      DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
-      DJANGO_SECRET_KEY: "test-secret-key"
+      DJANGO_SECRET_KEY: "dev-secret-long-value-with-more-than-fifty-characters-12345"
+      DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
+      FACE_DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
       RECOGNITION_HEADLESS: "True"
 
     steps:
@@ -75,6 +77,12 @@ jobs:
       - name: Apply database migrations
         run: |
           python manage.py migrate --noinput
+
+      - name: Django deploy checks
+        env:
+          DJANGO_DEBUG: "0"
+        run: |
+          python manage.py check --deploy
 
       - name: Run tests with coverage
         run: |

@@ -8,18 +8,18 @@ import threading
 from pathlib import Path
 from typing import Callable
 
-import numpy as np
-import pytest
+import django
+from django.core.cache import cache
 from django.test import RequestFactory, override_settings
 
-import django
+import numpy as np
+import pytest
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 django.setup()
 
 from django.contrib.auth import get_user_model
+
 from recognition import tasks
 from recognition import views as recognition_views
 from recognition import webcam_manager as webcam_module
@@ -34,6 +34,7 @@ class TestFaceRecognitionWorkflow:
 
     def setup_method(self) -> None:
         self.factory = RequestFactory()
+        cache.clear()
 
     def teardown_method(self) -> None:
         webcam_module.reset_webcam_manager()
