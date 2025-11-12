@@ -3,22 +3,16 @@
 from __future__ import annotations
 
 import json
-import os
 import threading
 from pathlib import Path
 from typing import Callable
 
-import django
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.test import RequestFactory, override_settings
 
 import numpy as np
 import pytest
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
-django.setup()
-
-from django.contrib.auth import get_user_model
 
 from recognition import tasks
 from recognition import views as recognition_views
