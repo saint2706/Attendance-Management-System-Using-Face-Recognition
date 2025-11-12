@@ -12,8 +12,6 @@ from django.db.models.functions import TruncDate, TruncWeek
 from django.shortcuts import render
 from django.urls import reverse
 
-from users.models import RecognitionAttempt
-
 from . import monitoring
 from .models import RecognitionOutcome
 

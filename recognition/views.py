@@ -2676,10 +2676,40 @@ def mark_attendance_view(request, attendance_type):
     # --- Video Stream ---
     manager = get_webcam_manager()
     present = {name: False for name in class_names}
+    recorded_outcomes: set[tuple[str, bool, bool]] = set()
     spoof_detected = False
     headless = _is_headless_environment()
     max_frames = int(getattr(settings, "RECOGNITION_HEADLESS_ATTENDANCE_FRAMES", 100))
     frame_pause = float(getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01))
+
+    def _log_outcome(
+        candidate: Optional[str],
+        *,
+        accepted: bool,
+        distance: float | None,
+        spoofed: bool = False,
+    ) -> None:
+        key = (candidate or "", accepted, spoofed)
+        if key in recorded_outcomes:
+            return
+        recorded_outcomes.add(key)
+        log_recognition_outcome(
+            username=candidate,
+            accepted=accepted,
+            direction=attendance_type,
+            distance=distance,
+            threshold=None,
+            source="svc",
+        )
+        if accepted and candidate:
+            attempt_logger.log_success(candidate)
+        else:
+            error_message = (
+                "Spoofing detected by liveness gate."
+                if spoofed
+                else "Face not recognized during SVC attendance session."
+            )
+            attempt_logger.log_failure(candidate, spoofed=spoofed, error=error_message)
 
     frame_count = 0
     try:
@@ -2739,7 +2769,12 @@ def mark_attendance_view(request, attendance_type):
 
                         if spoofed:
                             spoof_detected = True
-                            _log_outcome(predicted_name, accepted=False, distance=None)
+                            _log_outcome(
+                                predicted_name,
+                                accepted=False,
+                                distance=None,
+                                spoofed=True,
+                            )
                             if normalized_region:
                                 x = int(normalized_region["x"])
                                 y = int(normalized_region["y"])
