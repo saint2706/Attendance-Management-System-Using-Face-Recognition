@@ -75,6 +75,20 @@ mpl.use("Agg")
 logger = logging.getLogger(__name__)
 
 
+def _monotonic_seconds() -> float:
+    """Return a best-effort float value from :func:`time.monotonic`."""
+
+    try:
+        value = time.monotonic()
+    except Exception:  # pragma: no cover - defensive guard around patched time
+        return 0.0
+
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
+
+
 class _RecognitionAttemptLogger:
     """Utility for creating recognition attempt records with shared metadata."""
 
@@ -92,15 +106,23 @@ class _RecognitionAttemptLogger:
         self._direction = direction
         self._site = site
         self._source = source
-        self._start_time = time.monotonic()
+        self._start_time = _monotonic_seconds()
         self._successes: dict[str, RecognitionAttempt] = {}
         self._recorded_keys: set[str] = set()
         self.records: list[RecognitionAttempt] = []
 
     def _latency_ms(self) -> float:
-        return max(0.0, (time.monotonic() - self._start_time) * 1000.0)
+        now = _monotonic_seconds()
+        try:
+            start = float(self._start_time)
+        except (TypeError, ValueError):
+            start = 0.0
+            self._start_time = start
+        return max(0.0, (now - start) * 1000.0)
 
-    def _log(self, *, username: Optional[str], success: bool, spoofed: bool, error: str = "") -> RecognitionAttempt:
+    def _log(
+        self, *, username: Optional[str], success: bool, spoofed: bool, error: str = ""
+    ) -> RecognitionAttempt:
         attempt = RecognitionAttempt(
             username=username or "",
             direction=self._direction,
@@ -342,6 +364,8 @@ class FaceRecognitionAPI(View):
     def post(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         site_code = _resolve_recognition_site(request)
         default_direction = RecognitionAttempt.Direction.IN.value
+        request_user = getattr(request, "user", None)
+        request_username = getattr(request_user, "username", None)
 
         if getattr(request, "limited", False):
             attempt_logger = _RecognitionAttemptLogger(
@@ -350,7 +374,7 @@ class FaceRecognitionAPI(View):
                 source="api",
             )
             attempt_logger.log_failure(
-                getattr(request.user, "username", None),
+                request_username,
                 spoofed=False,
                 error="Too many requests.",
             )
@@ -365,7 +389,7 @@ class FaceRecognitionAPI(View):
                 source="api",
             )
             attempt_logger.log_failure(
-                getattr(request.user, "username", None),
+                request_username,
                 spoofed=False,
                 error=str(exc),
             )
@@ -1241,9 +1265,7 @@ def update_attendance_in_db_in(
 
         if is_present:
             # Record the check-in time
-            time_record = Time.objects.create(
-                user=user, date=today, time=current_time, out=False
-            )
+            time_record = Time.objects.create(user=user, date=today, time=current_time, out=False)
         else:
             time_record = None
 
@@ -1294,9 +1316,7 @@ def update_attendance_in_db_out(
                 )
             continue
         # Record the check-out time
-        time_record = Time.objects.create(
-            user=user, date=today, time=current_time, out=True
-        )
+        time_record = Time.objects.create(user=user, date=today, time=current_time, out=True)
 
         attempt_id = attempt_ids.get(person)
         if attempt_id:
@@ -1920,6 +1940,7 @@ def _mark_attendance(request, check_in: bool):
             threshold=distance_threshold,
             source="webcam",
         )
+
     headless = _is_headless_environment()
     max_frames = int(getattr(settings, "RECOGNITION_HEADLESS_ATTENDANCE_FRAMES", 30))
     frame_pause = float(getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01))
@@ -2118,9 +2139,7 @@ def _mark_attendance(request, check_in: bool):
         if not headless:
             cv2.destroyAllWindows()
 
-    attempt_logger.ensure_generic_failure(
-        "No faces were recognized during the attendance session."
-    )
+    attempt_logger.ensure_generic_failure("No faces were recognized during the attendance session.")
 
     if spoof_detected:
         messages.error(request, LIVENESS_FAILURE_MESSAGE)
@@ -2780,9 +2799,7 @@ def mark_attendance_view(request, attendance_type):
     if spoof_detected:
         messages.error(request, LIVENESS_FAILURE_MESSAGE)
 
-    attempt_logger.ensure_generic_failure(
-        "No faces were recognized during the attendance session."
-    )
+    attempt_logger.ensure_generic_failure("No faces were recognized during the attendance session.")
 
     recognized_present = {name: True for name, value in present.items() if value}
 
@@ -2820,14 +2837,10 @@ def mark_attendance_view(request, attendance_type):
                 "Failed to enqueue attendance processing via API; applying updates synchronously."
             )
             if attendance_type == "in":
-                update_attendance_in_db_in(
-                    recognized_present, attempt_ids=attempt_ids
-                )
+                update_attendance_in_db_in(recognized_present, attempt_ids=attempt_ids)
                 messages.success(request, "Checked-in users have been marked present.")
             elif attendance_type == "out":
-                update_attendance_in_db_out(
-                    recognized_present, attempt_ids=attempt_ids
-                )
+                update_attendance_in_db_out(recognized_present, attempt_ids=attempt_ids)
                 messages.success(request, "Checked-out users have been marked.")
     else:
         messages.info(request, "No recognized users to update attendance for.")

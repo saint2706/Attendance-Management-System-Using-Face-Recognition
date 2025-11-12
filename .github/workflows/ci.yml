@@ -18,16 +18,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ams
+          POSTGRES_PASSWORD: ams
+          POSTGRES_DB: ams
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ams -d ams"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     strategy:
       fail-fast: false
       max-parallel: 4
       matrix:
         python-version: ["3.11", "3.12"]
     env:
-      DJANGO_DEBUG: "True"
+      DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
-      DJANGO_SECRET_KEY: "test-secret-key"
+      DJANGO_SECRET_KEY: "dev-secret-long-value-with-more-than-fifty-characters-12345"
+      DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
+      FACE_DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
       RECOGNITION_HEADLESS: "True"
+      DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
 
     steps:
       - name: Check out repository
@@ -68,6 +85,12 @@ jobs:
       - name: Apply database migrations
         run: |
           python manage.py migrate --noinput
+
+      - name: Django deploy checks
+        env:
+          DJANGO_DEBUG: "0"
+        run: |
+          python manage.py check --deploy
 
       - name: Lint with flake8
         run: |

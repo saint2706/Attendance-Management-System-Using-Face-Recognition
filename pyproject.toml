@@ -16,9 +16,11 @@ license = {text = "MIT"}
 dependencies = [
     "Django==5.1.14",
     "django-crispy-forms==2.1",
+    "dj-database-url==2.3.0",
     "crispy-bootstrap5==2024.2",
     "django-ratelimit==4.1.0",
     "django-rq==2.10.2",
+    "cryptography==43.0.3",
     "django-silk==5.1.0",
     "django-pandas==0.6.7",
     "deepface==0.0.93",
@@ -32,7 +34,7 @@ dependencies = [
     "opencv-python==4.9.0.80",
     "scikit-learn==1.5.0",
     "tf-keras==2.20.1",
-    "numpy==2.3.4",
+    "numpy==1.26.4",
     "pandas==2.3.3",
     "scipy==1.16.3",
     "rq==1.16.2",
@@ -49,6 +51,8 @@ dev = [
     "pytest-cov==6.0.0",
     "psycopg2-binary==2.9.9",
     "pre-commit==4.0.1",
+    "pytest-playwright==0.4.4",
+    "playwright==1.49.1",
 ]
 
 [tool.black]
