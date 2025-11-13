@@ -1,87 +1,108 @@
 {% extends "admin/base_site.html" %}
-{% load i18n %}
+{% load static i18n %}
 
 {% block title %}{% trans "Recognition Attempts" %}{% endblock %}
 
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+{% endblock %}
+
 {% block content %}
-<h1 class="page-title">{% trans "Recognition Attempt Summary" %}</h1>
-<p class="help">{% trans "Aggregated success, failure, and spoofing rates for each site and employee." %}</p>
+<div class="u-admin-page">
+    <header class="u-page-header">
+        <h1 class="u-page-title">{% trans "Recognition Attempt Summary" %}</h1>
+        <p class="help u-page-subtitle">{% trans "Aggregated success, failure, and spoofing rates for each site and employee." %}</p>
+    </header>
 
-<h2>{% trans "Per Site" %}</h2>
-{% if site_summary %}
-<table class="table table-striped table-bordered">
-    <thead>
-        <tr>
-            <th>{% trans "Site" %}</th>
-            <th>{% trans "Attempts" %}</th>
-            <th>{% trans "Successes" %}</th>
-            <th>{% trans "Failures" %}</th>
-            <th>{% trans "Spoofed" %}</th>
-            <th>{% trans "Success Rate" %}</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for entry in site_summary %}
-        <tr>
-            <td>{{ entry.site|default:_("Unassigned") }}</td>
-            <td>{{ entry.total }}</td>
-            <td>{{ entry.successes }}</td>
-            <td>{{ entry.failures }}</td>
-            <td>{{ entry.spoofed }}</td>
-            <td>
-                {% if entry.success_rate is not None %}
-                    {{ entry.success_rate|floatformat:2 }}%
-                {% else %}
-                    {% trans "n/a" %}
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>{% trans "No recognition attempts have been recorded yet." %}</p>
-{% endif %}
+    <section class="u-panel" aria-labelledby="summary-per-site">
+        <h2 id="summary-per-site" class="u-panel-title">{% trans "Per Site" %}</h2>
+        {% if site_summary %}
+            <div class="u-table-wrapper">
+                <table class="u-table u-table--compact u-table--striped" aria-describedby="summary-per-site">
+                    <caption class="visually-hidden">{% trans "Summary of recognition outcomes per site" %}</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">{% trans "Site" %}</th>
+                            <th scope="col">{% trans "Attempts" %}</th>
+                            <th scope="col">{% trans "Successes" %}</th>
+                            <th scope="col">{% trans "Failures" %}</th>
+                            <th scope="col">{% trans "Spoofed" %}</th>
+                            <th scope="col">{% trans "Success Rate" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in site_summary %}
+                        <tr>
+                            <td>{{ entry.site|default:_("Unassigned") }}</td>
+                            <td>{{ entry.total }}</td>
+                            <td>{{ entry.successes }}</td>
+                            <td>{{ entry.failures }}</td>
+                            <td>{{ entry.spoofed }}</td>
+                            <td class="u-table-status">
+                                {% if entry.success_rate is not None %}
+                                    {{ entry.success_rate|floatformat:2 }}%
+                                {% else %}
+                                    {% trans "n/a" %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="u-empty-state">{% trans "No recognition attempts have been recorded yet." %}</p>
+        {% endif %}
+    </section>
 
-<h2 class="mt-4">{% trans "Per Site and Employee" %}</h2>
-{% if employee_summary %}
-<table class="table table-striped table-bordered">
-    <thead>
-        <tr>
-            <th>{% trans "Site" %}</th>
-            <th>{% trans "Employee" %}</th>
-            <th>{% trans "Attempts" %}</th>
-            <th>{% trans "Successes" %}</th>
-            <th>{% trans "Failures" %}</th>
-            <th>{% trans "Spoofed" %}</th>
-            <th>{% trans "Success Rate" %}</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for entry in employee_summary %}
-        <tr>
-            <td>{{ entry.site|default:_("Unassigned") }}</td>
-            <td>{{ entry.resolved_username|default:_("Unknown") }}</td>
-            <td>{{ entry.total }}</td>
-            <td>{{ entry.successes }}</td>
-            <td>{{ entry.failures }}</td>
-            <td>{{ entry.spoofed }}</td>
-            <td>
-                {% if entry.success_rate is not None %}
-                    {{ entry.success_rate|floatformat:2 }}%
-                {% else %}
-                    {% trans "n/a" %}
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>{% trans "No employee-level data is available." %}</p>
-{% endif %}
+    <section class="u-panel" aria-labelledby="summary-per-employee">
+        <h2 id="summary-per-employee" class="u-panel-title">{% trans "Per Site and Employee" %}</h2>
+        {% if employee_summary %}
+            <div class="u-table-wrapper">
+                <table class="u-table u-table--compact u-table--striped" aria-describedby="summary-per-employee">
+                    <caption class="visually-hidden">{% trans "Recognition results grouped by site and employee" %}</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">{% trans "Site" %}</th>
+                            <th scope="col">{% trans "Employee" %}</th>
+                            <th scope="col">{% trans "Attempts" %}</th>
+                            <th scope="col">{% trans "Successes" %}</th>
+                            <th scope="col">{% trans "Failures" %}</th>
+                            <th scope="col">{% trans "Spoofed" %}</th>
+                            <th scope="col">{% trans "Success Rate" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in employee_summary %}
+                        <tr>
+                            <td>{{ entry.site|default:_("Unassigned") }}</td>
+                            <td>{{ entry.resolved_username|default:_("Unknown") }}</td>
+                            <td>{{ entry.total }}</td>
+                            <td>{{ entry.successes }}</td>
+                            <td>{{ entry.failures }}</td>
+                            <td>{{ entry.spoofed }}</td>
+                            <td class="u-table-status">
+                                {% if entry.success_rate is not None %}
+                                    {{ entry.success_rate|floatformat:2 }}%
+                                {% else %}
+                                    {% trans "n/a" %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="u-empty-state">{% trans "No employee-level data is available." %}</p>
+        {% endif %}
+    </section>
 
-<p class="help mt-4">
-    {% trans "Use these metrics to monitor the health of deployments and feed the analytics documentation." %}
-</p>
+    <p class="help u-page-subtitle">
+        {% trans "Use these metrics to monitor the health of deployments and feed the analytics documentation." %}
+    </p>
+</div>
 {% endblock %}

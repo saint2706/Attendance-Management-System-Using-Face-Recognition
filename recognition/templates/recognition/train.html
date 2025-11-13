@@ -5,34 +5,34 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-12 col-md-10 col-lg-8 col-xl-6">
-        <article class="card text-center" style="box-shadow: var(--shadow-lg);">
-            <div class="card-body" style="padding: var(--space-12) var(--space-8);">
-                <i class="fas fa-brain" style="font-size: 5rem; color: var(--color-success); margin-bottom: var(--space-6);" aria-hidden="true"></i>
-                <h1 style="font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); margin-bottom: var(--space-4); color: var(--color-text);">
+        <article class="card card-elevated text-center">
+            <div class="card-body card-body-hero">
+                <i class="fas fa-brain icon-hero text-success mb-6" aria-hidden="true"></i>
+                <h1 class="text-3xl font-weight-bold mb-4">
                     Training is Now Automatic!
                 </h1>
-                <p style="font-size: var(--font-size-lg); color: var(--color-text-muted); max-width: 500px; margin: 0 auto var(--space-8);">
+                <p class="text-lg text-muted max-w-600 mx-auto mb-8">
                     This system uses modern face recognition technology that learns automatically when you add new employee photos.
                     Manual training is no longer required.
                 </p>
-                <a href="{% url 'dashboard' %}" class="btn btn-primary" style="padding: var(--space-4) var(--space-8); font-size: var(--font-size-lg);">
+                <a href="{% url 'dashboard' %}" class="btn btn-primary btn-wide btn-lg">
                     <i class="fas fa-arrow-left" aria-hidden="true"></i> Return to Dashboard
                 </a>
             </div>
         </article>
         
         <!-- Info Cards -->
-        <div class="row mt-6" style="margin-top: var(--space-8);">
+        <div class="row mt-8">
             <div class="col-12 col-md-6 mb-4">
-                <div class="card" style="border-left: 4px solid var(--color-success);">
-                    <div class="card-body" style="padding: var(--space-5);">
+                <div class="card card-accent card-accent--success">
+                    <div class="card-body card-body-tight">
                         <div class="d-flex align-items-start gap-3">
-                            <i class="fas fa-check-circle" style="font-size: 2rem; color: var(--color-success);" aria-hidden="true"></i>
+                            <i class="fas fa-check-circle icon-lg text-success" aria-hidden="true"></i>
                             <div>
-                                <h2 style="font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-2); color: var(--color-text);">
+                                <h2 class="text-lg font-weight-semibold mb-2">
                                     Automatic Learning
                                 </h2>
-                                <p class="text-muted mb-0" style="font-size: var(--font-size-sm);">
+                                <p class="text-muted text-sm mb-0">
                                     The AI model updates itself automatically whenever new employee photos are added to the system.
                                 </p>
                             </div>
@@ -42,15 +42,15 @@
             </div>
             
             <div class="col-12 col-md-6 mb-4">
-                <div class="card" style="border-left: 4px solid var(--color-primary);">
-                    <div class="card-body" style="padding: var(--space-5);">
+                <div class="card card-accent card-accent--primary">
+                    <div class="card-body card-body-tight">
                         <div class="d-flex align-items-start gap-3">
-                            <i class="fas fa-rocket" style="font-size: 2rem; color: var(--color-primary);" aria-hidden="true"></i>
+                            <i class="fas fa-rocket icon-lg text-primary" aria-hidden="true"></i>
                             <div>
-                                <h2 style="font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-2); color: var(--color-text);">
+                                <h2 class="text-lg font-weight-semibold mb-2">
                                     High Accuracy
                                 </h2>
-                                <p class="text-muted mb-0" style="font-size: var(--font-size-sm);">
+                                <p class="text-muted text-sm mb-0">
                                     Uses state-of-the-art Facenet deep learning model for precise face recognition.
                                 </p>
                             </div>
@@ -61,16 +61,16 @@
         </div>
         
         <!-- Technical Details -->
-        <div class="card mt-4" style="margin-top: var(--space-6); background-color: var(--color-gray-50); border: 1px solid var(--color-border);">
-            <div class="card-body" style="padding: var(--space-6);">
-                <h2 class="d-flex align-items-center gap-2 mb-4" style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); color: var(--color-text); margin-bottom: var(--space-4);">
-                    <i class="fas fa-info-circle" style="color: var(--color-info);" aria-hidden="true"></i>
+        <div class="card card-muted mt-6">
+            <div class="card-body card-body-lg">
+                <h2 class="d-flex align-items-center gap-2 mb-4 text-xl font-weight-semibold">
+                    <i class="fas fa-info-circle text-info" aria-hidden="true"></i>
                     <span>How It Works</span>
                 </h2>
-                <ul class="text-muted mb-0" style="font-size: var(--font-size-sm); line-height: var(--line-height-relaxed); padding-left: var(--space-5);">
-                    <li style="margin-bottom: var(--space-2);">Photos are processed using deep learning face detection (SSD)</li>
-                    <li style="margin-bottom: var(--space-2);">Facial features are extracted using the Facenet neural network</li>
-                    <li style="margin-bottom: var(--space-2);">The system creates unique embeddings for each employee</li>
+                <ul class="list-spaced text-muted text-sm mb-0">
+                    <li>Photos are processed using deep learning face detection (SSD)</li>
+                    <li>Facial features are extracted using the Facenet neural network</li>
+                    <li>The system creates unique embeddings for each employee</li>
                     <li>Recognition happens in real-time during attendance marking</li>
                 </ul>
             </div>

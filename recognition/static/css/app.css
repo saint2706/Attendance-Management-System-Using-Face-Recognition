@@ -5,140 +5,7 @@
  * modern responsive layout, accessibility features, and dark mode support.
  */
 
-/* ============================================================================
-   CSS CUSTOM PROPERTIES (Design Tokens)
-   ============================================================================ */
-
-:root {
-  /* Color Palette - Light Theme */
-  --color-primary: #0d6efd;
-  --color-primary-dark: #0b5ed7;
-  --color-primary-light: #6ea8fe;
-  --color-secondary: #6c757d;
-  --color-success: #198754;
-  --color-danger: #dc3545;
-  --color-warning: #ffc107;
-  --color-info: #0dcaf0;
-  
-  /* Neutral Colors */
-  --color-white: #ffffff;
-  --color-black: #000000;
-  --color-gray-50: #f8f9fa;
-  --color-gray-100: #e9ecef;
-  --color-gray-200: #dee2e6;
-  --color-gray-300: #ced4da;
-  --color-gray-400: #adb5bd;
-  --color-gray-500: #6c757d;
-  --color-gray-600: #495057;
-  --color-gray-700: #343a40;
-  --color-gray-800: #212529;
-  --color-gray-900: #0b0d0f;
-  
-  /* Semantic Colors */
-  --color-background: var(--color-white);
-  --color-surface: var(--color-white);
-  --color-text: var(--color-gray-900);
-  --color-text-muted: var(--color-gray-600);
-  --color-border: var(--color-gray-300);
-  --color-shadow: rgba(0, 0, 0, 0.1);
-  
-  /* Spacing Scale */
-  --space-1: 0.25rem;  /* 4px */
-  --space-2: 0.5rem;   /* 8px */
-  --space-3: 0.75rem;  /* 12px */
-  --space-4: 1rem;     /* 16px */
-  --space-5: 1.25rem;  /* 20px */
-  --space-6: 1.5rem;   /* 24px */
-  --space-8: 2rem;     /* 32px */
-  --space-10: 2.5rem;  /* 40px */
-  --space-12: 3rem;    /* 48px */
-  --space-16: 4rem;    /* 64px */
-  
-  /* Typography */
-  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-family-mono: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-size-4xl: 2.25rem;   /* 36px */
-  
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  
-  --line-height-tight: 1.25;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.75;
-  
-  /* Border Radius */
-  --radius-sm: 0.25rem;   /* 4px */
-  --radius-md: 0.375rem;  /* 6px */
-  --radius-lg: 0.5rem;    /* 8px */
-  --radius-xl: 0.75rem;   /* 12px */
-  --radius-2xl: 1rem;     /* 16px */
-  --radius-full: 9999px;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-base: 200ms ease;
-  --transition-slow: 300ms ease;
-  
-  /* Z-Index Scale */
-  --z-index-dropdown: 1000;
-  --z-index-sticky: 1020;
-  --z-index-fixed: 1030;
-  --z-index-modal-backdrop: 1040;
-  --z-index-modal: 1050;
-  --z-index-popover: 1060;
-  --z-index-tooltip: 1070;
-  
-  /* Layout */
-  --navbar-height: 4rem;
-  --sidebar-width: 16rem;
-  --container-max-width: 1200px;
-}
-
-/* ============================================================================
-   DARK THEME
-   ============================================================================ */
-
-.theme-dark {
-  /* Dark Theme Colors */
-  --color-primary: #6ea8fe;
-  --color-primary-dark: #5a8fdb;
-  --color-primary-light: #8ab9ff;
-  
-  --color-background: #0d1117;
-  --color-surface: #161b22;
-  --color-text: #e6edf3;
-  --color-text-muted: #8b949e;
-  --color-border: #30363d;
-  --color-shadow: rgba(0, 0, 0, 0.5);
-  
-  /* Adjust semantic colors for dark theme */
-  --color-gray-50: #0d1117;
-  --color-gray-100: #161b22;
-  --color-gray-200: #21262d;
-  --color-gray-300: #30363d;
-  --color-gray-400: #484f58;
-  --color-gray-500: #6e7681;
-  --color-gray-600: #8b949e;
-  --color-gray-700: #b1bac4;
-  --color-gray-800: #cdd9e5;
-  --color-gray-900: #e6edf3;
-}
+/* Design tokens live in tokens.css and are loaded before this file. */
 
 /* ============================================================================
    GLOBAL STYLES
@@ -190,13 +57,36 @@ body {
 
 /* Focus visible styles */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  box-shadow: 0 0 0 0.25rem var(--color-focus-ring);
 }
 
 /* Remove outline for mouse users */
 :focus:not(:focus-visible) {
   outline: none;
+}
+
+.visually-hidden {
+  border: 0 !important;
+  clip: rect(0, 0, 0, 0) !important;
+  height: 1px !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  position: absolute !important;
+  width: 1px !important;
+  white-space: nowrap !important;
 }
 
 /* ============================================================================
@@ -435,6 +325,16 @@ body {
   border-color: var(--color-primary-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
+}
+
+.btn-lg {
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--font-size-lg);
+}
+
+.btn-wide {
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--font-size-lg);
 }
 
 .btn-secondary {
@@ -698,6 +598,7 @@ body {
 .align-items-center { align-items: center !important; }
 .align-items-end { align-items: flex-end !important; }
 .gap-2 { gap: var(--space-2) !important; }
+.gap-3 { gap: var(--space-3) !important; }
 .gap-4 { gap: var(--space-4) !important; }
 
 /* Text */
@@ -705,6 +606,19 @@ body {
 .text-left { text-align: left !important; }
 .text-right { text-align: right !important; }
 .text-muted { color: var(--color-text-muted) !important; }
+.text-primary { color: var(--color-primary) !important; }
+.text-success { color: var(--color-success) !important; }
+.text-info { color: var(--color-info) !important; }
+.text-danger { color: var(--color-danger) !important; }
+.text-white { color: var(--color-white) !important; }
+.text-xs { font-size: var(--font-size-xs) !important; }
+.text-sm { font-size: var(--font-size-sm) !important; }
+.text-base { font-size: var(--font-size-base) !important; }
+.text-lg { font-size: var(--font-size-lg) !important; }
+.text-xl { font-size: var(--font-size-xl) !important; }
+.text-2xl { font-size: var(--font-size-2xl) !important; }
+.text-3xl { font-size: var(--font-size-3xl) !important; }
+.text-4xl { font-size: var(--font-size-4xl) !important; }
 .text-decoration-none { text-decoration: none !important; }
 .font-weight-normal { font-weight: var(--font-weight-normal) !important; }
 .font-weight-medium { font-weight: var(--font-weight-medium) !important; }
@@ -717,10 +631,29 @@ body {
 .mb-4 { margin-bottom: var(--space-4) !important; }
 .mb-6 { margin-bottom: var(--space-6) !important; }
 .mb-8 { margin-bottom: var(--space-8) !important; }
+.mb-10 { margin-bottom: var(--space-10) !important; }
+.mb-12 { margin-bottom: var(--space-12) !important; }
 .mt-4 { margin-top: var(--space-4) !important; }
 .mt-6 { margin-top: var(--space-6) !important; }
+.mt-8 { margin-top: var(--space-8) !important; }
+.mt-10 { margin-top: var(--space-10) !important; }
+.mt-12 { margin-top: var(--space-12) !important; }
+.mt-16 { margin-top: var(--space-16) !important; }
 .p-4 { padding: var(--space-4) !important; }
 .p-6 { padding: var(--space-6) !important; }
+.p-8 { padding: var(--space-8) !important; }
+.p-10 { padding: var(--space-10) !important; }
+.p-12 { padding: var(--space-12) !important; }
+.px-6 { padding-left: var(--space-6) !important; padding-right: var(--space-6) !important; }
+.px-8 { padding-left: var(--space-8) !important; padding-right: var(--space-8) !important; }
+.py-4 { padding-top: var(--space-4) !important; padding-bottom: var(--space-4) !important; }
+.py-6 { padding-top: var(--space-6) !important; padding-bottom: var(--space-6) !important; }
+.py-8 { padding-top: var(--space-8) !important; padding-bottom: var(--space-8) !important; }
+.pt-6 { padding-top: var(--space-6) !important; }
+.pt-8 { padding-top: var(--space-8) !important; }
+.pb-6 { padding-bottom: var(--space-6) !important; }
+.mx-auto { margin-left: auto !important; margin-right: auto !important; }
+.border-top { border-top: 1px solid var(--color-border) !important; }
 
 /* Grid */
 .row {

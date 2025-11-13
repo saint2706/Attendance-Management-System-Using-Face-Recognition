@@ -7,22 +7,22 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-12 col-md-10 col-lg-8">
-        <article class="card mb-6" style="margin-bottom: var(--space-8); box-shadow: var(--shadow-lg);">
-            <div class="card-body" style="padding: var(--space-8);">
-                <div class="text-center mb-6" style="margin-bottom: var(--space-6);">
-                    <i class="fas fa-user-clock" style="font-size: 3rem; color: var(--color-primary); margin-bottom: var(--space-3);" aria-hidden="true"></i>
-                    <h1 style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--color-text); margin: 0;">
+        <article class="card card-elevated mb-6">
+            <div class="card-body card-body-lg">
+                <div class="text-center mb-6">
+                    <i class="fas fa-user-clock icon-xxl text-primary mb-3" aria-hidden="true"></i>
+                    <h1 class="text-2xl font-weight-bold mb-0">
                         My Attendance Records
                     </h1>
-                    <p class="text-muted mt-2 mb-0" style="font-size: var(--font-size-base); margin-top: var(--space-2);">
+                    <p class="text-muted text-base mt-2 mb-0">
                         View your personal attendance history and work hours
                     </p>
                 </div>
                 <form method="POST" data-validate="true">
                     {% csrf_token %}
                     {{ form|crispy }}
-                    <div class="d-grid mt-4" style="margin-top: var(--space-6);">
-                        <button class="btn btn-primary" type="submit" style="padding: var(--space-4) var(--space-6); font-size: var(--font-size-lg);">
+                    <div class="d-grid mt-6">
+                        <button class="btn btn-primary btn-lg" type="submit">
                             <i class="fas fa-search" aria-hidden="true"></i> Get My Records
                         </button>
                     </div>
@@ -33,16 +33,19 @@
 </div>
 
 {% if qs %}
-<section aria-label="Your attendance records">
-    <article class="card mb-6" style="margin-bottom: var(--space-8);">
-        <div class="card-body" style="padding: 0;">
-            <div style="padding: var(--space-6); border-bottom: 1px solid var(--color-border);">
-                <h2 style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); color: var(--color-text); margin: 0;">
+<section aria-labelledby="my-attendance-records">
+    <article class="card mb-6">
+        <div class="card-body card-body-plain">
+            <div class="card-section card-section--divider">
+                <h2 id="my-attendance-records" class="text-xl font-weight-semibold mb-0">
                     <i class="fas fa-calendar-check" aria-hidden="true"></i> Your Attendance Records
                 </h2>
             </div>
             <div class="table-container">
                 <table class="table" data-enhance="true" aria-label="Your attendance records table">
+                    <caption class="visually-hidden">
+                        Your attendance status, work hours, and timings for the selected dates
+                    </caption>
                     <thead>
                         <tr>
                             <th scope="col">Date</th>
@@ -59,11 +62,11 @@
                             <td>{{ item.date }}</td>
                             <td>
                                 {% if item.present %}
-                                    <span style="display: inline-block; padding: var(--space-1) var(--space-3); background-color: var(--color-success); color: white; border-radius: var(--radius-full); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);">
+                                    <span class="status-badge status-badge--success">
                                         <i class="fas fa-check" aria-hidden="true"></i> Present
                                     </span>
                                 {% else %}
-                                    <span style="display: inline-block; padding: var(--space-1) var(--space-3); background-color: var(--color-danger); color: white; border-radius: var(--radius-full); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);">
+                                    <span class="status-badge status-badge--danger">
                                         <i class="fas fa-times" aria-hidden="true"></i> Absent
                                     </span>
                                 {% endif %}
@@ -80,22 +83,30 @@
         </div>
     </article>
 
-    <article class="card">
-        <div class="card-body" style="padding: var(--space-6);">
-            <h2 class="text-center mb-4" style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); color: var(--color-text); margin-bottom: var(--space-6);">
+    <article class="card card-elevated">
+        <div class="card-body card-body-lg">
+            <h2 class="text-xl font-weight-semibold text-center mb-6">
                 <i class="fas fa-chart-area" aria-hidden="true"></i> Your Work Hours Over Time
             </h2>
             {% if hours_vs_date_chart_url %}
-                <div style="border-radius: var(--radius-md); overflow: hidden; background-color: var(--color-gray-50);">
-                    <img src="{{ hours_vs_date_chart_url }}" class="img-fluid" alt="Chart showing your work hours over time" style="width: 100%; height: auto;">
+                <div class="card-media">
+                    <img
+                        src="{{ hours_vs_date_chart_url }}"
+                        class="img-fluid chart-image"
+                        alt="Chart showing your work hours over time"
+                        loading="lazy"
+                        decoding="async"
+                        width="640"
+                        height="480"
+                    >
                 </div>
-                <p class="text-center text-muted mt-3 mb-0" style="font-size: var(--font-size-sm); margin-top: var(--space-4);">
+                <p class="text-center text-muted text-sm mt-3 mb-0">
                     Your total work hours per day for the selected duration
                 </p>
             {% else %}
-                <div class="text-center" style="padding: var(--space-10) var(--space-4); background-color: var(--color-gray-50); border-radius: var(--radius-md);">
-                    <i class="fas fa-chart-area" style="font-size: 3rem; color: var(--color-text-muted); opacity: 0.3; margin-bottom: var(--space-4);" aria-hidden="true"></i>
-                    <p class="text-muted mb-0" style="font-size: var(--font-size-base);">
+                <div class="card-empty">
+                    <i class="fas fa-chart-area icon-xxl text-muted icon-soft mb-4" aria-hidden="true"></i>
+                    <p class="text-muted text-base mb-0">
                         Graphs will appear once attendance data is available
                     </p>
                 </div>
