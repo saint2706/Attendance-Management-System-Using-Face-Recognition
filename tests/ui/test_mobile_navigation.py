@@ -11,6 +11,9 @@ import pytest
 from playwright.sync_api import Page, expect
 
 
+pytestmark = [pytest.mark.ui, pytest.mark.django_db(transaction=True)]
+
+
 @pytest.fixture(scope="function")
 def mobile_page(browser):
     """Create a page with mobile viewport."""
