@@ -10,8 +10,9 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterator
 from uuid import uuid4
 
-import pytest
 from django.db import connection
+
+import pytest
 from playwright.sync_api import Browser, sync_playwright
 
 
