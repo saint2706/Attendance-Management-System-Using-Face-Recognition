@@ -180,13 +180,15 @@ class TestFaceRecognitionWorkflow:
         class _DeterministicStream:
             def __init__(self, *args, **kwargs):
                 self._counter = 0
+                self._lock = threading.Lock()
 
             def start(self):
                 return self
 
             def read(self):
-                self._counter += 1
-                return np.full((2, 2, 3), self._counter, dtype=np.uint8)
+                with self._lock:
+                    self._counter += 1
+                    return np.full((2, 2, 3), self._counter, dtype=np.uint8)
 
             def stop(self):
                 pass
