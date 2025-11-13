@@ -112,6 +112,7 @@ pytest tests/ui/ -n auto
 
 - `test_theme_toggle.py` - Theme switching and dark mode tests
 - `test_mobile_navigation.py` - Mobile menu and responsive design tests
+- `test_admin_navigation.py` - End-to-end admin flows for dashboard, employee list, and attendance views
 - `conftest.py` - Shared fixtures and configuration
 
 ### Fixtures
@@ -120,6 +121,7 @@ pytest tests/ui/ -n auto
 - `mobile_page` - Page with mobile viewport settings
 - `browser` - Browser instance
 - `browser_context_args` - Browser context configuration
+- `admin_account` - Creates a temporary superuser for admin navigation flows
 
 ### Markers
 

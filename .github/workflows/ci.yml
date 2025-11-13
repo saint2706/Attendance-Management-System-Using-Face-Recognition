@@ -105,7 +105,13 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
         run: |
-          pytest
+          pytest -m "not ui"
+
+      - name: Run Playwright UI tests
+        env:
+          DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
+        run: |
+          pytest --no-cov -m "ui" tests/ui
 
       - name: Smoke test - prepare splits
         if: matrix.python-version == '3.12'

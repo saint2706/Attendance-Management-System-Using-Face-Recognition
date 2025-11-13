@@ -92,7 +92,7 @@ class TestFaceRecognitionWorkflow:
 
         monkeypatch.setattr(
             recognition_views,
-            "_find_closest_dataset_match",
+            "find_closest_dataset_match",
             _fake_find,
         )
         monkeypatch.setattr(
@@ -150,7 +150,7 @@ class TestFaceRecognitionWorkflow:
 
         monkeypatch.setattr(
             recognition_views,
-            "_find_closest_dataset_match",
+            "find_closest_dataset_match",
             lambda *_args, **_kwargs: ("jane", 0.25, "jane/reference.jpg"),
         )
         monkeypatch.setattr(
