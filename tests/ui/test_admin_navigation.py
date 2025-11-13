@@ -41,10 +41,10 @@ def test_admin_can_access_employee_list_and_attendance(
     import threading
     from django.contrib.auth import get_user_model
     from django.db import connection
-    
+
     User = get_user_model()
     session_result = {}
-    
+
     def login_user():
         """Login user in a separate thread to avoid async context issues."""
         try:
@@ -54,18 +54,18 @@ def test_admin_can_access_employee_list_and_attendance(
             session_result["sessionid"] = client.cookies.get('sessionid').value
         except Exception as e:
             session_result["error"] = e
-    
+
     # Run login in a separate thread
     thread = threading.Thread(target=login_user)
     thread.start()
     thread.join()
-    
+
     if "error" in session_result:
         raise session_result["error"]
-    
+
     # Navigate to the site with Playwright
     page.goto(server_url)
-    
+
     # Set the session cookie in Playwright
     page.context.add_cookies([{
         'name': 'sessionid',
@@ -73,7 +73,7 @@ def test_admin_can_access_employee_list_and_attendance(
         'domain': 'localhost',
         'path': '/',
     }])
-    
+
     # Now navigate to dashboard - should be logged in
     page.goto(f"{server_url}/dashboard/")
     dashboard_heading = page.get_by_role("heading", name="Admin Dashboard")
@@ -81,12 +81,12 @@ def test_admin_can_access_employee_list_and_attendance(
 
     # Note: Django's built-in admin is not configured in this application's URLs,
     # so we skip testing /admin/ URLs and test the custom admin views instead
-    
+
     # Test custom admin evaluation dashboard
     page.goto(f"{server_url}/admin/evaluation/")
     page.wait_for_load_state("networkidle")
     # Just verify we can access it without error (it may have specific content requirements)
-    
+
     page.goto(f"{server_url}/view_attendance_home")
     page.wait_for_load_state("networkidle")
     attendance_heading = page.get_by_role("heading", name="Attendance Dashboard")

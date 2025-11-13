@@ -11,9 +11,28 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ams
+          POSTGRES_PASSWORD: ams
+          POSTGRES_DB: ams
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ams -d ams"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     env:
       DJANGO_DEBUG: "1"
       DJANGO_SECRET_KEY: "temporary-secret-key"
+      DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
+      FACE_DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
+      RECOGNITION_HEADLESS: "True"
+      DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
 
     steps:
       - name: Checkout repository
@@ -23,6 +42,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libglib2.0-0 libsm6 libxrender1 libxext6
 
       - name: Install Python dependencies
         run: |

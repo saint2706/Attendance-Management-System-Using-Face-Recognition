@@ -62,22 +62,22 @@ def server_url(live_server) -> str:
 @pytest.fixture(scope="function")
 def admin_account(django_user_model) -> AdminAccount:
     """Create a staff superuser for Playwright admin flows.
-    
+
     Uses threading to ensure database operations happen in a synchronous context,
     avoiding conflicts with Playwright's async event loop.
     """
     username = f"playwright-admin-{uuid4().hex[:8]}"
     password = f"PlaywrightPass-{uuid4().hex[:8]}"
-    
+
     result = {}
     error = {}
-    
+
     def create_user():
         """Create user in a separate thread to avoid async context issues."""
         try:
             # Close any existing connection in this thread
             connection.close()
-            
+
             # Create the superuser
             user = django_user_model.objects.create_superuser(
                 username=username,
@@ -88,19 +88,19 @@ def admin_account(django_user_model) -> AdminAccount:
             result["user_id"] = user.id
         except Exception as e:
             error["exception"] = e
-    
+
     # Run database operation in a separate thread
     thread = threading.Thread(target=create_user)
     thread.start()
     thread.join()
-    
+
     # Check for errors
     if "exception" in error:
         raise error["exception"]
-    
+
     if not result.get("created"):
         raise RuntimeError("Failed to create admin account")
-    
+
     return AdminAccount(username=username, password=password, user_id=result["user_id"])
 
 
