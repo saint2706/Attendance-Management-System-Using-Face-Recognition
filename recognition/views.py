@@ -66,6 +66,7 @@ from users.models import Present, RecognitionAttempt, Time
 from . import monitoring
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
 from .metrics_store import log_recognition_outcome
+from .pipeline import extract_embedding, find_closest_dataset_match, is_within_distance_threshold
 from .webcam_manager import get_webcam_manager
 
 # Use 'Agg' backend for Matplotlib to avoid GUI-related issues in a web server environment
@@ -472,7 +473,7 @@ class FaceRecognitionAPI(View):
                     status=500,
                 )
 
-            extracted_embedding, facial_area = _extract_first_embedding(representations)
+            extracted_embedding, facial_area = extract_embedding(representations)
             if extracted_embedding is None:
                 attempt_logger.log_failure(
                     submitted_username,
@@ -526,7 +527,7 @@ class FaceRecognitionAPI(View):
             )
 
         distance_metric = _get_deepface_distance_metric()
-        match = _find_closest_dataset_match(embedding_vector, normalized_index, distance_metric)
+        match = find_closest_dataset_match(embedding_vector, normalized_index, distance_metric)
 
         distance_threshold = getattr(
             settings, "RECOGNITION_DISTANCE_THRESHOLD", DEFAULT_DISTANCE_THRESHOLD
@@ -578,19 +579,22 @@ class FaceRecognitionAPI(View):
             _attach_attempt_user(attempt, resolved_username)
             return JsonResponse(response_payload)
         else:
-            recognized = bool(distance_value <= distance_threshold)
+            recognized = is_within_distance_threshold(distance_value, distance_threshold)
             response_payload["recognized"] = recognized
 
             if recognized:
                 attempt = attempt_logger.log_success(resolved_username or "unknown")
                 _attach_attempt_user(attempt, resolved_username)
             else:
+                formatted_distance = (
+                    float(distance_value) if distance_value is not None else float("nan")
+                )
                 attempt = attempt_logger.log_failure(
                     resolved_username,
                     spoofed=False,
                     error=(
                         "Distance %.4f exceeded threshold %.4f"
-                        % (distance_value, distance_threshold)
+                        % (formatted_distance, float(distance_threshold))
                     ),
                 )
                 _attach_attempt_user(attempt, resolved_username)
@@ -937,42 +941,6 @@ def _load_encrypted_image(image_path: Path) -> Optional[np.ndarray]:
     return _decode_image_bytes(decrypted_bytes, source=image_path)
 
 
-def _extract_first_embedding(
-    representations,
-) -> Tuple[Optional[Sequence[float]], Optional[Dict[str, int]]]:
-    """Normalize DeepFace representations to a single embedding and facial area."""
-
-    embedding_vector: Optional[Sequence[float]] = None
-    facial_area: Optional[Dict[str, int]] = None
-
-    if isinstance(representations, np.ndarray):
-        if representations.ndim == 2 and len(representations) > 0:
-            embedding_vector = representations[0]
-    elif isinstance(representations, list) and representations:
-        first = representations[0]
-        if isinstance(first, dict):
-            embedding_vector = first.get("embedding")
-            area = first.get("facial_area")
-            facial_area = area if isinstance(area, dict) else None
-        elif isinstance(first, (list, tuple, np.ndarray)):
-            embedding_vector = first
-    elif isinstance(representations, dict) and "embedding" in representations:
-        embedding_vector = representations.get("embedding")
-        area = representations.get("facial_area")
-        facial_area = area if isinstance(area, dict) else None
-
-    if embedding_vector is None:
-        return None, facial_area
-
-    try:
-        normalized = [float(value) for value in embedding_vector]
-    except (TypeError, ValueError):
-        logger.debug("Unable to coerce embedding values to floats: %r", embedding_vector)
-        return None, facial_area
-
-    return normalized, facial_area
-
-
 def _get_or_compute_cached_embedding(
     image_path: Path, model_name: str, detector_backend: str, enforce_detection: bool = False
 ) -> Optional[np.ndarray]:
@@ -1007,7 +975,7 @@ def _get_or_compute_cached_embedding(
         logger.debug("Failed to generate embedding for %s: %s", image_path, exc)
         return None
 
-    embedding_vector, _ = _extract_first_embedding(representations)
+    embedding_vector, _ = extract_embedding(representations)
     if embedding_vector is None:
         logger.debug("No embedding produced for %s", image_path)
         return None
@@ -1061,69 +1029,6 @@ def _load_dataset_embeddings_for_matching(
             model_name, detector_backend, enforce_detection
         ),
     )
-
-
-def _calculate_embedding_distance(
-    candidate: np.ndarray, embedding_vector: np.ndarray, metric: str
-) -> Optional[float]:
-    """Compute a distance score between embeddings for the provided metric."""
-
-    metric = metric.lower()
-    try:
-        if metric in {"cosine", "cosine_similarity"}:
-            candidate_norm = float(np.linalg.norm(candidate))
-            vector_norm = float(np.linalg.norm(embedding_vector))
-            if candidate_norm == 0.0 or vector_norm == 0.0:
-                return None
-            similarity = float(np.dot(candidate, embedding_vector) / (candidate_norm * vector_norm))
-            return 1.0 - similarity
-
-        if metric in {"euclidean", "euclidean_l2", "l2"}:
-            return float(np.linalg.norm(candidate - embedding_vector))
-
-        if metric in {"manhattan", "l1", "euclidean_l1"}:
-            return float(np.sum(np.abs(candidate - embedding_vector)))
-
-    except Exception as exc:  # pragma: no cover - defensive programming
-        logger.debug("Failed to compute %s distance: %s", metric, exc)
-        return None
-
-    # Default to Euclidean L2 if metric is unrecognized
-    try:
-        return float(np.linalg.norm(candidate - embedding_vector))
-    except Exception as exc:  # pragma: no cover - defensive programming
-        logger.debug("Failed to compute fallback distance: %s", exc)
-        return None
-
-
-def _find_closest_dataset_match(
-    embedding_vector: np.ndarray, dataset_index, metric: str
-) -> Optional[Tuple[str, float, str]]:
-    """Return the nearest neighbour match for the provided embedding."""
-
-    if embedding_vector.size == 0 or not dataset_index:
-        return None
-
-    best_entry = None
-    best_distance: Optional[float] = None
-
-    for entry in dataset_index:
-        candidate = entry.get("embedding")
-        if candidate is None:
-            continue
-
-        distance = _calculate_embedding_distance(candidate, embedding_vector, metric)
-        if distance is None:
-            continue
-
-        if best_distance is None or distance < best_distance:
-            best_distance = distance
-            best_entry = entry
-
-    if best_entry is None or best_distance is None:
-        return None
-
-    return best_entry["username"], best_distance, best_entry["identity"]
 
 
 def username_present(username: str) -> bool:
@@ -1826,11 +1731,11 @@ def _evaluate_recognition_match(
     """Evaluate a DeepFace match result and run the liveness gate."""
 
     try:
-        distance = float(match.get("distance", 0.0))
+        distance = float(match.get("distance", math.inf))
     except (TypeError, ValueError):
-        distance = 0.0
+        distance = math.inf
 
-    if distance > distance_threshold:
+    if not is_within_distance_threshold(distance, distance_threshold):
         return None, False, None
 
     identity_value = match.get("identity")
@@ -2028,12 +1933,12 @@ def _mark_attendance(request, check_in: bool):
                             inference_duration,
                         )
 
-                    embedding_vector, facial_area = _extract_first_embedding(representations)
+                    embedding_vector, facial_area = extract_embedding(representations)
                     if embedding_vector is None:
                         continue
 
                     frame_embedding = np.array(embedding_vector, dtype=float)
-                    match = _find_closest_dataset_match(
+                    match = find_closest_dataset_match(
                         frame_embedding, dataset_index, distance_metric
                     )
                     if match is None:
@@ -2051,7 +1956,7 @@ def _mark_attendance(request, check_in: bool):
                     normalized_region = _normalize_face_region(facial_area)
                     spoofed = not _passes_liveness_check(frame, normalized_region)
 
-                    if distance_value > distance_threshold:
+                    if not is_within_distance_threshold(distance_value, distance_threshold):
                         logger.info(
                             "Ignoring potential match for '%s' due to high distance %.4f",
                             Path(identity_path).parent.name,

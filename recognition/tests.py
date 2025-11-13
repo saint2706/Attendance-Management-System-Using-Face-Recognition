@@ -160,7 +160,7 @@ class DeepFaceAttendanceTest(TestCase):
 
     @patch("recognition.views.update_attendance_in_db_in")
     @patch("recognition.views._enqueue_attendance_records")
-    @patch("recognition.views._find_closest_dataset_match")
+    @patch("recognition.views.find_closest_dataset_match")
     @patch("recognition.views._load_dataset_embeddings_for_matching")
     @patch("recognition.views.DeepFace.represent")
     @patch("recognition.views.cv2")

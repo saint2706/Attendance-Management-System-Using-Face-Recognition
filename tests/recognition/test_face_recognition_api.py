@@ -48,7 +48,7 @@ def test_face_recognition_api_returns_match(client, monkeypatch):
     )
     monkeypatch.setattr(
         views,
-        "_find_closest_dataset_match",
+        "find_closest_dataset_match",
         lambda embedding, dataset, metric: ("alice", 0.05, "alice/sample.jpg"),
     )
 
@@ -91,7 +91,7 @@ def test_face_recognition_api_rate_limit(client, monkeypatch):
     )
     monkeypatch.setattr(
         views,
-        "_find_closest_dataset_match",
+        "find_closest_dataset_match",
         lambda embedding, dataset, metric: ("alice", 0.05, "alice/sample.jpg"),
     )
 
