@@ -1,7 +1,7 @@
 """Core face recognition pipeline utilities.
 
 This module centralises the pure functions that power the face recognition
-workflow so they can be exercised in isolation.  By extracting the embedding
+workflow so they can be exercised in isolation. By extracting the embedding
 normalisation, dataset matching, and distance thresholding logic we can cover
 the most critical behaviour with fast unit tests that use synthetic vectors
 instead of the heavy DeepFace integration.
@@ -14,25 +14,28 @@ import math
 from typing import Dict, Iterable, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
+from numpy.typing import NDArray
 
 logger = logging.getLogger(__name__)
 
 
 def extract_embedding(
-    representations,
-) -> Tuple[Optional[np.ndarray], Optional[Dict[str, int]]]:
+    representations: object,
+) -> tuple[NDArray[np.float64] | None, dict[str, int] | None]:
     """Normalise DeepFace representations into a single embedding vector.
 
     Args:
-        representations: The raw payload returned by ``DeepFace.represent``.
+        representations: The raw payload returned by ``DeepFace.represent``. This
+            can be a NumPy array, a list of dictionaries, a dictionary, or
+            another nested structure depending on the DeepFace version and
+            backend.
 
     Returns:
         A tuple containing the embedding as a NumPy vector (or ``None`` when no
         usable embedding is available) and the optional facial area metadata.
     """
-
-    embedding_vector: Optional[Sequence[float]] = None
-    facial_area: Optional[Dict[str, int]] = None
+    embedding_vector: Sequence[float] | None = None
+    facial_area: dict[str, int] | None = None
 
     if isinstance(representations, np.ndarray):
         if representations.ndim == 2 and len(representations) > 0:
@@ -54,7 +57,9 @@ def extract_embedding(
         return None, facial_area
 
     try:
-        normalized = np.array([float(value) for value in embedding_vector], dtype=float)
+        normalized: NDArray[np.float64] = np.array(
+            [float(value) for value in embedding_vector], dtype=np.float64
+        )
     except (TypeError, ValueError):
         logger.debug("Unable to coerce embedding values to floats: %r", embedding_vector)
         return None, facial_area
@@ -66,25 +71,33 @@ def extract_embedding(
 
 
 def calculate_embedding_distance(
-    candidate: np.ndarray, embedding_vector: np.ndarray, metric: str
-) -> Optional[float]:
+    candidate: NDArray[np.float64], embedding_vector: NDArray[np.float64], metric: str
+) -> float | None:
     """Compute a distance score between two embeddings.
 
     The function supports cosine, Euclidean (L2), and Manhattan (L1) metrics.
     When the metric cannot be evaluated—for example because one of the vectors
     has zero magnitude for cosine similarity—it returns ``None`` so callers can
     gracefully skip the candidate.
-    """
 
+    Args:
+        candidate: The embedding vector of the known identity from the dataset.
+        embedding_vector: The embedding vector of the probe face.
+        metric: The distance metric to use ('cosine', 'euclidean', 'manhattan').
+
+    Returns:
+        The computed distance as a float, or ``None`` if the distance could not
+        be computed.
+    """
     metric = metric.lower()
     try:
         if metric in {"cosine", "cosine_similarity"}:
-            candidate_norm = float(np.linalg.norm(candidate))
-            vector_norm = float(np.linalg.norm(embedding_vector))
+            candidate_norm = np.linalg.norm(candidate)
+            vector_norm = np.linalg.norm(embedding_vector)
             if candidate_norm == 0.0 or vector_norm == 0.0:
                 return None
-            similarity = float(np.dot(candidate, embedding_vector) / (candidate_norm * vector_norm))
-            return 1.0 - similarity
+            similarity = np.dot(candidate, embedding_vector) / (candidate_norm * vector_norm)
+            return 1.0 - float(similarity)
 
         if metric in {"euclidean", "euclidean_l2", "l2"}:
             return float(np.linalg.norm(candidate - embedding_vector))
@@ -105,10 +118,10 @@ def calculate_embedding_distance(
 
 
 def find_closest_dataset_match(
-    embedding_vector: np.ndarray,
+    embedding_vector: NDArray[np.float64],
     dataset_index: Iterable[Mapping[str, object]],
     metric: str,
-) -> Optional[Tuple[str, float, str]]:
+) -> tuple[str, float, str] | None:
     """Return the nearest neighbour match for the provided embedding.
 
     Args:
@@ -122,12 +135,11 @@ def find_closest_dataset_match(
         stored identity path. ``None`` is returned when no candidate can be
         evaluated or the dataset is empty.
     """
-
     if embedding_vector.size == 0:
         return None
 
-    best_entry: Optional[Mapping[str, object]] = None
-    best_distance: Optional[float] = None
+    best_entry: Mapping[str, object] | None = None
+    best_distance: float | None = None
 
     for entry in dataset_index:
         candidate = entry.get("embedding") if isinstance(entry, Mapping) else None
@@ -145,14 +157,21 @@ def find_closest_dataset_match(
     if best_entry is None or best_distance is None:
         return None
 
-    username = str(best_entry.get("username")) if best_entry.get("username") else ""
-    identity = str(best_entry.get("identity")) if best_entry.get("identity") else ""
+    username = str(best_entry.get("username") or "")
+    identity = str(best_entry.get("identity") or "")
     return username, best_distance, identity
 
 
-def is_within_distance_threshold(distance: Optional[float], threshold: float) -> bool:
-    """Return ``True`` when the distance does not exceed the configured threshold."""
+def is_within_distance_threshold(distance: float | None, threshold: float) -> bool:
+    """Return ``True`` when the distance does not exceed the configured threshold.
 
+    Args:
+        distance: The computed distance between two embeddings.
+        threshold: The maximum allowed distance for a positive match.
+
+    Returns:
+        ``True`` if the distance is valid and within the threshold, otherwise ``False``.
+    """
     if distance is None:
         return False
 

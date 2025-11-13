@@ -11,7 +11,7 @@ from django.contrib.auth.models import Group
 from django.db.models import Max, Min, Q
 from django.utils import timezone
 
-from recognition.views import check_validity_times
+from recognition.utils import check_validity_times
 from users.models import Present, Time
 
 

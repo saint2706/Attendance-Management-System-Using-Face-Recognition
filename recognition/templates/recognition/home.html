@@ -1,109 +1,66 @@
 {% extends "recognition/base.html" %}
+{% load static %}
 
-{% block title %}Home - Smart Attendance System{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="text-center mb-8">
-    <h1 class="text-4xl font-weight-bold mb-4">
-        Welcome to the Smart Attendance System
-    </h1>
-    <p class="lead text-xl text-muted max-w-800 mx-auto">
-        Your one-stop solution for automated attendance management using advanced face recognition technology.
-    </p>
-</div>
-
-<section class="u-section" aria-labelledby="primary-actions">
-    <h2 id="primary-actions" class="u-section-title u-section-title--center">Get Started</h2>
-    <div class="row text-center">
-        <div class="col-12 col-md-6 col-lg-4 mb-4">
-            <article class="card h-100 card-elevated">
-                <div class="card-body card-body-lg d-flex flex-column justify-content-center">
-                    <a href="{% url 'mark-your-attendance' %}" class="link-reset">
-                        <i class="fas fa-arrow-right-from-bracket card-icon icon-xxl mb-4" aria-hidden="true"></i>
-                        <h3 class="card-title mb-4">
-                            Mark Time-In
-                        </h3>
-                        <p class="card-text text-base mb-0">
-                            Clock in for the day by scanning your face with our secure recognition system.
-                        </p>
-                    </a>
-                </div>
-            </article>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4 mb-4">
-            <article class="card h-100 card-elevated">
-                <div class="card-body card-body-lg d-flex flex-column justify-content-center">
-                    <a href="{% url 'mark-your-attendance-out' %}" class="link-reset">
-                        <i class="fas fa-right-to-bracket card-icon icon-xxl mb-4" aria-hidden="true"></i>
-                        <h3 class="card-title mb-4">
-                            Mark Time-Out
-                        </h3>
-                        <p class="card-text text-base mb-0">
-                            Clock out when you're done for the day. Track your work hours effortlessly.
-                        </p>
-                    </a>
-                </div>
-            </article>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4 mb-4">
-            <article class="card h-100 card-elevated">
-                <div class="card-body card-body-lg d-flex flex-column justify-content-center">
-                    <a href="{% url 'login' %}" class="link-reset">
-                        <i class="fas fa-user-shield card-icon icon-xxl mb-4" aria-hidden="true"></i>
-                        <h3 class="card-title mb-4">
-                            Dashboard Login
-                        </h3>
-                        <p class="card-text text-base mb-0">
-                            Access your attendance records, manage users, and view comprehensive reports.
-                        </p>
-                    </a>
-                </div>
-            </article>
-        </div>
-    </div>
-</section>
-
-<!-- Feature Highlights Section -->
-<section class="u-section" aria-labelledby="feature-highlights">
-    <h2 id="feature-highlights" class="u-section-title u-section-title--center text-3xl font-weight-bold mb-8">
-        Why Choose Our System?
-    </h2>
     <div class="row">
-        <div class="col-12 col-md-4 mb-4">
-            <div class="text-center">
-                <i class="fas fa-bolt icon-xl text-primary mb-4" aria-hidden="true"></i>
-                <h3 class="text-xl font-weight-semibold mb-3">
-                    Fast & Accurate
-                </h3>
-                <p class="text-muted text-base mb-0">
-                    Advanced AI-powered face recognition ensures quick and precise attendance marking.
-                </p>
-            </div>
-        </div>
-        <div class="col-12 col-md-4 mb-4">
-            <div class="text-center">
-                <i class="fas fa-shield-halved icon-xl text-primary mb-4" aria-hidden="true"></i>
-                <h3 class="text-xl font-weight-semibold mb-3">
-                    Secure & Private
-                </h3>
-                <p class="text-muted text-base mb-0">
-                    Your biometric data is encrypted and stored securely with industry-standard protection.
-                </p>
-            </div>
-        </div>
-        <div class="col-12 col-md-4 mb-4">
-            <div class="text-center">
-                <i class="fas fa-chart-line icon-xl text-primary mb-4" aria-hidden="true"></i>
-                <h3 class="text-xl font-weight-semibold mb-3">
-                    Detailed Reports
-                </h3>
-                <p class="text-muted text-base mb-0">
-                    Generate comprehensive attendance reports with visual analytics and export capabilities.
-                </p>
+        <div class="col-md-6 offset-md-3">
+            <h1 class="text-center">Mark Your Attendance</h1>
+            <form id="attendance-form" action="{% url 'mark-your-attendance' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-block">Mark In</button>
+            </form>
+            <form id="attendance-out-form" action="{% url 'mark-your-attendance-out' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary btn-block mt-2">Mark Out</button>
+            </form>
+
+            <div id="task-status-container" class="mt-4">
+                <h3>Task Status</h3>
+                <p id="task-status">Status: PENDING</p>
+                <p id="task-result">Result:</p>
             </div>
         </div>
     </div>
-</section>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'js/task-poll.js' %}"></script>
+    <script>
+        document.getElementById('task-status-container').style.display = 'none';
+
+        document.getElementById('attendance-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const form = event.target;
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('task-status-container').style.display = 'block';
+                pollTaskStatus(data.task_id, 'task-status', 'task-result');
+            });
+        });
+        document.getElementById('attendance-out-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const form = event.target;
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('task-status-container').style.display = 'block';
+                pollTaskStatus(data.task_id, 'task-status', 'task-result');
+            });
+        });
+    </script>
 {% endblock %}

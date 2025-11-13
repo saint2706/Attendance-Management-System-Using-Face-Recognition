@@ -1,142 +1,110 @@
 # Developer Guide
 
-This guide provides a comprehensive overview of the project's structure, architecture, and advanced usage. It is intended for developers who want to understand the project's inner workings. For information on how to contribute, please see the [Contributing Guide](CONTRIBUTING.md).
+This guide provides technical details for developers working on the Attendance Management System.
 
-## 1. Project Structure
+## Table of Contents
 
-The project is organized into the following directories:
+- [Project Structure](#project-structure)
+- [Setup and Installation](#setup-and-installation)
+- [Running the Application](#running-the-application)
+- [Backend Architecture](#backend-architecture)
+- [Frontend Architecture](#frontend-architecture)
+- [Face Recognition Pipeline](#face-recognition-pipeline)
+- [Asynchronous Tasks with Celery](#asynchronous-tasks-with-celery)
+- [Logging and Error Handling](#logging-and-error-handling)
+- [Testing](#testing)
+- [Deployment](#deployment)
 
--   `attendance_system_facial_recognition`: The main Django project directory.
--   `recognition`: The Django app that handles face recognition and attendance tracking.
--   `users`: The Django app that handles user management.
--   `face_recognition_data`: The directory where the face recognition data is stored.
+## Project Structure
 
-## 2. Architecture Overview
+The project is organized into several Django apps:
 
-For a detailed overview of the system architecture, including diagrams and data flow, please see the [Architecture Overview](ARCHITECTURE.md) document.
+- `attendance_system_facial_recognition`: The main Django project.
+- `recognition`: The core app for face recognition, attendance marking, and views.
+- `users`: Manages user authentication and registration.
 
-## 3. Management Commands
+## Setup and Installation
 
-The project includes several custom Django management commands for evaluation and analysis.
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-repo/Attendance-Management-System-Using-Face-Recognition.git
+    cd Attendance-Management-System-Using-Face-Recognition
+    ```
+2.  **Create a virtual environment:**
+    ```bash
+    python -m venv venv
+    source venv/bin/activate
+    ```
+3.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-### Data Preparation
+## Running the Application
 
-To prepare the data for training and evaluation, use the `prepare_splits` command:
+1.  **Apply migrations:**
+    ```bash
+    python manage.py migrate
+    ```
+2.  **Create a superuser:**
+    ```bash
+    python manage.py createsuperuser
+    ```
+3.  **Run the development server:**
+    ```bash
+    python manage.py runserver
+    ```
+4.  **Run the Celery worker:**
+    In a separate terminal, run:
+    ```bash
+    celery -A attendance_system_facial_recognition worker -l info
+    ```
 
+## Backend Architecture
+
+The backend is built with Django 5. Key components include:
+
+- **Models:** `users/models.py` and `recognition/models.py` define the database schema.
+- **Views:** `recognition/views.py` contains the logic for handling web requests.
+- **URLs:** `attendance_system_facial_recognition/urls.py` and `recognition/urls.py` define the URL routing.
+- **Celery Tasks:** `recognition/tasks.py` contains asynchronous tasks for face recognition and attendance processing.
+
+## Frontend Architecture
+
+The frontend is built with Django templates and Bootstrap 5. Key components include:
+
+- **Templates:** HTML files in `recognition/templates/` and `users/templates/`.
+- **Static Files:** CSS, JavaScript, and images in `recognition/static/`.
+
+## Face Recognition Pipeline
+
+The face recognition pipeline is implemented in the `recognition` app. The core logic is in `recognition/pipeline.py`.
+
+## Asynchronous Tasks with Celery
+
+Heavy operations like face recognition are offloaded to Celery tasks to avoid blocking web requests.
+
+- **`recognize_face`:** Takes an image and performs face recognition.
+- **`process_attendance_batch`:** Processes a batch of attendance records.
+
+To run the Celery worker:
 ```bash
-python manage.py prepare_splits --seed 42
+celery -A attendance_system_facial_recognition worker -l info
 ```
 
-### Evaluation
+## Logging and Error Handling
 
-To run a comprehensive evaluation of the model, use the `eval` command:
+The application uses Python's `logging` module for structured logging. Logs are written to the console in JSON format in production.
 
+Errors are tracked with Sentry. The Sentry integration is configured in `attendance_system_facial_recognition/settings/sentry.py`.
+
+## Testing
+
+To run the test suite:
 ```bash
-python manage.py eval --seed 42 --n-bootstrap 1000
+pytest
 ```
 
-### Threshold Selection
+## Deployment
 
-To select the optimal recognition threshold, use the `threshold_select` command:
-
-```bash
-python manage.py threshold_select --method eer --seed 42
-```
-
-### Ablation Experiments
-
-To run ablation experiments, use the `ablation` command:
-
-```bash
-python manage.py ablation --seed 42
-```
-
-### Export Reports
-
-To export all generated reports and figures, use the `export_reports` command:
-
-```bash
-python manage.py export_reports
-```
-
-## 4. Makefile Targets
-
-The project includes a comprehensive `Makefile` for common development tasks.
-
-### Development
-
--   `make run`: Start the Django development server
--   `make migrate`: Run database migrations
-
-### Testing and Evaluation
-
--   `make test`: Run all Django tests
--   `make evaluate`: Run performance evaluation with metrics
--   `make ablation`: Run ablation experiments
--   `make report`: Generate comprehensive reports
-
-## 5. API Reference
-
-For a complete reference of all API endpoints and command-line tools, please see the [API Reference](API_REFERENCE.md).
-
-## 6. Configuration
-
-The system can be configured using environment variables. For a detailed list of all configuration options, please see the [main README file](README.md#deployment-configuration). Operators planning production deployments should also review the [Deployment Guide](docs/deployment-guide.md) for Compose setup, migrations, and hardening recommendations.
-
-## 7. Database backends
-
-### Local PostgreSQL with Docker Compose
-
-1. Copy `.env.example` to `.env` and update the secrets as required. The default values match the credentials exported by the Compose profile.
-2. Start the containerised database:
-   ```bash
-   docker compose up -d postgres
-   ```
-3. Run migrations and tests against the running Postgres instance:
-   ```bash
-   python manage.py migrate
-   pytest
-   ```
-4. Tear the database down when you are finished:
-   ```bash
-   docker compose down
-   ```
-
-### Continuous Integration
-
-CI pipelines must export `DATABASE_URL` before running `pytest` so Django connects to Postgres instead of the default SQLite fallback. A typical GitHub Actions job includes a Postgres service container and the following step:
-
-```yaml
-- name: Run tests
-  env:
-    DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
-  run: pytest
-```
-
-Running tests against Postgres ensures migrations stay compatible with the production backend and catches issues that do not appear with SQLite.
-
-## 8. Frontend utilities
-
-### CameraManager helper
-
-Use the `CameraManager` utility (`recognition/static/js/camera.js`) to initialise and tear down shared camera streams in templates. The helper reuses a single `MediaStream` and automatically releases tracks when you call `stop()`.
-
-```html
-{% load static %}
-<script type="module">
-  import { CameraManager } from "{% static 'js/camera.js' %}";
-
-  const cameraManager = new CameraManager();
-  const preview = document.querySelector("video");
-
-  async function openPreview() {
-    await cameraManager.start(preview);
-  }
-
-  function closePreview() {
-    cameraManager.stop();
-  }
-</script>
-```
-
-Always pair preview components with lifecycle events (`hidden.bs.modal`, `beforeunload`, etc.) that call `stop()` so the browser can release the webcam promptly.
+The application is deployed with Docker. See `docker-compose.yml` for the service configuration.
