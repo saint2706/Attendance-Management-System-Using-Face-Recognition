@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List
 
-import numpy as np
-import pytest
 from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
+
+import numpy as np
+import pytest
 
 from recognition import views
 from users.models import Present, Time
@@ -52,9 +53,7 @@ def test_add_photos_creates_dataset_for_existing_user(client, monkeypatch):
     """Posting to the Add Photos view should trigger dataset creation."""
 
     admin = _create_admin_user()
-    employee = get_user_model().objects.create_user(
-        username="face-user", password="SomePass!234"
-    )
+    employee = get_user_model().objects.create_user(username="face-user", password="SomePass!234")
     client.force_login(admin)
 
     created_for: Dict[str, str] = {}
@@ -118,17 +117,31 @@ def test_mark_attendance_records_successful_check_in(client, django_user_model, 
     monkeypatch.setattr(views, "get_webcam_manager", lambda: _StubWebcamManager(dummy_frame))
     monkeypatch.setattr(views, "_is_headless_environment", lambda: True)
     monkeypatch.setattr(views.imutils, "resize", lambda frame, width: frame)
-    monkeypatch.setattr(views, "_load_dataset_embeddings_for_matching", lambda *args, **kwargs: [
-        {"embedding": np.array([0.1, 0.2, 0.3], dtype=float), "username": employee.username, "identity": "recognised-user/sample.jpg"}
-    ])
+    monkeypatch.setattr(
+        views,
+        "_load_dataset_embeddings_for_matching",
+        lambda *args, **kwargs: [
+            {
+                "embedding": np.array([0.1, 0.2, 0.3], dtype=float),
+                "username": employee.username,
+                "identity": "recognised-user/sample.jpg",
+            }
+        ],
+    )
     monkeypatch.setattr(
         views,
         "find_closest_dataset_match",
         lambda embedding, dataset, metric: (employee.username, 0.05, "recognised-user/sample.jpg"),
     )
-    monkeypatch.setattr(views.DeepFace, "represent", staticmethod(lambda **kwargs: [
-        {"embedding": [0.1, 0.2, 0.3], "facial_area": {"x": 1, "y": 1, "w": 2, "h": 2}}
-    ]))
+    monkeypatch.setattr(
+        views.DeepFace,
+        "represent",
+        staticmethod(
+            lambda **kwargs: [
+                {"embedding": [0.1, 0.2, 0.3], "facial_area": {"x": 1, "y": 1, "w": 2, "h": 2}}
+            ]
+        ),
+    )
     monkeypatch.setattr(views, "_passes_liveness_check", lambda *args, **kwargs: True)
     monkeypatch.setattr(views, "log_recognition_outcome", lambda **kwargs: None)
     monkeypatch.setattr(views.monitoring, "observe_stage_duration", lambda *args, **kwargs: None)

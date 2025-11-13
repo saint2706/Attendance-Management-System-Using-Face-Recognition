@@ -43,7 +43,6 @@ def test_extract_embedding_rejects_invalid_payload() -> None:
         ("manhattan", 2.0),
     ],
 )
-
 def test_calculate_embedding_distance_supported_metrics(metric: str, expected) -> None:
     """Distances should be computed deterministically across supported metrics."""
 
@@ -71,7 +70,9 @@ def test_find_closest_dataset_match_returns_best_candidate() -> None:
         {"username": "bob", "identity": "dataset/bob/1.jpg", "embedding": np.array([1.0, 0.0])},
     ]
 
-    username, distance, identity = pipeline.find_closest_dataset_match(probe, dataset, "euclidean_l2")
+    username, distance, identity = pipeline.find_closest_dataset_match(
+        probe, dataset, "euclidean_l2"
+    )
 
     assert username == "bob"
     assert identity == "dataset/bob/1.jpg"
@@ -87,11 +88,9 @@ def test_find_closest_dataset_match_returns_best_candidate() -> None:
         (float("nan"), 0.3, False),
     ],
 )
-
 def test_is_within_distance_threshold_handles_edge_cases(
     distance: float | None, threshold: float, expected: bool
 ) -> None:
     """Distance threshold helper should defensively handle non-finite inputs."""
 
     assert pipeline.is_within_distance_threshold(distance, threshold) is expected
-

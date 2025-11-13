@@ -160,4 +160,3 @@ def is_within_distance_threshold(distance: Optional[float], threshold: float) ->
         return False
 
     return bool(distance <= threshold)
-
