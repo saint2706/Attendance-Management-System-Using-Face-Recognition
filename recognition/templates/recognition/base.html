@@ -7,6 +7,7 @@
     <meta name="description" content="Smart Attendance System - Automated attendance tracking using face recognition technology">
     <meta name="theme-color" content="#0d6efd">
     <meta name="application-name" content="Smart Attendance System">
+    <meta name="color-scheme" content="light dark">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Smart Attendance">
@@ -14,12 +15,15 @@
     <title>{% block title %}Smart Attendance System{% endblock %}</title>
 
     <!-- Bootstrap CSS (for compatibility with existing styles) -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://ka-f.fontawesome.com" crossorigin>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
     <!-- Font Awesome Icons -->
-    <script src="https://kit.fontawesome.com/00148adc4d.js" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/00148adc4d.js" crossorigin="anonymous" defer></script>
 
     <!-- Custom Styles -->
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="icon" type="image/png" sizes="192x192" href="{% static 'icons/icon-192.png' %}">
@@ -127,14 +131,14 @@
         <!-- Footer -->
         <footer class="app-footer no-print" role="contentinfo">
             <div class="main-content">
-                <div class="d-flex justify-content-between align-items-center flex-wrap" style="padding: var(--space-6) 0; border-top: 1px solid var(--color-border); margin-top: var(--space-8);">
-                    <p class="text-muted mb-0" style="font-size: var(--font-size-sm);">
+                <div class="d-flex justify-content-between align-items-center flex-wrap footer-bar">
+                    <p class="text-muted text-sm mb-0">
                         © 2024 Smart Attendance System. All rights reserved.
                     </p>
                     <div class="d-flex gap-4">
-                        <a href="{% url 'home' %}" class="text-muted text-decoration-none" style="font-size: var(--font-size-sm);">Home</a>
+                        <a href="{% url 'home' %}" class="text-muted text-decoration-none text-sm">Home</a>
                         {% if user.is_authenticated %}
-                            <a href="{% url 'dashboard' %}" class="text-muted text-decoration-none" style="font-size: var(--font-size-sm);">Dashboard</a>
+                            <a href="{% url 'dashboard' %}" class="text-muted text-decoration-none text-sm">Dashboard</a>
                         {% endif %}
                     </div>
                 </div>
@@ -143,11 +147,11 @@
     </div>
     
     <!-- Bootstrap JS (for compatibility) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous" defer></script>
+
     <!-- Custom UI JavaScript -->
-    <script src="{% static 'js/ui.js' %}"></script>
-    <script src="{% static 'js/attendance-offline.js' %}"></script>
+    <script src="{% static 'js/ui.js' %}" defer></script>
+    <script src="{% static 'js/attendance-offline.js' %}" defer></script>
 
     {% block extra_scripts %}
     <script>

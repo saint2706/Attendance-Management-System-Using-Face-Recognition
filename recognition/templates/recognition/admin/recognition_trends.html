@@ -1,102 +1,117 @@
 {% extends "admin/base_site.html" %}
-{% load tz %}
+{% load static tz %}
 
 {% block title %}Recognition Accuracy Trends{% endblock %}
 
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+{% endblock %}
+
 {% block content %}
-<h1>Recognition Accuracy Trends</h1>
+<div class="u-admin-page">
+    <header class="u-page-header">
+        <h1 class="u-page-title">Recognition Accuracy Trends</h1>
+        <p class="u-page-subtitle">
+            {% if retention_days_numeric %}
+                Recognition outcomes are retained for {{ retention_days_numeric }} day{{ retention_days_numeric|pluralize }}.
+            {% else %}
+                Recognition outcomes are retained {{ retention_days }}.
+            {% endif %}
+            Use these tables to monitor how often recognition attempts are accepted before attendance updates are queued.
+        </p>
+    </header>
 
-<p>
-    {% if retention_days_numeric %}
-        Recognition outcomes are retained for {{ retention_days_numeric }} day{{ retention_days_numeric|pluralize }}.
-    {% else %}
-        Recognition outcomes are retained {{ retention_days }}.
-    {% endif %}
-    Use these tables to monitor how often recognition attempts are accepted before attendance
-    updates are queued.
-</p>
+    <section class="u-panel" aria-labelledby="daily-accuracy">
+        <h2 id="daily-accuracy" class="u-panel-title">Daily Accuracy</h2>
+        {% if daily_trend %}
+            <div class="u-table-wrapper">
+                <table class="u-table u-table--compact" aria-describedby="daily-accuracy">
+                    <caption class="visually-hidden">Daily recognition attempts with acceptance accuracy and confidence</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Total Attempts</th>
+                            <th scope="col">Accepted</th>
+                            <th scope="col">Rejected</th>
+                            <th scope="col">Accuracy</th>
+                            <th scope="col">Average Confidence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in daily_trend %}
+                        <tr>
+                            <td>{{ row.period|date:"Y-m-d" }}</td>
+                            <td>{{ row.total }}</td>
+                            <td>{{ row.accepted }}</td>
+                            <td>{{ row.rejected }}</td>
+                            <td class="u-table-status">{{ row.accuracy|floatformat:2 }}</td>
+                            <td class="u-table-status">
+                                {% if row.average_confidence %}
+                                    {{ row.average_confidence|floatformat:2 }}
+                                {% else %}
+                                    –
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="u-empty-state">No recognition outcomes have been recorded yet.</p>
+        {% endif %}
+    </section>
 
-<div class="module">
-    <h2>Daily Accuracy</h2>
-    {% if daily_trend %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Total Attempts</th>
-                    <th>Accepted</th>
-                    <th>Rejected</th>
-                    <th>Accuracy</th>
-                    <th>Average Confidence</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in daily_trend %}
-                <tr>
-                    <td>{{ row.period|date:"Y-m-d" }}</td>
-                    <td>{{ row.total }}</td>
-                    <td>{{ row.accepted }}</td>
-                    <td>{{ row.rejected }}</td>
-                    <td>{{ row.accuracy|floatformat:2 }}</td>
-                    <td>
-                        {% if row.average_confidence %}
-                            {{ row.average_confidence|floatformat:2 }}
-                        {% else %}
-                            –
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No recognition outcomes have been recorded yet.</p>
-    {% endif %}
-</div>
+    <section class="u-panel" aria-labelledby="weekly-accuracy">
+        <h2 id="weekly-accuracy" class="u-panel-title">Weekly Accuracy</h2>
+        {% if weekly_trend %}
+            <div class="u-table-wrapper">
+                <table class="u-table u-table--compact" aria-describedby="weekly-accuracy">
+                    <caption class="visually-hidden">Weekly aggregation of recognition accuracy and confidence</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Week Starting</th>
+                            <th scope="col">Total Attempts</th>
+                            <th scope="col">Accepted</th>
+                            <th scope="col">Rejected</th>
+                            <th scope="col">Accuracy</th>
+                            <th scope="col">Average Confidence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in weekly_trend %}
+                        <tr>
+                            <td>{{ row.period|date:"Y-m-d" }}</td>
+                            <td>{{ row.total }}</td>
+                            <td>{{ row.accepted }}</td>
+                            <td>{{ row.rejected }}</td>
+                            <td class="u-table-status">{{ row.accuracy|floatformat:2 }}</td>
+                            <td class="u-table-status">
+                                {% if row.average_confidence %}
+                                    {{ row.average_confidence|floatformat:2 }}
+                                {% else %}
+                                    –
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="u-empty-state">No weekly aggregates are available yet.</p>
+        {% endif %}
+    </section>
 
-<div class="module">
-    <h2>Weekly Accuracy</h2>
-    {% if weekly_trend %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Week Starting</th>
-                    <th>Total Attempts</th>
-                    <th>Accepted</th>
-                    <th>Rejected</th>
-                    <th>Accuracy</th>
-                    <th>Average Confidence</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in weekly_trend %}
-                <tr>
-                    <td>{{ row.period|date:"Y-m-d" }}</td>
-                    <td>{{ row.total }}</td>
-                    <td>{{ row.accepted }}</td>
-                    <td>{{ row.rejected }}</td>
-                    <td>{{ row.accuracy|floatformat:2 }}</td>
-                    <td>
-                        {% if row.average_confidence %}
-                            {{ row.average_confidence|floatformat:2 }}
-                        {% else %}
-                            –
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No weekly aggregates are available yet.</p>
-    {% endif %}
-</div>
-
-<div class="module">
-    <h2>Next Steps</h2>
-    <ul>
-        <li><a href="{% url 'admin_evaluation_dashboard' %}">Back to Evaluation Dashboard</a></li>
-        <li><a href="{% url 'admin:index' %}">Go to Django Admin</a></li>
-    </ul>
+    <section class="u-panel" aria-labelledby="trend-next-steps">
+        <h2 id="trend-next-steps" class="u-panel-title">Next Steps</h2>
+        <ul class="list-spaced">
+            <li><a href="{% url 'admin_evaluation_dashboard' %}">Back to Evaluation Dashboard</a></li>
+            <li><a href="{% url 'admin:index' %}">Go to Django Admin</a></li>
+        </ul>
+    </section>
 </div>
 {% endblock %}

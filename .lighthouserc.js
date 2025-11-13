@@ -3,7 +3,7 @@ module.exports = {
     collect: {
       // Start the Django server for testing
       // Note: This command inherits environment variables from the shell/CI
-      startServerCommand: 'python manage.py runserver 8000',
+      startServerCommand: 'python manage.py runserver 0.0.0.0:8000 --noreload --insecure',
       startServerReadyPattern: 'Starting development server',
       startServerReadyTimeout: 60000,
       // URLs to audit

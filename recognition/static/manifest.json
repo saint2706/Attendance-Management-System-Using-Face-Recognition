@@ -1,12 +1,15 @@
 {
+  "id": "/",
   "name": "Smart Attendance System",
   "short_name": "Attendance",
   "description": "Progressive web experience for the Smart Attendance System powered by face recognition.",
-  "start_url": "/",
+  "scope": "/",
+  "start_url": "/?source=pwa",
   "display": "standalone",
   "background_color": "#f8f9fa",
   "theme_color": "#0d6efd",
   "lang": "en-US",
+  "categories": ["productivity", "business"],
   "icons": [
     {
       "src": "/static/icons/icon-192.png",
@@ -21,18 +24,42 @@
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [
+  "shortcuts": [
     {
-      "src": "/static/recognition/img/login.png",
-      "sizes": "960x540",
-      "type": "image/png",
-      "label": "Login to view dashboards"
+      "name": "Open Dashboard",
+      "url": "/dashboard/",
+      "icons": [
+        {
+          "src": "/static/icons/icon-192.png",
+          "type": "image/png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
-      "src": "/static/recognition/img/reports.png",
-      "sizes": "1280x720",
+      "name": "Mark Attendance",
+      "url": "/mark_your_attendance",
+      "icons": [
+        {
+          "src": "/static/icons/icon-192.png",
+          "type": "image/png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/static/recognition/img/attendance_graphs/this_week/1.png",
+      "sizes": "640x480",
       "type": "image/png",
-      "label": "Attendance insights"
+      "label": "Weekly attendance overview"
+    },
+    {
+      "src": "/static/recognition/img/attendance_graphs/last_week/1.png",
+      "sizes": "640x480",
+      "type": "image/png",
+      "label": "Historical attendance comparisons"
     }
   ]
 }

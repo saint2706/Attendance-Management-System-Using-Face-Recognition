@@ -4,8 +4,8 @@
 {% block title %}Attendance Dashboard - Smart Attendance System{% endblock %}
 
 {% block content %}
-<header class="d-flex justify-content-between align-items-center mb-6 flex-wrap" style="margin-bottom: var(--space-8); gap: var(--space-4);">
-    <h1 style="font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); color: var(--color-text); margin: 0;">
+<header class="u-dashboard-header">
+    <h1 class="u-dashboard-title">
         Attendance Dashboard
     </h1>
     <div class="d-flex gap-2 flex-wrap">
@@ -19,29 +19,32 @@
 </header>
 
 <!-- Statistics Cards -->
-<section aria-label="Attendance statistics" class="mb-8" style="margin-bottom: var(--space-10);">
+<section aria-labelledby="attendance-statistics" class="mb-10">
+    <h2 id="attendance-statistics" class="u-section-title">
+        Attendance Statistics
+    </h2>
     <div class="row">
         <div class="col-12 col-md-6 mb-4">
-            <article class="card" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); color: var(--color-white); border: none;">
-                <div class="card-body text-center" style="padding: var(--space-8);">
-                    <i class="fas fa-users" style="font-size: 2.5rem; margin-bottom: var(--space-4); opacity: 0.9;" aria-hidden="true"></i>
-                    <h2 style="font-size: var(--font-size-lg); font-weight: var(--font-weight-medium); margin-bottom: var(--space-3); opacity: 0.95;">
+            <article class="card card-hero card-hero--primary">
+                <div class="card-body card-body-lg text-center">
+                    <i class="fas fa-users icon-xl mb-4 opacity-90" aria-hidden="true"></i>
+                    <h3 class="text-lg font-weight-medium mb-3 opacity-90">
                         Total Employees
-                    </h2>
-                    <p style="font-size: 3.5rem; font-weight: var(--font-weight-bold); margin: 0; line-height: 1;">
+                    </h3>
+                    <p class="text-3xl font-weight-bold mb-0 leading-tight">
                         {{ total_num_of_emp }}
                     </p>
                 </div>
             </article>
         </div>
         <div class="col-12 col-md-6 mb-4">
-            <article class="card" style="background: linear-gradient(135deg, var(--color-success) 0%, #157347 100%); color: var(--color-white); border: none;">
-                <div class="card-body text-center" style="padding: var(--space-8);">
-                    <i class="fas fa-user-check" style="font-size: 2.5rem; margin-bottom: var(--space-4); opacity: 0.9;" aria-hidden="true"></i>
-                    <h2 style="font-size: var(--font-size-lg); font-weight: var(--font-weight-medium); margin-bottom: var(--space-3); opacity: 0.95;">
+            <article class="card card-hero card-hero--success">
+                <div class="card-body card-body-lg text-center">
+                    <i class="fas fa-user-check icon-xl mb-4 opacity-90" aria-hidden="true"></i>
+                    <h3 class="text-lg font-weight-medium mb-3 opacity-90">
                         Employees Present Today
-                    </h2>
-                    <p style="font-size: 3.5rem; font-weight: var(--font-weight-bold); margin: 0; line-height: 1;">
+                    </h3>
+                    <p class="text-3xl font-weight-bold mb-0 leading-tight">
                         {{ emp_present_today }}
                     </p>
                 </div>
@@ -51,28 +54,36 @@
 </section>
 
 <!-- Attendance Graphs -->
-<section aria-label="Attendance trends">
-    <h2 class="mb-6" style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-semibold); color: var(--color-text); margin-bottom: var(--space-6);">
+<section aria-labelledby="attendance-trends">
+    <h2 id="attendance-trends" class="u-section-title mb-6">
         Attendance Trends
     </h2>
     <div class="row">
         <div class="col-12 col-lg-6 mb-4">
             <article class="card">
-                <div class="card-body" style="padding: var(--space-6);">
-                    <h3 class="card-title text-center mb-4" style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); color: var(--color-text);">
+                <div class="card-body card-body-lg">
+                    <h3 class="text-xl font-weight-semibold text-center mb-4">
                         <i class="fas fa-chart-line" aria-hidden="true"></i> This Week's Attendance
                     </h3>
                     {% if this_week_graph_url %}
-                        <div style="border-radius: var(--radius-md); overflow: hidden; background-color: var(--color-gray-50);">
-                            <img src="{{ this_week_graph_url }}" class="img-fluid" alt="Graph showing this week's attendance trends" style="width: 100%; height: auto;">
+                        <div class="card-media">
+                            <img
+                                src="{{ this_week_graph_url }}"
+                                class="img-fluid chart-image"
+                                alt="Graph showing this week's attendance trends"
+                                loading="lazy"
+                                decoding="async"
+                                width="640"
+                                height="480"
+                            >
                         </div>
-                        <p class="text-center text-muted mt-3 mb-0" style="font-size: var(--font-size-sm);">
+                        <p class="text-center text-muted text-sm mt-3 mb-0">
                             Number of employees present each day
                         </p>
                     {% else %}
-                        <div class="text-center" style="padding: var(--space-10) var(--space-4); background-color: var(--color-gray-50); border-radius: var(--radius-md);">
-                            <i class="fas fa-chart-line" style="font-size: 3rem; color: var(--color-text-muted); opacity: 0.3; margin-bottom: var(--space-4);" aria-hidden="true"></i>
-                            <p class="text-muted mb-0" style="font-size: var(--font-size-base);">
+                        <div class="card-empty">
+                            <i class="fas fa-chart-line icon-xxl text-muted icon-soft mb-4" aria-hidden="true"></i>
+                            <p class="text-muted text-base mb-0">
                                 Graphs will appear once attendance data is available.
                             </p>
                         </div>
@@ -82,21 +93,29 @@
         </div>
         <div class="col-12 col-lg-6 mb-4">
             <article class="card">
-                <div class="card-body" style="padding: var(--space-6);">
-                    <h3 class="card-title text-center mb-4" style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); color: var(--color-text);">
+                <div class="card-body card-body-lg">
+                    <h3 class="text-xl font-weight-semibold text-center mb-4">
                         <i class="fas fa-chart-bar" aria-hidden="true"></i> Last Week's Attendance
                     </h3>
                     {% if last_week_graph_url %}
-                        <div style="border-radius: var(--radius-md); overflow: hidden; background-color: var(--color-gray-50);">
-                            <img src="{{ last_week_graph_url }}" class="img-fluid" alt="Graph showing last week's attendance trends" style="width: 100%; height: auto;">
+                        <div class="card-media">
+                            <img
+                                src="{{ last_week_graph_url }}"
+                                class="img-fluid chart-image"
+                                alt="Graph showing last week's attendance trends"
+                                loading="lazy"
+                                decoding="async"
+                                width="640"
+                                height="480"
+                            >
                         </div>
-                        <p class="text-center text-muted mt-3 mb-0" style="font-size: var(--font-size-sm);">
+                        <p class="text-center text-muted text-sm mt-3 mb-0">
                             Number of employees present each day
                         </p>
                     {% else %}
-                        <div class="text-center" style="padding: var(--space-10) var(--space-4); background-color: var(--color-gray-50); border-radius: var(--radius-md);">
-                            <i class="fas fa-chart-bar" style="font-size: 3rem; color: var(--color-text-muted); opacity: 0.3; margin-bottom: var(--space-4);" aria-hidden="true"></i>
-                            <p class="text-muted mb-0" style="font-size: var(--font-size-base);">
+                        <div class="card-empty">
+                            <i class="fas fa-chart-bar icon-xxl text-muted icon-soft mb-4" aria-hidden="true"></i>
+                            <p class="text-muted text-base mb-0">
                                 Graphs will appear once attendance data is available.
                             </p>
                         </div>
@@ -108,18 +127,18 @@
 </section>
 
 <!-- Quick Info Card -->
-<section class="mt-8" style="margin-top: var(--space-12);">
-    <div class="card" style="border-left: 4px solid var(--color-info);">
-        <div class="card-body" style="padding: var(--space-6);">
+<section class="u-section" aria-labelledby="attendance-reports-info">
+    <div class="card card-accent card-accent--info">
+        <div class="card-body card-body-lg">
             <div class="d-flex align-items-start gap-4">
-                <i class="fas fa-info-circle" style="font-size: 2rem; color: var(--color-info);" aria-hidden="true"></i>
+                <i class="fas fa-info-circle icon-lg text-info" aria-hidden="true"></i>
                 <div>
-                    <h3 style="font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-2); color: var(--color-text);">
+                    <h3 id="attendance-reports-info" class="text-lg font-weight-semibold mb-2">
                         About Attendance Reports
                     </h3>
-                    <p class="text-muted mb-0" style="font-size: var(--font-size-base);">
-                        The attendance dashboard provides real-time statistics and visualizations of employee attendance. 
-                        Use the "View by Employee" button to see individual attendance records, or "View by Date" to see 
+                    <p class="text-muted text-base mb-0">
+                        The attendance dashboard provides real-time statistics and visualizations of employee attendance.
+                        Use the "View by Employee" button to see individual attendance records, or "View by Date" to see
                         attendance for specific dates. All data can be exported to CSV format for further analysis.
                     </p>
                 </div>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'attendance-shell-v1';
+const CACHE_NAME = 'attendance-shell-v2';
 const ATTENDANCE_DB = 'attendance-offline';
 const ATTENDANCE_STORE = 'attendance-queue';
 const ATTENDANCE_ENDPOINTS = [
@@ -6,20 +6,35 @@ const ATTENDANCE_ENDPOINTS = [
   '/mark_your_attendance_out'
 ];
 
-const SHELL_ASSETS = [
+const CORE_DOCUMENTS = [
   '/',
+  '/?source=pwa',
+  '/login/'
+];
+
+const STATIC_ASSETS = [
+  '/static/manifest.json',
   '/static/css/app.css',
   '/static/css/styles.css',
+  '/static/css/tokens.css',
   '/static/js/ui.js',
   '/static/js/camera.js',
-  '/static/manifest.json',
+  '/static/js/attendance-offline.js',
   '/static/icons/icon-192.png',
-  '/static/icons/icon-512.png'
+  '/static/icons/icon-512.png',
+  '/static/recognition/img/attendance_graphs/this_week/1.png',
+  '/static/recognition/img/attendance_graphs/last_week/1.png'
 ];
+
+const SHELL_ASSETS = [...CORE_DOCUMENTS, ...STATIC_ASSETS];
+const FALLBACK_DOCUMENT = '/?source=pwa';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS)).then(() => self.skipWaiting())
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(SHELL_ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -47,7 +62,7 @@ self.addEventListener('fetch', (event) => {
   if (request.method === 'GET') {
     if (request.mode === 'navigate') {
       event.respondWith(
-        fetch(request).catch(() => caches.match('/'))
+        fetch(request).catch(() => caches.match(FALLBACK_DOCUMENT))
       );
       return;
     }
@@ -59,11 +74,13 @@ self.addEventListener('fetch', (event) => {
         }
         return fetch(request)
           .then((response) => {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            if (response && (response.ok || response.type === 'opaque')) {
+              const clone = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            }
             return response;
           })
-          .catch(() => caches.match('/'));
+          .catch(() => caches.match(FALLBACK_DOCUMENT));
       })
     );
   }
@@ -95,6 +112,11 @@ async function handleAttendanceSubmission(request) {
   } catch (error) {
     await queueAttendanceRequest(request);
     broadcastToClients({ type: 'attendance-queued' });
+    if (self.registration?.sync) {
+      self.registration.sync.register('attendance-sync').catch(() => {
+        // ignore registration errors; the foreground page will retry via postMessage
+      });
+    }
     return new Response(
       JSON.stringify({ queued: true, message: 'Attendance request saved for retry when online.' }),
       {

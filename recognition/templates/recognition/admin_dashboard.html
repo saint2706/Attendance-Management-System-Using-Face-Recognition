@@ -3,27 +3,28 @@
 {% block title %}Admin Dashboard - Smart Attendance System{% endblock %}
 
 {% block content %}
-<header class="d-flex justify-content-between align-items-center mb-6" style="margin-bottom: var(--space-8);">
-    <h1 style="font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); color: var(--color-text); margin: 0;">
+<header class="u-dashboard-header">
+    <h1 class="u-dashboard-title">
         Admin Dashboard
     </h1>
-    <div class="d-flex align-items-center gap-2" style="background-color: var(--color-primary); color: var(--color-white); padding: var(--space-3) var(--space-5); border-radius: var(--radius-lg);">
-        <i class="fas fa-user-circle" aria-hidden="true"></i>
-        <span style="font-weight: var(--font-weight-medium);">Welcome, {{ user.username }}!</span>
+    <div class="u-dashboard-badge">
+        <i class="fas fa-user-circle icon-lg" aria-hidden="true"></i>
+        <span>Welcome, {{ user.username }}!</span>
     </div>
 </header>
 
-<section aria-label="Admin actions">
+<section class="u-section" aria-labelledby="admin-actions">
+    <h2 id="admin-actions" class="u-section-title u-section-title--center">Admin Actions</h2>
     <div class="row text-center">
         <div class="col-12 col-sm-6 col-lg-3 mb-4">
-            <article class="card h-100">
-                <div class="card-body d-flex flex-column justify-content-center" style="padding: var(--space-6);">
-                    <a href="{% url 'register' %}" class="text-decoration-none" style="color: inherit;">
-                        <i class="fas fa-user-plus card-icon mb-3" aria-hidden="true"></i>
-                        <h2 class="card-title" style="font-size: var(--font-size-xl); margin-bottom: var(--space-3);">
+            <article class="card h-100 card-elevated">
+                <div class="card-body card-body-lg d-flex flex-column justify-content-center">
+                    <a href="{% url 'register' %}" class="link-reset">
+                        <i class="fas fa-user-plus card-icon icon-xxl mb-4" aria-hidden="true"></i>
+                        <h3 class="card-title mb-3">
                             Register Employee
-                        </h2>
-                        <p class="card-text" style="color: var(--color-text-muted); font-size: var(--font-size-sm);">
+                        </h3>
+                        <p class="card-text text-sm mb-0">
                             Add a new employee to the system and create their account.
                         </p>
                     </a>
@@ -32,46 +33,46 @@
         </div>
         
         <div class="col-12 col-sm-6 col-lg-3 mb-4">
-            <article class="card h-100">
-                <div class="card-body d-flex flex-column justify-content-center" style="padding: var(--space-6);">
-                    <a href="{% url 'add-photos' %}" class="text-decoration-none" style="color: inherit;">
-                        <i class="fas fa-camera card-icon mb-3" aria-hidden="true"></i>
-                        <h2 class="card-title" style="font-size: var(--font-size-xl); margin-bottom: var(--space-3);">
+            <article class="card h-100 card-elevated">
+                <div class="card-body card-body-lg d-flex flex-column justify-content-center">
+                    <a href="{% url 'add-photos' %}" class="link-reset">
+                        <i class="fas fa-camera card-icon icon-xxl mb-4" aria-hidden="true"></i>
+                        <h3 class="card-title mb-3">
                             Add Photos
-                        </h2>
-                        <p class="card-text" style="color: var(--color-text-muted); font-size: var(--font-size-sm);">
+                        </h3>
+                        <p class="card-text text-sm mb-0">
                             Capture or upload face photos for employee recognition.
                         </p>
                     </a>
                 </div>
             </article>
         </div>
-        
+
         <div class="col-12 col-sm-6 col-lg-3 mb-4">
-            <article class="card h-100">
-                <div class="card-body d-flex flex-column justify-content-center" style="padding: var(--space-6);">
-                    <a href="{% url 'train' %}" class="text-decoration-none" style="color: inherit;">
-                        <i class="fas fa-brain card-icon mb-3" aria-hidden="true"></i>
-                        <h2 class="card-title" style="font-size: var(--font-size-xl); margin-bottom: var(--space-3);">
+            <article class="card h-100 card-elevated">
+                <div class="card-body card-body-lg d-flex flex-column justify-content-center">
+                    <a href="{% url 'train' %}" class="link-reset">
+                        <i class="fas fa-brain card-icon icon-xxl mb-4" aria-hidden="true"></i>
+                        <h3 class="card-title mb-3">
                             Train Model
-                        </h2>
-                        <p class="card-text" style="color: var(--color-text-muted); font-size: var(--font-size-sm);">
+                        </h3>
+                        <p class="card-text text-sm mb-0">
                             Training happens automatically. Click to verify status.
                         </p>
                     </a>
                 </div>
             </article>
         </div>
-        
+
         <div class="col-12 col-sm-6 col-lg-3 mb-4">
-            <article class="card h-100">
-                <div class="card-body d-flex flex-column justify-content-center" style="padding: var(--space-6);">
-                    <a href="{% url 'view-attendance-home' %}" class="text-decoration-none" style="color: inherit;">
-                        <i class="fas fa-chart-column card-icon mb-3" aria-hidden="true"></i>
-                        <h2 class="card-title" style="font-size: var(--font-size-xl); margin-bottom: var(--space-3);">
+            <article class="card h-100 card-elevated">
+                <div class="card-body card-body-lg d-flex flex-column justify-content-center">
+                    <a href="{% url 'view-attendance-home' %}" class="link-reset">
+                        <i class="fas fa-chart-column card-icon icon-xxl mb-4" aria-hidden="true"></i>
+                        <h3 class="card-title mb-3">
                             View Attendance
-                        </h2>
-                        <p class="card-text" style="color: var(--color-text-muted); font-size: var(--font-size-sm);">
+                        </h3>
+                        <p class="card-text text-sm mb-0">
                             Access detailed attendance reports and analytics.
                         </p>
                     </a>
@@ -82,60 +83,60 @@
 </section>
 
 <!-- Quick Stats Section -->
-<section class="mt-8" aria-label="System statistics" style="margin-top: var(--space-12);">
-    <h2 class="mb-4" style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-semibold); color: var(--color-text); margin-bottom: var(--space-6);">
+<section class="u-section" aria-labelledby="system-overview">
+    <h2 id="system-overview" class="u-section-title">
         Quick Overview
     </h2>
     <div class="row">
         <div class="col-12 col-md-4 mb-4">
-            <div class="card" style="border-left: 4px solid var(--color-primary);">
+            <div class="card card-accent card-accent--primary">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <p class="text-muted mb-1" style="font-size: var(--font-size-sm); margin-bottom: var(--space-2);">
+                            <h3 class="text-muted text-sm mb-2 text-uppercase">
                                 Total Employees
-                            </p>
-                            <p style="font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); margin: 0; color: var(--color-text);">
+                            </h3>
+                            <p class="u-metric-value">
                                 {{ total_employees|default:"0" }}
                             </p>
                         </div>
-                        <i class="fas fa-users" style="font-size: 2.5rem; color: var(--color-primary); opacity: 0.3;" aria-hidden="true"></i>
+                        <i class="fas fa-users icon-xl text-primary icon-soft" aria-hidden="true"></i>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <div class="col-12 col-md-4 mb-4">
-            <div class="card" style="border-left: 4px solid var(--color-success);">
+            <div class="card card-accent card-accent--success">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <p class="text-muted mb-1" style="font-size: var(--font-size-sm); margin-bottom: var(--space-2);">
+                            <h3 class="text-muted text-sm mb-2 text-uppercase">
                                 Present Today
-                            </p>
-                            <p style="font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); margin: 0; color: var(--color-text);">
+                            </h3>
+                            <p class="u-metric-value">
                                 {{ present_today|default:"0" }}
                             </p>
                         </div>
-                        <i class="fas fa-user-check" style="font-size: 2.5rem; color: var(--color-success); opacity: 0.3;" aria-hidden="true"></i>
+                        <i class="fas fa-user-check icon-xl text-success icon-soft" aria-hidden="true"></i>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <div class="col-12 col-md-4 mb-4">
-            <div class="card" style="border-left: 4px solid var(--color-info);">
+            <div class="card card-accent card-accent--info">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <p class="text-muted mb-1" style="font-size: var(--font-size-sm); margin-bottom: var(--space-2);">
+                            <h3 class="text-muted text-sm mb-2 text-uppercase">
                                 System Status
-                            </p>
-                            <p style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); margin: 0; color: var(--color-success);">
+                            </h3>
+                            <p class="text-xl font-weight-semibold text-success mb-0">
                                 <i class="fas fa-circle-check" aria-hidden="true"></i> Active
                             </p>
                         </div>
-                        <i class="fas fa-server" style="font-size: 2.5rem; color: var(--color-info); opacity: 0.3;" aria-hidden="true"></i>
+                        <i class="fas fa-server icon-xl text-info icon-soft" aria-hidden="true"></i>
                     </div>
                 </div>
             </div>

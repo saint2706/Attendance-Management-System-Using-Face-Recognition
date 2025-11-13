@@ -3,167 +3,202 @@
 
 {% block title %}Evaluation Dashboard{% endblock %}
 
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+{% endblock %}
+
 {% block content %}
-<h1>Evaluation Dashboard</h1>
+<div class="u-admin-page">
+    <header class="u-page-header">
+        <h1 class="u-page-title">Evaluation Dashboard</h1>
+    </header>
 
-<div class="module">
-    <h2>System Metrics</h2>
-    
-    {% if metrics_available %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Metric</th>
-                    <th>Value</th>
-                    <th>95% CI</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>ROC AUC</strong></td>
-                    <td>{{ metrics.roc_auc|floatformat:4 }}</td>
-                    <td>
-                        {% if confidence_intervals.auc.ci_lower %}
-                            [{{ confidence_intervals.auc.ci_lower|floatformat:4 }}, 
-                             {{ confidence_intervals.auc.ci_upper|floatformat:4 }}]
-                        {% else %}
-                            -
+    <section class="u-panel" aria-labelledby="system-metrics">
+        <h2 id="system-metrics" class="u-panel-title">System Metrics</h2>
+
+        {% if metrics_available %}
+            <div class="u-table-wrapper">
+                <table class="u-table u-table--compact" aria-describedby="system-metrics">
+                    <caption class="visually-hidden">Key evaluation metrics with confidence intervals</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Metric</th>
+                            <th scope="col">Value</th>
+                            <th scope="col">95% CI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>ROC AUC</strong></td>
+                            <td class="u-table-status">{{ metrics.roc_auc|floatformat:4 }}</td>
+                            <td>
+                                {% if confidence_intervals.auc.ci_lower %}
+                                    [{{ confidence_intervals.auc.ci_lower|floatformat:4 }},
+                                     {{ confidence_intervals.auc.ci_upper|floatformat:4 }}]
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Equal Error Rate (EER)</strong></td>
+                            <td class="u-table-status">{{ metrics.eer|floatformat:4 }}</td>
+                            <td>
+                                {% if confidence_intervals.eer.ci_lower %}
+                                    [{{ confidence_intervals.eer.ci_lower|floatformat:4 }},
+                                     {{ confidence_intervals.eer.ci_upper|floatformat:4 }}]
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Optimal F1 Score</strong></td>
+                            <td class="u-table-status">{{ metrics.optimal_f1|floatformat:4 }}</td>
+                            <td>
+                                {% if confidence_intervals.optimal_f1.ci_lower %}
+                                    [{{ confidence_intervals.optimal_f1.ci_lower|floatformat:4 }},
+                                     {{ confidence_intervals.optimal_f1.ci_upper|floatformat:4 }}]
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Brier Score</strong></td>
+                            <td class="u-table-status">{{ metrics.brier_score|floatformat:4 }}</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="u-panel-subtitle">Operating Points</h3>
+            <div class="u-table-wrapper">
+                <table class="u-table u-table--compact" aria-label="Operating points">
+                    <caption class="visually-hidden">Operating thresholds and corresponding performance values</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Operating Point</th>
+                            <th scope="col">Value</th>
+                            <th scope="col">Threshold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for op_name, op_data in metrics.operating_points.items %}
+                        <tr>
+                            <td>{{ op_name }}</td>
+                            <td class="u-table-status">{{ op_data.value|floatformat:4 }}</td>
+                            <td class="u-table-status">{{ op_data.threshold|floatformat:4 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="u-empty-state">No evaluation metrics available. Run <code>python manage.py eval</code> to generate metrics.</p>
+        {% endif %}
+    </section>
+
+    <section class="u-panel" aria-labelledby="threshold-selection">
+        <h2 id="threshold-selection" class="u-panel-title">Threshold Selection</h2>
+        {% if threshold_available %}
+            <div class="u-table-wrapper">
+                <table class="u-table u-table--compact" aria-describedby="threshold-selection">
+                    <caption class="visually-hidden">Selected recognition threshold details</caption>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Method</th>
+                            <td>{{ threshold_info.method }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Selected Threshold</th>
+                            <td>{{ threshold_info.threshold|floatformat:4 }}</td>
+                        </tr>
+                        {% if threshold_info.eer %}
+                        <tr>
+                            <th scope="row">EER</th>
+                            <td>{{ threshold_info.eer|floatformat:4 }}</td>
+                        </tr>
                         {% endif %}
-                    </td>
-                </tr>
-                <tr>
-                    <td><strong>Equal Error Rate (EER)</strong></td>
-                    <td>{{ metrics.eer|floatformat:4 }}</td>
-                    <td>
-                        {% if confidence_intervals.eer.ci_lower %}
-                            [{{ confidence_intervals.eer.ci_lower|floatformat:4 }}, 
-                             {{ confidence_intervals.eer.ci_upper|floatformat:4 }}]
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                </tr>
-                <tr>
-                    <td><strong>Optimal F1 Score</strong></td>
-                    <td>{{ metrics.optimal_f1|floatformat:4 }}</td>
-                    <td>
-                        {% if confidence_intervals.optimal_f1.ci_lower %}
-                            [{{ confidence_intervals.optimal_f1.ci_lower|floatformat:4 }}, 
-                             {{ confidence_intervals.optimal_f1.ci_upper|floatformat:4 }}]
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                </tr>
-                <tr>
-                    <td><strong>Brier Score</strong></td>
-                    <td>{{ metrics.brier_score|floatformat:4 }}</td>
-                    <td>-</td>
-                </tr>
-            </tbody>
-        </table>
-        
-        <h3>Operating Points</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Operating Point</th>
-                    <th>Value</th>
-                    <th>Threshold</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for op_name, op_data in metrics.operating_points.items %}
-                <tr>
-                    <td>{{ op_name }}</td>
-                    <td>{{ op_data.value|floatformat:4 }}</td>
-                    <td>{{ op_data.threshold|floatformat:4 }}</td>
-                </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="u-empty-state">No threshold selection available. Run <code>python manage.py threshold_select</code>.</p>
+        {% endif %}
+    </section>
+
+    <section class="u-panel" aria-labelledby="data-splits">
+        <h2 id="data-splits" class="u-panel-title">Data Splits</h2>
+        {% if splits_available %}
+            <div class="u-table-wrapper">
+                <table class="u-table u-table--compact" aria-describedby="data-splits">
+                    <caption class="visually-hidden">Dataset split counts for images and persons</caption>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Total Images</th>
+                            <td>{{ split_info.total_images }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Total Persons</th>
+                            <td>{{ split_info.total_persons }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Train</th>
+                            <td>{{ split_info.train.images }} images ({{ split_info.train.persons }} persons)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Validation</th>
+                            <td>{{ split_info.val.images }} images ({{ split_info.val.persons }} persons)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Test</th>
+                            <td>{{ split_info.test.images }} images ({{ split_info.test.persons }} persons)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="u-empty-state">No split information available. Run <code>python manage.py prepare_splits</code>.</p>
+        {% endif %}
+    </section>
+
+    <section class="u-panel" aria-labelledby="metric-visualizations">
+        <h2 id="metric-visualizations" class="u-panel-title">Metric Visualizations</h2>
+        {% if figures_available %}
+            <div class="figure-grid">
+                {% for figure in available_figures %}
+                    <article>
+                        <h3 class="text-lg font-weight-semibold mb-3">{{ figure|slice:":-4"|title }}</h3>
+                        <img
+                            src="{% static 'reports/figures/' %}{{ figure }}"
+                            alt="{{ figure|slice:":-4"|title }} chart"
+                            class="figure-image"
+                            loading="lazy"
+                            decoding="async"
+                            width="640"
+                            height="480"
+                        >
+                    </article>
                 {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No evaluation metrics available. Run <code>python manage.py eval</code> to generate metrics.</p>
-    {% endif %}
-</div>
+            </div>
+        {% else %}
+            <p class="u-empty-state">No figures available. Run <code>python manage.py eval</code> to generate visualizations.</p>
+        {% endif %}
+    </section>
 
-<div class="module">
-    <h2>Threshold Selection</h2>
-    {% if threshold_available %}
-        <table>
-            <tr>
-                <td><strong>Method:</strong></td>
-                <td>{{ threshold_info.method }}</td>
-            </tr>
-            <tr>
-                <td><strong>Selected Threshold:</strong></td>
-                <td>{{ threshold_info.threshold|floatformat:4 }}</td>
-            </tr>
-            {% if threshold_info.eer %}
-            <tr>
-                <td><strong>EER:</strong></td>
-                <td>{{ threshold_info.eer|floatformat:4 }}</td>
-            </tr>
-            {% endif %}
-        </table>
-    {% else %}
-        <p>No threshold selection available. Run <code>python manage.py threshold_select</code>.</p>
-    {% endif %}
-</div>
-
-<div class="module">
-    <h2>Data Splits</h2>
-    {% if splits_available %}
-        <table>
-            <tr>
-                <td><strong>Total Images:</strong></td>
-                <td>{{ split_info.total_images }}</td>
-            </tr>
-            <tr>
-                <td><strong>Total Persons:</strong></td>
-                <td>{{ split_info.total_persons }}</td>
-            </tr>
-            <tr>
-                <td><strong>Train:</strong></td>
-                <td>{{ split_info.train.images }} images ({{ split_info.train.persons }} persons)</td>
-            </tr>
-            <tr>
-                <td><strong>Validation:</strong></td>
-                <td>{{ split_info.val.images }} images ({{ split_info.val.persons }} persons)</td>
-            </tr>
-            <tr>
-                <td><strong>Test:</strong></td>
-                <td>{{ split_info.test.images }} images ({{ split_info.test.persons }} persons)</td>
-            </tr>
-        </table>
-    {% else %}
-        <p>No split information available. Run <code>python manage.py prepare_splits</code>.</p>
-    {% endif %}
-</div>
-
-<div class="module">
-    <h2>Metric Visualizations</h2>
-    {% if figures_available %}
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
-            {% for figure in available_figures %}
-                <div>
-                    <h3>{{ figure|slice:":-4"|title }}</h3>
-                    <img src="{% static 'reports/figures/' %}{{ figure }}" alt="{{ figure }}" style="width: 100%; max-width: 500px;">
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p>No figures available. Run <code>python manage.py eval</code> to generate visualizations.</p>
-    {% endif %}
-</div>
-
-<div class="module">
-    <h2>Quick Actions</h2>
-    <ul>
-        <li><a href="{% url 'admin_ablation_results' %}">View Ablation Results</a></li>
-        <li><a href="{% url 'admin_failure_analysis' %}">View Failure Analysis</a></li>
-        <li><a href="{% url 'admin_recognition_trends' %}">View Recognition Accuracy Trends</a></li>
-    </ul>
+    <section class="u-panel" aria-labelledby="quick-actions">
+        <h2 id="quick-actions" class="u-panel-title">Quick Actions</h2>
+        <ul class="list-spaced">
+            <li><a href="{% url 'admin_ablation_results' %}">View Ablation Results</a></li>
+            <li><a href="{% url 'admin_failure_analysis' %}">View Failure Analysis</a></li>
+            <li><a href="{% url 'admin_recognition_trends' %}">View Recognition Accuracy Trends</a></li>
+        </ul>
+    </section>
 </div>
 
 {% endblock %}
