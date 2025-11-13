@@ -39,6 +39,7 @@ def test_admin_can_access_employee_list_and_attendance(
     """Log in as an admin and navigate across employee and attendance views."""
 
     import threading
+
     from django.contrib.auth import get_user_model
     from django.db import connection
 
@@ -51,7 +52,7 @@ def test_admin_can_access_employee_list_and_attendance(
             connection.close()
             user = User.objects.get(id=admin_account.user_id)
             client.force_login(user)
-            session_result["sessionid"] = client.cookies.get('sessionid').value
+            session_result["sessionid"] = client.cookies.get("sessionid").value
         except Exception as e:
             session_result["error"] = e
 
@@ -67,12 +68,16 @@ def test_admin_can_access_employee_list_and_attendance(
     page.goto(server_url)
 
     # Set the session cookie in Playwright
-    page.context.add_cookies([{
-        'name': 'sessionid',
-        'value': session_result["sessionid"],
-        'domain': 'localhost',
-        'path': '/',
-    }])
+    page.context.add_cookies(
+        [
+            {
+                "name": "sessionid",
+                "value": session_result["sessionid"],
+                "domain": "localhost",
+                "path": "/",
+            }
+        ]
+    )
 
     # Now navigate to dashboard - should be logged in
     page.goto(f"{server_url}/dashboard/")

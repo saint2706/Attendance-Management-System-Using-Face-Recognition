@@ -18,6 +18,14 @@ django.setup()
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture(autouse=True)
+def clear_rate_limit_cache():
+    """Clear the rate-limit cache before and after each test to prevent state leakage."""
+    cache.clear()
+    yield
+    cache.clear()
+
+
 def _exercise_rate_limit(client, settings, url_name: str) -> tuple[int, int]:
     cache.clear()
     settings.RECOGNITION_ATTENDANCE_RATE_LIMIT = "2/m"
