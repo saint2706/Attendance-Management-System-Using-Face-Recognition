@@ -15,10 +15,12 @@ from deepface import DeepFace
 
 from .pipeline import extract_embedding, find_closest_dataset_match, is_within_distance_threshold
 from .utils import (
+    _get_or_compute_cached_embedding,
     get_deepface_distance_metric,
     get_face_detection_backend,
     get_face_recognition_model,
     load_dataset_embeddings_for_matching,
+    should_enforce_detection,
     update_attendance_in_db_in,
     update_attendance_in_db_out,
 )
@@ -141,3 +143,28 @@ def process_attendance_batch(
             error_count,
         )
         return {"total": len(records or []), "success": processed_count, "error": error_count}
+
+
+def compute_face_encoding(image_path) -> np.ndarray | None:
+    """
+    Compute or retrieve the DeepFace embedding for an encrypted image.
+    
+    Args:
+        image_path: Path to the encrypted image file.
+    
+    Returns:
+        The face embedding as a numpy array, or None if computation fails.
+    """
+    from pathlib import Path
+    from .utils import should_enforce_detection
+    
+    model_name = get_face_recognition_model()
+    detector_backend = get_face_detection_backend()
+    enforce_detection = should_enforce_detection()
+    
+    embedding = _get_or_compute_cached_embedding(
+        Path(image_path), model_name, detector_backend, enforce_detection
+    )
+    if embedding is None:
+        return None
+    return np.array(embedding, dtype=np.float64)
