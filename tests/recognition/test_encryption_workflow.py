@@ -126,8 +126,8 @@ class EncryptionWorkflowTests(TestCase):
         RECOGNITION_HEADLESS=True,
         RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=1,
     )
-    @patch.object(views, "train_test_split")
-    @patch.object(views, "SVC")
+    @patch.object(tasks, "train_test_split")
+    @patch.object(tasks, "SVC")
     @patch.object(views, "DeepFace")
     @patch.object(views, "_get_or_compute_cached_embedding")
     def test_training_and_mark_attendance_use_encrypted_artifacts(
@@ -139,26 +139,39 @@ class EncryptionWorkflowTests(TestCase):
     ):
         """Training should persist encrypted artifacts and mark view should load them."""
 
-        alice_path = self.dataset_root / "alice" / "1.jpg"
-        bob_path = self.dataset_root / "bob" / "1.jpg"
-        for path in (alice_path, bob_path):
+        # Create at least 2 images per user for stratified train_test_split to work
+        alice_paths = [
+            self.dataset_root / "alice" / "1.jpg",
+            self.dataset_root / "alice" / "2.jpg",
+        ]
+        bob_paths = [
+            self.dataset_root / "bob" / "1.jpg",
+            self.dataset_root / "bob" / "2.jpg",
+        ]
+        for path in alice_paths + bob_paths:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(encrypt_bytes(b"placeholder"))
 
+        # Provide embeddings for all 4 images
         mock_get_embedding.side_effect = [
-            np.array([0.1, 0.2], dtype=float),
-            np.array([0.9, 0.8], dtype=float),
+            np.array([0.1, 0.2], dtype=float),  # alice/1.jpg
+            np.array([0.11, 0.21], dtype=float),  # alice/2.jpg
+            np.array([0.9, 0.8], dtype=float),  # bob/1.jpg
+            np.array([0.91, 0.81], dtype=float),  # bob/2.jpg
         ]
         mock_deepface.represent.side_effect = [
             [{"embedding": [0.1, 0.2]}],
+            [{"embedding": [0.11, 0.21]}],
             [{"embedding": [0.9, 0.8]}],
+            [{"embedding": [0.91, 0.81]}],
         ]
 
+        # Mock train_test_split to return proper train/test splits
         mock_train_test_split.return_value = (
-            [[0.1, 0.2]],
-            [[0.9, 0.8]],
-            ["alice"],
-            ["bob"],
+            [[0.1, 0.2], [0.9, 0.8]],  # X_train
+            [[0.11, 0.21], [0.91, 0.81]],  # X_test
+            ["alice", "bob"],  # y_train
+            ["alice", "bob"],  # y_test
         )
 
         model_instance = DummyModel()
@@ -223,7 +236,7 @@ class EncryptionWorkflowTests(TestCase):
         ):
             mock_loader.return_value = [
                 {
-                    "identity": str(alice_path),
+                    "identity": str(alice_paths[0]),
                     "embedding": np.array([0.1, 0.2], dtype=float),
                     "username": "alice",
                 }

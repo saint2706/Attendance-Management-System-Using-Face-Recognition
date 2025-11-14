@@ -64,9 +64,7 @@ def evaluation_dashboard(request: HttpRequest) -> HttpResponse:
     return render(request, "recognition/admin/evaluation_dashboard.html", context)
 
 
-def _prepare_accuracy_trend(
-    time_trunc_func: Callable[[str], Any]
-) -> list[dict[str, Any]]:
+def _prepare_accuracy_trend(time_trunc_func: Callable[[str], Any]) -> list[dict[str, Any]]:
     """Aggregate accuracy information using the provided truncation function."""
 
     aggregates = (

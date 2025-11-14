@@ -60,15 +60,24 @@ def test_add_photos_creates_dataset_for_existing_user(client, monkeypatch):
 
     monkeypatch.setattr(views, "username_present", lambda username: username == employee.username)
 
-    def _fake_create_dataset(username: str) -> None:
-        created_for["username"] = username
+    # Mock the Celery task
+    class MockAsyncResult:
+        def __init__(self, username: str):
+            created_for["username"] = username
+            self.id = "mock-task-id"
 
-    monkeypatch.setattr(views, "create_dataset", _fake_create_dataset)
+    def _fake_capture_dataset_delay(username: str) -> MockAsyncResult:
+        return MockAsyncResult(username)
+
+    # Import and patch the tasks module where it's used
+    from recognition import tasks
+
+    monkeypatch.setattr(tasks.capture_dataset, "delay", _fake_capture_dataset_delay)
 
     response = client.post(reverse("add-photos"), data={"username": employee.username})
 
     assert response.status_code == 302
-    assert response.url == reverse("add-photos")
+    assert "task_id=mock-task-id" in response.url
     assert created_for["username"] == employee.username
 
 
