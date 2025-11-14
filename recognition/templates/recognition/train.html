@@ -9,19 +9,66 @@
             <div class="card-body card-body-hero">
                 <i class="fas fa-brain icon-hero text-success mb-6" aria-hidden="true"></i>
                 <h1 class="text-3xl font-weight-bold mb-4">
-                    Training is Now Automatic!
+                    Background Model Training
                 </h1>
                 <p class="text-lg text-muted max-w-600 mx-auto mb-8">
-                    This system uses modern face recognition technology that learns automatically when you add new employee photos.
-                    Manual training is no longer required.
+                    Queue a Celery job to rebuild the recognition classifier after large photo imports.
+                    Incremental updates still run automatically when new employee photos are captured.
                 </p>
-                <a href="{% url 'dashboard' %}" class="btn btn-primary btn-wide btn-lg">
+                <form method="post" class="d-inline-block">
+                    {% csrf_token %}
+                    <button class="btn btn-primary btn-wide btn-lg" type="submit">
+                        <i class="fas fa-rocket" aria-hidden="true"></i> Start Training Job
+                    </button>
+                </form>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-wide btn-lg ms-lg-3 mt-3 mt-lg-0">
                     <i class="fas fa-arrow-left" aria-hidden="true"></i> Return to Dashboard
                 </a>
             </div>
         </article>
-        
-        <!-- Info Cards -->
+
+        {% if task %}
+            <div class="alert alert-info mt-6" role="status">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h5 mb-0">Training Task Status</h2>
+                    <code class="text-sm">{{ task.task_id }}</code>
+                </div>
+                <p class="mb-2">
+                    Current state: <strong class="text-uppercase">{{ task.status }}</strong>
+                    {% if task.ready %}
+                        {% if task.successful %}
+                            – model artifacts updated successfully.
+                        {% else %}
+                            – the job failed. Review worker logs for details.
+                        {% endif %}
+                    {% else %}
+                        – processing in the background.
+                    {% endif %}
+                </p>
+                {% if task.error %}
+                    <p class="mb-2 text-danger">{{ task.error }}</p>
+                {% endif %}
+                {% if task.result %}
+                    <dl class="row small mb-0">
+                        <dt class="col-6">Accuracy</dt>
+                        <dd class="col-6">{{ task.result.accuracy|floatformat:2 }}</dd>
+                        <dt class="col-6">Precision</dt>
+                        <dd class="col-6">{{ task.result.precision|floatformat:2 }}</dd>
+                        <dt class="col-6">Recall</dt>
+                        <dd class="col-6">{{ task.result.recall|floatformat:2 }}</dd>
+                        <dt class="col-6">Classes</dt>
+                        <dd class="col-6">{{ task.result.unique_classes|join:", " }}</dd>
+                    </dl>
+                {% elif task.meta %}
+                    <p class="mb-0 small text-muted">Latest update: {{ task.meta }}</p>
+                {% endif %}
+                <p class="mb-0 small mt-3">
+                    Poll <code>{{ request.scheme }}://{{ request.get_host }}{% url 'task-status' task.task_id %}</code>
+                    for JSON updates from the Celery result backend.
+                </p>
+            </div>
+        {% endif %}
+
         <div class="row mt-8">
             <div class="col-12 col-md-6 mb-4">
                 <div class="card card-accent card-accent--success">
@@ -33,14 +80,13 @@
                                     Automatic Learning
                                 </h2>
                                 <p class="text-muted text-sm mb-0">
-                                    The AI model updates itself automatically whenever new employee photos are added to the system.
+                                    The AI model ingests new photos automatically—manual jobs are only needed after bulk imports.
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
             <div class="col-12 col-md-6 mb-4">
                 <div class="card card-accent card-accent--primary">
                     <div class="card-body card-body-tight">
@@ -51,7 +97,7 @@
                                     High Accuracy
                                 </h2>
                                 <p class="text-muted text-sm mb-0">
-                                    Uses state-of-the-art Facenet deep learning model for precise face recognition.
+                                    Uses the Facenet deep learning model for precise face recognition and robust attendance.
                                 </p>
                             </div>
                         </div>
@@ -59,8 +105,7 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Technical Details -->
+
         <div class="card card-muted mt-6">
             <div class="card-body card-body-lg">
                 <h2 class="d-flex align-items-center gap-2 mb-4 text-xl font-weight-semibold">
@@ -68,10 +113,10 @@
                     <span>How It Works</span>
                 </h2>
                 <ul class="list-spaced text-muted text-sm mb-0">
-                    <li>Photos are processed using deep learning face detection (SSD)</li>
-                    <li>Facial features are extracted using the Facenet neural network</li>
-                    <li>The system creates unique embeddings for each employee</li>
-                    <li>Recognition happens in real-time during attendance marking</li>
+                    <li>Photos are processed using deep learning face detection (SSD).</li>
+                    <li>Facial features are extracted using the Facenet neural network.</li>
+                    <li>The system creates unique embeddings for each employee.</li>
+                    <li>Recognition happens in real-time during attendance marking.</li>
                 </ul>
             </div>
         </div>

@@ -1,14 +1,16 @@
-"""
-Custom admin views for evaluation metrics and reports.
-"""
+"""Admin views for evaluation metrics, reports, and health dashboards."""
+
+from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any, Callable
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Avg, Count, Q
 from django.db.models.functions import TruncDate, TruncWeek
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 
@@ -17,10 +19,8 @@ from .models import RecognitionOutcome
 
 
 @staff_member_required
-def evaluation_dashboard(request):
-    """
-    Display evaluation metrics with confidence intervals and links to figures.
-    """
+def evaluation_dashboard(request: HttpRequest) -> HttpResponse:
+    """Render evaluation metrics, confidence intervals, and related figures."""
     reports_dir = Path(settings.BASE_DIR) / "reports"
     metrics_file = reports_dir / "metrics_with_ci.json"
     threshold_file = reports_dir / "selected_threshold.json"
@@ -64,7 +64,9 @@ def evaluation_dashboard(request):
     return render(request, "recognition/admin/evaluation_dashboard.html", context)
 
 
-def _prepare_accuracy_trend(time_trunc_func):
+def _prepare_accuracy_trend(
+    time_trunc_func: Callable[[str], Any]
+) -> list[dict[str, Any]]:
     """Aggregate accuracy information using the provided truncation function."""
 
     aggregates = (
@@ -97,7 +99,7 @@ def _prepare_accuracy_trend(time_trunc_func):
 
 
 @staff_member_required
-def recognition_accuracy_trends(request):
+def recognition_accuracy_trends(request: HttpRequest) -> HttpResponse:
     """Display daily and weekly accuracy aggregates for recognition outcomes."""
 
     retention_setting = getattr(settings, "RECOGNITION_OUTCOME_RETENTION_DAYS", 30)
@@ -123,10 +125,8 @@ def recognition_accuracy_trends(request):
 
 
 @staff_member_required
-def ablation_results(request):
-    """
-    Display ablation experiment results.
-    """
+def ablation_results(request: HttpRequest) -> HttpResponse:
+    """Render ablation experiment results when report files are present."""
     reports_dir = Path(settings.BASE_DIR) / "reports"
     ablation_csv = reports_dir / "ablation_results.csv"
 
@@ -150,10 +150,8 @@ def ablation_results(request):
 
 
 @staff_member_required
-def failure_analysis(request):
-    """
-    Display failure analysis results.
-    """
+def failure_analysis(request: HttpRequest) -> HttpResponse:
+    """Present false accept/reject breakdowns and subgroup metrics."""
     reports_dir = Path(settings.BASE_DIR) / "reports"
     failure_cases_csv = reports_dir / "failure_cases.csv"
     subgroup_csv = reports_dir / "subgroup_metrics.csv"
@@ -187,7 +185,7 @@ def failure_analysis(request):
 
 
 @staff_member_required
-def system_health_dashboard(request):
+def system_health_dashboard(request: HttpRequest) -> HttpResponse:
     """Render current webcam and recognition health signals for admins."""
 
     snapshot = monitoring.get_health_snapshot()

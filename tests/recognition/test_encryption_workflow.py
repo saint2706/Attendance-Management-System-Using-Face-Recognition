@@ -25,7 +25,7 @@ from django.contrib.auth.models import User  # noqa: E402
 _fake_cv2 = MagicMock(name="cv2")
 sys.modules.setdefault("cv2", _fake_cv2)
 
-from recognition import views  # noqa: E402
+from recognition import tasks, views  # noqa: E402
 from src.common import FaceDataEncryption, decrypt_bytes, encrypt_bytes  # noqa: E402
 
 TEST_FERNET_KEY = Fernet.generate_key()
@@ -94,24 +94,24 @@ class EncryptionWorkflowTests(TestCase):
         stream.read.side_effect = [dummy_frame, None]
 
         with (
-            patch.object(views, "VideoStream", return_value=stream),
-            patch.object(views, "_is_headless_environment", return_value=True),
-            patch.object(views, "time") as mock_time,
-            patch.object(views, "cv2") as mock_cv2,
-            patch.object(views.django_rq, "enqueue") as mock_enqueue,
+            patch.object(tasks, "VideoStream", return_value=stream),
+            patch.object(tasks, "_is_headless_environment", return_value=True),
+            patch.object(tasks, "time") as mock_time,
+            patch.object(tasks, "cv2") as mock_cv2,
+            patch("recognition.tasks.incremental_face_training.delay") as mock_delay,
         ):
             mock_time.sleep.return_value = None
             mock_cv2.imencode.return_value = (True, encoded_bytes)
 
-            views.create_dataset("alice")
+            tasks.capture_dataset_sync("alice")
 
         stored_files = sorted(output_dir.glob("*.jpg"))
         self.assertEqual(len(stored_files), 1)
 
-        mock_enqueue.assert_called_once()
-        queued_args, queued_kwargs = mock_enqueue.call_args
-        self.assertEqual(queued_args[1], "alice")
-        self.assertEqual(len(queued_args[2]), 1)
+        mock_delay.assert_called_once()
+        queued_args, queued_kwargs = mock_delay.call_args
+        self.assertEqual(queued_args[0], "alice")
+        self.assertEqual(len(queued_args[1]), 1)
         self.assertFalse(queued_kwargs)
 
         encrypted_payload = stored_files[0].read_bytes()
@@ -173,8 +173,8 @@ class EncryptionWorkflowTests(TestCase):
         messages = FallbackStorage(request)
         setattr(request, "_messages", messages)
 
-        response = views.train_view(request)
-        self.assertEqual(response.status_code, 200)
+        result = tasks.train_model_sync(initiated_by=staff_user.username)
+        self.assertIn("accuracy", result)
 
         model_path = self.data_root / "svc.sav"
         classes_path = self.data_root / "classes.npy"

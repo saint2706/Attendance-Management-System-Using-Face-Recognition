@@ -19,6 +19,44 @@
                     </p>
                 </div>
 
+                {% if task %}
+                    <div class="alert alert-info text-start" role="status">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h2 class="h5 mb-0">Capture Task Status</h2>
+                            <code class="text-sm">{{ task.task_id }}</code>
+                        </div>
+                        <p class="mb-2">
+                            Current state: <strong class="text-uppercase">{{ task.status }}</strong>
+                            {% if task.ready %}
+                                {% if task.successful %}
+                                    – capture completed successfully.
+                                {% else %}
+                                    – the task encountered an error.
+                                {% endif %}
+                            {% else %}
+                                – processing in background.
+                            {% endif %}
+                        </p>
+                        {% if task.error %}
+                            <p class="mb-2 text-danger">{{ task.error }}</p>
+                        {% endif %}
+                        {% if task.result %}
+                            <dl class="row small mb-0">
+                                <dt class="col-6">Frames captured</dt>
+                                <dd class="col-6">{{ task.result.frames_captured|default:"–" }}</dd>
+                                <dt class="col-6">Images saved</dt>
+                                <dd class="col-6">{{ task.result.images_saved|default:"–" }}</dd>
+                            </dl>
+                        {% elif task.meta %}
+                            <p class="mb-0 small text-muted">Latest update: {{ task.meta }}</p>
+                        {% endif %}
+                        <p class="mb-0 small mt-3">
+                            Poll <code>{{ request.scheme }}://{{ request.get_host }}{% url 'task-status' task.task_id %}</code>
+                            to retrieve JSON status updates.
+                        </p>
+                    </div>
+                {% endif %}
+
                 <form method="POST" data-validate="true">
                     {% csrf_token %}
                     <fieldset>

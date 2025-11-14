@@ -19,7 +19,6 @@ dependencies = [
     "dj-database-url==2.3.0",
     "crispy-bootstrap5==2024.2",
     "django-ratelimit==4.1.0",
-    "django-rq==2.10.2",
     "cryptography==43.0.3",
     "django-silk==5.1.0",
     "django-pandas==0.6.7",
@@ -37,7 +36,6 @@ dependencies = [
     "numpy==1.26.4",
     "pandas==2.3.3",
     "scipy==1.16.3",
-    "rq==1.16.2",
     "prometheus-client==0.20.0",
 ]
 
