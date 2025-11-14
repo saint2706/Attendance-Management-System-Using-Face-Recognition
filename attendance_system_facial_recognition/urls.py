@@ -11,7 +11,7 @@ from pathlib import Path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpRequest
 from django.urls import include, path
 
 from recognition import admin_views as recog_admin_views
@@ -29,7 +29,7 @@ def _serve_static_asset(relative_path: str, *, content_type: str) -> FileRespons
     return FileResponse(file_path.open("rb"), content_type=content_type)
 
 
-def progressive_web_app_manifest(request):
+def progressive_web_app_manifest(request: HttpRequest) -> FileResponse:
     """Expose the web manifest with the correct MIME type."""
 
     return _serve_static_asset(
@@ -38,7 +38,7 @@ def progressive_web_app_manifest(request):
     )
 
 
-def progressive_web_app_service_worker(request):
+def progressive_web_app_service_worker(request: HttpRequest) -> FileResponse:
     """Serve the service worker from the site root so it can control all pages."""
 
     response = _serve_static_asset(

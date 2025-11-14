@@ -199,6 +199,8 @@ def reset_for_tests() -> None:
 
 
 def get_threshold(key: str) -> float:
+    """Fetch the configured alert threshold for the supplied key."""
+
     if key not in _THRESHOLD_SETTING_NAMES:
         raise KeyError(f"Unknown threshold key: {key}")
     setting = _THRESHOLD_SETTING_NAMES[key]
@@ -212,6 +214,8 @@ def get_threshold(key: str) -> float:
 
 
 def get_alert_thresholds() -> Dict[str, float]:
+    """Return the effective thresholds for all monitored stages."""
+
     return {key: get_threshold(key) for key in _THRESHOLD_SETTING_NAMES}
 
 
@@ -228,6 +232,8 @@ def _metric_value(name: str, labels: Optional[Dict[str, str]] = None) -> Optiona
 def record_camera_start(
     success: bool, latency: Optional[float], error: Optional[str] = None
 ) -> None:
+    """Record metrics and internal state for a camera start attempt."""
+
     status = "success" if success else "failure"
     CAMERA_START_COUNTER.labels(status=status).inc()
     if latency is not None:
@@ -277,6 +283,8 @@ def record_camera_stop(
     error: Optional[str] = None,
     timed_out: bool = False,
 ) -> None:
+    """Record metrics for camera shutdown attempts and derive alerts."""
+
     status = "timeout" if timed_out and success else ("success" if success else "failure")
     CAMERA_STOP_COUNTER.labels(status=status).inc()
     if latency is not None:
@@ -315,17 +323,23 @@ def record_camera_stop(
 
 
 def update_consumer_count(count: int) -> None:
+    """Persist the active consumer count in metrics and in-memory state."""
+
     ACTIVE_CONSUMERS_GAUGE.set(count)
     with _STATE_LOCK:
         _STATE.consumer_count = count
 
 
 def record_frame_drop() -> None:
+    """Increment drop counters when no frame is received."""
+
     FRAME_DROP_COUNTER.inc()
     logger.debug("Webcam returned no frame", extra={"event": "frame_drop"})
 
 
 def record_frame_delay(delay: float, capture_time: Optional[float]) -> None:
+    """Track inter-frame delay and log alerts when thresholds are exceeded."""
+
     FRAME_DELAY_HISTOGRAM.observe(max(0.0, delay))
     timestamp = capture_time or _now_timestamp()
     LAST_FRAME_TIMESTAMP_GAUGE.set(timestamp)
@@ -355,6 +369,8 @@ def record_frame_delay(delay: float, capture_time: Optional[float]) -> None:
 def observe_stage_duration(
     stage: str, duration: float, *, threshold_key: Optional[str] = None
 ) -> None:
+    """Record stage durations and emit alerts for slow executions."""
+
     STAGE_DURATION_HISTOGRAM.labels(stage=stage).observe(max(0.0, duration))
     with _STATE_LOCK:
         _STATE.stage_durations[stage] = duration
@@ -382,6 +398,8 @@ def observe_stage_duration(
 
 
 def get_health_snapshot() -> Dict[str, Any]:
+    """Return a serialisable snapshot of webcam health and alert history."""
+
     with _STATE_LOCK:
         last_start = _STATE.last_start.copy() if _STATE.last_start else None
         if last_start and "timestamp" in last_start:
@@ -428,10 +446,14 @@ def get_health_snapshot() -> Dict[str, Any]:
 
 
 def export_metrics() -> bytes:
+    """Serialise the Prometheus metrics registry."""
+
     return generate_latest(REGISTRY)
 
 
 def prometheus_content_type() -> str:
+    """Expose the correct ``Content-Type`` for Prometheus responses."""
+
     return CONTENT_TYPE_LATEST
 
 
