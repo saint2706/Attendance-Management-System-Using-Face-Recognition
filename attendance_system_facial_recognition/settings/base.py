@@ -277,7 +277,14 @@ LOGIN_REDIRECT_URL = "dashboard"
 
 SILKY_AUTHENTICATION = True
 SILKY_AUTHORISATION = True
-SILKY_PERMISSIONS = lambda user: user.is_staff
+
+
+def _silky_permissions(user):
+    """Check if user has permission to access Silk profiler."""
+    return user.is_staff
+
+
+SILKY_PERMISSIONS = _silky_permissions
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

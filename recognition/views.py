@@ -9,31 +9,24 @@ marking attendance, and displaying attendance data.
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any, Callable
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
-from django.utils import timezone
-from django_ratelimit.core import is_ratelimited
-from celery.result import AsyncResult
+
 import cv2
+from celery.result import AsyncResult
+from django_ratelimit.core import is_ratelimited
 
-from users.models import Present, RecognitionAttempt, Time
+from users.models import RecognitionAttempt
 
-from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
+from .forms import usernameForm
 from .tasks import recognize_face
-from .utils import (
-    get_face_detection_backend,
-    get_face_recognition_model,
-    get_deepface_distance_metric,
-    is_liveness_enabled,
-    should_enforce_detection,
-)
 from .webcam_manager import get_webcam_manager
 
 logger = logging.getLogger(__name__)
@@ -237,7 +230,9 @@ def add_photos(request: HttpRequest) -> HttpResponse:
         if form.is_valid():
             username = form.cleaned_data["username"]
             # The create_dataset function has been removed, as it's now handled by the Celery task
-            messages.success(request, f"Dataset creation for {username} is now handled asynchronously.")
+            messages.success(
+                request, f"Dataset creation for {username} is now handled asynchronously."
+            )
             return redirect("add-photos")
     else:
         form = usernameForm()

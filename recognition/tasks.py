@@ -15,9 +15,9 @@ from deepface import DeepFace
 
 from .pipeline import extract_embedding, find_closest_dataset_match, is_within_distance_threshold
 from .utils import (
+    get_deepface_distance_metric,
     get_face_detection_backend,
     get_face_recognition_model,
-    get_deepface_distance_metric,
     load_dataset_embeddings_for_matching,
     update_attendance_in_db_in,
     update_attendance_in_db_out,
@@ -74,9 +74,7 @@ def recognize_face(self, image_bytes: list[int], direction: str) -> dict[str, An
 
             if match and is_within_distance_threshold(match[1], 0.4):
                 username = match[0]
-                logger.info(
-                    "Face recognized for task %s: %s", self.request.id, username
-                )
+                logger.info("Face recognized for task %s: %s", self.request.id, username)
 
                 # Update attendance in the database
                 if direction == "in":
@@ -90,9 +88,7 @@ def recognize_face(self, image_bytes: list[int], direction: str) -> dict[str, An
                 return {"status": "error", "message": "Face not recognized."}
 
         except Exception as e:
-            logger.error(
-                "Error in face recognition task %s: %s", self.request.id, e, exc_info=True
-            )
+            logger.error("Error in face recognition task %s: %s", self.request.id, e, exc_info=True)
             sentry_sdk.capture_exception(e)
             raise
 
