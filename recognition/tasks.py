@@ -10,12 +10,13 @@ import time
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
+from django.conf import settings
+
 import cv2
 import imutils
 import numpy as np
 from asgiref.sync import sync_to_async
 from celery import shared_task
-from django.conf import settings
 from imutils.video import VideoStream
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score, classification_report, precision_recall_fscore_support
@@ -304,9 +305,7 @@ def train_model_sync(*, initiated_by: str | None = None) -> dict[str, Any]:
     detector_backend = _get_face_detection_backend()
 
     for image_path in image_paths:
-        embedding_array = _get_or_compute_cached_embedding(
-            image_path, model_name, detector_backend
-        )
+        embedding_array = _get_or_compute_cached_embedding(image_path, model_name, detector_backend)
         if embedding_array is None:
             logger.debug("Skipping image %s because no embedding was produced.", image_path)
             continue

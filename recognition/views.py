@@ -55,11 +55,8 @@ from django_ratelimit.decorators import ratelimit
 from matplotlib import rcParams
 from pandas.plotting import register_matplotlib_converters
 from sentry_sdk import Hub
-from sklearn.metrics import accuracy_score, classification_report, precision_recall_fscore_support
-from sklearn.model_selection import train_test_split
-from sklearn.svm import SVC
 
-from src.common import InvalidToken, decrypt_bytes, encrypt_bytes
+from src.common import InvalidToken, decrypt_bytes
 from src.common.face_data_encryption import FaceDataEncryption
 from users.models import Present, RecognitionAttempt, Time
 
@@ -2157,7 +2154,7 @@ def _mark_attendance(request, check_in: bool):
                             )
                             break
 
-                except Exception as e:
+                except Exception:
                     logger.exception(
                         "Error during face recognition loop",
                         extra={
@@ -2275,9 +2272,11 @@ def train(request):
             from .tasks import train_recognition_model
 
             async_result = train_recognition_model.delay(
-                initiated_by=getattr(request.user, "get_username", lambda: None)()
-                if hasattr(request.user, "get_username")
-                else getattr(request.user, "username", None)
+                initiated_by=(
+                    getattr(request.user, "get_username", lambda: None)()
+                    if hasattr(request.user, "get_username")
+                    else getattr(request.user, "username", None)
+                )
             )
         except Exception:
             logger.exception("Failed to enqueue training job")
