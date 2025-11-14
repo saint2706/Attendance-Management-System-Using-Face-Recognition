@@ -8,10 +8,15 @@ Usage:
 """
 
 import argparse
+import json
+import logging
 import sys
 from pathlib import Path
 
 import yaml
+
+
+logger = logging.getLogger(__name__)
 
 
 def load_policy(policy_path: Path):
@@ -59,7 +64,10 @@ def predict(image_path: Path, threshold: float = 0.6, policy_path: Path = None):
         policy_path = Path(__file__).parent / "configs" / "policy.yaml"
 
     if not policy_path.exists():
-        print(f"Error: Policy file not found at {policy_path}", file=sys.stderr)
+        logger.error(
+            "Policy file not found",
+            extra={"event": "policy_missing", "policy_path": str(policy_path)},
+        )
         sys.exit(1)
 
     policy = load_policy(policy_path)
@@ -105,37 +113,52 @@ def main():
 
     image_path = Path(args.image)
     if not image_path.exists():
-        print(f"Error: Image not found at {image_path}", file=sys.stderr)
+        logger.error(
+            "Image not found",
+            extra={"event": "image_missing", "image_path": str(image_path)},
+        )
         sys.exit(1)
 
     policy_path = Path(args.policy) if args.policy else None
 
     result = predict(image_path, threshold=args.threshold, policy_path=policy_path)
 
-    if args.json:
-        import json
+    log_context = {
+        "event": "prediction_result",
+        "image_path": str(image_path),
+        "threshold": args.threshold,
+        "policy_path": str(policy_path) if policy_path else None,
+        "format": "json" if args.json else "human",
+        "result": result,
+    }
 
-        print(json.dumps(result, indent=2))
+    if args.json:
+        logger.info(json.dumps(result, indent=2), extra=log_context)
     else:
-        print("=" * 60)
-        print("Face Recognition Prediction")
-        print("=" * 60)
-        print(f"Image: {result['image_path']}")
-        print(f"Score: {result['score']:.4f}")
-        print(f"Threshold: {result['threshold']:.4f}")
-        print()
-        print(f"Band: {result['band'].upper()}")
-        print(f"Description: {result['band_description']}")
-        print()
-        print(f"Recommended Action: {result['action']}")
-        print(f"Action Description: {result['action_description']}")
-        print()
-        print(f"Mark Attendance: {'Yes' if result['mark_attendance'] else 'No'}")
-        print(f"Requires Secondary Auth: {'Yes' if result['requires_secondary_auth'] else 'No'}")
-        print()
-        print(f"User Message: {result['user_message']}")
-        print("=" * 60)
+        lines = [
+            "=" * 60,
+            "Face Recognition Prediction",
+            "=" * 60,
+            f"Image: {result['image_path']}",
+            f"Score: {result['score']:.4f}",
+            f"Threshold: {result['threshold']:.4f}",
+            "",
+            f"Band: {result['band'].upper()}",
+            f"Description: {result['band_description']}",
+            "",
+            f"Recommended Action: {result['action']}",
+            f"Action Description: {result['action_description']}",
+            "",
+            f"Mark Attendance: {'Yes' if result['mark_attendance'] else 'No'}",
+            f"Requires Secondary Auth: {'Yes' if result['requires_secondary_auth'] else 'No'}",
+            "",
+            f"User Message: {result['user_message']}",
+            "=" * 60,
+        ]
+        logger.info("\n".join(lines), extra=log_context)
 
 
 if __name__ == "__main__":
+    if not logging.getLogger().handlers:
+        logging.basicConfig(level=logging.INFO, format="%(message)s")
     main()

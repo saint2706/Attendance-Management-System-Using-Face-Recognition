@@ -55,6 +55,7 @@ from django_ratelimit.decorators import ratelimit
 from imutils.video import VideoStream
 from matplotlib import rcParams
 from pandas.plotting import register_matplotlib_converters
+from sentry_sdk import Hub
 from sklearn.metrics import accuracy_score, classification_report, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
@@ -74,6 +75,72 @@ mpl.use("Agg")
 
 # Initialize logger for the module
 logger = logging.getLogger(__name__)
+
+
+def _record_sentry_breadcrumb(
+    *,
+    message: str,
+    category: str,
+    level: str = "info",
+    data: Mapping[str, object] | None = None,
+) -> None:
+    """Add a breadcrumb to the active Sentry hub, swallowing integration errors."""
+
+    try:
+        Hub.current.add_breadcrumb(
+            message=message,
+            category=category,
+            level=level,
+            data=dict(data or {}),
+        )
+    except Exception:  # pragma: no cover - telemetry is best-effort
+        logger.debug("Unable to add Sentry breadcrumb", exc_info=True)
+
+
+def _bind_request_to_sentry_scope(
+    request,
+    *,
+    flow: str,
+    extra: Mapping[str, object] | None = None,
+) -> None:
+    """Attach request metadata to the Sentry scope for easier triage."""
+
+    try:
+        with Hub.current.configure_scope() as scope:
+            context: dict[str, object] = {
+                "path": getattr(request, "path", ""),
+                "method": getattr(request, "method", ""),
+                "flow": flow,
+            }
+            if extra:
+                context.update(extra)
+            scope.set_context("attendance_flow", context)
+
+            user = getattr(request, "user", None)
+            if getattr(user, "is_authenticated", False):
+                username: str | None = None
+                get_username = getattr(user, "get_username", None)
+                if callable(get_username):
+                    try:
+                        username = get_username()
+                    except Exception:  # pragma: no cover - user object may be lazy
+                        username = None
+                if not username:
+                    username = getattr(user, "username", None)
+
+                scope.set_user(
+                    {
+                        "id": getattr(user, "id", None),
+                        "username": username,
+                        "email": getattr(user, "email", None) or None,
+                    }
+                )
+
+            direction = context.get("direction")
+            if direction:
+                scope.set_tag("attendance.direction", str(direction))
+    except Exception:  # pragma: no cover - telemetry must not break request handling
+        logger.debug("Unable to bind request metadata to Sentry scope", exc_info=True)
 
 
 def _monotonic_seconds() -> float:
@@ -1139,6 +1206,16 @@ def update_attendance_in_db_in(
     Args:
         present: A dictionary mapping usernames to their presence status (True).
     """
+    _record_sentry_breadcrumb(
+        message="Persisting check-in attendance",
+        category="attendance.persistence",
+        data={
+            "direction": "in",
+            "user_count": len(present),
+            "attempt_ids": bool(attempt_ids),
+        },
+    )
+
     today = timezone.localdate()
     current_time = timezone.now()
     attempt_ids = attempt_ids or {}
@@ -1149,6 +1226,17 @@ def update_attendance_in_db_in(
                 "Skipping check-in attendance update for unknown user '%s'. "
                 "Training data may be stale.",
                 person,
+                extra={
+                    "flow": "attendance_persistence",
+                    "direction": "in",
+                    "username": person,
+                },
+            )
+            _record_sentry_breadcrumb(
+                message="Unknown user during check-in persistence",
+                category="attendance.persistence",
+                level="warning",
+                data={"direction": "in", "username": person},
             )
             attempt_id = attempt_ids.get(person)
             if attempt_id:
@@ -1199,6 +1287,16 @@ def update_attendance_in_db_out(
     Args:
         present: A dictionary mapping usernames to their presence status (True).
     """
+    _record_sentry_breadcrumb(
+        message="Persisting check-out attendance",
+        category="attendance.persistence",
+        data={
+            "direction": "out",
+            "user_count": len(present),
+            "attempt_ids": bool(attempt_ids),
+        },
+    )
+
     today = timezone.localdate()
     current_time = timezone.now()
     attempt_ids = attempt_ids or {}
@@ -1212,6 +1310,17 @@ def update_attendance_in_db_out(
                 "Skipping check-out attendance update for unknown user '%s'. "
                 "Training data may be stale.",
                 person,
+                extra={
+                    "flow": "attendance_persistence",
+                    "direction": "out",
+                    "username": person,
+                },
+            )
+            _record_sentry_breadcrumb(
+                message="Unknown user during check-out persistence",
+                category="attendance.persistence",
+                level="warning",
+                data={"direction": "out", "username": person},
             )
             attempt_id = attempt_ids.get(person)
             if attempt_id:
@@ -1832,6 +1941,20 @@ def _mark_attendance(request, check_in: bool):
     recorded_outcomes: set[tuple[str, bool]] = set()
     direction = "in" if check_in else "out"
 
+    request_metadata = {
+        "direction": direction,
+        "path": getattr(request, "path", ""),
+        "user_id": getattr(getattr(request, "user", None), "id", None),
+        "username": getattr(getattr(request, "user", None), "username", None),
+        "remote_addr": request.META.get("REMOTE_ADDR") if hasattr(request, "META") else None,
+    }
+    _bind_request_to_sentry_scope(request, flow="webcam_attendance", extra=request_metadata)
+    _record_sentry_breadcrumb(
+        message="Attendance capture started",
+        category="attendance.flow",
+        data=request_metadata,
+    )
+
     def _log_outcome(candidate: Optional[str], *, accepted: bool, distance: float | None) -> None:
         key = (candidate or "", accepted)
         if key in recorded_outcomes:
@@ -1885,11 +2008,34 @@ def _mark_attendance(request, check_in: bool):
         dataset_load_duration,
         threshold_key="model_load",
     )
+    dataset_size: int | None
+    try:
+        dataset_size = len(dataset_index)
+    except TypeError:
+        dataset_size = None
+    _record_sentry_breadcrumb(
+        message="Attendance dataset loaded",
+        category="attendance.dataset",
+        data={
+            "direction": direction,
+            "dataset_size": dataset_size,
+            "load_seconds": round(dataset_load_duration, 6),
+        },
+    )
     if not dataset_index:
         attempt_logger.log_failure(
             getattr(request.user, "username", None),
             spoofed=False,
             error="No encrypted training data available for matching.",
+        )
+        _record_sentry_breadcrumb(
+            message="Attendance dataset empty",
+            category="attendance.dataset",
+            level="warning",
+            data={
+                "direction": direction,
+                "load_seconds": round(dataset_load_duration, 6),
+            },
         )
         messages.error(
             request,
@@ -2027,12 +2173,24 @@ def _mark_attendance(request, check_in: bool):
                             time.sleep(frame_pause)
                         if frames_processed >= max_frames:
                             logger.info(
-                                "Headless mode reached frame limit of %d frames", max_frames
+                                "Headless mode reached frame limit of %d frames",
+                                max_frames,
+                                extra={
+                                    "flow": "webcam_attendance",
+                                    "direction": direction,
+                                    "frames_processed": frames_processed,
+                                },
                             )
                             break
 
                 except Exception as e:
-                    logger.error("Error during face recognition loop: %s", e)
+                    logger.exception(
+                        "Error during face recognition loop",
+                        extra={
+                            "flow": "webcam_attendance",
+                            "direction": direction,
+                        },
+                    )
                 finally:
                     iteration_duration = time.perf_counter() - iteration_start
                     monitoring.observe_stage_duration(
@@ -2063,10 +2221,38 @@ def _mark_attendance(request, check_in: bool):
                 "Queued attendance batch %s for %s event.",
                 async_result.id,
                 record["direction"],
+                extra={
+                    "flow": "webcam_attendance",
+                    "direction": direction,
+                    "task_id": async_result.id,
+                    "recognized_users": sorted(present.keys()),
+                },
+            )
+            _record_sentry_breadcrumb(
+                message="Attendance batch enqueued",
+                category="attendance.queue",
+                data={
+                    "direction": direction,
+                    "task_id": async_result.id,
+                    "user_count": len(present),
+                },
             )
         except Exception:  # pragma: no cover - defensive programming
             logger.exception(
-                "Failed to enqueue attendance processing; falling back to synchronous update."
+                "Failed to enqueue attendance processing; falling back to synchronous update.",
+                extra={
+                    "flow": "webcam_attendance",
+                    "direction": direction,
+                },
+            )
+            _record_sentry_breadcrumb(
+                message="Attendance batch enqueue failed",
+                category="attendance.queue",
+                level="error",
+                data={
+                    "direction": direction,
+                    "user_count": len(present),
+                },
             )
             if check_in:
                 update_attendance_in_db_in(present, attempt_ids=attempt_ids)
@@ -2525,10 +2711,29 @@ def mark_attendance_view(request, attendance_type):
         messages.error(request, "Not authorised to perform this action")
         return redirect("not_authorised")
 
+    metadata = {
+        "direction": attendance_type,
+        "path": getattr(request, "path", ""),
+        "user_id": getattr(request.user, "id", None),
+        "username": getattr(request.user, "username", None),
+        "remote_addr": request.META.get("REMOTE_ADDR") if hasattr(request, "META") else None,
+    }
+    _bind_request_to_sentry_scope(request, flow="svc_attendance", extra=metadata)
+    _record_sentry_breadcrumb(
+        message="Model-based attendance flow started",
+        category="attendance.flow",
+        data=metadata,
+    )
+
     logger.info(
         "Attendance marking process ('%s') initiated by %s.",
         attendance_type,
         request.user,
+        extra={
+            "flow": "svc_attendance",
+            "direction": attendance_type,
+            "user_id": metadata["user_id"],
+        },
     )
 
     direction_choice = (
@@ -2549,14 +2754,39 @@ def mark_attendance_view(request, attendance_type):
     dataset_index = _load_dataset_embeddings_for_matching(
         model_name, detector_backend, enforce_detection
     )
+    dataset_size: int | None
+    try:
+        dataset_size = len(dataset_index)
+    except TypeError:
+        dataset_size = None
+    _record_sentry_breadcrumb(
+        message="Model-based dataset loaded",
+        category="attendance.dataset",
+        data={
+            "direction": attendance_type,
+            "dataset_size": dataset_size,
+        },
+    )
     if not dataset_index:
         logger.warning(
-            "Cached embeddings are empty while marking attendance via SVC; continuing with model predictions."
+            "Cached embeddings are empty while marking attendance via SVC; continuing with model predictions.",
+            extra={
+                "flow": "svc_attendance",
+                "direction": attendance_type,
+            },
         )
         attempt_logger.log_failure(
             getattr(request.user, "username", None),
             spoofed=False,
             error="Cached embeddings unavailable while marking attendance.",
+        )
+        _record_sentry_breadcrumb(
+            message="Model-based dataset empty",
+            category="attendance.dataset",
+            level="warning",
+            data={
+                "direction": attendance_type,
+            },
         )
 
     # --- Load Model ---
@@ -2573,8 +2803,14 @@ def mark_attendance_view(request, attendance_type):
             request, "Model not found. Please train the model before marking attendance."
         )
         return redirect("train")
-    except Exception as e:
-        logger.error("Failed to load the recognition model: %s", e)
+    except Exception:
+        logger.exception(
+            "Failed to load the recognition model",
+            extra={
+                "flow": "svc_attendance",
+                "direction": attendance_type,
+            },
+        )
         messages.error(request, "Failed to load the model. Check logs for details.")
         return redirect("train")
 
@@ -2719,8 +2955,15 @@ def mark_attendance_view(request, attendance_type):
                         else:
                             _log_outcome(None, accepted=False, distance=None)
 
-                except Exception as e:
-                    logger.warning("Could not process frame for recognition: %s", e)
+                except Exception:
+                    logger.warning(
+                        "Could not process frame for recognition",
+                        exc_info=True,
+                        extra={
+                            "flow": "svc_attendance",
+                            "direction": attendance_type,
+                        },
+                    )
 
                 if not headless:
                     cv2.imshow(f"Marking Attendance ({attendance_type})", frame)
@@ -2761,6 +3004,21 @@ def mark_attendance_view(request, attendance_type):
                 "Queued attendance batch %s for %s event via API.",
                 async_result.id,
                 attendance_type,
+                extra={
+                    "flow": "svc_attendance",
+                    "direction": attendance_type,
+                    "task_id": async_result.id,
+                    "recognized_users": sorted(recognized_present.keys()),
+                },
+            )
+            _record_sentry_breadcrumb(
+                message="API attendance batch enqueued",
+                category="attendance.queue",
+                data={
+                    "direction": attendance_type,
+                    "task_id": async_result.id,
+                    "user_count": len(recognized_present),
+                },
             )
             if attendance_type == "in":
                 messages.success(
@@ -2774,7 +3032,20 @@ def mark_attendance_view(request, attendance_type):
                 )
         except Exception:  # pragma: no cover - defensive programming
             logger.exception(
-                "Failed to enqueue attendance processing via API; applying updates synchronously."
+                "Failed to enqueue attendance processing via API; applying updates synchronously.",
+                extra={
+                    "flow": "svc_attendance",
+                    "direction": attendance_type,
+                },
+            )
+            _record_sentry_breadcrumb(
+                message="API attendance batch enqueue failed",
+                category="attendance.queue",
+                level="error",
+                data={
+                    "direction": attendance_type,
+                    "user_count": len(recognized_present),
+                },
             )
             if attendance_type == "in":
                 update_attendance_in_db_in(recognized_present, attempt_ids=attempt_ids)
