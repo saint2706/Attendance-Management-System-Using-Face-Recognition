@@ -158,10 +158,12 @@ After registering an employee, you must add their photos:
 
 1. Click **"Add Photos"** from the admin dashboard
 2. Enter the employee's username
-3. Click **"Start Camera"**
-4. The system will automatically take multiple photos from different angles
-5. Follow the on-screen instructions
-6. The system will automatically train itself to recognize the employee
+3. Click **"Start Camera"** – this queues a background capture job and shows a task ID.
+4. Monitor the status card to confirm frames are captured successfully. You can also poll `/tasks/<task-id>/`.
+5. The worker encrypts each frame and schedules incremental training automatically.
+6. Once complete, the employee's embeddings are available for recognition.
+
+Need to retrain the classifier after a bulk import? Navigate to **Train Model** and start the background job. The status card displays task progress and metrics once completed.
 
 **Important**: The employee needs to be present for photo capture.
 

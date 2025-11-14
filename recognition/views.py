@@ -35,12 +35,12 @@ from django.core.cache import cache
 from django.db.models import Count, QuerySet
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 
 import cv2
-import django_rq
 import imutils
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -52,7 +52,6 @@ from deepface import DeepFace
 from django_pandas.io import read_frame
 from django_ratelimit.core import is_ratelimited
 from django_ratelimit.decorators import ratelimit
-from imutils.video import VideoStream
 from matplotlib import rcParams
 from pandas.plotting import register_matplotlib_converters
 from sentry_sdk import Hub
@@ -329,6 +328,37 @@ def _enqueue_attendance_records(records: Sequence[Dict[str, Any]]) -> AsyncResul
     from .tasks import process_attendance_batch
 
     return process_attendance_batch.delay(records)
+
+
+def _describe_async_result(task_id: str) -> Dict[str, Any]:
+    """Return a normalized snapshot of the Celery task identified by ``task_id``."""
+
+    result = AsyncResult(task_id)
+    payload: Dict[str, Any] = {
+        "task_id": task_id,
+        "status": result.status,
+        "ready": result.ready(),
+        "successful": result.successful(),
+    }
+
+    info = result.info
+    if isinstance(info, Mapping):
+        payload["meta"] = dict(info)
+    elif info is not None and not isinstance(info, Exception):
+        payload["meta"] = info
+
+    if result.failed():
+        try:
+            payload["error"] = str(result.result)
+        except Exception:  # pragma: no cover - defensive programming
+            payload["error"] = "Task failed"
+    elif result.successful():
+        try:
+            payload["result"] = result.result
+        except Exception:  # pragma: no cover - defensive programming
+            payload["result"] = info if info is not None else {}
+
+    return payload
 
 
 @method_decorator(ratelimit(key="ip", rate="5/m", method="POST", block=False), name="post")
@@ -1111,87 +1141,6 @@ def username_present(username: str) -> bool:
     return User.objects.filter(username=username).exists()
 
 
-def create_dataset(username: str) -> None:
-    """
-    Capture and store face images for the provided username.
-
-    This function initializes a video stream from the webcam, captures 50 frames,
-    and saves them as JPEG images in a directory named after the user.
-
-    Args:
-        username: The username for whom the dataset is being created.
-    """
-    dataset_directory = TRAINING_DATASET_ROOT / username
-    dataset_directory.mkdir(parents=True, exist_ok=True)
-
-    logger.info("Initializing video stream to capture images for %s", username)
-    video_stream = VideoStream(src=0).start()
-
-    headless = _is_headless_environment()
-    max_frames = int(getattr(settings, "RECOGNITION_HEADLESS_DATASET_FRAMES", 50))
-    frame_pause = float(getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01))
-
-    sample_number = 0
-    saved_paths: list[Path] = []
-    try:
-        while True:
-            # Read a frame from the video stream
-            frame = video_stream.read()
-            if frame is None:
-                continue
-            frame = imutils.resize(frame, width=800)
-
-            sample_number += 1
-            output_path = dataset_directory / f"{sample_number}.jpg"
-            success, buffer = cv2.imencode(".jpg", frame)
-            if not success:
-                logger.warning("Failed to encode captured frame %s for %s", sample_number, username)
-                continue
-
-            try:
-                encrypted_frame = encrypt_bytes(buffer.tobytes())
-            except Exception as exc:  # pragma: no cover - defensive programming
-                logger.error("Failed to encrypt frame %s for %s: %s", sample_number, username, exc)
-                continue
-
-            try:
-                with output_path.open("wb") as image_file:
-                    image_file.write(encrypted_frame)
-                saved_paths.append(output_path)
-            except OSError as exc:
-                logger.error(
-                    "Failed to persist encrypted frame %s for %s: %s", sample_number, username, exc
-                )
-                continue
-
-            if not headless:
-                # Display the frame to the user and allow them to quit manually
-                cv2.imshow("Add Images - Press 'q' to stop", frame)
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break
-            else:
-                if frame_pause:
-                    time.sleep(frame_pause)
-
-            if sample_number >= max_frames:
-                break
-    finally:
-        logger.info("Finished capturing images for %s.", username)
-        video_stream.stop()
-        if not headless:
-            cv2.destroyAllWindows()
-
-        if saved_paths:
-            try:
-                from .tasks import incremental_face_training
-
-                django_rq.enqueue(
-                    incremental_face_training, username, [str(path) for path in saved_paths]
-                )
-            except Exception as exc:  # pragma: no cover - defensive programming
-                logger.error("Failed to enqueue incremental training for %s: %s", username, exc)
-
-
 def update_attendance_in_db_in(
     present: Dict[str, bool],
     *,
@@ -1655,21 +1604,46 @@ def add_photos(request):
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
 
+    task_context: Dict[str, Any] | None = None
+    task_id = request.GET.get("task_id")
+    if task_id:
+        task_context = _describe_async_result(task_id)
+
     if request.method == "POST":
         form = usernameForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data["username"]
             if username_present(username):
-                create_dataset(username)
-                messages.success(request, f"Dataset Created for {username}")
-                return redirect("add-photos")
+                try:
+                    from .tasks import capture_dataset
+
+                    async_result = capture_dataset.delay(username)
+                except Exception:
+                    logger.exception("Failed to enqueue dataset capture for %s", username)
+                    messages.error(
+                        request,
+                        "Unable to start dataset capture at this time. Please try again shortly.",
+                    )
+                else:
+                    messages.success(
+                        request,
+                        (
+                            f"Dataset capture for {username} started in the background. "
+                            f"Track progress with task ID {async_result.id}."
+                        ),
+                    )
+                    return redirect(f"{reverse('add-photos')}?task_id={async_result.id}")
 
             messages.warning(request, "No such username found. Please register employee first.")
             return redirect("dashboard")
     else:
         form = usernameForm()
 
-    return render(request, "recognition/add_photos.html", {"form": form})
+    context: Dict[str, Any] = {"form": form}
+    if task_context:
+        context["task"] = task_context
+
+    return render(request, "recognition/add_photos.html", context)
 
 
 # Default distance threshold for face recognition confidence
@@ -2286,19 +2260,57 @@ def monitoring_metrics(request):
 
 @login_required
 def train(request):
-    """
-    This view is now obsolete, as DeepFace handles recognition implicitly
-    by searching through image folders. It redirects to the dashboard with an
-    informational message.
-    """
+    """Allow administrators to trigger and monitor background model training."""
+
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
 
-    messages.info(
-        request,
-        "The training process is now automatic. Just add photos for new users.",
-    )
-    return redirect("dashboard")
+    task_context: Dict[str, Any] | None = None
+    task_id = request.GET.get("task_id")
+    if task_id:
+        task_context = _describe_async_result(task_id)
+
+    if request.method == "POST":
+        try:
+            from .tasks import train_recognition_model
+
+            async_result = train_recognition_model.delay(
+                initiated_by=getattr(request.user, "get_username", lambda: None)()
+                if hasattr(request.user, "get_username")
+                else getattr(request.user, "username", None)
+            )
+        except Exception:
+            logger.exception("Failed to enqueue training job")
+            messages.error(
+                request,
+                "Unable to start model training. Please retry once the worker is available.",
+            )
+        else:
+            messages.success(
+                request,
+                (
+                    "Model training has started in the background. "
+                    f"Track progress with task ID {async_result.id}."
+                ),
+            )
+            return redirect(f"{reverse('train')}?task_id={async_result.id}")
+
+    context: Dict[str, Any] = {}
+    if task_context:
+        context["task"] = task_context
+
+    return render(request, "recognition/train.html", context)
+
+
+@login_required
+def task_status(request, task_id: str) -> JsonResponse:
+    """Return JSON describing the state of a Celery task."""
+
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({"detail": "Not authorised"}, status=403)
+
+    payload = _describe_async_result(task_id)
+    return JsonResponse(payload)
 
 
 @login_required
@@ -2557,145 +2569,6 @@ def _get_recognition_training_seed() -> int:
 
 
 # ========== Views ==========
-
-
-@login_required
-def train_view(request):
-    """
-    Train the face recognition model and evaluate its performance.
-
-    This view triggers the training process, which involves:
-    1. Finding all user-specific image directories.
-    2. Extracting face embeddings and splitting data into train/test sets.
-    3. Training a Support Vector Classifier (SVC) on the training data.
-    4. Evaluating the model on the test data and generating performance metrics.
-    5. Saving the trained model, class names, and evaluation report.
-    """
-    if not (request.user.is_staff or request.user.is_superuser):
-        messages.error(request, "Not authorised to perform this action")
-        return redirect("not_authorised")
-
-    logger.info("Training of the model has been initiated by %s.", request.user)
-
-    # --- 1. Data Preparation ---
-    image_paths = sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
-    if not image_paths:
-        messages.error(request, "No training data found. Please add photos for users.")
-        return render(request, "recognition/train.html", {"trained": False})
-
-    embedding_vectors: list[list[float]] = []
-    class_names: list[str] = []
-
-    model_name = _get_face_recognition_model()
-    detector_backend = _get_face_detection_backend()
-
-    for image_path in image_paths:
-        embedding_array = _get_or_compute_cached_embedding(image_path, model_name, detector_backend)
-        if embedding_array is None:
-            logger.debug("Skipping image %s because no embedding was produced.", image_path)
-            continue
-
-        embedding_vectors.append(embedding_array.tolist())
-        class_names.append(image_path.parent.name)
-
-    if not embedding_vectors:
-        messages.error(
-            request,
-            "No usable training data found after decrypting images. Please recreate the dataset.",
-        )
-        return render(request, "recognition/train.html", {"trained": False})
-
-    unique_classes = sorted(set(class_names))
-
-    if len(unique_classes) < 2:
-        messages.error(
-            request,
-            "Training requires at least two different users with photos. "
-            f"Found only {len(unique_classes)}.",
-        )
-        return render(request, "recognition/train.html", {"trained": False})
-
-    logger.info(
-        "Successfully extracted embeddings from %d encrypted images.", len(embedding_vectors)
-    )
-
-    # --- 3. Data Splitting ---
-    test_split_ratio = _get_recognition_training_test_split_ratio()
-    random_seed = _get_recognition_training_seed()
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        embedding_vectors,
-        class_names,
-        test_size=test_split_ratio,
-        random_state=random_seed,
-        stratify=class_names,
-    )
-    logger.info("Data split: %d training samples, %d test samples.", len(X_train), len(X_test))
-
-    # --- 4. Model Training ---
-    logger.info("Training Support Vector Classifier...")
-    model = SVC(gamma="auto", probability=True, random_state=random_seed)
-    model.fit(X_train, y_train)
-    logger.info("SVC training complete.")
-
-    # --- 5. Model Evaluation ---
-    y_pred = model.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    precision, recall, f1, _ = precision_recall_fscore_support(
-        y_test, y_pred, average="weighted", zero_division=0
-    )
-
-    report = classification_report(y_test, y_pred, zero_division=0, output_dict=False)
-    logger.info("Model Evaluation Report:\n%s", report)
-
-    # --- 6. Save Artifacts ---
-    try:
-        DATA_ROOT.mkdir(parents=True, exist_ok=True)
-
-        # Save the trained model
-        model_path = DATA_ROOT / "svc.sav"
-        model_bytes = pickle.dumps(model)
-        model_path.write_bytes(encrypt_bytes(model_bytes))
-
-        # Save the class names
-        classes_path = DATA_ROOT / "classes.npy"
-        buffer = io.BytesIO()
-        np.save(buffer, unique_classes)
-        classes_path.write_bytes(encrypt_bytes(buffer.getvalue()))
-
-        # Save the evaluation report
-        report_path = DATA_ROOT / "classification_report.txt"
-        with report_path.open("w") as f:
-            f.write("Model Evaluation Report\n")
-            f.write("=========================\n\n")
-            f.write(f"Timestamp: {timezone.now()}\n")
-            f.write(f"Test Split Ratio: {test_split_ratio}\n")
-            f.write(f"Random Seed: {random_seed}\n\n")
-            f.write(f"Accuracy: {accuracy:.2%}\n")
-            f.write(f"Precision (weighted): {precision:.2f}\n")
-            f.write(f"Recall (weighted): {recall:.2f}\n")
-            f.write(f"F1-Score (weighted): {f1:.2f}\n\n")
-            f.write("Classification Report:\n")
-            # Ensure we write a string (classification_report may be str or dict-like)
-            f.write(str(report))
-
-        logger.info("Successfully saved model, classes, and evaluation report.")
-        messages.success(request, "Model trained and evaluated successfully!")
-
-    except Exception as e:
-        logger.error("Failed to save training artifacts: %s", e)
-        messages.error(request, "Failed to save the trained model. Check permissions.")
-        return render(request, "recognition/train.html", {"trained": False})
-
-    context = {
-        "trained": True,
-        "accuracy": f"{accuracy:.2%}",
-        "precision": f"{precision:.2f}",
-        "recall": f"{recall:.2f}",
-        "f1_score": f"{f1:.2f}",
-        "class_report": str(report).replace("\n", "<br>"),
-    }
-    return render(request, "recognition/train.html", context)
 
 
 @login_required

@@ -98,8 +98,8 @@ returns an empty index, and the recognition API responds with HTTP 503 and
 **Action**
 1. Confirm the dataset directory (`face_recognition_data/training_dataset/`) contains
    user subdirectories with captured images.
-2. Run the dataset embedding refresh job or trigger attendance enrolment to rebuild
-   embeddings.
+2. Queue the `capture_dataset` Celery task (via **Add Photos** or `tasks.capture_dataset.delay`) to rebuild
+   encrypted samples. Monitor progress through `/tasks/<task-id>/`.
 
 ### Liveness Check Failures
 When `_passes_liveness_check` fails, the API still returns a JSON payload but sets
@@ -115,7 +115,7 @@ all fail, it logs `"Failed to compute fallback distance"` and skips the candidat
 
 **Action**
 1. Inspect embeddings for corruption or unexpected data types.
-2. Recompute embeddings for affected users using the dataset creation workflow.
+2. Recompute embeddings by re-running the capture workflow and verifying the corresponding Celery job succeeds.
 
 > ℹ️ Plan to link to recognition service health dashboards (model accuracy,
 > liveness failure rate) once monitoring is deployed.

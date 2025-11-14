@@ -548,8 +548,8 @@ class AddPhotosTest(TestCase):
         )
 
     @patch("recognition.views.username_present", return_value=True)
-    @patch("recognition.views.create_dataset")
-    def test_add_photos_success(self, mock_create_dataset, mock_username_present):
+    @patch("recognition.tasks.capture_dataset.delay")
+    def test_add_photos_success(self, mock_capture_delay, mock_username_present):
         """Test successful photo dataset creation for an existing user."""
         request = self.factory.post("/add_photos/", {"username": "newuser"})
         request.user = self.admin_user
@@ -558,15 +558,17 @@ class AddPhotosTest(TestCase):
         messages = FallbackStorage(request)
         setattr(request, "_messages", messages)
 
+        mock_capture_delay.return_value.id = "task-123"
+
         response = views.add_photos(request)
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("add-photos"))
-        mock_create_dataset.assert_called_once_with("newuser")
+        self.assertEqual(response.url, f"{reverse('add-photos')}?task_id=task-123")
+        mock_capture_delay.assert_called_once_with("newuser")
 
     @patch("recognition.views.username_present", return_value=False)
-    @patch("recognition.views.create_dataset")
-    def test_add_photos_user_not_found(self, mock_create_dataset, mock_username_present):
+    @patch("recognition.tasks.capture_dataset.delay")
+    def test_add_photos_user_not_found(self, mock_capture_delay, mock_username_present):
         """Test that adding photos fails if the username does not exist."""
         request = self.factory.post("/add_photos/", {"username": "nonexistent"})
         request.user = self.admin_user
@@ -579,7 +581,7 @@ class AddPhotosTest(TestCase):
         # Should redirect to the dashboard with a warning message
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("dashboard"))
-        mock_create_dataset.assert_not_called()
+        mock_capture_delay.assert_not_called()
 
 
 class AdminAccessViewsTest(TestCase):

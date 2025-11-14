@@ -197,7 +197,6 @@ INSTALLED_APPS = [
     "recognition.apps.RecognitionConfig",
     # Third-party packages
     "silk",
-    "django_rq",
     "django_ratelimit",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -281,47 +280,6 @@ CACHES = {
         "LOCATION": "unique-snowflake",
     }
 }
-
-
-# --- RQ (Redis Queue) Configuration ---
-
-
-def _build_rq_queue_settings() -> dict[str, dict[str, object]]:
-    """Return the django-rq queue configuration sourced from the environment."""
-
-    default_async = not TESTING and _get_bool_env("RQ_ASYNC", default=True)
-    default_timeout = _parse_int_env("RQ_DEFAULT_TIMEOUT", 300, minimum=1)
-
-    redis_url = os.environ.get("REDIS_URL")
-    if redis_url:
-        default_queue: dict[str, object] = {
-            "URL": redis_url,
-            "DEFAULT_TIMEOUT": default_timeout,
-            "ASYNC": default_async,
-        }
-        return {"default": default_queue}
-
-    host = os.environ.get("REDIS_HOST", "127.0.0.1")
-    port = _parse_int_env("REDIS_PORT", 6379, minimum=1)
-    db_index = _parse_int_env("REDIS_DB", 0, minimum=0)
-    password = os.environ.get("REDIS_PASSWORD")
-
-    default_queue = {
-        "HOST": host,
-        "PORT": port,
-        "DB": db_index,
-        "DEFAULT_TIMEOUT": default_timeout,
-        "ASYNC": default_async,
-    }
-
-    if password:
-        default_queue["PASSWORD"] = password
-
-    return {"default": default_queue}
-
-
-RQ_QUEUES = _build_rq_queue_settings()
-RQ_SHOW_ADMIN = _get_bool_env("RQ_SHOW_ADMIN", default=False)
 
 
 # --- Password Validation ---

@@ -78,7 +78,8 @@ urlpatterns = [
     # User and Photo Management (Admin-only)
     path("register/", users_views.register, name="register"),
     path("add_photos/", recog_views.add_photos, name="add-photos"),
-    path("train/", recog_views.train, name="train"),  # Obsolete, but kept for URL consistency
+    path("train/", recog_views.train, name="train"),
+    path("tasks/<str:task_id>/", recog_views.task_status, name="task-status"),
     # Face Recognition and Attendance Marking
     path(
         "mark_your_attendance",
