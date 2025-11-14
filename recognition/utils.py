@@ -3,22 +3,29 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import pickle
 import threading
 from pathlib import Path
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Mapping
+
+from django.conf import settings
+from django.core.cache import cache
+
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
+
+    from users.models import Time
 
 import cv2
 import numpy as np
-from django.conf import settings
-from django.core.cache import cache
 from deepface import DeepFace
 
 from src.common import InvalidToken, decrypt_bytes
 from src.common.face_data_encryption import FaceDataEncryption
+
 from .pipeline import extract_embedding
 
-import logging
 logger = logging.getLogger(__name__)
 
 DATA_ROOT: Path = Path(settings.BASE_DIR) / "face_recognition_data"
@@ -74,9 +81,7 @@ class DatasetEmbeddingCache:
 
     def _load_from_disk(
         self, model_name: str, detector_backend: str, enforce_detection: bool
-    ) -> tuple[
-        tuple[tuple[str, int, int], ...], list[dict[str, Any]]
-    ] | None:
+    ) -> tuple[tuple[tuple[str, int, int], ...], list[dict[str, Any]]] | None:
         """Load cached embeddings from a pickle file on disk."""
         cache_file = self._cache_file_path(model_name, detector_backend, enforce_detection)
         if not cache_file.exists():
@@ -217,9 +222,7 @@ def _decrypt_image_bytes(image_path: Path) -> bytes | None:
         return None
 
 
-def _decode_image_bytes(
-    decrypted_bytes: bytes, *, source: Path | None = None
-) -> np.ndarray | None:
+def _decode_image_bytes(decrypted_bytes: bytes, *, source: Path | None = None) -> np.ndarray | None:
     """Decode decrypted image bytes into a numpy array."""
     frame_array = np.frombuffer(decrypted_bytes, dtype=np.uint8)
     if frame_array.size == 0:
@@ -350,9 +353,10 @@ def update_attendance_in_db_in(
     present: dict[str, bool], *, attempt_ids: "Mapping[str, int]" | None = None
 ) -> None:
     """Persist check-in attendance information for the provided users."""
-    from users.models import Present, Time, RecognitionAttempt
-    from django.utils import timezone
     from django.contrib.auth.models import User
+    from django.utils import timezone
+
+    from users.models import Present, RecognitionAttempt, Time
 
     today = timezone.localdate()
     current_time = timezone.now()
@@ -382,9 +386,10 @@ def update_attendance_in_db_out(
     present: dict[str, bool], *, attempt_ids: "Mapping[str, int]" | None = None
 ) -> None:
     """Persist check-out attendance information for the provided users."""
-    from users.models import Present, Time, RecognitionAttempt
-    from django.utils import timezone
     from django.contrib.auth.models import User
+    from django.utils import timezone
+
+    from users.models import Present, RecognitionAttempt, Time
 
     today = timezone.localdate()
     current_time = timezone.now()

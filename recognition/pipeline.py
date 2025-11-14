@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import logging
 import math
-from typing import Dict, Iterable, Mapping, Optional, Sequence, Tuple
+from typing import Iterable, Mapping, Sequence
 
 import numpy as np
 from numpy.typing import NDArray

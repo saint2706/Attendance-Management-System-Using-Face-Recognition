@@ -4,9 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from django.contrib.auth import get_user_model
-from django.test import Client, TestCase, override_settings
-from django.urls import reverse
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from recognition.metrics_store import log_recognition_outcome
@@ -59,5 +57,3 @@ class MetricsStoreTests(TestCase):
 
         self.assertFalse(RecognitionOutcome.objects.filter(pk=old.pk).exists())
         self.assertEqual(RecognitionOutcome.objects.count(), 1)
-
-
