@@ -97,14 +97,10 @@ def _parse_int_env_with_aliases(
         try:
             value = int(raw_value)
         except ValueError as exc:  # pragma: no cover - defensive programming
-            raise ImproperlyConfigured(
-                f"{candidate} must be an integer if provided."
-            ) from exc
+            raise ImproperlyConfigured(f"{candidate} must be an integer if provided.") from exc
 
         if minimum is not None and value < minimum:
-            raise ImproperlyConfigured(
-                f"{candidate} must be >= {minimum} if provided."
-            )
+            raise ImproperlyConfigured(f"{candidate} must be >= {minimum} if provided.")
 
         return value
 

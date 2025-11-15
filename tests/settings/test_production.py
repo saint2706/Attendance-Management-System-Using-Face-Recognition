@@ -55,6 +55,7 @@ def test_production_database_configuration(monkeypatch):
         "DJANGO_SETTINGS_MODULE",
         "attendance_system_facial_recognition.settings.production",
     )
+    monkeypatch.delenv("DATABASE_URL", raising=False)
     monkeypatch.setenv("DB_NAME", "ci_db")
     monkeypatch.setenv("DB_USER", "ci_user")
     monkeypatch.setenv("DB_PASSWORD", "ci_password")
