@@ -1,36 +1,64 @@
-FROM python:3.12-slim
+# syntax=docker/dockerfile:1
 
-ENV PYTHONUNBUFFERED=1
+ARG PYTHON_VERSION=3.12
 
-# Install system dependencies required by OpenCV/DeepFace and build tools
+FROM python:${PYTHON_VERSION}-slim AS python-base
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Runtime libraries required by OpenCV/DeepFace
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
-        build-essential \
-        gcc \
         libgl1 \
         libglib2.0-0 \
         libsm6 \
         libxext6 \
         libxrender1 \
-    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM python-base AS build
+
+# Build tools required for Python packages with native extensions
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+        build-essential \
+        gcc \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install Python dependencies first to leverage Docker layer caching
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m venv /venv
+ENV PATH="/venv/bin:$PATH"
 
-# Copy the full project
+# Leverage Docker layer caching for dependency installation
+COPY requirements.txt ./
+RUN pip install --upgrade pip setuptools wheel \
+    && pip install -r requirements.txt
+
+# Copy the full project for asset compilation
 COPY . /app
 
-# Collect static assets using the production settings module during build
+# Collect static files using production configuration during the build stage
 RUN DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production \
-    DJANGO_DEBUG=1 \
+    DJANGO_DEBUG=0 \
     python manage.py collectstatic --noinput
 
-# Ensure the production settings module is loaded by default at runtime
-ENV DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production
+FROM python-base AS runtime
 
-# Launch gunicorn by default
+ENV PATH="/venv/bin:$PATH" \
+    DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production \
+    DJANGO_DEBUG=0
+
+WORKDIR /app
+
+# Copy virtual environment with installed dependencies
+COPY --from=build /venv /venv
+
+# Copy application code and collected static files
+COPY --from=build /app /app
+
+# Default command runs the production WSGI server
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "attendance_system_facial_recognition.wsgi:application"]
