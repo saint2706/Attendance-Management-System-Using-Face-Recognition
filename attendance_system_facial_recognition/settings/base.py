@@ -8,7 +8,9 @@ It is configured to read sensitive values from environment variables for securit
 
 import os
 import sys
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -30,6 +32,20 @@ def _get_bool_env(var_name: str, default: bool = False) -> bool:
     if raw_value is None:
         return default
     return raw_value.lower() in {"1", "true", "yes", "on"}
+
+
+def _get_bool_env_with_aliases(
+    var_name: str,
+    *aliases: str,
+    default: bool,
+) -> bool:
+    """Return a boolean from a canonical environment variable or its aliases."""
+
+    for candidate in (var_name, *aliases):
+        raw_value = os.environ.get(candidate)
+        if raw_value is not None:
+            return raw_value.lower() in {"1", "true", "yes", "on"}
+    return default
 
 
 def _get_int_env(var_name: str, default: int) -> int:
@@ -65,6 +81,36 @@ def _parse_int_env(var_name: str, default: int, *, minimum: int | None = None) -
     return value
 
 
+def _parse_int_env_with_aliases(
+    var_name: str,
+    *aliases: str,
+    default: int,
+    minimum: int | None = None,
+) -> int:
+    """Return an integer from an environment variable or its aliases."""
+
+    for candidate in (var_name, *aliases):
+        raw_value = os.environ.get(candidate)
+        if raw_value is None:
+            continue
+
+        try:
+            value = int(raw_value)
+        except ValueError as exc:  # pragma: no cover - defensive programming
+            raise ImproperlyConfigured(
+                f"{candidate} must be an integer if provided."
+            ) from exc
+
+        if minimum is not None and value < minimum:
+            raise ImproperlyConfigured(
+                f"{candidate} must be >= {minimum} if provided."
+            )
+
+        return value
+
+    return default
+
+
 def _get_float_env(
     var_name: str,
     default: float,
@@ -97,7 +143,7 @@ DEFAULT_SECRET_KEY = "a-secure-default-key-for-development-only"
 # Never run with debug mode turned on in a production environment.
 # The value is read from an environment variable, defaulting to False for safety.
 # Automatically enable DEBUG mode when running tests.
-DEBUG = _get_bool_env("DJANGO_DEBUG", default=TESTING)
+DEBUG = _get_bool_env("DJANGO_DEBUG", default=not TESTING)
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", DEFAULT_SECRET_KEY)
 if SECRET_KEY == DEFAULT_SECRET_KEY and not DEBUG:
@@ -160,33 +206,126 @@ FACE_DATA_ENCRYPTION_KEY = _load_face_data_encryption_key()
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379/1")
 
-# ALLOWED_HOSTS: A list of strings representing the host/domain names that this Django site can serve.
-# When DJANGO_DEBUG is False the value must be explicitly provided.
-allowed_hosts_env = os.environ.get("DJANGO_ALLOWED_HOSTS")
-if allowed_hosts_env:
-    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(",") if host.strip()]
-elif DEBUG:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
-else:
-    raise ImproperlyConfigured(
-        "DJANGO_ALLOWED_HOSTS must be provided (comma separated) when DJANGO_DEBUG is not enabled."
+LOCALHOST_ALIASES: tuple[str, ...] = ("localhost", "127.0.0.1", "[::1]")
+
+
+def _resolve_allowed_hosts(
+    *,
+    default_allowed_hosts: Sequence[str],
+    require_explicit_hosts: bool,
+) -> list[str]:
+    """Return the allowed host list based on deployment defaults."""
+
+    allowed_hosts_env = os.environ.get("DJANGO_ALLOWED_HOSTS")
+    if allowed_hosts_env:
+        return [host.strip() for host in allowed_hosts_env.split(",") if host.strip()]
+
+    if require_explicit_hosts:
+        raise ImproperlyConfigured(
+            "DJANGO_ALLOWED_HOSTS must be provided (comma separated) when secure defaults are enforced."
+        )
+
+    return list(default_allowed_hosts)
+
+
+def configure_environment(
+    *,
+    secure_defaults: bool,
+    default_allowed_hosts: Sequence[str],
+    require_allowed_hosts: bool,
+) -> None:
+    """Populate security-sensitive settings for the active environment."""
+
+    global ALLOWED_HOSTS
+    global SECURE_SSL_REDIRECT
+    global SECURE_HSTS_SECONDS
+    global SECURE_HSTS_INCLUDE_SUBDOMAINS
+    global SECURE_HSTS_PRELOAD
+    global SESSION_COOKIE_SECURE
+    global SESSION_COOKIE_HTTPONLY
+    global SESSION_COOKIE_SAMESITE
+    global SESSION_COOKIE_AGE
+    global SESSION_EXPIRE_AT_BROWSER_CLOSE
+    global CSRF_COOKIE_SECURE
+
+    ALLOWED_HOSTS = _resolve_allowed_hosts(
+        default_allowed_hosts=default_allowed_hosts,
+        require_explicit_hosts=require_allowed_hosts,
     )
 
+    SECURE_SSL_REDIRECT = _get_bool_env_with_aliases(
+        "DJANGO_SECURE_SSL_REDIRECT",
+        "SECURE_SSL_REDIRECT",
+        default=secure_defaults,
+    )
+    SECURE_HSTS_SECONDS = _parse_int_env_with_aliases(
+        "DJANGO_SECURE_HSTS_SECONDS",
+        "SECURE_HSTS_SECONDS",
+        default=3600 if secure_defaults else 0,
+        minimum=0,
+    )
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = _get_bool_env_with_aliases(
+        "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS",
+        "SECURE_HSTS_INCLUDE_SUBDOMAINS",
+        default=secure_defaults,
+    )
+    SECURE_HSTS_PRELOAD = _get_bool_env_with_aliases(
+        "DJANGO_SECURE_HSTS_PRELOAD",
+        "SECURE_HSTS_PRELOAD",
+        default=secure_defaults,
+    )
 
-if DEBUG:
-    SECURE_SSL_REDIRECT = False
-    SECURE_HSTS_SECONDS = 0
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-    SECURE_HSTS_PRELOAD = False
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-else:
-    SECURE_SSL_REDIRECT = _get_bool_env("SECURE_SSL_REDIRECT", default=True)
-    SECURE_HSTS_SECONDS = _parse_int_env("SECURE_HSTS_SECONDS", 3600, minimum=0)
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = _get_bool_env("SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True)
-    SECURE_HSTS_PRELOAD = _get_bool_env("SECURE_HSTS_PRELOAD", default=True)
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = _get_bool_env_with_aliases(
+        "DJANGO_SESSION_COOKIE_SECURE",
+        "SESSION_COOKIE_SECURE",
+        default=secure_defaults,
+    )
+    SESSION_COOKIE_HTTPONLY = _get_bool_env_with_aliases(
+        "DJANGO_SESSION_COOKIE_HTTPONLY",
+        "SESSION_COOKIE_HTTPONLY",
+        default=True,
+    )
+    CSRF_COOKIE_SECURE = _get_bool_env_with_aliases(
+        "DJANGO_CSRF_COOKIE_SECURE",
+        "CSRF_COOKIE_SECURE",
+        default=secure_defaults,
+    )
+
+    session_cookie_samesite_raw = os.environ.get("DJANGO_SESSION_COOKIE_SAMESITE")
+    if session_cookie_samesite_raw is None:
+        session_cookie_samesite_raw = os.environ.get("SESSION_COOKIE_SAMESITE")
+    if session_cookie_samesite_raw:
+        normalized_samesite = session_cookie_samesite_raw.strip().lower()
+        valid_samesite_values = {"lax": "Lax", "strict": "Strict", "none": "None"}
+        if normalized_samesite not in valid_samesite_values:
+            raise ImproperlyConfigured(
+                "DJANGO_SESSION_COOKIE_SAMESITE must be one of: Lax, Strict, or None."
+            )
+        SESSION_COOKIE_SAMESITE = valid_samesite_values[normalized_samesite]
+    else:
+        SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_AGE = _parse_int_env_with_aliases(
+        "DJANGO_SESSION_COOKIE_AGE",
+        "SESSION_COOKIE_AGE",
+        default=1800,
+        minimum=1,
+    )
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = _get_bool_env_with_aliases(
+        "DJANGO_SESSION_EXPIRE_AT_BROWSER_CLOSE",
+        "SESSION_EXPIRE_AT_BROWSER_CLOSE",
+        default=secure_defaults,
+    )
+
+    require_database_ssl = _get_bool_env_with_aliases(
+        "DATABASE_SSL_REQUIRE",
+        "DB_SSL_REQUIRE",
+        default=secure_defaults,
+    )
+    db_options = DATABASES["default"].setdefault("OPTIONS", {})
+    if require_database_ssl:
+        db_options["sslmode"] = os.environ.get("DATABASE_SSLMODE", "require")
+    else:
+        db_options.pop("sslmode", None)
 
 
 # --- Application Configuration ---
@@ -261,12 +400,30 @@ else:
 
 database_config = dj_database_url.parse(default_db_url, conn_max_age=conn_max_age)
 
-if _get_bool_env("DATABASE_SSL_REQUIRE", default=False):
-    database_config.setdefault("OPTIONS", {})["sslmode"] = "require"
-
 DATABASES = {
     "default": database_config,
 }
+
+
+def build_postgres_database_config() -> dict[str, Any]:
+    """Return a PostgreSQL configuration derived from discrete environment variables."""
+
+    return {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("DB_NAME", "attendance"),
+        "USER": os.environ.get("DB_USER", "attendance"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "attendance"),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
+        "CONN_MAX_AGE": _parse_int_env("DB_CONN_MAX_AGE", 600, minimum=0),
+    }
+
+
+configure_environment(
+    secure_defaults=not DEBUG,
+    default_allowed_hosts=LOCALHOST_ALIASES,
+    require_allowed_hosts=not DEBUG,
+)
 
 
 # --- Cache Configuration ---
@@ -359,29 +516,6 @@ SILENCED_SYSTEM_CHECKS = [
     "django_ratelimit.E003",  # LocMemCache not a shared cache
     "django_ratelimit.W001",  # LocMemCache not officially supported
 ]
-
-# --- Session & Cookie Settings ---
-
-SESSION_COOKIE_SECURE = _get_bool_env("DJANGO_SESSION_COOKIE_SECURE", default=not DEBUG)
-SESSION_COOKIE_HTTPONLY = _get_bool_env("DJANGO_SESSION_COOKIE_HTTPONLY", default=True)
-CSRF_COOKIE_SECURE = _get_bool_env("DJANGO_CSRF_COOKIE_SECURE", default=not DEBUG)
-
-_session_cookie_samesite = os.environ.get("DJANGO_SESSION_COOKIE_SAMESITE")
-if _session_cookie_samesite:
-    _normalized_samesite = _session_cookie_samesite.strip().lower()
-    _valid_samesite_values = {"lax": "Lax", "strict": "Strict", "none": "None"}
-    if _normalized_samesite not in _valid_samesite_values:
-        raise ImproperlyConfigured(
-            "DJANGO_SESSION_COOKIE_SAMESITE must be one of: Lax, Strict, or None."
-        )
-    SESSION_COOKIE_SAMESITE = _valid_samesite_values[_normalized_samesite]
-else:
-    SESSION_COOKIE_SAMESITE = "Lax"
-
-SESSION_COOKIE_AGE = _get_int_env("DJANGO_SESSION_COOKIE_AGE", default=1800)
-SESSION_EXPIRE_AT_BROWSER_CLOSE = _get_bool_env(
-    "DJANGO_SESSION_EXPIRE_AT_BROWSER_CLOSE", default=False
-)
 
 # Threshold for accepting DeepFace matches when marking attendance.
 # Lower values (e.g., 0.3) mean stricter matching, while higher values (e.g., 0.5)

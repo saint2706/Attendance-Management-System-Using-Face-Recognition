@@ -2,41 +2,30 @@
 
 from __future__ import annotations
 
-import os
-
 from django.core.exceptions import ImproperlyConfigured
 
-from . import base as base_settings
 from .base import *  # noqa: F401,F403
-from .base import DATABASES  # noqa: F401
+from .base import DATABASES, build_postgres_database_config, configure_environment
 from .sentry import initialize_sentry
 
 
-def _get_db_setting(var_name: str, *, default: str | None = None) -> str:
-    """Return a database setting from the environment or the provided default."""
-
-    value = os.environ.get(var_name)
-    if value:
-        return value
-    if default is None:
-        raise ImproperlyConfigured(
-            f"{var_name} must be set when using the production settings module."
-        )
-    return default
+DEBUG = False
 
 
-DATABASES["default"] = {
-    "ENGINE": "django.db.backends.postgresql",
-    "NAME": _get_db_setting("DB_NAME", default="attendance"),
-    "USER": _get_db_setting("DB_USER", default="attendance"),
-    "PASSWORD": _get_db_setting("DB_PASSWORD", default="attendance"),
-    "HOST": _get_db_setting("DB_HOST", default="localhost"),
-    "PORT": _get_db_setting("DB_PORT", default="5432"),
-    "CONN_MAX_AGE": base_settings._parse_int_env("DB_CONN_MAX_AGE", 600, minimum=0),
-}
+if DATABASES["default"].get("ENGINE") == "django.db.backends.sqlite3":
+    DATABASES["default"] = build_postgres_database_config()
 
-if base_settings._get_bool_env("DB_SSL_REQUIRE", default=False):
-    DATABASES["default"].setdefault("OPTIONS", {})["sslmode"] = "require"
+if DATABASES["default"].get("ENGINE") == "django.db.backends.sqlite3":
+    raise ImproperlyConfigured(
+        "Production deployments must configure a PostgreSQL database via DATABASE_URL or DB_* environment variables."
+    )
+
+
+configure_environment(
+    secure_defaults=True,
+    default_allowed_hosts=(),
+    require_allowed_hosts=True,
+)
 
 
 initialize_sentry()
