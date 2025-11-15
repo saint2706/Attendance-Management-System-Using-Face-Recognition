@@ -21,7 +21,7 @@ sys.modules.setdefault("cv2", _fake_cv2)
 django.setup()
 
 from recognition import views  # noqa: E402
-from src.common.face_data_encryption import FaceDataEncryption  # noqa: E402
+from src.common import FaceDataEncryption  # noqa: E402
 
 TEST_FACE_KEY = Fernet.generate_key()
 
