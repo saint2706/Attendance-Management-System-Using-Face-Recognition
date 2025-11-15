@@ -23,8 +23,13 @@ from sklearn.metrics import accuracy_score, classification_report, precision_rec
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 
-from src.common import decrypt_bytes, encrypt_bytes
-from src.common.face_data_encryption import FaceDataEncryption, InvalidToken
+from src.common import (
+    InvalidToken,
+    decrypt_bytes,
+    decrypt_face_bytes,
+    encrypt_bytes,
+    encrypt_face_bytes,
+)
 
 from .views import (
     DATA_ROOT,
@@ -67,10 +72,9 @@ def load_existing_encodings(employee_id: str) -> np.ndarray:
     if not encoding_path.exists():
         return np.empty((0, 0), dtype=np.float64)
 
-    helper = FaceDataEncryption()
     try:
         encrypted_bytes = encoding_path.read_bytes()
-        decrypted_bytes = helper.decrypt(encrypted_bytes)
+        decrypted_bytes = decrypt_face_bytes(encrypted_bytes)
     except FileNotFoundError:
         return np.empty((0, 0), dtype=np.float64)
     except InvalidToken:
@@ -112,8 +116,7 @@ def save_employee_encodings(employee_id: str, encodings: Iterable[Sequence[float
     buffer = io.BytesIO()
     np.save(buffer, encoding_array)
 
-    helper = FaceDataEncryption()
-    encrypted_payload = helper.encrypt(buffer.getvalue())
+    encrypted_payload = encrypt_face_bytes(buffer.getvalue())
     encoding_path.write_bytes(encrypted_payload)
 
 

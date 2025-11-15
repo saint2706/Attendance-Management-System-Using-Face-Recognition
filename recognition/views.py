@@ -56,8 +56,7 @@ from matplotlib import rcParams
 from pandas.plotting import register_matplotlib_converters
 from sentry_sdk import Hub
 
-from src.common import InvalidToken, decrypt_bytes
-from src.common.face_data_encryption import FaceDataEncryption
+from src.common import FaceDataEncryption, InvalidToken, decrypt_bytes
 from users.models import Present, RecognitionAttempt, Time
 
 from . import monitoring
