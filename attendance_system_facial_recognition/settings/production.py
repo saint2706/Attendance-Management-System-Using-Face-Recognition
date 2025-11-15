@@ -8,7 +8,6 @@ from .base import *  # noqa: F401,F403
 from .base import DATABASES, build_postgres_database_config, configure_environment
 from .sentry import initialize_sentry
 
-
 DEBUG = False
 
 

@@ -5,10 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Union
 
-import numpy as np
-from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+
+import numpy as np
+from cryptography.fernet import Fernet, InvalidToken
 
 BytesLike = Union[bytes, bytearray, memoryview]
 
