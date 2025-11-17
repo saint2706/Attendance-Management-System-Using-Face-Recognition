@@ -2,7 +2,109 @@
 
 This guide provides a comprehensive overview of the project's structure, architecture, and advanced usage. It is intended for developers who want to understand the project's inner workings. For information on how to contribute, please see the [Contributing Guide](CONTRIBUTING.md).
 
-## 1. Project Structure
+## 1. Developer Quickstart
+
+This section provides a step-by-step guide to setting up and running the project locally for development.
+
+### Prerequisites
+
+-   Python 3.9+
+-   Docker and Docker Compose
+-   `make` (optional, but recommended for convenience)
+
+### Local Setup
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/your-username/Attendance-Management-System-Using-Face-Recognition.git
+    cd Attendance-Management-System-Using-Face-Recognition
+    ```
+
+2.  **Create and activate a virtual environment:**
+
+    ```bash
+    python -m venv venv
+    source venv/bin/activate
+    ```
+
+3.  **Install dependencies:**
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Set up environment variables:**
+
+    Create a `.env` file in the project root and add the following variables. You can generate a new `DJANGO_SECRET_KEY` and encryption keys using a Python shell.
+
+    ```
+    DJANGO_DEBUG=1
+    DJANGO_SECRET_KEY='your-secret-key'
+    DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+    DATA_ENCRYPTION_KEY='your-data-encryption-key'
+    FACE_DATA_ENCRYPTION_KEY='your-face-data-encryption-key'
+    SENTRY_DSN='' # Optional: for error tracking
+    DJANGO_SETTINGS_MODULE='attendance_system_facial_recognition.settings.development'
+    ```
+
+5.  **Run database migrations:**
+
+    ```bash
+    python manage.py migrate
+    ```
+
+6.  **Create a superuser:**
+
+    ```bash
+    python manage.py createsuperuser
+    ```
+
+7.  **Run the development server:**
+
+    ```bash
+    python manage.py runserver
+    ```
+
+    The application will be available at `http://127.0.0.1:8000/`.
+
+### Docker Setup
+
+1.  **Build and run the Docker containers:**
+
+    ```bash
+    docker-compose up --build
+    ```
+
+2.  **Run database migrations:**
+
+    ```bash
+    docker-compose exec web python manage.py migrate
+    ```
+
+3.  **Create a superuser:**
+
+    ```bash
+    docker-compose exec web python manage.py createsuperuser
+    ```
+
+    The application will be available at `http://127.0.0.1:8000/`.
+
+### Running Tests
+
+-   **Locally:**
+
+    ```bash
+    pytest
+    ```
+
+-   **In Docker:**
+
+    ```bash
+    docker-compose exec web pytest
+    ```
+
+## 2. Project Structure
 
 The project is organized into the following directories:
 
@@ -11,11 +113,11 @@ The project is organized into the following directories:
 -   `users`: The Django app that handles user management.
 -   `face_recognition_data`: The directory where the face recognition data is stored.
 
-## 2. Architecture Overview
+## 3. Architecture Overview
 
 For a detailed overview of the system architecture, including diagrams and data flow, please see the [Architecture Overview](ARCHITECTURE.md) document.
 
-## 3. Management Commands
+## 4. Management Commands
 
 The project includes several custom Django management commands for evaluation and analysis.
 
@@ -59,7 +161,7 @@ To export all generated reports and figures, use the `export_reports` command:
 python manage.py export_reports
 ```
 
-## 4. Makefile Targets
+## 5. Makefile Targets
 
 The project includes a comprehensive `Makefile` for common development tasks.
 
@@ -75,15 +177,15 @@ The project includes a comprehensive `Makefile` for common development tasks.
 -   `make ablation`: Run ablation experiments
 -   `make report`: Generate comprehensive reports
 
-## 5. API Reference
+## 6. API Reference
 
 For a complete reference of all API endpoints and command-line tools, please see the [API Reference](API_REFERENCE.md).
 
-## 6. Configuration
+## 7. Configuration
 
-The system can be configured using environment variables. For a detailed list of all configuration options, please see the [main README file](README.md#deployment-configuration). Operators planning production deployments should also review the [Deployment Guide](docs/deployment-guide.md) for Compose setup, migrations, and hardening recommendations.
+The system can be configured using environment variables. For a detailed list of all configuration options, please see the [main README file](README.md#deployment-configuration). Operators planning production deployments should also review the [Deployment Guide](DEPLOYMENT.md) for Compose setup, migrations, and hardening recommendations.
 
-## 7. Database backends
+## 8. Database backends
 
 ### Local PostgreSQL with Docker Compose
 
@@ -115,7 +217,7 @@ CI pipelines must export `DATABASE_URL` before running `pytest` so Django connec
 
 Running tests against Postgres ensures migrations stay compatible with the production backend and catches issues that do not appear with SQLite.
 
-## 8. Frontend utilities
+## 9. Frontend utilities
 
 ### CameraManager helper
 
