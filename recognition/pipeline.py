@@ -56,9 +56,7 @@ def extract_embedding(
     try:
         normalized = np.array([float(value) for value in embedding_vector], dtype=float)
     except (TypeError, ValueError):
-        logger.debug(
-            "Unable to coerce embedding values to floats: %r", embedding_vector
-        )
+        logger.debug("Unable to coerce embedding values to floats: %r", embedding_vector)
         return None, facial_area
 
     if normalized.size == 0:
@@ -85,9 +83,7 @@ def calculate_embedding_distance(
             vector_norm = float(np.linalg.norm(embedding_vector))
             if candidate_norm == 0.0 or vector_norm == 0.0:
                 return None
-            similarity = float(
-                np.dot(candidate, embedding_vector) / (candidate_norm * vector_norm)
-            )
+            similarity = float(np.dot(candidate, embedding_vector) / (candidate_norm * vector_norm))
             return 1.0 - similarity
 
         if metric in {"euclidean", "euclidean_l2", "l2"}:

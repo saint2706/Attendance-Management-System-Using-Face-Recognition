@@ -11,9 +11,7 @@ from django.urls import reverse
 import numpy as np
 import pytest
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 
 sys.modules.setdefault("cv2", MagicMock())
 

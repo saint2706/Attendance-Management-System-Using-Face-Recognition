@@ -9,9 +9,7 @@ from django.test import RequestFactory
 import numpy as np
 import pandas as pd
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 django.setup()
 
 _fake_cv2 = ModuleType("cv2")

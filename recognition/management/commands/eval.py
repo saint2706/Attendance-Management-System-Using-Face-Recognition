@@ -5,10 +5,7 @@ from pathlib import Path
 from django.core.management.base import BaseCommand
 
 from src.common.seeding import set_global_seed
-from src.evaluation.face_recognition_eval import (
-    EvaluationConfig,
-    run_face_recognition_evaluation,
-)
+from src.evaluation.face_recognition_eval import EvaluationConfig, run_face_recognition_evaluation
 
 
 class Command(BaseCommand):

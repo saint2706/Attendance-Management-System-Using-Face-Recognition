@@ -113,9 +113,7 @@ def estimate_lighting_bucket(image_path: Path) -> str:
 
     try:
         import numpy as np
-        from PIL import (
-            Image,
-        )  # Imported lazily to avoid mandatory dependency during tests
+        from PIL import Image  # Imported lazily to avoid mandatory dependency during tests
     except Exception:  # pragma: no cover - Pillow is part of runtime requirements
         return "unknown"
 
@@ -148,9 +146,7 @@ def _bucketize_role(user) -> str:
 def _resolve_user_contexts(usernames: Iterable[str]) -> Dict[str, SampleContext]:
     """Return cached metadata describing each username's grouping context."""
 
-    unique_usernames = sorted(
-        {name for name in usernames if name and name != UNKNOWN_LABEL}
-    )
+    unique_usernames = sorted({name for name in usernames if name and name != UNKNOWN_LABEL})
     from django.contrib.auth import get_user_model
 
     from users.models import RecognitionAttempt
@@ -229,9 +225,7 @@ def annotate_samples(samples: Sequence[SampleEvaluation]) -> List[AnnotatedSampl
                 username,
                 SampleContext(
                     username=username,
-                    role_bucket="unregistered"
-                    if username != UNKNOWN_LABEL
-                    else UNKNOWN_LABEL,
+                    role_bucket="unregistered" if username != UNKNOWN_LABEL else UNKNOWN_LABEL,
                     site_bucket="unspecified",
                     source_bucket="unspecified",
                     lighting_bucket="unknown",

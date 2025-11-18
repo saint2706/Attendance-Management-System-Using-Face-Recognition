@@ -22,16 +22,12 @@ def sample_predictions() -> list[SampleEvaluation]:
         SampleEvaluation(Path("dataset/alice/0.jpg"), "alice", "alice", 0.30, True),
         SampleEvaluation(Path("dataset/bob/1.jpg"), "bob", "alice", 0.32, True),
         SampleEvaluation(Path("dataset/carol/2.jpg"), "carol", None, None, False),
-        SampleEvaluation(
-            Path("dataset/intruder/3.jpg"), UNKNOWN_LABEL, "alice", 0.25, True
-        ),
+        SampleEvaluation(Path("dataset/intruder/3.jpg"), UNKNOWN_LABEL, "alice", 0.25, True),
     ]
 
 
 def test_compute_basic_metrics(sample_predictions: list[SampleEvaluation]) -> None:
-    metrics, y_true, y_pred, labels = compute_basic_metrics(
-        sample_predictions, threshold=0.35
-    )
+    metrics, y_true, y_pred, labels = compute_basic_metrics(sample_predictions, threshold=0.35)
 
     assert metrics["samples"] == 4
     assert metrics["unknown_predictions"] == 1

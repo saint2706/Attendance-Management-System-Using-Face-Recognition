@@ -105,9 +105,7 @@ def main():
     parser.add_argument(
         "--threshold", type=float, default=0.6, help="Decision threshold (default: 0.6)"
     )
-    parser.add_argument(
-        "--policy", type=str, default=None, help="Path to policy.yaml (optional)"
-    )
+    parser.add_argument("--policy", type=str, default=None, help="Path to policy.yaml (optional)")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
 
     args = parser.parse_args()

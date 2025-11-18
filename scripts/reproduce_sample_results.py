@@ -70,9 +70,7 @@ def _ensure_django_ready() -> None:
     project_root = _project_root()
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
-    os.environ.setdefault(
-        "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-    )
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
     import django
 
     django.setup()
@@ -83,11 +81,9 @@ def _patch_dataset_root(dataset_root: Path) -> None:
 
     recognition_views.DATA_ROOT = dataset_root.parent
     recognition_views.TRAINING_DATASET_ROOT = dataset_root
-    recognition_views._dataset_embedding_cache = (
-        recognition_views.DatasetEmbeddingCache(
-            recognition_views.TRAINING_DATASET_ROOT,
-            recognition_views.DATA_ROOT,
-        )
+    recognition_views._dataset_embedding_cache = recognition_views.DatasetEmbeddingCache(
+        recognition_views.TRAINING_DATASET_ROOT,
+        recognition_views.DATA_ROOT,
     )
 
 

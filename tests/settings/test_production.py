@@ -16,9 +16,7 @@ def _reload_production_settings():
         "attendance_system_facial_recognition.settings",
     ]:
         sys.modules.pop(module, None)
-    return importlib.import_module(
-        "attendance_system_facial_recognition.settings.production"
-    )
+    return importlib.import_module("attendance_system_facial_recognition.settings.production")
 
 
 def test_production_database_configuration(monkeypatch):

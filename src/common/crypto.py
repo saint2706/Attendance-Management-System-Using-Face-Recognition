@@ -64,9 +64,7 @@ class _FernetWrapper:
             raise TypeError("encrypt_encoding expects a numpy.ndarray")
         return self.encrypt(encoding.astype(np.float64).tobytes())
 
-    def decrypt_encoding(
-        self, token: BytesLike, dtype: np.dtype = np.float64
-    ) -> np.ndarray:
+    def decrypt_encoding(self, token: BytesLike, dtype: np.dtype = np.float64) -> np.ndarray:
         decrypted = self.decrypt(token)
         return np.frombuffer(decrypted, dtype=dtype)
 
@@ -86,9 +84,7 @@ class FaceDataEncryption:
     def encrypt_encoding(self, encoding: np.ndarray) -> bytes:
         return self._helper.encrypt_encoding(encoding)
 
-    def decrypt_encoding(
-        self, token: BytesLike, dtype: np.dtype = np.float64
-    ) -> np.ndarray:
+    def decrypt_encoding(self, token: BytesLike, dtype: np.dtype = np.float64) -> np.ndarray:
         return self._helper.decrypt_encoding(token, dtype=dtype)
 
 

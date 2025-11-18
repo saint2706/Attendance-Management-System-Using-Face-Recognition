@@ -17,9 +17,7 @@ from django.test import RequestFactory, TestCase, override_settings
 import numpy as np
 from cryptography.fernet import Fernet
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 django.setup()
 
 from django.contrib.auth.models import User  # noqa: E402
@@ -40,9 +38,7 @@ class DummyModel:
     def __init__(self):
         self._label = None
 
-    def fit(
-        self, X: List[List[float]], y: List[str]
-    ):  # pragma: no cover - invoked via test
+    def fit(self, X: List[List[float]], y: List[str]):  # pragma: no cover - invoked via test
         self._label = y[0] if y else None
 
     def predict(self, X: List[List[float]]):
@@ -212,9 +208,7 @@ class EncryptionWorkflowTests(TestCase):
 
         mock_get_embedding.reset_mock()
         mock_deepface.represent.reset_mock()
-        mock_deepface.represent.side_effect = lambda *args, **kwargs: np.array(
-            [[0.1, 0.2]]
-        )
+        mock_deepface.represent.side_effect = lambda *args, **kwargs: np.array([[0.1, 0.2]])
 
         consumer = MagicMock()
         consumer.__enter__.return_value = consumer
@@ -258,9 +252,7 @@ class EncryptionWorkflowTests(TestCase):
 
             views.mark_attendance_view(request_mark, "in")
 
-        self.assertTrue(
-            captured_models, "Encrypted model was not provided to predictor"
-        )
+        self.assertTrue(captured_models, "Encrypted model was not provided to predictor")
         self.assertIsInstance(captured_models[0], DummyModel)
         mock_update_db.assert_called_once()
         attendance_payload = mock_update_db.call_args.args[0]
