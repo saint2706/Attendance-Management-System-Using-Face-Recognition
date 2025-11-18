@@ -68,3 +68,19 @@ The system also generates graphs to help you visualize attendance trends.
 
 - **Recognition Issues:** If the system is having trouble recognizing an employee, ensure they are in a well-lit area and facing the camera directly. If the problem persists, an admin may need to recapture the employee's photos.
 - **Incorrect Timestamps:** If you notice any incorrect timestamps in your attendance records, please contact an administrator to have them corrected.
+
+## 5. Model Evaluation Reports
+
+Administrators who need to verify recognition quality can generate a full evaluation report from the command line:
+
+```bash
+python manage.py eval --split-csv reports/splits.csv
+```
+
+The command reuses the live recognition engine to process the encrypted image dataset and stores its findings in `reports/evaluation/`:
+
+- `metrics_summary.json` – accuracy, precision, recall, macro F1, False Acceptance Rate (FAR), and False Rejection Rate (FRR).
+- `confusion_matrix.csv` / `.png` – shows which identities are confused most often and whether "Unknown" predictions occur frequently.
+- `threshold_sweep.csv` / `.png` – plots how FAR, FRR, accuracy, and F1 change as you tighten or loosen the distance threshold.
+
+Use these reports to fine-tune thresholds before rolling changes into production or to document the system's performance for compliance reviews.

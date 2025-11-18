@@ -199,6 +199,28 @@ The `web` service serves the Django application through Gunicorn on port `8000`,
 
 2.  **Continuous Integration:** Configure the CI job to export `DATABASE_URL` (for example, `postgres://postgres:postgres@localhost:5432/postgres`) before invoking `pytest` so the same migrations and tests execute against Postgres automatically.
 
+## Evaluation & Benchmarking
+
+The repository ships with an evaluation harness that reuses the exact face-recognition pipeline deployed in production. It loads the encrypted dataset, computes embeddings through DeepFace, and aggregates the metrics required for referee-quality reports (accuracy, precision, recall, macro F1, FAR, FRR, confusion matrix, and a threshold sweep).
+
+1. **Prepare dataset splits (optional but recommended):**
+   ```bash
+   python manage.py prepare_splits --seed 42
+   ```
+   This command writes `reports/splits.csv`, which identifies the test split consumed during evaluation. If the file is missing the evaluator falls back to scanning the entire `face_recognition_data/training_dataset/` tree.
+2. **Run the evaluation:**
+   ```bash
+   python manage.py eval --split-csv reports/splits.csv
+   ```
+   The command accepts additional knobs such as `--threshold`, `--threshold-start/stop/step`, `--max-samples`, and `--reports-dir` for ad-hoc experiments. A convenience shortcut is also available via `make evaluate`.
+3. **Inspect the reports:** artifacts are written to `reports/evaluation/`:
+   - `metrics_summary.json` – accuracy/precision/recall/F1/FAR/FRR plus bookkeeping stats.
+   - `sample_predictions.csv` – per-image ground truth, candidate match, distance, and predicted label.
+   - `confusion_matrix.csv` and `confusion_matrix.png` – tabular and visual confusion matrices.
+   - `threshold_sweep.csv` and `threshold_sweep.png` – FAR/FRR/accuracy/F1 for each distance threshold in the sweep.
+
+Because the evaluator defers to the same dataset cache used during attendance marking, results remain reproducible and consistent with the live service.
+
 3.  **Production deployments:** Run `python manage.py migrate` as part of the release pipeline after setting the new database variables. Review logs for schema drift and keep a recent backup of the managed Postgres instance before upgrading.
 
 ## License

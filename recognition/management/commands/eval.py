@@ -1,26 +1,15 @@
-"""
-Django management command to run evaluation with metrics and confidence intervals.
-"""
+"""Django management command that runs the face-recognition evaluation suite."""
 
 from pathlib import Path
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
-import numpy as np
-
-from recognition.evaluation.metrics import (
-    bootstrap_confidence_intervals,
-    calculate_verification_metrics,
-    generate_metric_plots,
-    save_metrics_json,
-    save_metrics_markdown,
-)
 from src.common.seeding import set_global_seed
+from src.evaluation.face_recognition_eval import EvaluationConfig, run_face_recognition_evaluation
 
 
 class Command(BaseCommand):
-    help = "Run evaluation and generate metrics with confidence intervals"
+    help = "Run the face recognition evaluation pipeline"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -32,71 +21,64 @@ class Command(BaseCommand):
         parser.add_argument(
             "--threshold",
             type=float,
-            default=0.5,
-            help="Classification threshold",
+            default=None,
+            help="Distance threshold override (defaults to project settings)",
         )
         parser.add_argument(
-            "--n-bootstrap",
+            "--reports-dir",
+            type=Path,
+            default=None,
+            help="Directory that will store evaluation outputs",
+        )
+        parser.add_argument(
+            "--split-csv",
+            type=Path,
+            default=None,
+            help="CSV produced by prepare_splits.py to limit evaluation to the test split",
+        )
+        parser.add_argument(
+            "--dataset-root",
+            type=Path,
+            default=None,
+            help="Override the dataset root. Defaults to the encrypted training dataset",
+        )
+        parser.add_argument("--threshold-start", type=float, default=0.2)
+        parser.add_argument("--threshold-stop", type=float, default=1.0)
+        parser.add_argument("--threshold-step", type=float, default=0.05)
+        parser.add_argument(
+            "--max-samples",
             type=int,
-            default=1000,
-            help="Number of bootstrap samples for confidence intervals",
+            default=None,
+            help="Limit the number of samples processed (useful for smoke tests)",
         )
 
     def handle(self, *args, **options):
         set_global_seed(options["seed"])
 
-        self.stdout.write("Running evaluation...")
-
-        # Generate synthetic evaluation data for demonstration
-        # In production, this would load actual test set predictions
-        np.random.seed(options["seed"])
-        n_samples = 200
-
-        # Simulate genuine (1) and impostor (0) pairs
-        y_true = np.array([1] * 100 + [0] * 100)
-
-        # Simulate scores (genuine pairs have higher scores on average)
-        y_scores_genuine = np.random.beta(8, 2, 100)  # Skewed towards higher scores
-        y_scores_impostor = np.random.beta(2, 8, 100)  # Skewed towards lower scores
-        y_scores = np.concatenate([y_scores_genuine, y_scores_impostor])
-
-        # Shuffle
-        shuffle_idx = np.random.permutation(n_samples)
-        y_true = y_true[shuffle_idx]
-        y_scores = y_scores[shuffle_idx]
-
-        # Calculate metrics
-        self.stdout.write("Calculating verification metrics...")
-        metrics = calculate_verification_metrics(y_true, y_scores, threshold=options["threshold"])
-
-        # Calculate confidence intervals
-        self.stdout.write("Bootstrapping confidence intervals...")
-        ci_results = bootstrap_confidence_intervals(
-            y_true, y_scores, n_bootstrap=options["n_bootstrap"], random_state=options["seed"]
+        self.stdout.write("Running face recognition evaluation...")
+        config = EvaluationConfig(
+            reports_dir=options["reports_dir"],
+            test_split_csv=options["split_csv"],
+            dataset_root=options["dataset_root"],
+            threshold=options["threshold"],
+            threshold_start=options["threshold_start"],
+            threshold_stop=options["threshold_stop"],
+            threshold_step=options["threshold_step"],
+            limit_samples=options["max_samples"],
         )
 
-        # Generate plots
-        self.stdout.write("Generating metric plots...")
-        reports_dir = Path(settings.BASE_DIR) / "reports"
-        figures_dir = reports_dir / "figures"
-        generate_metric_plots(y_true, y_scores, figures_dir)
+        summary = run_face_recognition_evaluation(config)
 
-        # Save metrics
-        save_metrics_json(metrics, ci_results, reports_dir / "metrics_with_ci.json")
-        save_metrics_markdown(metrics, ci_results, reports_dir / "metrics_with_ci.md")
-
-        # Display summary
+        metrics = summary.metrics
         self.stdout.write(self.style.SUCCESS("\n✓ Evaluation complete"))
-        self.stdout.write("\nKey Metrics:")
-        self.stdout.write(f"  - ROC AUC: {metrics['roc_auc']:.4f}")
-        self.stdout.write(f"  - EER: {metrics['eer']:.4f}")
-        self.stdout.write(f"  - Brier Score: {metrics['brier_score']:.4f}")
-        self.stdout.write(f"  - Optimal F1: {metrics['optimal_f1']:.4f}")
-        self.stdout.write("\nConfidence Intervals (95%):")
-        if ci_results["auc"]["mean"] is not None:
-            self.stdout.write(
-                f"  - AUC: {ci_results['auc']['mean']:.4f} "
-                f"[{ci_results['auc']['ci_lower']:.4f}, {ci_results['auc']['ci_upper']:.4f}]"
-            )
-        self.stdout.write(f"\nReports saved to: {reports_dir}")
-        self.stdout.write(f"Figures saved to: {figures_dir}")
+        self.stdout.write("\nMetrics:")
+        self.stdout.write(f"  - Accuracy: {metrics['accuracy']:.4f}")
+        self.stdout.write(f"  - Precision (macro): {metrics['precision']:.4f}")
+        self.stdout.write(f"  - Recall (macro): {metrics['recall']:.4f}")
+        self.stdout.write(f"  - F1 (macro): {metrics['f1']:.4f}")
+        self.stdout.write(f"  - FAR: {metrics['far']:.4f}")
+        self.stdout.write(f"  - FRR: {metrics['frr']:.4f}")
+
+        self.stdout.write("\nArtifacts:")
+        for label, path in summary.artifact_paths.items():
+            self.stdout.write(f"  - {label}: {path}")

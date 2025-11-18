@@ -131,11 +131,19 @@ python manage.py prepare_splits --seed 42
 
 ### Evaluation
 
-To run a comprehensive evaluation of the model, use the `eval` command:
+To run a comprehensive evaluation of the model, use the `eval` command. It loads the encrypted training dataset, performs recognition against the cached embeddings, and saves metrics, confusion matrices, and threshold sweeps under `reports/evaluation/`.
 
 ```bash
-python manage.py eval --seed 42 --n-bootstrap 1000
+python manage.py eval --split-csv reports/splits.csv --threshold 0.4
 ```
+
+Key options:
+
+- `--split-csv`: CSV created by `prepare_splits` to restrict evaluation to the held-out test set.
+- `--threshold`: Override the main distance threshold (defaults to `RECOGNITION_DISTANCE_THRESHOLD`).
+- `--threshold-start/stop/step`: Configure the sweep range for FAR/FRR vs threshold plots.
+- `--max-samples`: Quickly smoke-test the pipeline by limiting the number of processed images.
+- `--reports-dir`: Customise where artifacts such as `metrics_summary.json`, `confusion_matrix.png`, and `threshold_sweep.csv` are saved.
 
 ### Threshold Selection
 
