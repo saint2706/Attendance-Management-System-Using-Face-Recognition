@@ -71,3 +71,9 @@ Persists a snapshot of a recognition decision made during attendance flows.
 **Implicit Relationships:**
 
 -   This model is used for analytics and is not directly linked to the other attendance models via foreign keys. It provides a historical record of recognition decisions.
+
+## Liveness Signals and Limitations
+
+-   The motion-based liveness buffer runs entirely in memory during each recognition attempt; no additional biometric data is stored beyond the existing encrypted training images.
+-   The detector looks for subtle parallax (blinks, head turns, breathing) across a three-to-five-frame window. Extremely static lighting or perfectly stabilized video replays can therefore lower the score or slip through if the DeepFace anti-spoofing model also agrees.
+-   Operators should document any high-risk deployments (e.g., unattended kiosks) and consider pairing this check with hardware sensors or on-device challenge/response if attackers can present high-quality screens within a few centimetres of the camera.

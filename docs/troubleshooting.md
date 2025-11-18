@@ -106,8 +106,9 @@ When `_passes_liveness_check` fails, the API still returns a JSON payload but se
 `"spoofed": true` and leaves `"recognized": false`.
 
 **Action**
-1. Advise the user to retry with better lighting and camera positioning.
+1. Advise the user to retry with better lighting, blink twice, or tilt their head slightly so the motion gate can detect parallax.
 2. Review liveness heuristics if false positives occur frequently.
+3. Run `python manage.py evaluate_liveness --samples-root /path/to/liveness_samples` with representative clips to validate new `RECOGNITION_LIVENESS_*` thresholds before deploying them.
 
 ### Distance Metric Fallbacks
 `_calculate_embedding_distance` attempts cosine, Euclidean, or Manhattan metrics. If
