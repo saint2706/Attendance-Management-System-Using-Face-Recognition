@@ -8,8 +8,8 @@ This section provides a step-by-step guide to setting up and running the project
 
 ### Prerequisites
 
--   Python 3.9+
--   Docker and Docker Compose
+-   Python 3.12+
+-   Docker Engine 24+ and Docker Compose v2
 -   `make` (optional, but recommended for convenience)
 
 ### Local Setup
@@ -17,7 +17,7 @@ This section provides a step-by-step guide to setting up and running the project
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/your-username/Attendance-Management-System-Using-Face-Recognition.git
+    git clone https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition.git
     cd Attendance-Management-System-Using-Face-Recognition
     ```
 
@@ -73,19 +73,19 @@ This section provides a step-by-step guide to setting up and running the project
 1.  **Build and run the Docker containers:**
 
     ```bash
-    docker-compose up --build
+    docker compose up --build
     ```
 
 2.  **Run database migrations:**
 
     ```bash
-    docker-compose exec web python manage.py migrate
+    docker compose exec web python manage.py migrate
     ```
 
 3.  **Create a superuser:**
 
     ```bash
-    docker-compose exec web python manage.py createsuperuser
+    docker compose exec web python manage.py createsuperuser
     ```
 
     The application will be available at `http://127.0.0.1:8000/`.
@@ -101,7 +101,7 @@ This section provides a step-by-step guide to setting up and running the project
 -   **In Docker:**
 
     ```bash
-    docker-compose exec web pytest
+    docker compose exec web pytest
     ```
 
 ## 2. Project Structure
@@ -156,6 +156,15 @@ python scripts/reproduce_sample_results.py  # equivalent to `make reproduce`
 The script patches the dataset root in-memory so production deployments remain untouched. Pass `--dataset-root` and `--split-csv`
 to point the same workflow at real encrypted datasets once they are available locally.
 
+### Face-matching metric
+
+Both the live service and the evaluation harness compute cosine similarity between embeddings:
+
+- `sim(A, B) = (A · B) / (||A|| ||B||)`
+- `d(A, B) = 1 − sim(A, B)`
+
+Attendance is recorded when `d(A, B) ≤ RECOGNITION_DISTANCE_THRESHOLD` (default **0.4**). The `--threshold` flag pins the decision boundary for a single run, while `--threshold-start/stop/step` sweeps a range and writes FAR/FRR trade-offs to `reports/evaluation/threshold_sweep.csv`. Review those plots before changing the global threshold in settings or `.env` files so deployments stay within policy.
+
 ### Threshold Selection
 
 To select the optimal recognition threshold, use the `threshold_select` command:
@@ -206,9 +215,9 @@ The project includes a comprehensive `Makefile` for common development tasks.
 ### Testing and Evaluation
 
 -   `make test`: Run all Django tests
--   `make evaluate`: Run performance evaluation with metrics
+-   `make evaluate`: Run performance evaluation with metrics and drop artifacts in `reports/evaluation/`
 -   `make ablation`: Run ablation experiments
--   `make report`: Generate comprehensive reports
+-   `make report`: Generate comprehensive reports (metrics summary, confusion matrix, FAR/FRR sweep)
 -   `make reproduce`: Evaluate the bundled synthetic dataset and place deterministic artifacts in `reports/sample_repro/`
 
 ## 6. API Reference

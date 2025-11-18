@@ -1,6 +1,6 @@
-# Modern Smart Attendance System
+# Attendance Management System Using Face Recognition
 
-This project is a fully refactored and modernized smart attendance system that leverages deep learning for face recognition. It provides a seamless and automated way to track employee attendance, eliminating the need for manual record-keeping. The system is built with a responsive web interface for a great user experience on any device.
+Attendance-Management-System-Using-Face-Recognition is a fully refactored and modernized attendance solution that leverages deep learning for face recognition. It provides a seamless and automated way to track employee attendance, eliminating the need for manual record-keeping, and ships with a responsive web interface for a great user experience on any device.
 
 ![Home Page Light Theme](docs/images/home-light.png)
 
@@ -36,8 +36,8 @@ This project is a fully refactored and modernized smart attendance system that l
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/smart-attendance-system.git
-    cd smart-attendance-system
+    git clone https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition.git
+    cd Attendance-Management-System-Using-Face-Recognition
     ```
 
 2.  **Create and activate a virtual environment:**
@@ -106,7 +106,7 @@ For more detailed information, please refer to the full documentation:
 - **[Architecture Overview](ARCHITECTURE.md)**: A high-level overview of the system architecture and data flows.
 - **[Data Card](DATA_CARD.md)**: Comprehensive documentation on the dataset, including privacy policies and data splits.
 - **[Liveness Evaluation](docs/liveness_evaluation.md)**: Methodology and results for the new motion-based anti-spoofing stage plus guidance for running `manage.py evaluate_liveness` locally.
-- **[Deployment Guide](docs/deployment-guide.md)**: Step-by-step instructions for building the Docker image, configuring Compose services, managing environment variables, and hardening production deployments.
+- **[Deployment Guide](DEPLOYMENT.md)**: Step-by-step instructions for building the Docker image, configuring Compose services, managing environment variables, and hardening production deployments.
 - **[Fairness & Limitations](docs/FAIRNESS_AND_LIMITATIONS.md)**: Methodology, findings, and follow-up actions for the fairness and robustness audit plus guidance on how to rerun it locally.
 
 ## Reproducibility
@@ -252,6 +252,15 @@ The repository ships with an evaluation harness that reuses the exact face-recog
    - `threshold_sweep.csv` and `threshold_sweep.png` – FAR/FRR/accuracy/F1 for each distance threshold in the sweep.
 
 Because the evaluator defers to the same dataset cache used during attendance marking, results remain reproducible and consistent with the live service.
+
+## Face-Matching Metric
+
+The recognition pipeline compares embeddings with cosine similarity:
+
+- **Similarity:** `sim(A, B) = (A · B) / (||A|| ||B||)`
+- **Cosine distance:** `d(A, B) = 1 − sim(A, B)`
+
+Attendance is accepted when the cosine distance is less than or equal to `RECOGNITION_DISTANCE_THRESHOLD`, which defaults to **0.4** in this repository. Tightening the threshold reduces false accepts while loosening it mitigates false rejects. The evaluation harness (`python manage.py eval` or `make evaluate`) sweeps a configurable range via `--threshold-start/stop/step` and records FAR/FRR trade-offs in `reports/evaluation/threshold_sweep.csv`, making it easy to justify any threshold adjustment before shipping.
 
 3.  **Production deployments:** Run `python manage.py migrate` as part of the release pipeline after setting the new database variables. Review logs for schema drift and keep a recent backup of the managed Postgres instance before upgrading.
 

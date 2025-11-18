@@ -1,6 +1,6 @@
 # Data Card: Project Data Models
 
-This document describes the data models used in the Smart Attendance System, as defined in the Django application.
+This document describes the data models used in the Attendance Management System Using Face Recognition, as defined in the Django application.
 
 ## 1. `users.Present`
 
@@ -53,20 +53,21 @@ Persists metadata for each face recognition attempt.
 
 -   A successful `RecognitionAttempt` will typically result in the creation of a `Time` record and the creation or update of a `Present` record.
 
+
 ## 4. `recognition.RecognitionOutcome`
 
 Persists a snapshot of a recognition decision made during attendance flows.
 
-| Field       | Type         | Description                                                                                             |
-|-------------|--------------|---------------------------------------------------------------------------------------------------------|
-| `created_at`| DateTimeField| The timestamp of the recognition decision.                                                              |
-| `username`  | CharField    | The username associated with the recognition attempt.                                                   |
-| `direction` | CharField    | `"in"` or `"out"`.                                                                                      |
-| `source`    | CharField    | The source of the recognition attempt (e.g., `webcam`, `api`).                                          |
-| `accepted`  | BooleanField | `True` if the recognition was accepted, `False` otherwise.                                              |
-| `confidence`| FloatField   | The confidence score of the recognition.                                                                |
-| `distance`  | FloatField   | The distance between the face embedding and the matched embedding.                                      |
-| `threshold` | FloatField   | The distance threshold used for the recognition.                                                        |
+| Field        | Type          | Description |
+|--------------|---------------|-------------|
+| `created_at` | DateTimeField | Timestamp of the recognition decision. |
+| `username`   | CharField     | Username associated with the recognition attempt. |
+| `direction`  | CharField     | `"in"` or `"out"`. |
+| `source`     | CharField     | Source of the recognition attempt (e.g., `webcam`, `api`). |
+| `accepted`   | BooleanField  | `True` if the recognition was accepted, `False` otherwise. |
+| `confidence` | FloatField    | Auxiliary confidence score for UI display. |
+| `distance`   | FloatField    | Cosine distance between the probe embedding and the matched embedding (lower = more similar). |
+| `threshold`  | FloatField    | Cosine distance threshold evaluated during the attempt (defaults to 0.4). |
 
 **Implicit Relationships:**
 
@@ -83,3 +84,11 @@ Persists a snapshot of a recognition decision made during attendance flows.
 -   A `sample_data/` directory now ships with the repository. It mirrors the `face_recognition_data/training_dataset/` layout and contains three procedurally generated, non-identifiable JPEG avatars per identity.
 -   The helper script `scripts/reproduce_sample_results.py` temporarily points the evaluation harness at this directory so reviewers can regenerate metrics with `make reproduce` without handling encrypted production photos.
 -   The sample dataset is strictly for demos and smoke tests. Replace it with the encrypted `face_recognition_data/` tree before operating in production so the evaluation pipeline reflects the real enrollment set.
+
+## Evaluation Pipeline & Metrics
+
+-   Run `python manage.py prepare_splits --seed 42` to emit `reports/splits.csv`, ensuring every evaluation references the exact same test cohort.
+-   Execute `python manage.py eval --split-csv reports/splits.csv` (or `make evaluate`) to compute accuracy, precision, recall, macro F1, FAR, FRR, and the cosine-distance sweep. Artifacts live under `reports/evaluation/`.
+-   Use `python scripts/reproduce_sample_results.py` or `make reproduce` to rerun the same harness against the bundled `sample_data/` directory for deterministic demos.
+-   Thresholding relies on cosine similarity: `sim(A, B) = (A · B) / (||A|| ||B||)` and `d(A, B) = 1 − sim(A, B)`. Attendance is accepted when `d(A, B) ≤ 0.4` unless a deployment overrides `RECOGNITION_DISTANCE_THRESHOLD`.
+-   Run `python manage.py evaluate_liveness` and `python manage.py fairness_audit --split-csv reports/splits.csv --reports-dir reports/fairness` to regenerate the liveness and fairness sections referenced throughout the docs; both commands follow the same reports-directory conventions for traceability.

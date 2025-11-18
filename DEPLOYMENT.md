@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide describes how to build, configure, and deploy the Smart Attendance System using Docker and Docker Compose.
+This guide describes how to build, configure, and deploy the Attendance Management System Using Face Recognition using Docker and Docker Compose.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ The `Dockerfile` in the project root builds a production-ready image. It uses a 
 To build the image, run the following command from the project root:
 
 ```bash
-docker-compose build
+docker compose build
 ```
 
 This will create an image named `attendance-system:latest` that will be used by the `web` and `celery` services.
@@ -50,7 +50,7 @@ DJANGO_CSRF_COOKIE_SECURE=True
 Before starting the application for the first time, you need to run the database migrations:
 
 ```bash
-docker-compose --env-file .env.production run --rm web python manage.py migrate
+docker compose --env-file .env.production run --rm web python manage.py migrate
 ```
 
 ### Starting the Services
@@ -58,7 +58,7 @@ docker-compose --env-file .env.production run --rm web python manage.py migrate
 To start the `web`, `celery`, `postgres`, and `redis` services, run the following command:
 
 ```bash
-docker-compose --env-file .env.production up -d
+docker compose --env-file .env.production up -d
 ```
 
 The application will be available at `http://localhost:8000`.
@@ -81,6 +81,13 @@ Before promoting a new image, run the bundled synthetic evaluation to verify tha
 
 ```bash
 docker compose --env-file .env.production run --rm web make reproduce
+```
+
+Before running the full evaluation suite (`make evaluate`), prepare deterministic splits so staging and production use the exact same hold-out set:
+
+```bash
+docker compose --env-file .env.production run --rm web python manage.py prepare_splits --seed 42
+docker compose --env-file .env.production run --rm web make evaluate
 ```
 
 The command routes the evaluation pipeline through `sample_data/` instead of the encrypted dataset, so no customer photos are required. Review the metrics and artifacts saved under `reports/sample_repro/` to confirm the build is healthy before replacing production assets with the real `face_recognition_data/` volume.
