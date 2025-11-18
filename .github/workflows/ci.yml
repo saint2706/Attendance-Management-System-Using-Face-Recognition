@@ -3,8 +3,38 @@ name: Django CI
 on:
   push:
     branches: ["main"]
+    paths:
+      - "**.py"
+      - "attendance_system_facial_recognition/**"
+      - "recognition/**"
+      - "users/**"
+      - "src/**"
+      - "tests/**"
+      - "scripts/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - "pytest.ini"
+      - ".github/workflows/ci.yml"
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   pull_request:
     branches: ["main"]
+    paths:
+      - "**.py"
+      - "attendance_system_facial_recognition/**"
+      - "recognition/**"
+      - "users/**"
+      - "src/**"
+      - "tests/**"
+      - "scripts/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - "pytest.ini"
+      - ".github/workflows/ci.yml"
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   workflow_dispatch:
 
 permissions:
@@ -85,6 +115,10 @@ jobs:
       - name: Apply database migrations
         run: |
           python manage.py migrate --noinput
+
+      - name: Collect static files
+        run: |
+          python manage.py collectstatic --noinput
 
       - name: Django deploy checks
         env:

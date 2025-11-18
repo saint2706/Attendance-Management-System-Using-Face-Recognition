@@ -53,16 +53,12 @@ def test_add_photos_creates_dataset_for_existing_user(client, monkeypatch):
     """Posting to the Add Photos view should trigger dataset creation."""
 
     admin = _create_admin_user()
-    employee = get_user_model().objects.create_user(
-        username="face-user", password="SomePass!234"
-    )
+    employee = get_user_model().objects.create_user(username="face-user", password="SomePass!234")
     client.force_login(admin)
 
     created_for: Dict[str, str] = {}
 
-    monkeypatch.setattr(
-        views, "username_present", lambda username: username == employee.username
-    )
+    monkeypatch.setattr(views, "username_present", lambda username: username == employee.username)
 
     # Mock the Celery task
     class MockAsyncResult:
@@ -117,9 +113,7 @@ class _StubWebcamManager:
     RECOGNITION_HEADLESS_FRAME_SLEEP=0,
     RECOGNITION_DISTANCE_THRESHOLD=0.5,
 )
-def test_mark_attendance_records_successful_check_in(
-    client, django_user_model, monkeypatch
-):
+def test_mark_attendance_records_successful_check_in(client, django_user_model, monkeypatch):
     """Successful recognition should enqueue a check-in record for processing."""
 
     employee = django_user_model.objects.create_user(
@@ -129,9 +123,7 @@ def test_mark_attendance_records_successful_check_in(
 
     dummy_frame = np.zeros((10, 10, 3), dtype=np.uint8)
 
-    monkeypatch.setattr(
-        views, "get_webcam_manager", lambda: _StubWebcamManager(dummy_frame)
-    )
+    monkeypatch.setattr(views, "get_webcam_manager", lambda: _StubWebcamManager(dummy_frame))
     monkeypatch.setattr(views, "_is_headless_environment", lambda: True)
     monkeypatch.setattr(views.imutils, "resize", lambda frame, width: frame)
     monkeypatch.setattr(
@@ -168,9 +160,7 @@ def test_mark_attendance_records_successful_check_in(
     )
     monkeypatch.setattr(views, "_passes_liveness_check", lambda *args, **kwargs: True)
     monkeypatch.setattr(views, "log_recognition_outcome", lambda **kwargs: None)
-    monkeypatch.setattr(
-        views.monitoring, "observe_stage_duration", lambda *args, **kwargs: None
-    )
+    monkeypatch.setattr(views.monitoring, "observe_stage_duration", lambda *args, **kwargs: None)
 
     captured_batches: Dict[str, Iterable[Dict[str, Any]]] = {}
 
@@ -204,9 +194,7 @@ def test_admin_can_view_attendance_by_date(client, monkeypatch):
 
     attendance_date = timezone.localdate()
     Present.objects.create(user=employee, date=attendance_date, present=True)
-    Time.objects.create(
-        user=employee, date=attendance_date, time=timezone.now(), out=False
-    )
+    Time.objects.create(user=employee, date=attendance_date, time=timezone.now(), out=False)
 
     def _fake_hours_vs_employee(present_qs, time_qs):
         return present_qs, "chart-url"

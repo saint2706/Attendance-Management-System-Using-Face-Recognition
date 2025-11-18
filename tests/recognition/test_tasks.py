@@ -4,13 +4,13 @@ from django.utils import timezone
 
 import pytest
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 
 import django  # noqa: E402
 
-django.setup()
+# Only setup Django if it hasn't been configured yet (e.g., running standalone)
+if not django.apps.apps.ready:
+    django.setup()
 
 from recognition.tasks import process_attendance_batch  # noqa: E402
 from users.models import Present, RecognitionAttempt, Time  # noqa: E402

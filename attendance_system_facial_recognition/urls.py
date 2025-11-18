@@ -113,9 +113,7 @@ urlpatterns = [
         recog_views.enqueue_attendance_batch,
         name="attendance-batch",
     ),
-    path(
-        "monitoring/metrics/", recog_views.monitoring_metrics, name="monitoring-metrics"
-    ),
+    path("monitoring/metrics/", recog_views.monitoring_metrics, name="monitoring-metrics"),
     # Attendance Viewing
     path(
         "view_attendance_home",

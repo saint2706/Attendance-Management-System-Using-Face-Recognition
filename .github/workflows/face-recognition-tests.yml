@@ -3,8 +3,38 @@ name: PostgreSQL Test Suite
 on:
   push:
     branches: ["main"]
+    paths:
+      - "**.py"
+      - "attendance_system_facial_recognition/**"
+      - "recognition/**"
+      - "users/**"
+      - "src/**"
+      - "tests/**"
+      - "scripts/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - "pytest.ini"
+      - ".github/workflows/face-recognition-tests.yml"
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   pull_request:
     branches: ["main"]
+    paths:
+      - "**.py"
+      - "attendance_system_facial_recognition/**"
+      - "recognition/**"
+      - "users/**"
+      - "src/**"
+      - "tests/**"
+      - "scripts/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - "pytest.ini"
+      - ".github/workflows/face-recognition-tests.yml"
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   workflow_dispatch:
 
 permissions:

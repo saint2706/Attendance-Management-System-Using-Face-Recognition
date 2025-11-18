@@ -26,9 +26,7 @@ def test_home_page_shows_primary_actions(page: Page, server_url: str) -> None:
 
     page.goto(server_url)
 
-    hero_heading = page.get_by_role(
-        "heading", name="Welcome to the Smart Attendance System"
-    )
+    hero_heading = page.get_by_role("heading", name="Welcome to the Smart Attendance System")
     expect(hero_heading).to_be_visible()
 
     dashboard_login = page.get_by_role("link", name="Dashboard Login")

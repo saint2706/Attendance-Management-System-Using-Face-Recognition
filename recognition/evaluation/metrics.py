@@ -92,9 +92,7 @@ def calculate_operating_points(
     return operating_points
 
 
-def find_optimal_threshold(
-    y_true: np.ndarray, y_scores: np.ndarray
-) -> Tuple[float, float]:
+def find_optimal_threshold(y_true: np.ndarray, y_scores: np.ndarray) -> Tuple[float, float]:
     """
     Find the threshold that maximizes F1 score.
 
@@ -109,9 +107,7 @@ def find_optimal_threshold(
 
     # Calculate F1 for each threshold
     # Note: precision_recall_curve returns n+1 precision/recall but n thresholds
-    f1_scores = (
-        2 * (precision[:-1] * recall[:-1]) / (precision[:-1] + recall[:-1] + 1e-10)
-    )
+    f1_scores = 2 * (precision[:-1] * recall[:-1]) / (precision[:-1] + recall[:-1] + 1e-10)
 
     best_idx = np.argmax(f1_scores)
     best_threshold = float(thresholds[best_idx])
@@ -274,9 +270,7 @@ def plot_roc_curve(y_true: np.ndarray, y_scores: np.ndarray, output_path: Path) 
     roc_auc = auc(fpr, tpr)
 
     plt.figure(figsize=(8, 6))
-    plt.plot(
-        fpr, tpr, color="darkorange", lw=2, label=f"ROC curve (AUC = {roc_auc:.3f})"
-    )
+    plt.plot(fpr, tpr, color="darkorange", lw=2, label=f"ROC curve (AUC = {roc_auc:.3f})")
     plt.plot([0, 1], [0, 1], color="navy", lw=2, linestyle="--", label="Random")
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
@@ -296,9 +290,7 @@ def plot_pr_curve(y_true: np.ndarray, y_scores: np.ndarray, output_path: Path) -
     pr_auc = auc(recall, precision)
 
     plt.figure(figsize=(8, 6))
-    plt.plot(
-        recall, precision, color="blue", lw=2, label=f"PR curve (AUC = {pr_auc:.3f})"
-    )
+    plt.plot(recall, precision, color="blue", lw=2, label=f"PR curve (AUC = {pr_auc:.3f})")
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel("Recall (TPR)")
@@ -351,9 +343,7 @@ def plot_calibration_curve(
     plt.close()
 
 
-def generate_metric_plots(
-    y_true: np.ndarray, y_scores: np.ndarray, output_dir: Path
-) -> None:
+def generate_metric_plots(y_true: np.ndarray, y_scores: np.ndarray, output_dir: Path) -> None:
     """
     Generate all metric plots.
 

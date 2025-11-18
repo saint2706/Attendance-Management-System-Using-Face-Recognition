@@ -7,13 +7,13 @@ from django.utils import timezone
 
 import pytest
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 
 import django  # noqa: E402
 
-django.setup()
+# Only setup Django if it hasn't been configured yet (e.g., running standalone)
+if not django.apps.apps.ready:
+    django.setup()
 
 from django.contrib.auth import get_user_model  # noqa: E402
 from django.contrib.auth.models import Group  # noqa: E402
@@ -116,19 +116,11 @@ def test_get_department_summary_handles_unassigned_department():
     sales_user.groups.add(group)
     other_user = User.objects.create_user("charlie", password="pass1234")
 
-    Present.objects.create(
-        user=sales_user, date=datetime.date(2024, 2, 1), present=True
-    )
-    Present.objects.create(
-        user=sales_user, date=datetime.date(2024, 2, 2), present=False
-    )
+    Present.objects.create(user=sales_user, date=datetime.date(2024, 2, 1), present=True)
+    Present.objects.create(user=sales_user, date=datetime.date(2024, 2, 2), present=False)
 
-    Present.objects.create(
-        user=other_user, date=datetime.date(2024, 2, 1), present=True
-    )
-    Present.objects.create(
-        user=other_user, date=datetime.date(2024, 2, 2), present=True
-    )
+    Present.objects.create(user=other_user, date=datetime.date(2024, 2, 1), present=True)
+    Present.objects.create(user=other_user, date=datetime.date(2024, 2, 2), present=True)
 
     summary = analytics.get_department_summary()
     assert summary["overall_rate"] == pytest.approx(0.75, abs=1e-3)

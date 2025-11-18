@@ -78,9 +78,7 @@ def _format_timestamp(ts: Optional[float]) -> Optional[str]:
     return _dt.datetime.fromtimestamp(ts, tz=_dt.timezone.utc).isoformat()
 
 
-def _create_event(
-    status: str, latency: Optional[float], error: Optional[str]
-) -> Dict[str, Any]:
+def _create_event(status: str, latency: Optional[float], error: Optional[str]) -> Dict[str, Any]:
     return {
         "timestamp": _now_timestamp(),
         "status": status,
@@ -221,9 +219,7 @@ def get_alert_thresholds() -> Dict[str, float]:
     return {key: get_threshold(key) for key in _THRESHOLD_SETTING_NAMES}
 
 
-def _metric_value(
-    name: str, labels: Optional[Dict[str, str]] = None
-) -> Optional[float]:
+def _metric_value(name: str, labels: Optional[Dict[str, str]] = None) -> Optional[float]:
     labels = labels or {}
     # The Prometheus client automatically appends suffixes like _total for counters.
     sample = REGISTRY.get_sample_value(name, labels)
@@ -290,9 +286,7 @@ def record_camera_stop(
 ) -> None:
     """Record metrics for camera shutdown attempts and derive alerts."""
 
-    status = (
-        "timeout" if timed_out and success else ("success" if success else "failure")
-    )
+    status = "timeout" if timed_out and success else ("success" if success else "failure")
     CAMERA_STOP_COUNTER.labels(status=status).inc()
     if latency is not None:
         CAMERA_STOP_LATENCY.observe(latency)
@@ -427,28 +421,18 @@ def get_health_snapshot() -> Dict[str, Any]:
             "last_frame_delay": _STATE.last_frame_delay,
         }
         stages = {
-            stage: {"last_duration": duration}
-            for stage, duration in _STATE.stage_durations.items()
+            stage: {"last_duration": duration} for stage, duration in _STATE.stage_durations.items()
         }
         alerts = list(_ALERTS)
     metrics = {
         "camera_start": {
-            "success": _metric_value(
-                "webcam_manager_start_total", {"status": "success"}
-            )
-            or 0,
-            "failure": _metric_value(
-                "webcam_manager_start_total", {"status": "failure"}
-            )
-            or 0,
+            "success": _metric_value("webcam_manager_start_total", {"status": "success"}) or 0,
+            "failure": _metric_value("webcam_manager_start_total", {"status": "failure"}) or 0,
         },
         "camera_stop": {
-            "success": _metric_value("webcam_manager_stop_total", {"status": "success"})
-            or 0,
-            "failure": _metric_value("webcam_manager_stop_total", {"status": "failure"})
-            or 0,
-            "timeout": _metric_value("webcam_manager_stop_total", {"status": "timeout"})
-            or 0,
+            "success": _metric_value("webcam_manager_stop_total", {"status": "success"}) or 0,
+            "failure": _metric_value("webcam_manager_stop_total", {"status": "failure"}) or 0,
+            "timeout": _metric_value("webcam_manager_stop_total", {"status": "timeout"}) or 0,
         },
         "frame_drop_total": _metric_value("webcam_frame_drop_total") or 0,
     }

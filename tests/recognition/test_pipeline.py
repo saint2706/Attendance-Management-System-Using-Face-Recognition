@@ -58,10 +58,7 @@ def test_calculate_embedding_distance_cosine_handles_zero_vectors() -> None:
     zero_vector = np.zeros(3, dtype=float)
     other_vector = np.array([1.0, 2.0, 3.0], dtype=float)
 
-    assert (
-        pipeline.calculate_embedding_distance(zero_vector, other_vector, "cosine")
-        is None
-    )
+    assert pipeline.calculate_embedding_distance(zero_vector, other_vector, "cosine") is None
 
 
 def test_find_closest_dataset_match_returns_best_candidate() -> None:

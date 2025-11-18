@@ -11,13 +11,13 @@ from django.urls import reverse
 import numpy as np
 import pytest
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 
 sys.modules.setdefault("cv2", MagicMock())
 
-django.setup()
+# Only setup Django if it hasn't been configured yet (e.g., running standalone)
+if not django.apps.apps.ready:
+    django.setup()
 
 from recognition import views  # noqa: E402
 

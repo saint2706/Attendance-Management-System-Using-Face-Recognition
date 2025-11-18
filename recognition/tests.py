@@ -13,9 +13,7 @@ from unittest.mock import MagicMock, patch
 
 import django
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 django.setup()
 
 from django.contrib.auth.models import User  # noqa: E402
@@ -421,9 +419,7 @@ class EmbeddingCacheHelperTests(TestCase):
     @override_settings(DATA_ENCRYPTION_KEY=TEST_FERNET_KEY)
     @patch("recognition.views.cv2")
     @patch("recognition.views.DeepFace.represent")
-    def test_helper_uses_cache_for_repeated_calls(
-        self, mock_deepface_represent, mock_cv2
-    ):
+    def test_helper_uses_cache_for_repeated_calls(self, mock_deepface_represent, mock_cv2):
         mock_cv2.IMREAD_COLOR = 1
         mock_cv2.imdecode.return_value = np.zeros((5, 5, 3), dtype=np.uint8)
 
@@ -432,12 +428,8 @@ class EmbeddingCacheHelperTests(TestCase):
         decrypted_bytes = bytes(range(1, 50))
         image_path = self._write_encrypted_image("1.jpg", decrypted_bytes)
 
-        embedding_first = views._get_or_compute_cached_embedding(
-            image_path, "VGG-Face", "opencv"
-        )
-        embedding_second = views._get_or_compute_cached_embedding(
-            image_path, "VGG-Face", "opencv"
-        )
+        embedding_first = views._get_or_compute_cached_embedding(image_path, "VGG-Face", "opencv")
+        embedding_second = views._get_or_compute_cached_embedding(image_path, "VGG-Face", "opencv")
 
         self.assertIsNotNone(embedding_first)
         np.testing.assert_array_equal(embedding_first, embedding_second)
@@ -446,9 +438,7 @@ class EmbeddingCacheHelperTests(TestCase):
     @override_settings(DATA_ENCRYPTION_KEY=TEST_FERNET_KEY)
     @patch("recognition.views.cv2")
     @patch("recognition.views.DeepFace.represent")
-    def test_helper_recomputes_when_file_changes(
-        self, mock_deepface_represent, mock_cv2
-    ):
+    def test_helper_recomputes_when_file_changes(self, mock_deepface_represent, mock_cv2):
         mock_cv2.IMREAD_COLOR = 1
         mock_cv2.imdecode.return_value = np.zeros((5, 5, 3), dtype=np.uint8)
 
@@ -460,17 +450,13 @@ class EmbeddingCacheHelperTests(TestCase):
         first_bytes = bytes(range(1, 50))
         image_path = self._write_encrypted_image("2.jpg", first_bytes)
 
-        first_embedding = views._get_or_compute_cached_embedding(
-            image_path, "VGG-Face", "opencv"
-        )
+        first_embedding = views._get_or_compute_cached_embedding(image_path, "VGG-Face", "opencv")
         self.assertIsNotNone(first_embedding)
 
         updated_bytes = bytes(reversed(range(1, 50)))
         image_path.write_bytes(encrypt_bytes(updated_bytes))
 
-        second_embedding = views._get_or_compute_cached_embedding(
-            image_path, "VGG-Face", "opencv"
-        )
+        second_embedding = views._get_or_compute_cached_embedding(image_path, "VGG-Face", "opencv")
         self.assertIsNotNone(second_embedding)
 
         self.assertEqual(mock_deepface_represent.call_count, 2)
@@ -490,20 +476,14 @@ class DatabaseUpdateTest(TestCase):
         """Verify that a new check-in creates both Present and Time records."""
         views.update_attendance_in_db_in({"testuser": True})
         self.assertTrue(
-            Present.objects.filter(
-                user=self.user, date=self.today, present=True
-            ).exists()
+            Present.objects.filter(user=self.user, date=self.today, present=True).exists()
         )
-        self.assertTrue(
-            Time.objects.filter(user=self.user, date=self.today, out=False).exists()
-        )
+        self.assertTrue(Time.objects.filter(user=self.user, date=self.today, out=False).exists())
 
     def test_update_attendance_in_db_out_creates_time_record(self):
         """Verify that a check-out creates a Time record with the 'out' flag."""
         views.update_attendance_in_db_out({"testuser": True})
-        self.assertTrue(
-            Time.objects.filter(user=self.user, date=self.today, out=True).exists()
-        )
+        self.assertTrue(Time.objects.filter(user=self.user, date=self.today, out=True).exists())
 
     def test_update_attendance_handles_missing_user(self):
         """Ensure the system doesn't crash when trying to update a non-existent user."""
@@ -531,9 +511,7 @@ class DatabaseUpdateTest(TestCase):
             successful=True,
         )
 
-        views.update_attendance_in_db_in(
-            {"testuser": True}, attempt_ids={"testuser": attempt.id}
-        )
+        views.update_attendance_in_db_in({"testuser": True}, attempt_ids={"testuser": attempt.id})
 
         attempt.refresh_from_db()
         self.assertEqual(attempt.user, self.user)
@@ -551,9 +529,7 @@ class DatabaseUpdateTest(TestCase):
             successful=True,
         )
 
-        views.update_attendance_in_db_out(
-            {"testuser": True}, attempt_ids={"testuser": attempt.id}
-        )
+        views.update_attendance_in_db_out({"testuser": True}, attempt_ids={"testuser": attempt.id})
 
         attempt.refresh_from_db()
         self.assertEqual(attempt.user, self.user)
@@ -616,9 +592,7 @@ class AdminAccessViewsTest(TestCase):
         self.staff_user = User.objects.create_user(
             "manager", "manager@example.com", "password", is_staff=True
         )
-        self.regular_user = User.objects.create_user(
-            "employee", "employee@example.com", "password"
-        )
+        self.regular_user = User.objects.create_user("employee", "employee@example.com", "password")
 
     def test_dashboard_staff_user_sees_admin_dashboard(self):
         """Verify that staff users are shown the admin dashboard."""
@@ -650,9 +624,7 @@ class AdminAccessViewsTest(TestCase):
 
         response = self.client.get(reverse("admin_recognition_attempt_summary"))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(
-            response, "recognition/admin/recognition_attempt_summary.html"
-        )
+        self.assertTemplateUsed(response, "recognition/admin/recognition_attempt_summary.html")
 
     def test_view_attendance_home_employee_count_excludes_admin_accounts(self):
         """Verify that the total employee count correctly excludes admins and superusers."""
@@ -707,9 +679,7 @@ class AdminAccessViewsTest(TestCase):
         self.client.force_login(self.regular_user)
         response = self.client.get(reverse("view-my-attendance-employee-login"))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(
-            response, "recognition/view_my_attendance_employee_login.html"
-        )
+        self.assertTemplateUsed(response, "recognition/view_my_attendance_employee_login.html")
 
 
 class DateFormISOFormatTest(TestCase):
@@ -793,9 +763,7 @@ class DateFormISOFormatTest(TestCase):
 
     def test_date_form_2_validates_date_order_in_view(self):
         """Verify that view_my_attendance_employee_login properly validates date ranges."""
-        regular_user = User.objects.create_user(
-            "employee", "employee@example.com", "password"
-        )
+        regular_user = User.objects.create_user("employee", "employee@example.com", "password")
 
         self.client.force_login(regular_user)
 

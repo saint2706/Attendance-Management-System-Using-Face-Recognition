@@ -9,10 +9,10 @@ from django.test import RequestFactory
 import numpy as np
 import pandas as pd
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-)
-django.setup()
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
+# Only setup Django if it hasn't been configured yet (e.g., running standalone)
+if not django.apps.apps.ready:
+    django.setup()
 
 _fake_cv2 = ModuleType("cv2")
 _fake_cv2.FONT_HERSHEY_SIMPLEX = 0

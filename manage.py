@@ -8,9 +8,7 @@ import sys
 def main():
     # Default to the development/test settings. Production deployments should
     # export DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production.
-    os.environ.setdefault(
-        "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
-    )
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

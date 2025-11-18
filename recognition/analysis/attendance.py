@@ -94,9 +94,7 @@ class AttendanceAnalytics:
             time_filters["user_id"] = employee_id
 
         present_records = (
-            Present.objects.filter(**filters)
-            .select_related("user")
-            .order_by("date", "user_id")
+            Present.objects.filter(**filters).select_related("user").order_by("date", "user_id")
         )
 
         if not present_records.exists():
@@ -158,9 +156,9 @@ class AttendanceAnalytics:
                 else:
                     day_data["on_time"] += 1
 
-            times_qs = Time.objects.filter(
-                user_id=record.user_id, date=record.date
-            ).order_by("time")
+            times_qs = Time.objects.filter(user_id=record.user_id, date=record.date).order_by(
+                "time"
+            )
             is_valid, break_hours = check_validity_times(times_qs)
             if is_valid:
                 day_data["break_hours"].append(break_hours)
@@ -169,11 +167,7 @@ class AttendanceAnalytics:
         for date_key in sorted(daily_metrics):
             data = daily_metrics[date_key]
             break_hours_list: List[float] = data["break_hours"]
-            avg_break = (
-                sum(break_hours_list) / len(break_hours_list)
-                if break_hours_list
-                else 0.0
-            )
+            avg_break = sum(break_hours_list) / len(break_hours_list) if break_hours_list else 0.0
             trends.append(
                 DailyTrend(
                     date=date_key,
@@ -310,8 +304,7 @@ class AttendanceAnalytics:
                 "window": window,
                 "method": "moving_average",
                 "assumptions": (
-                    "Prediction unavailable because the employee has no "
-                    "attendance history."
+                    "Prediction unavailable because the employee has no " "attendance history."
                 ),
                 "prediction": None,
                 "confidence": 0.0,
@@ -325,9 +318,7 @@ class AttendanceAnalytics:
             "employee_id": employee_id,
             "window": window,
             "method": "moving_average",
-            "assumptions": (
-                "Recent attendance behaviour is representative of the near future."
-            ),
+            "assumptions": ("Recent attendance behaviour is representative of the near future."),
             "prediction": prediction,
             "confidence": round(probability, 3),
             "history": [
