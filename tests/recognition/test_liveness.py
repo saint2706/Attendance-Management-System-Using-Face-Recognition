@@ -64,7 +64,11 @@ def test_evaluate_match_blocks_spoof(monkeypatch):
         }
     )
 
-    monkeypatch.setattr(views, "_passes_liveness_check", lambda frame, face_region=None: False)
+    monkeypatch.setattr(
+        views,
+        "_passes_liveness_check",
+        lambda frame, face_region=None, frame_history=None: False,
+    )
 
     username, spoofed, region = views._evaluate_recognition_match(frame, match, 0.4)
 
@@ -86,7 +90,11 @@ def test_evaluate_match_accepts_live_face(monkeypatch):
         }
     )
 
-    monkeypatch.setattr(views, "_passes_liveness_check", lambda frame, face_region=None: True)
+    monkeypatch.setattr(
+        views,
+        "_passes_liveness_check",
+        lambda frame, face_region=None, frame_history=None: True,
+    )
 
     username, spoofed, region = views._evaluate_recognition_match(frame, match, 0.4)
 
@@ -108,7 +116,11 @@ def test_predict_identity_blocks_spoof(monkeypatch):
     model = _PredictingModel([0])
     class_names = ["alice"]
 
-    monkeypatch.setattr(views, "_passes_liveness_check", lambda frame, face_region=None: False)
+    monkeypatch.setattr(
+        views,
+        "_passes_liveness_check",
+        lambda frame, face_region=None, frame_history=None: False,
+    )
 
     name, spoofed, region = views._predict_identity_from_embedding(
         frame,
@@ -129,7 +141,11 @@ def test_predict_identity_returns_live_name(monkeypatch):
     model = _PredictingModel([0])
     class_names = ["alice"]
 
-    monkeypatch.setattr(views, "_passes_liveness_check", lambda frame, face_region=None: True)
+    monkeypatch.setattr(
+        views,
+        "_passes_liveness_check",
+        lambda frame, face_region=None, frame_history=None: True,
+    )
 
     name, spoofed, region = views._predict_identity_from_embedding(
         frame,

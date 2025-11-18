@@ -518,6 +518,26 @@ SILENCED_SYSTEM_CHECKS = [
 # are more permissive. This can be overridden via an environment variable.
 RECOGNITION_DISTANCE_THRESHOLD = float(os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4"))
 
+RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED = _get_bool_env(
+    "RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED",
+    default=True,
+)
+RECOGNITION_LIVENESS_WINDOW = _parse_int_env(
+    "RECOGNITION_LIVENESS_WINDOW",
+    default=5,
+    minimum=2,
+)
+RECOGNITION_LIVENESS_MIN_FRAMES = _parse_int_env(
+    "RECOGNITION_LIVENESS_MIN_FRAMES",
+    default=3,
+    minimum=2,
+)
+RECOGNITION_LIVENESS_MOTION_THRESHOLD = _get_float_env(
+    "RECOGNITION_LIVENESS_MOTION_THRESHOLD",
+    default=1.1,
+    minimum=0.0,
+)
+
 
 def _build_deepface_optimizations() -> dict[str, object]:
     """Return DeepFace tuning parameters with environment overrides."""

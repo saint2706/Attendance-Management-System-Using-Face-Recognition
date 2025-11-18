@@ -169,6 +169,20 @@ To export all generated reports and figures, use the `export_reports` command:
 python manage.py export_reports
 ```
 
+### Liveness Evaluation
+
+Use the `evaluate_liveness` command to sanity-check the motion-based anti-spoofing layer before rolling out new thresholds:
+
+```bash
+python manage.py evaluate_liveness --samples-root /path/to/liveness_samples
+```
+
+Key options:
+
+- `--samples-root`: Directory that contains `genuine/` and `spoof/` sub-folders, each with short frame sequences.
+- `--threshold`: Override `RECOGNITION_LIVENESS_MOTION_THRESHOLD` for the evaluation run only.
+- `--min-frames`: Override `RECOGNITION_LIVENESS_MIN_FRAMES` so you can gauge how sensitive the detector is to longer/shorter bursts.
+
 ## 5. Makefile Targets
 
 The project includes a comprehensive `Makefile` for common development tasks.
@@ -192,6 +206,13 @@ For a complete reference of all API endpoints and command-line tools, please see
 ## 7. Configuration
 
 The system can be configured using environment variables. For a detailed list of all configuration options, please see the [main README file](README.md#deployment-configuration). Operators planning production deployments should also review the [Deployment Guide](DEPLOYMENT.md) for Compose setup, migrations, and hardening recommendations.
+
+New liveness-related toggles:
+
+- `RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED` – turn the motion gate on/off without touching DeepFace's anti-spoofing setting.
+- `RECOGNITION_LIVENESS_WINDOW` – number of frames to keep in memory for the optical-flow detector.
+- `RECOGNITION_LIVENESS_MIN_FRAMES` – minimum frames required before motion can be scored.
+- `RECOGNITION_LIVENESS_MOTION_THRESHOLD` – minimum average motion magnitude required to accept the liveness probe.
 
 ## 8. Database backends
 

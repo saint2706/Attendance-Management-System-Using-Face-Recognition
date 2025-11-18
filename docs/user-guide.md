@@ -79,6 +79,7 @@ When you first use the system, your administrator will:
 ✅ **Face Forward**: Look directly at the camera
 ✅ **Remove Obstacles**: Take off sunglasses, masks, or hats
 ✅ **Stay Still**: Keep your head steady for 1-2 seconds
+✅ **Blink or Move When Asked**: If the system prompts you, blink twice or gently tilt your head so it can verify that a real person is in front of the camera.
 
 ❌ **Avoid**: Dark rooms, extreme angles, or covering your face
 
@@ -264,6 +265,16 @@ The system includes a dark theme that's easier on your eyes, especially in low-l
 3. Look directly at the camera
 4. Stay still for 1-2 seconds
 5. If problem persists, ask your admin to retake your photos
+
+### Liveness Check Failed
+
+**Problem**: You see "Liveness check failed. Please blink or move your head slightly and try again before marking attendance."
+
+**Solutions**:
+1. Keep your face inside the on-screen guide box and blink naturally.
+2. Move your head a few centimetres left/right so the camera can capture parallax.
+3. Ensure the room isn't completely dark—diffuse lighting helps the motion detector.
+4. Retry after cleaning the webcam lens if smudges remain.
 
 ### Can't Log In
 

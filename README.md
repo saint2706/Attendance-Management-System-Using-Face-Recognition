@@ -13,6 +13,7 @@ This project is a fully refactored and modernized smart attendance system that l
 - **Automatic Training:** The face recognition model updates automatically when new employee photos are added.
 - **Offline-ready experience:** Installable progressive web app with background sync for attendance submissions and cached UI shell.
 - **Performance Optimized:** Utilizes the efficient "Facenet" model and "SSD" detector for a fast and responsive recognition experience.
+- **Two-stage liveness detection:** A lightweight motion gate now complements DeepFace's anti-spoofing pass so printed photos and screen replays are rejected before attendance is marked.
 - **Continuous Integration:** Includes a GitHub Actions workflow to automatically run tests, ensuring code quality and stability.
 
 ## Technical Stack
@@ -104,6 +105,7 @@ For more detailed information, please refer to the full documentation:
 - **[API Reference](API_REFERENCE.md)**: Details on URL patterns, API endpoints, and command-line tools.
 - **[Architecture Overview](ARCHITECTURE.md)**: A high-level overview of the system architecture and data flows.
 - **[Data Card](DATA_CARD.md)**: Comprehensive documentation on the dataset, including privacy policies and data splits.
+- **[Liveness Evaluation](docs/liveness_evaluation.md)**: Methodology and results for the new motion-based anti-spoofing stage plus guidance for running `manage.py evaluate_liveness` locally.
 - **[Deployment Guide](docs/deployment-guide.md)**: Step-by-step instructions for building the Docker image, configuring Compose services, managing environment variables, and hardening production deployments.
 
 ## Deployment Configuration

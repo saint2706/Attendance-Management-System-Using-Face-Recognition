@@ -61,6 +61,7 @@ from users.models import Present, RecognitionAttempt, Time
 
 from . import monitoring
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
+from .liveness import LivenessBuffer, is_live_face
 from .metrics_store import log_recognition_outcome
 from .pipeline import extract_embedding, find_closest_dataset_match, is_within_distance_threshold
 from .webcam_manager import get_webcam_manager
@@ -455,6 +456,46 @@ class FaceRecognitionAPI(View):
         except (binascii.Error, ValueError) as exc:
             raise ValueError("Invalid base64-encoded image payload supplied.") from exc
 
+    def _extract_liveness_frames(self, payload: Dict[str, Any]) -> list[np.ndarray]:
+        """Decode optional liveness frame bursts embedded in the payload."""
+
+        raw_frames = payload.get("liveness_frames")
+        if raw_frames in (None, ""):
+            return []
+
+        if not isinstance(raw_frames, list):
+            raise ValueError("'liveness_frames' must be provided as a list of images.")
+
+        decoded_frames: list[np.ndarray] = []
+        for index, raw_frame in enumerate(raw_frames):
+            if raw_frame in (None, ""):
+                continue
+
+            if isinstance(raw_frame, (bytes, bytearray)):
+                frame_bytes = bytes(raw_frame)
+            elif isinstance(raw_frame, str):
+                frame_data = raw_frame.strip()
+                if not frame_data:
+                    continue
+                if frame_data.startswith("data:"):
+                    _, _, frame_data = frame_data.partition(",")
+                try:
+                    frame_bytes = base64.b64decode(frame_data, validate=True)
+                except (binascii.Error, ValueError) as exc:
+                    raise ValueError(
+                        f"'liveness_frames[{index}]' must be base64-encoded."
+                    ) from exc
+            else:
+                raise ValueError(
+                    "Each entry in 'liveness_frames' must be base64 data or raw bytes."
+                )
+
+            frame = _decode_image_bytes(frame_bytes)
+            if frame is not None:
+                decoded_frames.append(frame)
+
+        return decoded_frames
+
     def post(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         site_code = _resolve_recognition_site(request)
         default_direction = RecognitionAttempt.Direction.IN.value
@@ -513,6 +554,13 @@ class FaceRecognitionAPI(View):
         embedding_vector = None
         frame = None
         facial_area: Optional[Dict[str, int]] = None
+        liveness_frames: list[np.ndarray] = []
+
+        try:
+            liveness_frames = self._extract_liveness_frames(payload)
+        except ValueError as exc:
+            attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
+            return JsonResponse({"error": str(exc)}, status=400)
 
         try:
             embedding_vector = self._coerce_embedding(payload.get("embedding"))
@@ -628,8 +676,18 @@ class FaceRecognitionAPI(View):
 
         normalized_region = _normalize_face_region(facial_area)
         spoofed = False
-        if frame is not None:
-            spoofed = not _passes_liveness_check(frame, normalized_region)
+        reference_frame = frame or (liveness_frames[-1] if liveness_frames else None)
+        if reference_frame is not None:
+            history = list(liveness_frames)
+            if frame is not None:
+                history.append(frame)
+            elif not history:
+                history = [reference_frame]
+            spoofed = not _passes_liveness_check(
+                reference_frame,
+                normalized_region,
+                frame_history=history,
+            )
 
         response_payload: Dict[str, Any] = {
             "recognized": False,
@@ -1647,8 +1705,8 @@ DEFAULT_DISTANCE_THRESHOLD = 0.4
 
 
 LIVENESS_FAILURE_MESSAGE = (
-    "Spoofing attempt detected. Please ensure a live person is present before marking "
-    "attendance."
+    "Liveness check failed. Please blink or move your head slightly and try again "
+    "before marking attendance."
 )
 
 
@@ -1780,12 +1838,54 @@ def _deepface_liveness_check(frame: np.ndarray) -> Optional[bool]:
 
 
 def _passes_liveness_check(
-    frame: np.ndarray,
+    frame: Optional[np.ndarray],
     face_region: Optional[Dict[str, int]] = None,
+    *,
+    frame_history: Optional[Sequence[np.ndarray]] = None,
 ) -> bool:
-    """Return ``True`` when the supplied frame passes the liveness gate."""
+    """Return ``True`` when the supplied frame passes all configured liveness gates."""
 
-    if not _is_liveness_enabled():
+    lightweight_enabled = _is_lightweight_liveness_enabled()
+    deepface_enabled = _is_liveness_enabled()
+
+    if not lightweight_enabled and not deepface_enabled:
+        return True
+
+    if lightweight_enabled:
+        history_frames = list(frame_history or [])
+        if frame is not None and not history_frames:
+            history_frames = [frame]
+        min_frames = _get_lightweight_liveness_min_frames()
+        threshold = _get_lightweight_liveness_threshold()
+        score = is_live_face(
+            history_frames,
+            face_region=face_region,
+            min_frames=min_frames,
+            return_score=True,
+        )
+        if score is not None:
+            logger.debug(
+                "Lightweight liveness score %.4f (threshold %.4f)",
+                score,
+                threshold,
+            )
+            if score < threshold:
+                logger.info(
+                    "Motion-based liveness rejected frame (score %.4f < %.4f)",
+                    score,
+                    threshold,
+                )
+                return False
+        else:
+            logger.debug("Insufficient data for lightweight liveness evaluation.")
+
+    if not deepface_enabled:
+        return True
+
+    if frame is None:
+        logger.debug(
+            "Skipping DeepFace liveness check because no reference frame was provided."
+        )
         return True
 
     custom_checker = getattr(settings, "RECOGNITION_LIVENESS_CHECKER", None)
@@ -1806,6 +1906,8 @@ def _evaluate_recognition_match(
     frame: np.ndarray,
     match: pd.Series,
     distance_threshold: float,
+    *,
+    frame_history: Optional[Sequence[np.ndarray]] = None,
 ) -> Tuple[Optional[str], bool, Optional[Dict[str, int]]]:
     """Evaluate a DeepFace match result and run the liveness gate."""
 
@@ -1836,7 +1938,11 @@ def _evaluate_recognition_match(
     }
     normalized_region = _normalize_face_region(face_region)
 
-    if not _passes_liveness_check(frame, normalized_region):
+    if not _passes_liveness_check(
+        frame,
+        normalized_region,
+        frame_history=frame_history,
+    ):
         return username, True, normalized_region
 
     return username, False, normalized_region
@@ -1849,11 +1955,17 @@ def _predict_identity_from_embedding(
     model,
     class_names: Sequence[str],
     attendance_type: str,
+    *,
+    frame_history: Optional[Sequence[np.ndarray]] = None,
 ) -> Tuple[Optional[str], bool, Optional[Dict[str, int]]]:
     """Run liveness verification and model prediction for an embedding."""
 
     normalized_region = _normalize_face_region(facial_area)
-    if not _passes_liveness_check(frame, normalized_region):
+    if not _passes_liveness_check(
+        frame,
+        normalized_region,
+        frame_history=frame_history,
+    ):
         logger.warning("Spoofing attempt blocked during '%s' attendance.", attendance_type)
         return None, True, normalized_region
 
@@ -2015,6 +2127,7 @@ def _mark_attendance(request, check_in: bool):
 
     spoof_detected = False
     model_warmed_up = False
+    liveness_buffer = LivenessBuffer(maxlen=_get_lightweight_liveness_window())
 
     try:
         with manager.frame_consumer() as consumer:
@@ -2024,6 +2137,7 @@ def _mark_attendance(request, check_in: bool):
                     continue
                 iteration_start = time.perf_counter()
                 frame = imutils.resize(frame, width=800)
+                liveness_buffer.append(frame)
                 frames_processed += 1
 
                 try:
@@ -2070,7 +2184,11 @@ def _mark_attendance(request, check_in: bool):
                         except Exception:  # pragma: no cover - defensive parsing
                             candidate_name = None
                     normalized_region = _normalize_face_region(facial_area)
-                    spoofed = not _passes_liveness_check(frame, normalized_region)
+                    spoofed = not _passes_liveness_check(
+                        frame,
+                        normalized_region,
+                        frame_history=liveness_buffer.snapshot(),
+                    )
 
                     if not is_within_distance_threshold(distance_value, distance_threshold):
                         logger.info(
@@ -2536,6 +2654,42 @@ def _get_deepface_distance_metric() -> str:
     return str(_get_deepface_options().get("distance_metric", "euclidean_l2"))
 
 
+def _is_lightweight_liveness_enabled() -> bool:
+    """Return whether the motion-based liveness gate is enabled."""
+
+    return bool(getattr(settings, "RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED", True))
+
+
+def _get_lightweight_liveness_window() -> int:
+    """Return the configured number of frames to keep for motion analysis."""
+
+    try:
+        window = int(getattr(settings, "RECOGNITION_LIVENESS_WINDOW", 5))
+    except (TypeError, ValueError):
+        return 5
+    return max(2, window)
+
+
+def _get_lightweight_liveness_min_frames() -> int:
+    """Return the minimum frames required to attempt motion analysis."""
+
+    try:
+        minimum = int(getattr(settings, "RECOGNITION_LIVENESS_MIN_FRAMES", 3))
+    except (TypeError, ValueError):
+        return 3
+    return max(2, minimum)
+
+
+def _get_lightweight_liveness_threshold() -> float:
+    """Return the acceptance threshold for the motion-based liveness score."""
+
+    try:
+        threshold = float(getattr(settings, "RECOGNITION_LIVENESS_MOTION_THRESHOLD", 1.1))
+    except (TypeError, ValueError):
+        return 1.1
+    return max(0.0, threshold)
+
+
 def _is_liveness_enabled() -> bool:
     """Return whether anti-spoofing checks are enabled."""
 
@@ -2724,6 +2878,7 @@ def mark_attendance_view(request, attendance_type):
             attempt_logger.log_failure(candidate, spoofed=spoofed, error=error_message)
 
     frame_count = 0
+    liveness_buffer = LivenessBuffer(maxlen=_get_lightweight_liveness_window())
     try:
         with manager.frame_consumer() as consumer:
             while True:
@@ -2731,6 +2886,7 @@ def mark_attendance_view(request, attendance_type):
                 if frame is None:
                     continue
                 frame = imutils.resize(frame, width=800)
+                liveness_buffer.append(frame)
                 frame_count += 1
 
                 try:
@@ -2776,6 +2932,7 @@ def mark_attendance_view(request, attendance_type):
                                 model,
                                 class_names,
                                 attendance_type,
+                                frame_history=liveness_buffer.snapshot(),
                             )
                         )
 

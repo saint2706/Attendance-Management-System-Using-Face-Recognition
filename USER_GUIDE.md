@@ -24,6 +24,7 @@ This guide provides a comprehensive walkthrough of the Smart Attendance System, 
 1.  From the home page, click **Mark Time-In** to clock in for the day.
 2.  Position your face in front of the webcam. The system will automatically recognize you and record your check-in time.
 3.  At the end of the day, click **Mark Time-Out** to clock out.
+4.  If the banner "Liveness check failed. Please blink or move your head slightly and try again before marking attendance." appears, blink twice or gently move your head so the system can detect natural motion before retrying.
 
 #### Viewing Your Attendance
 
@@ -67,6 +68,7 @@ The system also generates graphs to help you visualize attendance trends.
 ## 4. Troubleshooting
 
 - **Recognition Issues:** If the system is having trouble recognizing an employee, ensure they are in a well-lit area and facing the camera directly. If the problem persists, an admin may need to recapture the employee's photos.
+- **Liveness Prompts:** When the system rejects an attempt with the message above, keep your face within the guide box, blink, and tilt your head slightly until the status indicator turns green.
 - **Incorrect Timestamps:** If you notice any incorrect timestamps in your attendance records, please contact an administrator to have them corrected.
 
 ## 5. Model Evaluation Reports
