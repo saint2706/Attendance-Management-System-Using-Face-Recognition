@@ -17,9 +17,6 @@ on:
       - "recognition/templates/**"
       - "users/templates/**"
       - ".github/workflows/lighthouse.yml"
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
   pull_request:
     paths:
       - "**.py"
@@ -34,9 +31,6 @@ on:
       - "recognition/templates/**"
       - "users/templates/**"
       - ".github/workflows/lighthouse.yml"
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
 
 jobs:
   lighthouse:
