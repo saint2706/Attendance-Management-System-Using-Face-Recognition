@@ -14,6 +14,9 @@ face_recognition_data/
 # Static files (collected at deployment time)
 staticfiles/
 
+# Generated reports
+reports/
+
 # Generated attendance graphs (regenerated at runtime)
 recognition/static/recognition/img/attendance_graphs/
 
