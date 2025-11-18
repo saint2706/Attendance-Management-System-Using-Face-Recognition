@@ -86,3 +86,8 @@ The command reuses the live recognition engine to process the encrypted image da
 - `threshold_sweep.csv` / `.png` – plots how FAR, FRR, accuracy, and F1 change as you tighten or loosen the distance threshold.
 
 Use these reports to fine-tune thresholds before rolling changes into production or to document the system's performance for compliance reviews.
+
+## 6. Responsible Use & Limitations
+
+- **Fairness audit:** Run `python manage.py fairness_audit --split-csv reports/splits.csv --reports-dir reports/fairness` after major enrollment batches or hardware changes. The command captures recognition accuracy, precision/recall, and FAR/FRR for different user-role buckets, commonly used sites, capture sources, and coarse lighting conditions. Review the generated `reports/fairness/summary.md` so you can identify groups that require additional training photos or new lighting guidance.
+- **Documentation:** The [Fairness & Limitations](docs/FAIRNESS_AND_LIMITATIONS.md) report explains the methodology, interprets the findings, and lists known blind spots such as the absence of demographic labels. Pair it with the [DATA_CARD.md](DATA_CARD.md) before deploying to new regions so operators understand how the system behaves today and what still needs manual review.

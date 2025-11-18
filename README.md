@@ -107,6 +107,11 @@ For more detailed information, please refer to the full documentation:
 - **[Data Card](DATA_CARD.md)**: Comprehensive documentation on the dataset, including privacy policies and data splits.
 - **[Liveness Evaluation](docs/liveness_evaluation.md)**: Methodology and results for the new motion-based anti-spoofing stage plus guidance for running `manage.py evaluate_liveness` locally.
 - **[Deployment Guide](docs/deployment-guide.md)**: Step-by-step instructions for building the Docker image, configuring Compose services, managing environment variables, and hardening production deployments.
+- **[Fairness & Limitations](docs/FAIRNESS_AND_LIMITATIONS.md)**: Methodology, findings, and follow-up actions for the fairness and robustness audit plus guidance on how to rerun it locally.
+
+## Limitations & Responsible Use
+
+Face biometrics introduce safety and ethical constraints that require explicit monitoring. Run `python manage.py fairness_audit --split-csv reports/splits.csv --reports-dir reports/fairness` whenever the dataset changes to capture per-role, per-site, per-source, and per-lighting metrics. The resulting tables in `reports/fairness/summary.md` highlight buckets where the False Acceptance Rate (FAR) or False Rejection Rate (FRR) deviates from the global average. Review the [Fairness & Limitations](docs/FAIRNESS_AND_LIMITATIONS.md) report alongside the [DATA_CARD.md](DATA_CARD.md) before rolling out models to new locations or populations.
 
 ## Deployment Configuration
 
