@@ -112,4 +112,6 @@ class Command(BaseCommand):
         with open(threshold_path, "w") as f:
             json.dump(selection_info, f, indent=2)
 
-        self.stdout.write(self.style.SUCCESS(f"\n✓ Threshold saved to {threshold_path}"))
+        self.stdout.write(
+            self.style.SUCCESS(f"\n✓ Threshold saved to {threshold_path}")
+        )

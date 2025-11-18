@@ -5,9 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterable
 
-import cv2
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+
+import cv2
 
 from recognition.liveness import is_live_face
 
@@ -15,9 +16,7 @@ from recognition.liveness import is_live_face
 class Command(BaseCommand):
     """Run motion-based liveness detection against genuine and spoof samples."""
 
-    help = (
-        "Run the lightweight liveness detector on image bursts under a samples root."
-    )
+    help = "Run the lightweight liveness detector on image bursts under a samples root."
 
     def add_arguments(self, parser) -> None:  # pragma: no cover - argparse wiring
         parser.add_argument(
@@ -47,7 +46,9 @@ class Command(BaseCommand):
         min_frames = options.get("min_frames")
 
         if threshold is None:
-            threshold = float(getattr(settings, "RECOGNITION_LIVENESS_MOTION_THRESHOLD", 1.1))
+            threshold = float(
+                getattr(settings, "RECOGNITION_LIVENESS_MOTION_THRESHOLD", 1.1)
+            )
         if min_frames is None:
             min_frames = int(getattr(settings, "RECOGNITION_LIVENESS_MIN_FRAMES", 3))
 
@@ -62,7 +63,9 @@ class Command(BaseCommand):
         for label, _ in categories:
             label_dir = samples_root / label
             if not label_dir.exists():
-                self.stderr.write(f"Skipping '{label}' — directory missing at {label_dir}.")
+                self.stderr.write(
+                    f"Skipping '{label}' — directory missing at {label_dir}."
+                )
                 continue
 
             for sample_dir in sorted(p for p in label_dir.iterdir() if p.is_dir()):

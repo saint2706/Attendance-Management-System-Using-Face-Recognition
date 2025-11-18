@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("users", "0010_auto_20240422_0000"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -33,7 +32,8 @@ class Migration(migrations.Migration):
             model_name="present",
             name="present",
             field=models.BooleanField(
-                default=False, help_text="Indicates if the user was present on this date."
+                default=False,
+                help_text="Indicates if the user was present on this date.",
             ),
         ),
         migrations.AlterField(
@@ -49,7 +49,8 @@ class Migration(migrations.Migration):
             model_name="time",
             name="date",
             field=models.DateField(
-                default=django.utils.timezone.localdate, help_text="The date of the time entry."
+                default=django.utils.timezone.localdate,
+                help_text="The date of the time entry.",
             ),
         ),
         migrations.AlterField(
@@ -63,7 +64,8 @@ class Migration(migrations.Migration):
             model_name="time",
             name="out",
             field=models.BooleanField(
-                default=False, help_text="False for a time-in event, True for a time-out event."
+                default=False,
+                help_text="False for a time-in event, True for a time-out event.",
             ),
         ),
         migrations.AlterField(

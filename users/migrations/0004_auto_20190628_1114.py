@@ -5,25 +5,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0003_auto_20190628_1110'),
+        ("users", "0003_auto_20190628_1110"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='attendance',
-            name='date',
+            model_name="attendance",
+            name="date",
             field=models.DateField(default=datetime.date.today),
         ),
         migrations.AlterField(
-            model_name='attendance',
-            name='time_in',
+            model_name="attendance",
+            name="time_in",
             field=models.TimeField(default=datetime.datetime.now, null=True),
         ),
         migrations.AlterField(
-            model_name='attendance',
-            name='time_out',
+            model_name="attendance",
+            name="time_out",
             field=models.TimeField(default=datetime.datetime.now, null=True),
         ),
     ]

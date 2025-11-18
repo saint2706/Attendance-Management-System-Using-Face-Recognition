@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = []
@@ -16,7 +15,10 @@ class Migration(migrations.Migration):
                 (
                     "id",
                     models.BigAutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
                     ),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
@@ -32,10 +34,12 @@ class Migration(migrations.Migration):
                 "ordering": ["-created_at"],
                 "indexes": [
                     models.Index(
-                        fields=["created_at", "direction"], name="recognition_created_1e450f_idx"
+                        fields=["created_at", "direction"],
+                        name="recognition_created_1e450f_idx",
                     ),
                     models.Index(
-                        fields=["accepted", "created_at"], name="recognition_accepte_1964df_idx"
+                        fields=["accepted", "created_at"],
+                        name="recognition_accepte_1964df_idx",
                     ),
                 ],
             },

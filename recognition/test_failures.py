@@ -19,11 +19,15 @@ class FailureAnalysisTest(TestCase):
         # Create predictions with some errors
         self.y_true = np.array([1, 1, 1, 1, 1, 0, 0, 0, 0, 0])
         self.y_pred = np.array([1, 1, 1, 0, 0, 0, 0, 0, 1, 1])  # 4 errors
-        self.y_scores = np.array([0.9, 0.85, 0.8, 0.45, 0.4, 0.35, 0.3, 0.25, 0.6, 0.65])
+        self.y_scores = np.array(
+            [0.9, 0.85, 0.8, 0.45, 0.4, 0.35, 0.3, 0.25, 0.6, 0.65]
+        )
 
     def test_analyze_failures_basic(self):
         """Test basic failure analysis."""
-        fa_df, fr_df = analyze_failures(self.y_true, self.y_pred, self.y_scores, top_n=5)
+        fa_df, fr_df = analyze_failures(
+            self.y_true, self.y_pred, self.y_scores, top_n=5
+        )
 
         # Should have false accepts (predicted 1, true 0)
         # In our data: indices 8, 9 are false accepts
@@ -43,7 +47,9 @@ class FailureAnalysisTest(TestCase):
 
     def test_analyze_failures_with_metadata(self):
         """Test failure analysis includes metadata fields."""
-        fa_df, fr_df = analyze_failures(self.y_true, self.y_pred, self.y_scores, top_n=5)
+        fa_df, fr_df = analyze_failures(
+            self.y_true, self.y_pred, self.y_scores, top_n=5
+        )
 
         # Check metadata columns exist
         for df in [fa_df, fr_df]:
@@ -81,7 +87,9 @@ class FailureAnalysisTest(TestCase):
         """Test subgroup analysis."""
         groups = np.array(["camera1"] * 5 + ["camera2"] * 5)
 
-        df = analyze_subgroups(self.y_true, self.y_pred, self.y_scores, groups, output_path=None)
+        df = analyze_subgroups(
+            self.y_true, self.y_pred, self.y_scores, groups, output_path=None
+        )
 
         # Should have 2 groups
         self.assertEqual(len(df), 2)
@@ -104,7 +112,9 @@ class FailureAnalysisTest(TestCase):
         # Create unbalanced groups
         groups = np.array(["A"] * 8 + ["B"] * 2)
 
-        df = analyze_subgroups(self.y_true, self.y_pred, self.y_scores, groups, output_path=None)
+        df = analyze_subgroups(
+            self.y_true, self.y_pred, self.y_scores, groups, output_path=None
+        )
 
         # Should handle both groups
         self.assertEqual(len(df), 2)

@@ -12,7 +12,9 @@ class Command(BaseCommand):
     help = "Run fairness and robustness metrics across the evaluation set"
 
     def add_arguments(self, parser):
-        parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
+        parser.add_argument(
+            "--seed", type=int, default=42, help="Random seed for reproducibility"
+        )
         parser.add_argument(
             "--reports-dir",
             type=Path,

@@ -109,8 +109,12 @@ def admin_account(django_user_model) -> AdminAccount:
 def pytest_configure(config):
     """Register custom markers for UI categorisation."""
 
-    config.addinivalue_line("markers", "accessibility: Tests for accessibility features")
+    config.addinivalue_line(
+        "markers", "accessibility: Tests for accessibility features"
+    )
     config.addinivalue_line("markers", "mobile: Tests for mobile responsiveness")
     config.addinivalue_line("markers", "theme: Tests for theme toggling and dark mode")
     config.addinivalue_line("markers", "table: Tests for table enhancements")
-    config.addinivalue_line("markers", "e2e: End-to-end UI workflows executed in Playwright")
+    config.addinivalue_line(
+        "markers", "e2e: End-to-end UI workflows executed in Playwright"
+    )

@@ -7,7 +7,11 @@ from pathlib import Path
 
 from django.test import TestCase
 
-from recognition.ablation import AblationConfig, generate_ablation_configs, run_single_ablation
+from recognition.ablation import (
+    AblationConfig,
+    generate_ablation_configs,
+    run_single_ablation,
+)
 
 
 class AblationTest(TestCase):
@@ -72,9 +76,13 @@ class AblationTest(TestCase):
 
     def test_run_single_ablation(self):
         """Test running a single ablation experiment."""
-        config = AblationConfig(detector="ssd", alignment=True, distance_metric="cosine")
+        config = AblationConfig(
+            detector="ssd", alignment=True, distance_metric="cosine"
+        )
 
-        result = run_single_ablation(config, self.image_paths, self.labels, random_state=42)
+        result = run_single_ablation(
+            config, self.image_paths, self.labels, random_state=42
+        )
 
         # Check result structure
         self.assertIn("config", result)
@@ -93,11 +101,19 @@ class AblationTest(TestCase):
 
     def test_ablation_config_variations(self):
         """Test that different configs produce different results."""
-        config1 = AblationConfig(detector="ssd", alignment=True, distance_metric="cosine")
-        config2 = AblationConfig(detector="opencv", alignment=True, distance_metric="cosine")
+        config1 = AblationConfig(
+            detector="ssd", alignment=True, distance_metric="cosine"
+        )
+        config2 = AblationConfig(
+            detector="opencv", alignment=True, distance_metric="cosine"
+        )
 
-        result1 = run_single_ablation(config1, self.image_paths, self.labels, random_state=42)
-        result2 = run_single_ablation(config2, self.image_paths, self.labels, random_state=42)
+        result1 = run_single_ablation(
+            config1, self.image_paths, self.labels, random_state=42
+        )
+        result2 = run_single_ablation(
+            config2, self.image_paths, self.labels, random_state=42
+        )
 
         # Different configurations should (generally) produce different results
         # Note: This is probabilistic, so we just check they both ran successfully
@@ -106,10 +122,16 @@ class AblationTest(TestCase):
 
     def test_reproducibility_with_seed(self):
         """Test that same config and seed produce same results."""
-        config = AblationConfig(detector="ssd", alignment=True, distance_metric="cosine")
+        config = AblationConfig(
+            detector="ssd", alignment=True, distance_metric="cosine"
+        )
 
-        result1 = run_single_ablation(config, self.image_paths, self.labels, random_state=42)
-        result2 = run_single_ablation(config, self.image_paths, self.labels, random_state=42)
+        result1 = run_single_ablation(
+            config, self.image_paths, self.labels, random_state=42
+        )
+        result2 = run_single_ablation(
+            config, self.image_paths, self.labels, random_state=42
+        )
 
         # Same seed should give exactly same results
         self.assertEqual(result1["accuracy"], result2["accuracy"])

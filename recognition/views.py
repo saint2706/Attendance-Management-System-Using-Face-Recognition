@@ -63,7 +63,11 @@ from . import monitoring
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
 from .liveness import LivenessBuffer, is_live_face
 from .metrics_store import log_recognition_outcome
-from .pipeline import extract_embedding, find_closest_dataset_match, is_within_distance_threshold
+from .pipeline import (
+    extract_embedding,
+    find_closest_dataset_match,
+    is_within_distance_threshold,
+)
 from .webcam_manager import get_webcam_manager
 
 # Use 'Agg' backend for Matplotlib to avoid GUI-related issues in a web server environment
@@ -221,7 +225,9 @@ class _RecognitionAttemptLogger:
         key = username or "__generic__"
         if key in self._recorded_keys:
             return None
-        attempt = self._log(username=username, success=False, spoofed=spoofed, error=error)
+        attempt = self._log(
+            username=username, success=False, spoofed=spoofed, error=error
+        )
         self._recorded_keys.add(key)
         return attempt
 
@@ -253,7 +259,9 @@ def _resolve_recognition_site(request) -> str:
         return ""
 
 
-def _attach_attempt_user(attempt: RecognitionAttempt | None, username: Optional[str]) -> None:
+def _attach_attempt_user(
+    attempt: RecognitionAttempt | None, username: Optional[str]
+) -> None:
     """Persist a user relation on the attempt when a username is known."""
 
     if not attempt or not username:
@@ -312,7 +320,9 @@ def attendance_rate_limited(view_func):
                 ),
                 request_method,
             )
-            return HttpResponse("Too many attendance attempts. Please wait.", status=429)
+            return HttpResponse(
+                "Too many attendance attempts. Please wait.", status=429
+            )
 
         return view_func(request, *args, **kwargs)
 
@@ -358,7 +368,9 @@ def _describe_async_result(task_id: str) -> Dict[str, Any]:
     return payload
 
 
-@method_decorator(ratelimit(key="ip", rate="5/m", method="POST", block=False), name="post")
+@method_decorator(
+    ratelimit(key="ip", rate="5/m", method="POST", block=False), name="post"
+)
 class FaceRecognitionAPI(View):
     """Handle face recognition requests submitted via HTTP POST."""
 
@@ -376,7 +388,9 @@ class FaceRecognitionAPI(View):
 
             try:
                 return json.loads(raw_body or "{}")
-            except json.JSONDecodeError as exc:  # pragma: no cover - defensive programming
+            except (
+                json.JSONDecodeError
+            ) as exc:  # pragma: no cover - defensive programming
                 raise ValueError("Invalid JSON payload supplied.") from exc
 
         if request.POST:
@@ -412,7 +426,9 @@ class FaceRecognitionAPI(View):
                 try:
                     raw_embedding = [float(segment) for segment in parts]
                 except ValueError as exc:
-                    raise ValueError("'embedding' must contain numeric values.") from exc
+                    raise ValueError(
+                        "'embedding' must contain numeric values."
+                    ) from exc
 
         if not isinstance(raw_embedding, (list, tuple)):
             raise ValueError("'embedding' must be provided as a list of numbers.")
@@ -549,7 +565,9 @@ class FaceRecognitionAPI(View):
         enforce_detection = _should_enforce_detection()
 
         raw_username = payload.get("username")
-        submitted_username = raw_username.strip() if isinstance(raw_username, str) else None
+        submitted_username = (
+            raw_username.strip() if isinstance(raw_username, str) else None
+        )
 
         embedding_vector = None
         frame = None
@@ -559,20 +577,26 @@ class FaceRecognitionAPI(View):
         try:
             liveness_frames = self._extract_liveness_frames(payload)
         except ValueError as exc:
-            attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
+            attempt_logger.log_failure(
+                submitted_username, spoofed=False, error=str(exc)
+            )
             return JsonResponse({"error": str(exc)}, status=400)
 
         try:
             embedding_vector = self._coerce_embedding(payload.get("embedding"))
         except ValueError as exc:
-            attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
+            attempt_logger.log_failure(
+                submitted_username, spoofed=False, error=str(exc)
+            )
             return JsonResponse({"error": str(exc)}, status=400)
 
         if embedding_vector is None:
             try:
                 image_bytes = self._extract_image_bytes(request, payload)
             except ValueError as exc:
-                attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
+                attempt_logger.log_failure(
+                    submitted_username, spoofed=False, error=str(exc)
+                )
                 return JsonResponse({"error": str(exc)}, status=400)
 
             if not image_bytes:
@@ -582,7 +606,9 @@ class FaceRecognitionAPI(View):
                     error="Provide either an 'embedding' array or an 'image' payload.",
                 )
                 return JsonResponse(
-                    {"error": "Provide either an 'embedding' array or an 'image' payload."},
+                    {
+                        "error": "Provide either an 'embedding' array or an 'image' payload."
+                    },
                     status=400,
                 )
 
@@ -593,7 +619,9 @@ class FaceRecognitionAPI(View):
                     spoofed=False,
                     error="Unable to decode the supplied image.",
                 )
-                return JsonResponse({"error": "Unable to decode the supplied image."}, status=400)
+                return JsonResponse(
+                    {"error": "Unable to decode the supplied image."}, status=400
+                )
 
             try:
                 representations = DeepFace.represent(
@@ -602,7 +630,9 @@ class FaceRecognitionAPI(View):
                     detector_backend=detector_backend,
                     enforce_detection=enforce_detection,
                 )
-            except Exception as exc:  # pragma: no cover - deepface may fail unexpectedly
+            except (
+                Exception
+            ) as exc:  # pragma: no cover - deepface may fail unexpectedly
                 logger.error("Failed to extract embedding from API request: %s", exc)
                 attempt_logger.log_failure(
                     submitted_username,
@@ -635,7 +665,9 @@ class FaceRecognitionAPI(View):
                     spoofed=False,
                     error="Invalid embedding generated.",
                 )
-                return JsonResponse({"error": "Invalid embedding generated."}, status=500)
+                return JsonResponse(
+                    {"error": "Invalid embedding generated."}, status=500
+                )
 
         dataset_index = _load_dataset_embeddings_for_matching(
             model_name, detector_backend, enforce_detection
@@ -668,7 +700,9 @@ class FaceRecognitionAPI(View):
             )
 
         distance_metric = _get_deepface_distance_metric()
-        match = find_closest_dataset_match(embedding_vector, normalized_index, distance_metric)
+        match = find_closest_dataset_match(
+            embedding_vector, normalized_index, distance_metric
+        )
 
         distance_threshold = getattr(
             settings, "RECOGNITION_DISTANCE_THRESHOLD", DEFAULT_DISTANCE_THRESHOLD
@@ -730,7 +764,9 @@ class FaceRecognitionAPI(View):
             _attach_attempt_user(attempt, resolved_username)
             return JsonResponse(response_payload)
         else:
-            recognized = is_within_distance_threshold(distance_value, distance_threshold)
+            recognized = is_within_distance_threshold(
+                distance_value, distance_threshold
+            )
             response_payload["recognized"] = recognized
 
             if recognized:
@@ -738,7 +774,9 @@ class FaceRecognitionAPI(View):
                 _attach_attempt_user(attempt, resolved_username)
             else:
                 formatted_distance = (
-                    float(distance_value) if distance_value is not None else float("nan")
+                    float(distance_value)
+                    if distance_value is not None
+                    else float("nan")
                 )
                 attempt = attempt_logger.log_failure(
                     resolved_username,
@@ -762,9 +800,13 @@ def enqueue_attendance_batch(request):
         return JsonResponse({"detail": "Method not allowed."}, status=405)
 
     try:
-        raw_body = request.body.decode(request.encoding or "utf-8") if request.body else "{}"
+        raw_body = (
+            request.body.decode(request.encoding or "utf-8") if request.body else "{}"
+        )
     except UnicodeDecodeError:
-        return JsonResponse({"detail": "Request body must be UTF-8 encoded."}, status=400)
+        return JsonResponse(
+            {"detail": "Request body must be UTF-8 encoded."}, status=400
+        )
 
     try:
         payload = json.loads(raw_body or "{}")
@@ -779,7 +821,8 @@ def enqueue_attendance_batch(request):
     for index, record in enumerate(records):
         if not isinstance(record, dict):
             return JsonResponse(
-                {"detail": f"Record at index {index} must be a JSON object."}, status=400
+                {"detail": f"Record at index {index} must be a JSON object."},
+                status=400,
             )
         normalized_records.append(record)
 
@@ -807,7 +850,11 @@ TRAINING_DATASET_ROOT = DATA_ROOT / "training_dataset"
 
 # Define paths for saving generated attendance graphs within MEDIA_ROOT
 ATTENDANCE_GRAPHS_ROOT = Path(
-    getattr(settings, "ATTENDANCE_GRAPHS_ROOT", Path(settings.MEDIA_ROOT) / "attendance_graphs")
+    getattr(
+        settings,
+        "ATTENDANCE_GRAPHS_ROOT",
+        Path(settings.MEDIA_ROOT) / "attendance_graphs",
+    )
 )
 HOURS_VS_DATE_PATH = ATTENDANCE_GRAPHS_ROOT / "hours_vs_date" / "1.png"
 EMPLOYEE_LOGIN_PATH = ATTENDANCE_GRAPHS_ROOT / "employee_login" / "1.png"
@@ -858,13 +905,17 @@ class DatasetEmbeddingCache:
             except FileNotFoundError:
                 continue
             relative = image_path.relative_to(self._dataset_root).as_posix()
-            entries.append((relative, int(stat_result.st_mtime_ns), int(stat_result.st_size)))
+            entries.append(
+                (relative, int(stat_result.st_mtime_ns), int(stat_result.st_size))
+            )
         return tuple(entries)
 
     def _load_from_disk(
         self, model_name: str, detector_backend: str, enforce_detection: bool
     ) -> Optional[Tuple[Tuple[Tuple[str, int, int], ...], list[dict]]]:
-        cache_file = self._cache_file_path(model_name, detector_backend, enforce_detection)
+        cache_file = self._cache_file_path(
+            model_name, detector_backend, enforce_detection
+        )
         if not cache_file.exists():
             return None
 
@@ -880,13 +931,17 @@ class DatasetEmbeddingCache:
             logger.warning("Invalid cache encryption token for %s", cache_file)
             return None
         except Exception as exc:  # pragma: no cover - defensive programming
-            logger.warning("Failed to decrypt cached embeddings %s: %s", cache_file, exc)
+            logger.warning(
+                "Failed to decrypt cached embeddings %s: %s", cache_file, exc
+            )
             return None
 
         try:
             payload = pickle.loads(decrypted_bytes)
         except Exception as exc:  # pragma: no cover - defensive programming
-            logger.warning("Failed to deserialize cached embeddings %s: %s", cache_file, exc)
+            logger.warning(
+                "Failed to deserialize cached embeddings %s: %s", cache_file, exc
+            )
             return None
 
         dataset_state = payload.get("dataset_state")
@@ -904,7 +959,9 @@ class DatasetEmbeddingCache:
                 try:
                     normalized["embedding"] = np.array(embedding, dtype=float)
                 except Exception:  # pragma: no cover - defensive programming
-                    logger.debug("Failed to coerce cached embedding to ndarray: %r", embedding)
+                    logger.debug(
+                        "Failed to coerce cached embedding to ndarray: %r", embedding
+                    )
                     continue
             normalized_index.append(normalized)
 
@@ -921,7 +978,9 @@ class DatasetEmbeddingCache:
         dataset_state: Tuple[Tuple[str, int, int], ...],
         dataset_index: list[dict],
     ) -> None:
-        cache_file = self._cache_file_path(model_name, detector_backend, enforce_detection)
+        cache_file = self._cache_file_path(
+            model_name, detector_backend, enforce_detection
+        )
         try:
             cache_file.parent.mkdir(parents=True, exist_ok=True)
             payload_index: list[dict] = []
@@ -942,7 +1001,9 @@ class DatasetEmbeddingCache:
             encrypted = self._encryption.encrypt(serialized)
             cache_file.write_bytes(encrypted)
         except Exception as exc:  # pragma: no cover - defensive programming
-            logger.warning("Failed to persist cached embeddings %s: %s", cache_file, exc)
+            logger.warning(
+                "Failed to persist cached embeddings %s: %s", cache_file, exc
+            )
 
     def get_dataset_index(
         self,
@@ -961,7 +1022,9 @@ class DatasetEmbeddingCache:
             if memory_entry and memory_entry[0] == current_state:
                 return memory_entry[1]
 
-            disk_entry = self._load_from_disk(model_name, detector_backend, enforce_detection)
+            disk_entry = self._load_from_disk(
+                model_name, detector_backend, enforce_detection
+            )
             if disk_entry and disk_entry[0] == current_state:
                 self._memory_cache[key] = disk_entry
                 return disk_entry[1]
@@ -1040,7 +1103,9 @@ def _decrypt_image_bytes(image_path: Path) -> Optional[bytes]:
     try:
         encrypted_bytes = image_path.read_bytes()
     except FileNotFoundError:
-        logger.warning("Image path %s is missing while building dataset index.", image_path)
+        logger.warning(
+            "Image path %s is missing while building dataset index.", image_path
+        )
         return None
     except OSError as exc:
         logger.error("Failed to read encrypted image %s: %s", image_path, exc)
@@ -1093,7 +1158,10 @@ def _load_encrypted_image(image_path: Path) -> Optional[np.ndarray]:
 
 
 def _get_or_compute_cached_embedding(
-    image_path: Path, model_name: str, detector_backend: str, enforce_detection: bool = False
+    image_path: Path,
+    model_name: str,
+    detector_backend: str,
+    enforce_detection: bool = False,
 ) -> Optional[np.ndarray]:
     """Return the embedding for an encrypted image using Django's cache."""
 
@@ -1109,7 +1177,9 @@ def _get_or_compute_cached_embedding(
         try:
             return np.array(cached_embedding, dtype=float)
         except Exception:  # pragma: no cover - defensive programming
-            logger.debug("Failed to coerce cached embedding for %s into an array", image_path)
+            logger.debug(
+                "Failed to coerce cached embedding for %s into an array", image_path
+            )
 
     image = _decode_image_bytes(decrypted_bytes, source=image_path)
     if image is None:
@@ -1261,7 +1331,9 @@ def update_attendance_in_db_in(
 
         if is_present:
             # Record the check-in time
-            time_record = Time.objects.create(user=user, date=today, time=current_time, out=False)
+            time_record = Time.objects.create(
+                user=user, date=today, time=current_time, out=False
+            )
         else:
             time_record = None
 
@@ -1333,7 +1405,9 @@ def update_attendance_in_db_out(
                 )
             continue
         # Record the check-out time
-        time_record = Time.objects.create(user=user, date=today, time=current_time, out=True)
+        time_record = Time.objects.create(
+            user=user, date=today, time=current_time, out=True
+        )
 
         attempt_id = attempt_ids.get(person)
         if attempt_id:
@@ -1673,7 +1747,9 @@ def add_photos(request):
 
                     async_result = capture_dataset.delay(username)
                 except Exception:
-                    logger.exception("Failed to enqueue dataset capture for %s", username)
+                    logger.exception(
+                        "Failed to enqueue dataset capture for %s", username
+                    )
                     messages.error(
                         request,
                         "Unable to start dataset capture at this time. Please try again shortly.",
@@ -1686,9 +1762,13 @@ def add_photos(request):
                             f"Track progress with task ID {async_result.id}."
                         ),
                     )
-                    return redirect(f"{reverse('add-photos')}?task_id={async_result.id}")
+                    return redirect(
+                        f"{reverse('add-photos')}?task_id={async_result.id}"
+                    )
 
-            messages.warning(request, "No such username found. Please register employee first.")
+            messages.warning(
+                request, "No such username found. Please register employee first."
+            )
             return redirect("dashboard")
     else:
         form = usernameForm()
@@ -1710,7 +1790,9 @@ LIVENESS_FAILURE_MESSAGE = (
 )
 
 
-def _normalize_face_region(region: Optional[Dict[str, int]]) -> Optional[Dict[str, int]]:
+def _normalize_face_region(
+    region: Optional[Dict[str, int]],
+) -> Optional[Dict[str, int]]:
     """Normalize various facial area representations into ``x, y, w, h`` form."""
 
     if not isinstance(region, dict):
@@ -1746,7 +1828,9 @@ def _normalize_face_region(region: Optional[Dict[str, int]]) -> Optional[Dict[st
     return None
 
 
-def _crop_face_region(frame: np.ndarray, region: Optional[Dict[str, int]]) -> np.ndarray:
+def _crop_face_region(
+    frame: np.ndarray, region: Optional[Dict[str, int]]
+) -> np.ndarray:
     """Return a cropped face image given a bounding box region."""
 
     if frame is None or not hasattr(frame, "shape"):
@@ -1833,7 +1917,9 @@ def _deepface_liveness_check(frame: np.ndarray) -> Optional[bool]:
 
     decision = _interpret_deepface_liveness_result(analysis)
     if decision is None:
-        logger.warning("Could not interpret DeepFace anti-spoofing result: %s", analysis)
+        logger.warning(
+            "Could not interpret DeepFace anti-spoofing result: %s", analysis
+        )
     return decision
 
 
@@ -1966,7 +2052,9 @@ def _predict_identity_from_embedding(
         normalized_region,
         frame_history=frame_history,
     ):
-        logger.warning("Spoofing attempt blocked during '%s' attendance.", attendance_type)
+        logger.warning(
+            "Spoofing attempt blocked during '%s' attendance.", attendance_type
+        )
         return None, True, normalized_region
 
     try:
@@ -2028,16 +2116,22 @@ def _mark_attendance(request, check_in: bool):
         "path": getattr(request, "path", ""),
         "user_id": getattr(getattr(request, "user", None), "id", None),
         "username": getattr(getattr(request, "user", None), "username", None),
-        "remote_addr": request.META.get("REMOTE_ADDR") if hasattr(request, "META") else None,
+        "remote_addr": request.META.get("REMOTE_ADDR")
+        if hasattr(request, "META")
+        else None,
     }
-    _bind_request_to_sentry_scope(request, flow="webcam_attendance", extra=request_metadata)
+    _bind_request_to_sentry_scope(
+        request, flow="webcam_attendance", extra=request_metadata
+    )
     _record_sentry_breadcrumb(
         message="Attendance capture started",
         category="attendance.flow",
         data=request_metadata,
     )
 
-    def _log_outcome(candidate: Optional[str], *, accepted: bool, distance: float | None) -> None:
+    def _log_outcome(
+        candidate: Optional[str], *, accepted: bool, distance: float | None
+    ) -> None:
         key = (candidate or "", accepted)
         if key in recorded_outcomes:
             return
@@ -2057,7 +2151,9 @@ def _mark_attendance(request, check_in: bool):
     frames_processed = 0
 
     direction_choice = (
-        RecognitionAttempt.Direction.IN if check_in else RecognitionAttempt.Direction.OUT
+        RecognitionAttempt.Direction.IN
+        if check_in
+        else RecognitionAttempt.Direction.OUT
     )
     attempt_logger = _RecognitionAttemptLogger(
         direction_choice.value,
@@ -2190,18 +2286,24 @@ def _mark_attendance(request, check_in: bool):
                         frame_history=liveness_buffer.snapshot(),
                     )
 
-                    if not is_within_distance_threshold(distance_value, distance_threshold):
+                    if not is_within_distance_threshold(
+                        distance_value, distance_threshold
+                    ):
                         logger.info(
                             "Ignoring potential match for '%s' due to high distance %.4f",
                             Path(identity_path).parent.name,
                             distance_value,
                         )
-                        _log_outcome(candidate_name, accepted=False, distance=distance_value)
+                        _log_outcome(
+                            candidate_name, accepted=False, distance=distance_value
+                        )
                         continue
 
                     if spoofed:
                         spoof_detected = True
-                        _log_outcome(candidate_name, accepted=False, distance=distance_value)
+                        _log_outcome(
+                            candidate_name, accepted=False, distance=distance_value
+                        )
                         logger.warning(
                             "Spoofing attempt blocked while marking attendance for '%s'",
                             username or Path(identity_path).parent.name,
@@ -2233,7 +2335,9 @@ def _mark_attendance(request, check_in: bool):
                     if username:
                         present[username] = True
                         _log_outcome(username, accepted=True, distance=distance_value)
-                        logger.info("Recognized %s with distance %.4f", username, distance_value)
+                        logger.info(
+                            "Recognized %s with distance %.4f", username, distance_value
+                        )
                         attempt_logger.log_success(username)
 
                         if normalized_region:
@@ -2290,7 +2394,9 @@ def _mark_attendance(request, check_in: bool):
         if not headless:
             cv2.destroyAllWindows()
 
-    attempt_logger.ensure_generic_failure("No faces were recognized during the attendance session.")
+    attempt_logger.ensure_generic_failure(
+        "No faces were recognized during the attendance session."
+    )
 
     if spoof_detected:
         messages.error(request, LIVENESS_FAILURE_MESSAGE)
@@ -2508,7 +2614,8 @@ def view_attendance_employee(request):
 
             if date_to < date_from:
                 messages.warning(
-                    request, "Invalid date selection: 'To' date cannot be before 'From' date."
+                    request,
+                    "Invalid date selection: 'To' date cannot be before 'From' date.",
                 )
                 return redirect("view-attendance-employee")
 
@@ -2522,7 +2629,9 @@ def view_attendance_employee(request):
                 ).order_by("-date")
 
                 if present_qs.exists():
-                    qs, chart_url = hours_vs_date_given_employee(present_qs, time_qs, admin=True)
+                    qs, chart_url = hours_vs_date_given_employee(
+                        present_qs, time_qs, admin=True
+                    )
                 else:
                     messages.warning(request, "No records for the selected duration.")
             else:
@@ -2567,7 +2676,9 @@ def view_my_attendance_employee_login(request):
             ).order_by("-date")
 
             if present_qs.exists():
-                qs, chart_url = hours_vs_date_given_employee(present_qs, time_qs, admin=False)
+                qs, chart_url = hours_vs_date_given_employee(
+                    present_qs, time_qs, admin=False
+                )
             else:
                 messages.warning(request, "No records for the selected duration.")
 
@@ -2579,7 +2690,9 @@ def view_my_attendance_employee_login(request):
         "qs": qs,
         "hours_vs_date_chart_url": chart_url,
     }
-    return render(request, "recognition/view_my_attendance_employee_login.html", context)
+    return render(
+        request, "recognition/view_my_attendance_employee_login.html", context
+    )
 
 
 def _get_deepface_options() -> Dict[str, Any]:
@@ -2684,7 +2797,9 @@ def _get_lightweight_liveness_threshold() -> float:
     """Return the acceptance threshold for the motion-based liveness score."""
 
     try:
-        threshold = float(getattr(settings, "RECOGNITION_LIVENESS_MOTION_THRESHOLD", 1.1))
+        threshold = float(
+            getattr(settings, "RECOGNITION_LIVENESS_MOTION_THRESHOLD", 1.1)
+        )
     except (TypeError, ValueError):
         return 1.1
     return max(0.0, threshold)
@@ -2741,7 +2856,9 @@ def mark_attendance_view(request, attendance_type):
         "path": getattr(request, "path", ""),
         "user_id": getattr(request.user, "id", None),
         "username": getattr(request.user, "username", None),
-        "remote_addr": request.META.get("REMOTE_ADDR") if hasattr(request, "META") else None,
+        "remote_addr": request.META.get("REMOTE_ADDR")
+        if hasattr(request, "META")
+        else None,
     }
     _bind_request_to_sentry_scope(request, flow="svc_attendance", extra=metadata)
     _record_sentry_breadcrumb(
@@ -2822,10 +2939,13 @@ def mark_attendance_view(request, attendance_type):
         model = pickle.loads(decrypt_bytes(encrypted_model))  # noqa: F841
 
         encrypted_classes = classes_path.read_bytes()
-        class_names = np.load(io.BytesIO(decrypt_bytes(encrypted_classes)), allow_pickle=True)
+        class_names = np.load(
+            io.BytesIO(decrypt_bytes(encrypted_classes)), allow_pickle=True
+        )
     except FileNotFoundError:
         messages.error(
-            request, "Model not found. Please train the model before marking attendance."
+            request,
+            "Model not found. Please train the model before marking attendance.",
         )
         return redirect("train")
     except Exception:
@@ -2949,7 +3069,9 @@ def mark_attendance_view(request, attendance_type):
                                 y = int(normalized_region["y"])
                                 w = int(normalized_region["w"])
                                 h = int(normalized_region["h"])
-                                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                                cv2.rectangle(
+                                    frame, (x, y), (x + w, y + h), (0, 0, 255), 2
+                                )
                                 cv2.putText(
                                     frame,
                                     "Spoof detected",
@@ -2970,7 +3092,9 @@ def mark_attendance_view(request, attendance_type):
                                 y = int(normalized_region["y"])
                                 w = int(normalized_region["w"])
                                 h = int(normalized_region["h"])
-                                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                                cv2.rectangle(
+                                    frame, (x, y), (x + w, y + h), (0, 255, 0), 2
+                                )
                                 cv2.putText(
                                     frame,
                                     predicted_name,
@@ -3010,7 +3134,9 @@ def mark_attendance_view(request, attendance_type):
     if spoof_detected:
         messages.error(request, LIVENESS_FAILURE_MESSAGE)
 
-    attempt_logger.ensure_generic_failure("No faces were recognized during the attendance session.")
+    attempt_logger.ensure_generic_failure(
+        "No faces were recognized during the attendance session."
+    )
 
     recognized_present = {name: True for name, value in present.items() if value}
 

@@ -36,7 +36,11 @@ class DataSplitsTest(TestCase):
         self.assertEqual(len(image_paths), 30)
 
         train_paths, val_paths, test_paths, split_info = create_stratified_splits(
-            image_paths, train_ratio=0.60, val_ratio=0.20, test_ratio=0.20, random_state=42
+            image_paths,
+            train_ratio=0.60,
+            val_ratio=0.20,
+            test_ratio=0.20,
+            random_state=42,
         )
 
         # Check total count

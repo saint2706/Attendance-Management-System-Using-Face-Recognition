@@ -19,7 +19,11 @@ from asgiref.sync import sync_to_async
 from celery import shared_task
 from imutils.video import VideoStream
 from sklearn.linear_model import SGDClassifier
-from sklearn.metrics import accuracy_score, classification_report, precision_recall_fscore_support
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    precision_recall_fscore_support,
+)
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 
@@ -78,7 +82,9 @@ def load_existing_encodings(employee_id: str) -> np.ndarray:
     except FileNotFoundError:
         return np.empty((0, 0), dtype=np.float64)
     except InvalidToken:
-        logger.warning("Failed to decrypt encodings for %s due to invalid token.", employee_id)
+        logger.warning(
+            "Failed to decrypt encodings for %s due to invalid token.", employee_id
+        )
         return np.empty((0, 0), dtype=np.float64)
     except Exception as exc:  # pragma: no cover - defensive programming
         logger.error("Unexpected error loading encodings for %s: %s", employee_id, exc)
@@ -106,7 +112,9 @@ def compute_face_encoding(image_path: Path) -> np.ndarray | None:
     return np.array(embedding, dtype=np.float64)
 
 
-def save_employee_encodings(employee_id: str, encodings: Iterable[Sequence[float]]) -> None:
+def save_employee_encodings(
+    employee_id: str, encodings: Iterable[Sequence[float]]
+) -> None:
     """Persist the provided encodings for the employee."""
 
     encoding_array = np.atleast_2d(np.asarray(list(encodings), dtype=np.float64))
@@ -126,7 +134,9 @@ def _iter_all_employee_encodings() -> Iterable[tuple[str, np.ndarray]]:
     if not ENCODINGS_DIR.exists():
         return
 
-    for employee_dir in sorted(path for path in ENCODINGS_DIR.iterdir() if path.is_dir()):
+    for employee_dir in sorted(
+        path for path in ENCODINGS_DIR.iterdir() if path.is_dir()
+    ):
         employee_id = employee_dir.name
         encodings = load_existing_encodings(employee_id)
         if encodings.size == 0:
@@ -153,7 +163,10 @@ def _load_existing_model() -> SGDClassifier | None:
     if isinstance(model, SGDClassifier):
         return model
 
-    logger.info("Replacing non-incremental classifier %s with SGDClassifier.", type(model).__name__)
+    logger.info(
+        "Replacing non-incremental classifier %s with SGDClassifier.",
+        type(model).__name__,
+    )
     return None
 
 
@@ -246,7 +259,12 @@ def capture_dataset_sync(
             try:
                 encrypted_frame = encrypt_bytes(buffer.tobytes())
             except Exception as exc:  # pragma: no cover - defensive programming
-                logger.error("Failed to encrypt frame %s for %s: %s", sample_number, username, exc)
+                logger.error(
+                    "Failed to encrypt frame %s for %s: %s",
+                    sample_number,
+                    username,
+                    exc,
+                )
                 continue
 
             try:
@@ -280,9 +298,13 @@ def capture_dataset_sync(
 
     if enqueue_training and saved_paths:
         try:
-            incremental_face_training.delay(username, [str(path) for path in saved_paths])
+            incremental_face_training.delay(
+                username, [str(path) for path in saved_paths]
+            )
         except Exception as exc:  # pragma: no cover - defensive programming
-            logger.error("Failed to enqueue incremental training for %s: %s", username, exc)
+            logger.error(
+                "Failed to enqueue incremental training for %s: %s", username, exc
+            )
 
     return {
         "username": username,
@@ -295,11 +317,15 @@ def capture_dataset_sync(
 def train_model_sync(*, initiated_by: str | None = None) -> dict[str, Any]:
     """Run the full training workflow synchronously and return evaluation metrics."""
 
-    logger.info("Training workflow started%s.", f" by {initiated_by}" if initiated_by else "")
+    logger.info(
+        "Training workflow started%s.", f" by {initiated_by}" if initiated_by else ""
+    )
 
     image_paths = sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
     if not image_paths:
-        raise TrainingPreconditionError("No training data found. Add photos before training.")
+        raise TrainingPreconditionError(
+            "No training data found. Add photos before training."
+        )
 
     embedding_vectors: list[list[float]] = []
     class_names: list[str] = []
@@ -308,9 +334,13 @@ def train_model_sync(*, initiated_by: str | None = None) -> dict[str, Any]:
     detector_backend = _get_face_detection_backend()
 
     for image_path in image_paths:
-        embedding_array = _get_or_compute_cached_embedding(image_path, model_name, detector_backend)
+        embedding_array = _get_or_compute_cached_embedding(
+            image_path, model_name, detector_backend
+        )
         if embedding_array is None:
-            logger.debug("Skipping image %s because no embedding was produced.", image_path)
+            logger.debug(
+                "Skipping image %s because no embedding was produced.", image_path
+            )
             continue
 
         embedding_vectors.append(embedding_array.tolist())
@@ -337,7 +367,9 @@ def train_model_sync(*, initiated_by: str | None = None) -> dict[str, Any]:
         random_state=random_seed,
         stratify=class_names,
     )
-    logger.info("Data split: %d training samples, %d test samples.", len(X_train), len(X_test))
+    logger.info(
+        "Data split: %d training samples, %d test samples.", len(X_train), len(X_test)
+    )
 
     model = SVC(gamma="auto", probability=True, random_state=random_seed)
     model.fit(X_train, y_train)
@@ -390,7 +422,9 @@ def train_model_sync(*, initiated_by: str | None = None) -> dict[str, Any]:
 def capture_dataset(self, username: str) -> dict[str, Any]:
     """Celery task wrapper for :func:`capture_dataset_sync`."""
 
-    self.update_state(state="STARTED", meta={"username": username, "frames_captured": 0})
+    self.update_state(
+        state="STARTED", meta={"username": username, "frames_captured": 0}
+    )
     try:
         result = capture_dataset_sync(username)
     except Exception:
@@ -418,11 +452,15 @@ def train_recognition_model(self, initiated_by: str | None = None) -> dict[str, 
 
 
 @shared_task(bind=True, name="recognition.incremental_face_training")
-def incremental_face_training(self, employee_id: str, new_images: Sequence[str]) -> dict[str, Any]:
+def incremental_face_training(
+    self, employee_id: str, new_images: Sequence[str]
+) -> dict[str, Any]:
     """Incrementally update stored encodings and classifier for the employee."""
 
     if not new_images:
-        logger.debug("No new images supplied for %s; skipping incremental training.", employee_id)
+        logger.debug(
+            "No new images supplied for %s; skipping incremental training.", employee_id
+        )
         return {
             "employee_id": employee_id,
             "images_provided": 0,
@@ -430,7 +468,9 @@ def incremental_face_training(self, employee_id: str, new_images: Sequence[str])
         }
 
     logger.info(
-        "Starting incremental training for %s with %d images.", employee_id, len(new_images)
+        "Starting incremental training for %s with %d images.",
+        employee_id,
+        len(new_images),
     )
 
     new_vectors: list[np.ndarray] = []
@@ -443,7 +483,8 @@ def incremental_face_training(self, employee_id: str, new_images: Sequence[str])
 
     if not new_vectors:
         logger.info(
-            "No embeddings produced for %s; skipping persistence and training.", employee_id
+            "No embeddings produced for %s; skipping persistence and training.",
+            employee_id,
         )
         return {
             "employee_id": employee_id,
@@ -477,7 +518,9 @@ def incremental_face_training(self, employee_id: str, new_images: Sequence[str])
             labels.append(known_employee)
 
     if not features:
-        logger.warning("No encodings available after update; skipping classifier training.")
+        logger.warning(
+            "No encodings available after update; skipping classifier training."
+        )
         _dataset_embedding_cache.invalidate()
         return {
             "employee_id": employee_id,
@@ -553,7 +596,9 @@ async def process_single_attendance(record: Mapping[str, Any]) -> dict[str, Any]
     if not present_payload:
         return result
 
-    update_fn = update_attendance_in_db_in if direction == "in" else update_attendance_in_db_out
+    update_fn = (
+        update_attendance_in_db_in if direction == "in" else update_attendance_in_db_out
+    )
     update_async = sync_to_async(update_fn, thread_sensitive=True)
 
     try:
@@ -580,7 +625,10 @@ def process_attendance_batch(
         if normalized_records:
             raw_results = loop.run_until_complete(
                 asyncio.gather(
-                    *(process_single_attendance(record) for record in normalized_records),
+                    *(
+                        process_single_attendance(record)
+                        for record in normalized_records
+                    ),
                     return_exceptions=True,
                 )
             )

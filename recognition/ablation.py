@@ -67,22 +67,36 @@ def generate_ablation_configs() -> List[AblationConfig]:
     configs = []
 
     # Baseline configuration
-    configs.append(AblationConfig(detector="ssd", alignment=True, distance_metric="cosine"))
+    configs.append(
+        AblationConfig(detector="ssd", alignment=True, distance_metric="cosine")
+    )
 
     # Detector ablations
-    configs.append(AblationConfig(detector="opencv", alignment=True, distance_metric="cosine"))
-    configs.append(AblationConfig(detector="mtcnn", alignment=True, distance_metric="cosine"))
+    configs.append(
+        AblationConfig(detector="opencv", alignment=True, distance_metric="cosine")
+    )
+    configs.append(
+        AblationConfig(detector="mtcnn", alignment=True, distance_metric="cosine")
+    )
 
     # Alignment ablation
-    configs.append(AblationConfig(detector="ssd", alignment=False, distance_metric="cosine"))
+    configs.append(
+        AblationConfig(detector="ssd", alignment=False, distance_metric="cosine")
+    )
 
     # Distance metric ablations
-    configs.append(AblationConfig(detector="ssd", alignment=True, distance_metric="euclidean"))
-    configs.append(AblationConfig(detector="ssd", alignment=True, distance_metric="euclidean_l2"))
+    configs.append(
+        AblationConfig(detector="ssd", alignment=True, distance_metric="euclidean")
+    )
+    configs.append(
+        AblationConfig(detector="ssd", alignment=True, distance_metric="euclidean_l2")
+    )
 
     # Rebalancing ablation
     configs.append(
-        AblationConfig(detector="ssd", alignment=True, distance_metric="cosine", rebalancing=True)
+        AblationConfig(
+            detector="ssd", alignment=True, distance_metric="cosine", rebalancing=True
+        )
     )
 
     return configs
@@ -339,7 +353,9 @@ def generate_ablation_report(df: pd.DataFrame, output_path: Path) -> None:
         f.write("- Use **SSD or MTCNN** detector for best accuracy\n")
         f.write("- Keep **face alignment enabled** for robust recognition\n")
         f.write("- Use **cosine distance** as the primary metric\n")
-        f.write("- Consider **class rebalancing** if dealing with imbalanced enrollment data\n")
+        f.write(
+            "- Consider **class rebalancing** if dealing with imbalanced enrollment data\n"
+        )
 
 
 def compare_to_baselines(
@@ -363,7 +379,9 @@ def compare_to_baselines(
         f.write("|--------|----------|-------|\n")
 
         for method, result in baseline_results.items():
-            f.write(f"| {method} | {result['accuracy']:.4f} | {result.get('notes', '-')} |\n")
+            f.write(
+                f"| {method} | {result['accuracy']:.4f} | {result.get('notes', '-')} |\n"
+            )
 
         f.write("\n## Best Ablation Config vs Baselines\n\n")
         best_row = ablation_df.loc[ablation_df["accuracy"].idxmax()]

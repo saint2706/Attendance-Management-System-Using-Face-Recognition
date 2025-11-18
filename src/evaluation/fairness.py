@@ -14,13 +14,14 @@ from django.conf import settings
 from django.db.models import Count
 
 from src.evaluation.face_recognition_eval import (
+    UNKNOWN_LABEL,
     EvaluationConfig,
     EvaluationSummary,
     SampleEvaluation,
-    UNKNOWN_LABEL,
     compute_basic_metrics,
     run_face_recognition_evaluation,
 )
+
 logger = logging.getLogger(__name__)
 
 
@@ -111,8 +112,10 @@ def estimate_lighting_bucket(image_path: Path) -> str:
     """Return a coarse lighting bucket for the provided image path."""
 
     try:
-        from PIL import Image  # Imported lazily to avoid mandatory dependency during tests
         import numpy as np
+        from PIL import (
+            Image,
+        )  # Imported lazily to avoid mandatory dependency during tests
     except Exception:  # pragma: no cover - Pillow is part of runtime requirements
         return "unknown"
 
@@ -145,8 +148,11 @@ def _bucketize_role(user) -> str:
 def _resolve_user_contexts(usernames: Iterable[str]) -> Dict[str, SampleContext]:
     """Return cached metadata describing each username's grouping context."""
 
-    unique_usernames = sorted({name for name in usernames if name and name != UNKNOWN_LABEL})
+    unique_usernames = sorted(
+        {name for name in usernames if name and name != UNKNOWN_LABEL}
+    )
     from django.contrib.auth import get_user_model
+
     from users.models import RecognitionAttempt
 
     user_model = get_user_model()
@@ -223,7 +229,9 @@ def annotate_samples(samples: Sequence[SampleEvaluation]) -> List[AnnotatedSampl
                 username,
                 SampleContext(
                     username=username,
-                    role_bucket="unregistered" if username != UNKNOWN_LABEL else UNKNOWN_LABEL,
+                    role_bucket="unregistered"
+                    if username != UNKNOWN_LABEL
+                    else UNKNOWN_LABEL,
                     site_bucket="unspecified",
                     source_bucket="unspecified",
                     lighting_bucket="unknown",
@@ -318,7 +326,16 @@ def _write_summary_markdown(
             lines.append("No samples available for this grouping.")
             continue
 
-        headings = ["group", "samples", "accuracy", "precision", "recall", "f1", "far", "frr"]
+        headings = [
+            "group",
+            "samples",
+            "accuracy",
+            "precision",
+            "recall",
+            "f1",
+            "far",
+            "frr",
+        ]
         lines.append("| " + " | ".join(headings) + " |")
         lines.append("| " + " | ".join(["---"] * len(headings)) + " |")
         for row in metrics.rows:
@@ -372,7 +389,9 @@ def run_fairness_audit(config: FairnessAuditConfig) -> FairnessAuditResult:
         group_metrics[name] = GroupMetrics(name=name, rows=rows, csv_path=csv_path)
 
     summary_path = config.reports_dir / "summary.md"
-    _write_summary_markdown(summary=evaluation, group_metrics=group_metrics, output_path=summary_path)
+    _write_summary_markdown(
+        summary=evaluation, group_metrics=group_metrics, output_path=summary_path
+    )
 
     return FairnessAuditResult(
         evaluation=evaluation,

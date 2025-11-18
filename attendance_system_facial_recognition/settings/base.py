@@ -57,7 +57,9 @@ def _get_int_env(var_name: str, default: int) -> int:
     try:
         value = int(raw_value)
     except ValueError as exc:  # pragma: no cover - defensive programming
-        raise ImproperlyConfigured(f"{var_name} must be an integer if provided.") from exc
+        raise ImproperlyConfigured(
+            f"{var_name} must be an integer if provided."
+        ) from exc
     if value <= 0:
         raise ImproperlyConfigured(f"{var_name} must be a positive integer.")
     return value
@@ -73,7 +75,9 @@ def _parse_int_env(var_name: str, default: int, *, minimum: int | None = None) -
     try:
         value = int(raw_value)
     except ValueError as exc:  # pragma: no cover - defensive programming
-        raise ImproperlyConfigured(f"{var_name} must be an integer if provided.") from exc
+        raise ImproperlyConfigured(
+            f"{var_name} must be an integer if provided."
+        ) from exc
 
     if minimum is not None and value < minimum:
         raise ImproperlyConfigured(f"{var_name} must be >= {minimum} if provided.")
@@ -97,7 +101,9 @@ def _parse_int_env_with_aliases(
         try:
             value = int(raw_value)
         except ValueError as exc:  # pragma: no cover - defensive programming
-            raise ImproperlyConfigured(f"{candidate} must be an integer if provided.") from exc
+            raise ImproperlyConfigured(
+                f"{candidate} must be an integer if provided."
+            ) from exc
 
         if minimum is not None and value < minimum:
             raise ImproperlyConfigured(f"{candidate} must be >= {minimum} if provided.")
@@ -156,7 +162,10 @@ def _load_data_encryption_key() -> bytes:
         key_bytes = key.encode()
         try:
             Fernet(key_bytes)
-        except (ValueError, TypeError) as exc:  # pragma: no cover - defensive programming
+        except (
+            ValueError,
+            TypeError,
+        ) as exc:  # pragma: no cover - defensive programming
             raise ImproperlyConfigured(
                 "DATA_ENCRYPTION_KEY must be a valid 32-byte base64-encoded Fernet key."
             ) from exc
@@ -183,7 +192,10 @@ def _load_face_data_encryption_key() -> bytes:
         key_bytes = key.encode()
         try:
             Fernet(key_bytes)
-        except (ValueError, TypeError) as exc:  # pragma: no cover - defensive programming
+        except (
+            ValueError,
+            TypeError,
+        ) as exc:  # pragma: no cover - defensive programming
             raise ImproperlyConfigured(
                 "FACE_DATA_ENCRYPTION_KEY must be a valid 32-byte base64-encoded Fernet key."
             ) from exc
@@ -200,7 +212,9 @@ def _load_face_data_encryption_key() -> bytes:
 FACE_DATA_ENCRYPTION_KEY = _load_face_data_encryption_key()
 
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379/1")
+CELERY_RESULT_BACKEND = os.environ.get(
+    "CELERY_RESULT_BACKEND", "redis://localhost:6379/1"
+)
 
 LOCALHOST_ALIASES: tuple[str, ...] = ("localhost", "127.0.0.1", "[::1]")
 
@@ -381,7 +395,9 @@ WSGI_APPLICATION = "attendance_system_facial_recognition.wsgi.application"
 # --- Database Configuration ---
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-default_db_url = os.environ.get("DATABASE_URL", f"sqlite:///{(BASE_DIR / 'db.sqlite3').as_posix()}")
+default_db_url = os.environ.get(
+    "DATABASE_URL", f"sqlite:///{(BASE_DIR / 'db.sqlite3').as_posix()}"
+)
 
 conn_max_age_raw = os.environ.get("DATABASE_CONN_MAX_AGE")
 if conn_max_age_raw is None:
@@ -390,7 +406,9 @@ else:
     try:
         conn_max_age = int(conn_max_age_raw)
     except ValueError as exc:  # pragma: no cover - defensive programming
-        raise ImproperlyConfigured("DATABASE_CONN_MAX_AGE must be an integer if provided.") from exc
+        raise ImproperlyConfigured(
+            "DATABASE_CONN_MAX_AGE must be an integer if provided."
+        ) from exc
     if conn_max_age < 0:
         raise ImproperlyConfigured("DATABASE_CONN_MAX_AGE must be zero or positive.")
 
@@ -439,7 +457,9 @@ CACHES = {
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -516,7 +536,9 @@ SILENCED_SYSTEM_CHECKS = [
 # Threshold for accepting DeepFace matches when marking attendance.
 # Lower values (e.g., 0.3) mean stricter matching, while higher values (e.g., 0.5)
 # are more permissive. This can be overridden via an environment variable.
-RECOGNITION_DISTANCE_THRESHOLD = float(os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4"))
+RECOGNITION_DISTANCE_THRESHOLD = float(
+    os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4")
+)
 
 RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED = _get_bool_env(
     "RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED",
@@ -595,7 +617,9 @@ RECOGNITION_ATTENDANCE_RATE_LIMIT = os.environ.get(
 _attendance_methods = os.environ.get("RECOGNITION_ATTENDANCE_RATE_LIMIT_METHODS")
 if _attendance_methods:
     RECOGNITION_ATTENDANCE_RATE_LIMIT_METHODS = tuple(
-        method.strip().upper() for method in _attendance_methods.split(",") if method.strip()
+        method.strip().upper()
+        for method in _attendance_methods.split(",")
+        if method.strip()
     )
 else:
     RECOGNITION_ATTENDANCE_RATE_LIMIT_METHODS = ("POST",)

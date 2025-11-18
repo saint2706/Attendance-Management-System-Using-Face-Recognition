@@ -9,7 +9,6 @@ from typing import Iterable, Optional, Sequence
 import cv2
 import numpy as np
 
-
 ArrayLike = np.ndarray
 
 
@@ -55,7 +54,9 @@ class LivenessBuffer:
         return len(self._frames)
 
 
-def _crop_to_region(frame: ArrayLike, face_region: Optional[dict[str, int]]) -> ArrayLike:
+def _crop_to_region(
+    frame: ArrayLike, face_region: Optional[dict[str, int]]
+) -> ArrayLike:
     if not isinstance(face_region, dict):
         return frame
 

@@ -13,7 +13,9 @@ from django.test import TestCase, override_settings
 import numpy as np
 from cryptography.fernet import Fernet
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
+os.environ.setdefault(
+    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
+)
 
 _fake_cv2 = MagicMock(name="cv2")
 sys.modules.setdefault("cv2", _fake_cv2)
@@ -97,7 +99,10 @@ class DatasetEmbeddingCacheTests(TestCase):
         image_path = self._seed_dataset()
 
         dataset_index = [
-            {"identity": str(image_path), "embedding": np.array([0.3, 0.4], dtype=float)}
+            {
+                "identity": str(image_path),
+                "embedding": np.array([0.3, 0.4], dtype=float),
+            }
         ]
 
         with patch.object(
@@ -108,7 +113,9 @@ class DatasetEmbeddingCacheTests(TestCase):
         ):
             views._load_dataset_embeddings_for_matching("Facenet", "ssd", True)
 
-        cache_file = views._dataset_embedding_cache._cache_file_path("Facenet", "ssd", True)
+        cache_file = views._dataset_embedding_cache._cache_file_path(
+            "Facenet", "ssd", True
+        )
         self.assertTrue(cache_file.exists())
 
         encrypted_payload = cache_file.read_bytes()
@@ -128,7 +135,9 @@ class DatasetEmbeddingCacheTests(TestCase):
             "_build_dataset_embeddings_for_matching",
             side_effect=AssertionError("should not rebuild"),
         ):
-            round_tripped = views._load_dataset_embeddings_for_matching("Facenet", "ssd", True)
+            round_tripped = views._load_dataset_embeddings_for_matching(
+                "Facenet", "ssd", True
+            )
 
         self.assertEqual(len(round_tripped), 1)
         restored_embedding = round_tripped[0]["embedding"]

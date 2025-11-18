@@ -13,7 +13,9 @@ def _collect_index_names(model) -> set[str]:
     """Return the set of index names defined for the given model's table."""
 
     with connection.cursor() as cursor:
-        constraints = connection.introspection.get_constraints(cursor, model._meta.db_table)
+        constraints = connection.introspection.get_constraints(
+            cursor, model._meta.db_table
+        )
     return {name for name, info in constraints.items() if info.get("index")}
 
 
@@ -21,7 +23,9 @@ def _collect_index_names(model) -> set[str]:
 def test_present_lookups_by_user_and_date_succeed():
     """Filtering present records by user and date should return expected rows."""
 
-    user = get_user_model().objects.create_user(username="present-user", password="password123")
+    user = get_user_model().objects.create_user(
+        username="present-user", password="password123"
+    )
     today = timezone.localdate()
 
     Present.objects.create(user=user, date=today, present=True)
@@ -35,7 +39,9 @@ def test_present_lookups_by_user_and_date_succeed():
 def test_time_lookups_by_user_and_date_succeed():
     """Filtering time records by user and date should return expected rows."""
 
-    user = get_user_model().objects.create_user(username="time-user", password="password123")
+    user = get_user_model().objects.create_user(
+        username="time-user", password="password123"
+    )
     now = timezone.now()
     event_date = now.date()
 

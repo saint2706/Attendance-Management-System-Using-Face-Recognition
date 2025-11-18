@@ -28,7 +28,9 @@ class Command(BaseCommand):
         self.stdout.write("Running ablation experiments...")
 
         # Get test dataset (in production, this would load actual test data)
-        data_root = Path(settings.BASE_DIR) / "face_recognition_data" / "training_dataset"
+        data_root = (
+            Path(settings.BASE_DIR) / "face_recognition_data" / "training_dataset"
+        )
 
         if not data_root.exists():
             self.stdout.write(
@@ -49,7 +51,9 @@ class Command(BaseCommand):
         labels = [p.parent.name for p in image_paths]
 
         if len(image_paths) == 0:
-            self.stdout.write(self.style.ERROR("No images found. Cannot run ablation study."))
+            self.stdout.write(
+                self.style.ERROR("No images found. Cannot run ablation study.")
+            )
             return
 
         self.stdout.write(f"Running ablation on {len(image_paths)} images...")
@@ -64,5 +68,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("\n✓ Ablation experiments complete"))
         self.stdout.write("\nResults summary:")
         self.stdout.write(results_df.to_string(index=False))
-        self.stdout.write(f"\nDetailed results saved to: {reports_dir / 'ablation_results.csv'}")
+        self.stdout.write(
+            f"\nDetailed results saved to: {reports_dir / 'ablation_results.csv'}"
+        )
         self.stdout.write(f"Narrative report: {reports_dir / 'ABLATIONS.md'}")

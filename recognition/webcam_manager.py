@@ -83,7 +83,8 @@ class WebcamManager:
             latency = time.perf_counter() - start_time
             monitoring.record_camera_start(False, latency, error=str(exc))
             logger.exception(
-                "Webcam manager start failed", extra={"event": "webcam_start", "status": "failure"}
+                "Webcam manager start failed",
+                extra={"event": "webcam_start", "status": "failure"},
             )
             raise
         else:

@@ -67,7 +67,9 @@ class MetricsTest(TestCase):
 
     def test_calculate_verification_metrics(self):
         """Test comprehensive verification metrics calculation."""
-        metrics = calculate_verification_metrics(self.y_true, self.y_scores, threshold=0.5)
+        metrics = calculate_verification_metrics(
+            self.y_true, self.y_scores, threshold=0.5
+        )
 
         # Check required metrics exist
         required_metrics = [

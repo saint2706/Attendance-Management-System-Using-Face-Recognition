@@ -183,8 +183,12 @@ class RecognitionAttempt(models.Model):
     class Meta:
         ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=["site", "direction"], name="users_attempt_site_dir_idx"),
-            models.Index(fields=["user", "direction"], name="users_attempt_user_dir_idx"),
+            models.Index(
+                fields=["site", "direction"], name="users_attempt_site_dir_idx"
+            ),
+            models.Index(
+                fields=["user", "direction"], name="users_attempt_user_dir_idx"
+            ),
             models.Index(fields=["created_at"], name="users_attempt_created_idx"),
         ]
 

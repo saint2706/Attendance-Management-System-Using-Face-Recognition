@@ -4,7 +4,9 @@ from django.utils import timezone
 
 import pytest
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
+os.environ.setdefault(
+    "DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings"
+)
 
 import django  # noqa: E402
 

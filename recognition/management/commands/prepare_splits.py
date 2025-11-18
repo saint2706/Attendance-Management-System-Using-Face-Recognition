@@ -50,7 +50,9 @@ class Command(BaseCommand):
         self.stdout.write("Preparing dataset splits...")
 
         # Get training dataset root
-        data_root = Path(settings.BASE_DIR) / "face_recognition_data" / "training_dataset"
+        data_root = (
+            Path(settings.BASE_DIR) / "face_recognition_data" / "training_dataset"
+        )
 
         if not data_root.exists():
             self.stdout.write(
@@ -72,7 +74,9 @@ class Command(BaseCommand):
 
         if len(image_paths) == 0:
             self.stdout.write(
-                self.style.ERROR("No images found in training dataset. Cannot create splits.")
+                self.style.ERROR(
+                    "No images found in training dataset. Cannot create splits."
+                )
             )
             return
 
@@ -92,7 +96,9 @@ class Command(BaseCommand):
             reports_dir = Path(settings.BASE_DIR) / "reports"
             reports_dir.mkdir(exist_ok=True)
 
-            save_splits_to_csv(train_paths, val_paths, test_paths, reports_dir / "splits.csv")
+            save_splits_to_csv(
+                train_paths, val_paths, test_paths, reports_dir / "splits.csv"
+            )
             save_split_summary_json(split_info, reports_dir / "split_summary.json")
 
             self.stdout.write(self.style.SUCCESS("✓ Splits saved successfully"))

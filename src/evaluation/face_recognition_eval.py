@@ -11,12 +11,22 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
+from django.conf import settings
+
 import matplotlib.pyplot as plt
 import numpy as np
-from django.conf import settings
-from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+)
 
-from recognition.pipeline import find_closest_dataset_match, is_within_distance_threshold
+from recognition.pipeline import (
+    find_closest_dataset_match,
+    is_within_distance_threshold,
+)
 
 from . import UNKNOWN_LABEL
 
@@ -179,13 +189,17 @@ def _resolve_image_paths(config: EvaluationConfig) -> List[Path]:
         image_paths = image_paths[: config.limit_samples]
 
     if not image_paths:
-        raise RuntimeError("No evaluation images found. Ensure the dataset exists or split CSV is populated.")
+        raise RuntimeError(
+            "No evaluation images found. Ensure the dataset exists or split CSV is populated."
+        )
 
     logger.info("Prepared %s evaluation samples", len(image_paths))
     return image_paths
 
 
-def _load_dataset_index(views_module, model_name: str, detector_backend: str, enforce_detection: bool):
+def _load_dataset_index(
+    views_module, model_name: str, detector_backend: str, enforce_detection: bool
+):
     """Return the cached dataset index used during recognition."""
 
     return views_module._load_dataset_embeddings_for_matching(  # type: ignore[attr-defined]
@@ -222,7 +236,9 @@ def _infer_samples(
         distance: Optional[float] = None
 
         if embedding is not None:
-            match = find_closest_dataset_match(embedding, dataset_index, distance_metric)
+            match = find_closest_dataset_match(
+                embedding, dataset_index, distance_metric
+            )
             if match is not None:
                 match_username = match[0] or None
                 distance = float(match[1]) if match[1] is not None else None
@@ -251,18 +267,24 @@ def _sorted_labels(y_true: Sequence[str], y_pred: Sequence[str]) -> List[str]:
     return labels
 
 
-def _calculate_far_frr(y_true: Sequence[str], y_pred: Sequence[str]) -> Tuple[float, float]:
+def _calculate_far_frr(
+    y_true: Sequence[str], y_pred: Sequence[str]
+) -> Tuple[float, float]:
     """Calculate the False Acceptance and False Rejection rates."""
 
     total_genuine = sum(1 for truth in y_true if truth != UNKNOWN_LABEL)
     false_rejects = sum(
-        1 for truth, pred in zip(y_true, y_pred) if truth != UNKNOWN_LABEL and truth != pred
+        1
+        for truth, pred in zip(y_true, y_pred)
+        if truth != UNKNOWN_LABEL and truth != pred
     )
     frr = false_rejects / total_genuine if total_genuine else 0.0
 
     total_impostor = sum(1 for truth in y_true if truth == UNKNOWN_LABEL)
     false_accepts = sum(
-        1 for truth, pred in zip(y_true, y_pred) if truth == UNKNOWN_LABEL and pred != UNKNOWN_LABEL
+        1
+        for truth, pred in zip(y_true, y_pred)
+        if truth == UNKNOWN_LABEL and pred != UNKNOWN_LABEL
     )
     far = false_accepts / total_impostor if total_impostor else 0.0
 
@@ -282,8 +304,12 @@ def compute_basic_metrics(
     labels = _sorted_labels(y_true, y_pred)
 
     accuracy = accuracy_score(y_true, y_pred)
-    precision = precision_score(y_true, y_pred, labels=labels, average="macro", zero_division=0)
-    recall = recall_score(y_true, y_pred, labels=labels, average="macro", zero_division=0)
+    precision = precision_score(
+        y_true, y_pred, labels=labels, average="macro", zero_division=0
+    )
+    recall = recall_score(
+        y_true, y_pred, labels=labels, average="macro", zero_division=0
+    )
     f1 = f1_score(y_true, y_pred, labels=labels, average="macro", zero_division=0)
     far, frr = _calculate_far_frr(y_true, y_pred)
     unknown_predictions = sum(1 for label in y_pred if label == UNKNOWN_LABEL)
@@ -320,10 +346,16 @@ def compute_threshold_sweep(
 def _save_metrics_json(metrics: Dict[str, float], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
-        json.dump({"generated_at": datetime.utcnow().isoformat(), "metrics": metrics}, handle, indent=2)
+        json.dump(
+            {"generated_at": datetime.utcnow().isoformat(), "metrics": metrics},
+            handle,
+            indent=2,
+        )
 
 
-def _save_samples_csv(samples: Sequence[SampleEvaluation], threshold: float, path: Path) -> None:
+def _save_samples_csv(
+    samples: Sequence[SampleEvaluation], threshold: float, path: Path
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     rows = [sample.to_row(threshold) for sample in samples]
     fieldnames = list(rows[0].keys()) if rows else []
@@ -361,7 +393,9 @@ def _save_confusion_outputs(
     plt.close()
 
 
-def _save_threshold_sweep_outputs(rows: Sequence[Dict[str, float]], csv_path: Path, png_path: Path) -> None:
+def _save_threshold_sweep_outputs(
+    rows: Sequence[Dict[str, float]], csv_path: Path, png_path: Path
+) -> None:
     csv_path.parent.mkdir(parents=True, exist_ok=True)
     if not rows:
         return
@@ -451,7 +485,9 @@ def run_face_recognition_evaluation(config: EvaluationConfig) -> EvaluationSumma
     )
 
     image_paths = _resolve_image_paths(config)
-    dataset_index = _load_dataset_index(views_module, model_name, detector_backend, enforce_detection)
+    dataset_index = _load_dataset_index(
+        views_module, model_name, detector_backend, enforce_detection
+    )
     samples = _infer_samples(
         image_paths,
         dataset_index,
@@ -489,7 +525,9 @@ def run_face_recognition_evaluation(config: EvaluationConfig) -> EvaluationSumma
 def build_argument_parser() -> argparse.ArgumentParser:
     """Return an argument parser for CLI execution."""
 
-    parser = argparse.ArgumentParser(description="Evaluate the face-recognition pipeline")
+    parser = argparse.ArgumentParser(
+        description="Evaluate the face-recognition pipeline"
+    )
     parser.add_argument(
         "--split-csv",
         type=Path,

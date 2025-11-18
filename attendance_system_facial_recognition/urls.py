@@ -58,9 +58,21 @@ urlpatterns = [
         recog_admin_views.evaluation_dashboard,
         name="admin_evaluation_dashboard",
     ),
-    path("admin/ablation/", recog_admin_views.ablation_results, name="admin_ablation_results"),
-    path("admin/failures/", recog_admin_views.failure_analysis, name="admin_failure_analysis"),
-    path("admin/health/", recog_admin_views.system_health_dashboard, name="admin_system_health"),
+    path(
+        "admin/ablation/",
+        recog_admin_views.ablation_results,
+        name="admin_ablation_results",
+    ),
+    path(
+        "admin/failures/",
+        recog_admin_views.failure_analysis,
+        name="admin_failure_analysis",
+    ),
+    path(
+        "admin/health/",
+        recog_admin_views.system_health_dashboard,
+        name="admin_system_health",
+    ),
     # Core pages
     path("", recog_views.home, name="home"),
     path("dashboard/", recog_views.dashboard, name="dashboard"),
@@ -101,7 +113,9 @@ urlpatterns = [
         recog_views.enqueue_attendance_batch,
         name="attendance-batch",
     ),
-    path("monitoring/metrics/", recog_views.monitoring_metrics, name="monitoring-metrics"),
+    path(
+        "monitoring/metrics/", recog_views.monitoring_metrics, name="monitoring-metrics"
+    ),
     # Attendance Viewing
     path(
         "view_attendance_home",

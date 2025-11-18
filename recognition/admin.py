@@ -9,7 +9,14 @@ from .models import RecognitionOutcome
 class RecognitionOutcomeAdmin(admin.ModelAdmin):
     """Expose persisted recognition outcomes for auditing."""
 
-    list_display = ("created_at", "username", "direction", "accepted", "confidence", "source")
+    list_display = (
+        "created_at",
+        "username",
+        "direction",
+        "accepted",
+        "confidence",
+        "source",
+    )
     list_filter = ("accepted", "direction", "source")
     search_fields = ("username", "source")
     ordering = ("-created_at",)

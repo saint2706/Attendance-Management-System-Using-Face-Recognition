@@ -83,9 +83,11 @@ def _patch_dataset_root(dataset_root: Path) -> None:
 
     recognition_views.DATA_ROOT = dataset_root.parent
     recognition_views.TRAINING_DATASET_ROOT = dataset_root
-    recognition_views._dataset_embedding_cache = recognition_views.DatasetEmbeddingCache(
-        recognition_views.TRAINING_DATASET_ROOT,
-        recognition_views.DATA_ROOT,
+    recognition_views._dataset_embedding_cache = (
+        recognition_views.DatasetEmbeddingCache(
+            recognition_views.TRAINING_DATASET_ROOT,
+            recognition_views.DATA_ROOT,
+        )
     )
 
 
@@ -133,7 +135,10 @@ def main(argv: Optional[list[str]] = None) -> int:
     _patch_dataset_root(dataset_root)
 
     from src.common.seeding import set_global_seed
-    from src.evaluation.face_recognition_eval import EvaluationConfig, run_face_recognition_evaluation
+    from src.evaluation.face_recognition_eval import (
+        EvaluationConfig,
+        run_face_recognition_evaluation,
+    )
 
     set_global_seed(args.seed)
 

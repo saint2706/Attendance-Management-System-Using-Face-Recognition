@@ -34,7 +34,9 @@ def _get_sample_rate(var_name: str, default: float) -> float:
             f"{var_name} must be a floating point number between 0.0 and 1.0."
         ) from exc
     if not 0.0 <= value <= 1.0:
-        raise ImproperlyConfigured(f"{var_name} must be between 0.0 and 1.0 when provided.")
+        raise ImproperlyConfigured(
+            f"{var_name} must be between 0.0 and 1.0 when provided."
+        )
     return value
 
 
@@ -53,9 +55,13 @@ def initialize_sentry() -> None:
     if not dsn:
         return
 
-    send_default_pii = base_settings._get_bool_env("SENTRY_SEND_DEFAULT_PII", default=False)
+    send_default_pii = base_settings._get_bool_env(
+        "SENTRY_SEND_DEFAULT_PII", default=False
+    )
 
-    def _before_send(event: dict[str, Any], _hint: object | None) -> dict[str, Any] | None:
+    def _before_send(
+        event: dict[str, Any], _hint: object | None
+    ) -> dict[str, Any] | None:
         request = event.get("request")
         if isinstance(request, dict):
             headers = request.get("headers")

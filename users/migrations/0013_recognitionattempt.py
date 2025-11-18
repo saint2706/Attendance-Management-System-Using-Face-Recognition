@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("users", "0012_add_attendance_indexes"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -19,7 +18,10 @@ class Migration(migrations.Migration):
                 (
                     "id",
                     models.BigAutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
                     ),
                 ),
                 (
@@ -33,7 +35,8 @@ class Migration(migrations.Migration):
                 (
                     "updated_at",
                     models.DateTimeField(
-                        auto_now=True, help_text="Timestamp for the last update to this record."
+                        auto_now=True,
+                        help_text="Timestamp for the last update to this record.",
                     ),
                 ),
                 (
@@ -78,7 +81,8 @@ class Migration(migrations.Migration):
                 (
                     "spoof_detected",
                     models.BooleanField(
-                        default=False, help_text="True when anti-spoofing blocked the attempt."
+                        default=False,
+                        help_text="True when anti-spoofing blocked the attempt.",
                     ),
                 ),
                 (
@@ -92,7 +96,8 @@ class Migration(migrations.Migration):
                 (
                     "error_message",
                     models.TextField(
-                        blank=True, help_text="Optional diagnostic information describing failures."
+                        blank=True,
+                        help_text="Optional diagnostic information describing failures.",
                     ),
                 ),
                 (
@@ -132,9 +137,15 @@ class Migration(migrations.Migration):
             options={
                 "ordering": ["-created_at"],
                 "indexes": [
-                    models.Index(fields=["site", "direction"], name="users_attempt_site_dir_idx"),
-                    models.Index(fields=["user", "direction"], name="users_attempt_user_dir_idx"),
-                    models.Index(fields=["created_at"], name="users_attempt_created_idx"),
+                    models.Index(
+                        fields=["site", "direction"], name="users_attempt_site_dir_idx"
+                    ),
+                    models.Index(
+                        fields=["user", "direction"], name="users_attempt_user_dir_idx"
+                    ),
+                    models.Index(
+                        fields=["created_at"], name="users_attempt_created_idx"
+                    ),
                 ],
             },
         ),

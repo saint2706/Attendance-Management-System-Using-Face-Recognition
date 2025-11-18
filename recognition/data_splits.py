@@ -44,7 +44,9 @@ def create_stratified_splits(
         where split_info_dict contains metadata about the splits
     """
     if not np.isclose(train_ratio + val_ratio + test_ratio, 1.0):
-        raise ValueError(f"Ratios must sum to 1.0, got {train_ratio + val_ratio + test_ratio}")
+        raise ValueError(
+            f"Ratios must sum to 1.0, got {train_ratio + val_ratio + test_ratio}"
+        )
 
     # Group images by person (parent directory name)
     person_to_images = {}
@@ -56,7 +58,9 @@ def create_stratified_splits(
 
     persons = list(person_to_images.keys())
     if len(persons) < 3:
-        raise ValueError(f"Need at least 3 persons for train/val/test splits, found {len(persons)}")
+        raise ValueError(
+            f"Need at least 3 persons for train/val/test splits, found {len(persons)}"
+        )
 
     # First split: train vs (val + test)
     train_persons, temp_persons = train_test_split(

@@ -58,7 +58,10 @@ def test_calculate_embedding_distance_cosine_handles_zero_vectors() -> None:
     zero_vector = np.zeros(3, dtype=float)
     other_vector = np.array([1.0, 2.0, 3.0], dtype=float)
 
-    assert pipeline.calculate_embedding_distance(zero_vector, other_vector, "cosine") is None
+    assert (
+        pipeline.calculate_embedding_distance(zero_vector, other_vector, "cosine")
+        is None
+    )
 
 
 def test_find_closest_dataset_match_returns_best_candidate() -> None:
@@ -66,8 +69,16 @@ def test_find_closest_dataset_match_returns_best_candidate() -> None:
 
     probe = np.array([0.9, 0.1], dtype=float)
     dataset = [
-        {"username": "alice", "identity": "dataset/alice/1.jpg", "embedding": np.array([0.0, 1.0])},
-        {"username": "bob", "identity": "dataset/bob/1.jpg", "embedding": np.array([1.0, 0.0])},
+        {
+            "username": "alice",
+            "identity": "dataset/alice/1.jpg",
+            "embedding": np.array([0.0, 1.0]),
+        },
+        {
+            "username": "bob",
+            "identity": "dataset/bob/1.jpg",
+            "embedding": np.array([1.0, 0.0]),
+        },
     ]
 
     username, distance, identity = pipeline.find_closest_dataset_match(

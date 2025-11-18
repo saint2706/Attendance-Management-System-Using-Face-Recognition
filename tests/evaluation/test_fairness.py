@@ -5,10 +5,17 @@ from pathlib import Path
 from PIL import Image
 
 from src.evaluation.face_recognition_eval import SampleEvaluation
-from src.evaluation.fairness import AnnotatedSample, SampleContext, compute_group_metrics, estimate_lighting_bucket
+from src.evaluation.fairness import (
+    AnnotatedSample,
+    SampleContext,
+    compute_group_metrics,
+    estimate_lighting_bucket,
+)
 
 
-def create_sample(tmp_path: Path, username: str, *, match: str | None, distance: float | None) -> SampleEvaluation:
+def create_sample(
+    tmp_path: Path, username: str, *, match: str | None, distance: float | None
+) -> SampleEvaluation:
     user_dir = tmp_path / username
     user_dir.mkdir(parents=True, exist_ok=True)
     image_path = user_dir / "sample.jpg"
