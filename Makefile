@@ -59,9 +59,9 @@ train:
 
 # Run evaluation and generate metrics
 evaluate:
-	@echo "Running evaluation and generating metrics..."
-	python manage.py eval
-	@echo "Evaluation complete."
+@echo "Running evaluation and generating metrics..."
+python manage.py eval --split-csv reports/splits.csv
+@echo "Evaluation complete."
 
 # Run ablation experiments
 ablation:
@@ -85,11 +85,11 @@ clean:
 
 # Full reproducibility workflow: seed, prepare data, run evaluation, produce artifacts
 reproduce: setup
-	@echo "=== Running reproducibility workflow ==="
-	@echo "Step 1: Preparing sample dataset and splits..."
-	python manage.py prepare_splits
-	@echo "Step 2: Running evaluation with fixed seed..."
-	python manage.py eval
+@echo "=== Running reproducibility workflow ==="
+@echo "Step 1: Preparing sample dataset and splits..."
+python manage.py prepare_splits
+@echo "Step 2: Running evaluation with fixed seed..."
+python manage.py eval --split-csv reports/splits.csv
 	@echo "Step 3: Generating reports..."
 	python manage.py export_reports
 	@echo "=== Reproducibility workflow complete ==="
