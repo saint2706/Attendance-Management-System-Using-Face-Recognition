@@ -83,15 +83,9 @@ clean:
 	rm -rf htmlcov .coverage .pytest_cache
 	@echo "Cleanup complete."
 
-# Full reproducibility workflow: seed, prepare data, run evaluation, produce artifacts
-reproduce: setup
-@echo "=== Running reproducibility workflow ==="
-@echo "Step 1: Preparing sample dataset and splits..."
-python manage.py prepare_splits
-@echo "Step 2: Running evaluation with fixed seed..."
-python manage.py eval --split-csv reports/splits.csv
-	@echo "Step 3: Generating reports..."
-	python manage.py export_reports
+# Full reproducibility workflow: run the synthetic dataset evaluation
+reproduce:
+	@echo "=== Running sample-data reproducibility workflow ==="
+	python scripts/reproduce_sample_results.py
 	@echo "=== Reproducibility workflow complete ==="
-	@echo "Artifacts available in reports/ directory."
-	@echo "You can now run the server with 'make run'."
+	@echo "Artifacts available in reports/sample_repro/."

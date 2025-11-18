@@ -112,6 +112,8 @@ The project is organized into the following directories:
 -   `recognition`: The Django app that handles face recognition and attendance tracking.
 -   `users`: The Django app that handles user management.
 -   `face_recognition_data`: The directory where the face recognition data is stored.
+-   `sample_data`: A fully synthetic dataset with three demo identities. It mirrors the `face_recognition_data/training_dataset/`
+    layout so you can run the evaluation suite without encrypted production assets.
 
 ## 3. Architecture Overview
 
@@ -144,6 +146,15 @@ Key options:
 - `--threshold-start/stop/step`: Configure the sweep range for FAR/FRR vs threshold plots.
 - `--max-samples`: Quickly smoke-test the pipeline by limiting the number of processed images.
 - `--reports-dir`: Customise where artifacts such as `metrics_summary.json`, `confusion_matrix.png`, and `threshold_sweep.csv` are saved.
+
+For reviewers, the quickest path is to reuse the sample dataset:
+
+```bash
+python scripts/reproduce_sample_results.py  # equivalent to `make reproduce`
+```
+
+The script patches the dataset root in-memory so production deployments remain untouched. Pass `--dataset-root` and `--split-csv`
+to point the same workflow at real encrypted datasets once they are available locally.
 
 ### Threshold Selection
 
@@ -198,6 +209,7 @@ The project includes a comprehensive `Makefile` for common development tasks.
 -   `make evaluate`: Run performance evaluation with metrics
 -   `make ablation`: Run ablation experiments
 -   `make report`: Generate comprehensive reports
+-   `make reproduce`: Evaluate the bundled synthetic dataset and place deterministic artifacts in `reports/sample_repro/`
 
 ## 6. API Reference
 
