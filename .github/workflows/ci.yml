@@ -15,9 +15,6 @@ on:
       - "pyproject.toml"
       - "pytest.ini"
       - ".github/workflows/ci.yml"
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
   pull_request:
     branches: ["main"]
     paths:
@@ -31,10 +28,6 @@ on:
       - "requirements*.txt"
       - "pyproject.toml"
       - "pytest.ini"
-      - ".github/workflows/ci.yml"
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
   workflow_dispatch:
 
 permissions:
