@@ -86,6 +86,10 @@ jobs:
         run: |
           python manage.py migrate --noinput
 
+      - name: Collect static files
+        run: |
+          python manage.py collectstatic --noinput
+
       - name: Django deploy checks
         env:
           DJANGO_DEBUG: "0"

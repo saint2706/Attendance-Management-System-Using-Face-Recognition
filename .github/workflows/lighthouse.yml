@@ -56,6 +56,9 @@ jobs:
       - name: Apply database migrations
         run: python manage.py migrate --noinput
 
+      - name: Collect static files
+        run: python manage.py collectstatic --noinput
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

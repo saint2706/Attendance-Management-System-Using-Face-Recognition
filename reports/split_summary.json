@@ -1,0 +1,30 @@
+{
+  "total_images": 30,
+  "total_persons": 3,
+  "train": {
+    "images": 20,
+    "persons": 2,
+    "person_names": [
+      "user2",
+      "user3"
+    ]
+  },
+  "val": {
+    "images": 10,
+    "persons": 1,
+    "person_names": [
+      "user1"
+    ]
+  },
+  "test": {
+    "images": 0,
+    "persons": 0,
+    "person_names": []
+  },
+  "ratios": {
+    "train": 0.7,
+    "val": 0.15,
+    "test": 0.15
+  },
+  "random_state": 42
+}
