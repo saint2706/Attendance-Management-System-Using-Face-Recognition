@@ -1,6 +1,6 @@
 # User Guide
 
-This guide provides a comprehensive walkthrough of the Smart Attendance System, designed for non-technical users. It covers everything from logging in to interpreting attendance reports.
+This guide provides a comprehensive walkthrough of the Attendance Management System Using Face Recognition, designed for non-technical users. It covers everything from logging in to interpreting attendance reports.
 
 ## 1. Core Concepts
 
@@ -38,8 +38,7 @@ This guide provides a comprehensive walkthrough of the Smart Attendance System, 
 
 1.  Log in to your admin dashboard.
 2.  Click on **Register Employee**.
-3.  Fill in the new employee's details and click **Register**.
-    [NEW SCREENSHOT: Employee Registration Form]
+3.  Fill in the new employee's details (username, full name, role, and department) and click **Register**. The form validates duplicates automatically and prompts you to upload profile photos during the next step.
 
 #### Adding Employee Photos
 
@@ -86,6 +85,8 @@ The command reuses the live recognition engine to process the encrypted image da
 - `threshold_sweep.csv` / `.png` – plots how FAR, FRR, accuracy, and F1 change as you tighten or loosen the distance threshold.
 
 Use these reports to fine-tune thresholds before rolling changes into production or to document the system's performance for compliance reviews.
+
+> **How to read the distance column:** The evaluator stores cosine distance for every prediction using `sim(A, B) = (A · B) / (||A|| ||B||)` and `d(A, B) = 1 − sim(A, B)`. Lower values mean the faces are more similar. The live service accepts a match when `d(A, B) ≤ 0.4`, and the threshold sweep demonstrates how FAR increases and FRR decreases as you relax that bound. Review the CSV/PNG outputs when deciding whether to tighten or loosen the threshold for your deployment.
 
 > **Tip for reviewers:** The repository includes a `sample_data/` directory with three synthetic identities so you can rehearse the full workflow without using production assets. Running `make reproduce` will point the evaluation pipeline at that demo dataset and deposit artifacts under `reports/sample_repro/`.
 

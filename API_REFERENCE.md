@@ -1,6 +1,6 @@
 # API Reference
 
-This document provides detailed information about the API endpoints available in the Smart Attendance System. These endpoints are designed for programmatic access to the face recognition and attendance marking functionalities.
+This document provides detailed information about the API endpoints available in the Attendance Management System Using Face Recognition. These endpoints are designed for programmatic access to the face recognition and attendance marking functionalities.
 
 ---
 
@@ -35,7 +35,7 @@ A successful request returns a JSON object with the recognition result.
 {
     "recognized": true,
     "threshold": 0.4,
-    "distance_metric": "euclidean_l2",
+    "distance_metric": "cosine",
     "distance": 0.2345,
     "identity": "/path/to/dataset/john_doe/image1.jpg",
     "username": "john_doe"
@@ -44,11 +44,18 @@ A successful request returns a JSON object with the recognition result.
 
 - **`recognized` (boolean):** `true` if the face matches an enrolled employee within the distance threshold, `false` otherwise.
 - **`threshold` (float):** The distance threshold used for the comparison.
-- **`distance_metric` (string):** The metric used to calculate the distance between embeddings.
-- **`distance` (float):** The calculated distance to the closest match. Only present if a match is found.
+- **`distance_metric` (string):** The metric used to calculate the distance between embeddings. The service defaults to cosine distance.
+- **`distance` (float):** The calculated cosine distance to the closest match. Only present if a match is found.
 - **`identity` (string):** The path to the matched image in the dataset. Only present if a match is found.
 - **`username` (string):** The username of the matched employee. Only present if a match is found.
 - **`spoofed` (boolean):** `true` if a liveness check was performed and failed, indicating a potential spoofing attempt.
+
+Cosine similarity drives the `distance` value reported above:
+
+- `sim(A, B) = (A · B) / (||A|| ||B||)`
+- `d(A, B) = 1 − sim(A, B)`
+
+A prediction is accepted when `distance ≤ threshold` (default `0.4`); higher values trigger secondary verification or rejection through the policy engine.
 
 #### Error Responses
 

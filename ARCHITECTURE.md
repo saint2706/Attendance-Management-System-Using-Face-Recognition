@@ -203,8 +203,8 @@ Face Recognition
     |
     v
 +-------------------+
-| Similarity Score  |
-| (0.0 - 1.0)       |
+| Cosine Distance   |
+| d = 1 - sim(A, B) |
 +-------------------+
     |
     v
@@ -213,18 +213,18 @@ Face Recognition
 | (policy.yaml)     |
 +-------------------+
     |
-    +--> Score >= 0.80 --> Confident Accept --> Mark Attendance Immediately
+    +--> d ≤ 0.30 ---------> Confident Accept --> Mark Attendance Immediately
     |
-    +--> 0.50 <= Score < 0.80 --> Uncertain --> Request PIN/OTP
+    +--> 0.30 < d ≤ 0.45 --> Secondary Check --> Request PIN/OTP
     |
-    +--> Score < 0.50 --> Reject --> Notify User, Suggest Re-enrollment
+    +--> d > 0.45 --------> Reject -----------> Notify User, Suggest Re-enrollment
 ```
 
 **Benefits:**
-- Reduces false accepts through secondary verification
-- Improves user experience for edge cases
-- Provides clear guidance to users
-- Configurable thresholds per deployment
+- Reduces false accepts through secondary verification while keeping the cosine-distance math transparent (`sim(A, B) = (A · B) / (||A|| ||B||)` and `d(A, B) = 1 − sim(A, B)`).
+- Improves user experience for edge cases by treating distance bands consistently.
+- Provides clear guidance to users.
+- Configurable thresholds per deployment via `RECOGNITION_DISTANCE_THRESHOLD` and `configs/policy.yaml`.
 
 ### 5.2 CLI Prediction Tool
 
@@ -314,8 +314,16 @@ Face Recognition Data --> prepare_splits --> Train/Val/Test Splits
                     Metrics Calculation    Visualizations            Failure Analysis
                           |                       |                          |
                           v                       v                          v
-                    metrics_with_ci.md      figures/*.png              FAILURES.md
+                    metrics_summary.json    threshold_sweep.csv       sample_predictions.csv
+                                             confusion_matrix.png     fairness/summary.md
 ```
+
+**Execution path:**
+
+1. `python manage.py prepare_splits --seed 42` writes `reports/splits.csv` so every run evaluates the same hold-out identities.
+2. `python manage.py eval --split-csv reports/splits.csv` (or `make evaluate`) reuses the live recognition stack to measure accuracy, precision/recall, macro F1, FAR, FRR, and cosine-distance sweeps.
+3. Artifacts land in `reports/evaluation/` (`metrics_summary.json`, `sample_predictions.csv`, `confusion_matrix.csv/.png`, `threshold_sweep.csv/.png`).
+4. Optional: `python manage.py fairness_audit` and `python manage.py evaluate_liveness` append subgroup stats and spoof metrics to `reports/fairness/` and `reports/liveness/` respectively so QA reviewers can trace every claim back to a script.
 
 ## 7. Extended Architecture Diagram
 
@@ -374,11 +382,12 @@ Face Recognition Data --> prepare_splits --> Train/Val/Test Splits
                                        |
               +------------------------v---------------------+
               |              reports/                        |
-              |  - metrics_with_ci.md                        |
-              |  - FAILURES.md                               |
-              |  - ABLATIONS.md                              |
-              |  - figures/ (ROC, PR, DET, Calibration)     |
-              |  - *.csv (failure cases, subgroup metrics)   |
+              |  - evaluation/metrics_summary.json           |
+              |  - evaluation/sample_predictions.csv         |
+              |  - evaluation/confusion_matrix.{csv,png}     |
+              |  - evaluation/threshold_sweep.{csv,png}      |
+              |  - fairness/summary.md                       |
+              |  - liveness/summary.md                       |
               +----------------------------------------------+
 ```
 
@@ -405,10 +414,13 @@ attendance_system_facial_recognition/  (Project Root)
 │   └── policy.yaml                   (Action bands)
 │
 └── reports/                          (Generated Artifacts)
-    ├── metrics_with_ci.md
-    ├── FAILURES.md
-    ├── ABLATIONS.md
-    └── figures/
+    ├── evaluation/
+    │   ├── metrics_summary.json
+    │   ├── sample_predictions.csv
+    │   ├── confusion_matrix.{csv,png}
+    │   └── threshold_sweep.{csv,png}
+    ├── fairness/summary.md
+    └── liveness/summary.md
 ```
 
 ## 9. Technology Stack Update
