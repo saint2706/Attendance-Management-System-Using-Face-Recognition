@@ -11,7 +11,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recogn
 
 import django  # noqa: E402
 
-django.setup()
+# Only setup Django if it hasn't been configured yet (e.g., running standalone)
+if not django.apps.apps.ready:
+    django.setup()
 
 from django.contrib.auth import get_user_model  # noqa: E402
 from django.contrib.auth.models import Group  # noqa: E402

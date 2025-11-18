@@ -18,7 +18,9 @@ import numpy as np
 from cryptography.fernet import Fernet
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
-django.setup()
+# Only setup Django if it hasn't been configured yet (e.g., running standalone)
+if not django.apps.apps.ready:
+    django.setup()
 
 from django.contrib.auth.models import User  # noqa: E402
 

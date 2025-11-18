@@ -18,7 +18,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recogn
 _fake_cv2 = MagicMock(name="cv2")
 sys.modules.setdefault("cv2", _fake_cv2)
 
-django.setup()
+# Only setup Django if it hasn't been configured yet (e.g., running standalone)
+if not django.apps.apps.ready:
+    django.setup()
 
 from recognition import views  # noqa: E402
 from src.common import FaceDataEncryption  # noqa: E402
