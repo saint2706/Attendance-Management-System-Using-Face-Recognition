@@ -1,0 +1,10 @@
+index,split,person,image_path
+0,test,user_001,user_001/user_001_frame_01.jpg
+1,test,user_001,user_001/user_001_frame_02.jpg
+2,test,user_001,user_001/user_001_frame_03.jpg
+3,test,user_002,user_002/user_002_frame_01.jpg
+4,test,user_002,user_002/user_002_frame_02.jpg
+5,test,user_002,user_002/user_002_frame_03.jpg
+6,test,user_003,user_003/user_003_frame_01.jpg
+7,test,user_003,user_003/user_003_frame_02.jpg
+8,test,user_003,user_003/user_003_frame_03.jpg

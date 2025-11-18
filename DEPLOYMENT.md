@@ -74,3 +74,13 @@ The application will be available at `http://localhost:8000`.
 ## 5. PWA and Service Worker
 
 The application is a Progressive Web App (PWA) and uses a service worker to cache assets and enable offline functionality. The service worker is served from the root of the application and is controlled by the `progressive_web_app_service_worker` view.
+
+## 6. Reproducibility Smoke Test
+
+Before promoting a new image, run the bundled synthetic evaluation to verify that DeepFace, OpenCV, and the encrypted embedding cache function correctly inside the target environment:
+
+```bash
+docker compose --env-file .env.production run --rm web make reproduce
+```
+
+The command routes the evaluation pipeline through `sample_data/` instead of the encrypted dataset, so no customer photos are required. Review the metrics and artifacts saved under `reports/sample_repro/` to confirm the build is healthy before replacing production assets with the real `face_recognition_data/` volume.

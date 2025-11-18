@@ -77,3 +77,9 @@ Persists a snapshot of a recognition decision made during attendance flows.
 -   The motion-based liveness buffer runs entirely in memory during each recognition attempt; no additional biometric data is stored beyond the existing encrypted training images.
 -   The detector looks for subtle parallax (blinks, head turns, breathing) across a three-to-five-frame window. Extremely static lighting or perfectly stabilized video replays can therefore lower the score or slip through if the DeepFace anti-spoofing model also agrees.
 -   Operators should document any high-risk deployments (e.g., unattended kiosks) and consider pairing this check with hardware sensors or on-device challenge/response if attackers can present high-quality screens within a few centimetres of the camera.
+
+## Sample Dataset for Reproducibility
+
+-   A `sample_data/` directory now ships with the repository. It mirrors the `face_recognition_data/training_dataset/` layout and contains three procedurally generated, non-identifiable JPEG avatars per identity.
+-   The helper script `scripts/reproduce_sample_results.py` temporarily points the evaluation harness at this directory so reviewers can regenerate metrics with `make reproduce` without handling encrypted production photos.
+-   The sample dataset is strictly for demos and smoke tests. Replace it with the encrypted `face_recognition_data/` tree before operating in production so the evaluation pipeline reflects the real enrollment set.
