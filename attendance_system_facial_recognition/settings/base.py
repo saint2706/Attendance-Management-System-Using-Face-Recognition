@@ -465,6 +465,7 @@ USE_TZ = True  # Enable timezone-aware datetimes
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "/static/"
+STATIC_ROOT = Path(os.environ.get("DJANGO_STATIC_ROOT", BASE_DIR / "staticfiles"))
 # Django automatically collects static files from app-specific static directories
 # (e.g., recognition/static). Additional directories can be added here if needed.
 
