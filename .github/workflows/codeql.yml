@@ -3,8 +3,34 @@ name: CodeQL
 on:
   push:
     branches: ["main"]
+    paths:
+      - "**.py"
+      - "attendance_system_facial_recognition/**"
+      - "recognition/**"
+      - "users/**"
+      - "src/**"
+      - "scripts/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - ".github/workflows/codeql.yml"
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   pull_request:
     branches: ["main"]
+    paths:
+      - "**.py"
+      - "attendance_system_facial_recognition/**"
+      - "recognition/**"
+      - "users/**"
+      - "src/**"
+      - "scripts/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - ".github/workflows/codeql.yml"
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   schedule:
     - cron: '0 3 * * 1'
 

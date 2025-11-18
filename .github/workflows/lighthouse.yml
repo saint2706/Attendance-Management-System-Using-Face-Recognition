@@ -4,7 +4,39 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "**.py"
+      - "attendance_system_facial_recognition/**"
+      - "recognition/**"
+      - "users/**"
+      - "src/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - ".lighthouserc.js"
+      - "recognition/static/**"
+      - "recognition/templates/**"
+      - "users/templates/**"
+      - ".github/workflows/lighthouse.yml"
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   pull_request:
+    paths:
+      - "**.py"
+      - "attendance_system_facial_recognition/**"
+      - "recognition/**"
+      - "users/**"
+      - "src/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - ".lighthouserc.js"
+      - "recognition/static/**"
+      - "recognition/templates/**"
+      - "users/templates/**"
+      - ".github/workflows/lighthouse.yml"
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
 
 jobs:
   lighthouse:
