@@ -43,6 +43,9 @@ services:
       DB_PORT: "5432"
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/1
+    volumes:
+      - face_recognition_data:/app/face_recognition_data
+      - media_data:/app/media
 
   celery:
     image: attendance-system:latest
@@ -64,6 +67,9 @@ services:
       DB_PORT: "5432"
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/1
+    volumes:
+      - face_recognition_data:/app/face_recognition_data
+      - media_data:/app/media
     depends_on:
       - postgres
       - redis
@@ -71,3 +77,5 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  face_recognition_data:
+  media_data:
