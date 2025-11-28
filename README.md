@@ -264,6 +264,7 @@ The `web` service serves the Django application through Gunicorn on port `8000`,
       ```
 
 2.  **Continuous Integration:** Configure the CI job to export `DATABASE_URL` (for example, `postgres://postgres:postgres@localhost:5432/postgres`) before invoking `pytest` so the same migrations and tests execute against Postgres automatically.
+    - Coverage is enforced in CI; the suite fails if overall coverage drops below 60%, and the Codecov badge at the top of this README reflects the latest run.
 
 ## Evaluation & Benchmarking
 
