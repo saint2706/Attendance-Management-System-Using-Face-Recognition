@@ -44,6 +44,63 @@
         </div>
     </section>
 
+    <section class="u-panel" aria-labelledby="artifacts-status">
+        <h2 id="artifacts-status" class="u-panel-title">Training &amp; Dataset</h2>
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact" aria-describedby="artifacts-status">
+                <caption class="visually-hidden">Encrypted dataset and trained model status</caption>
+                <tbody>
+                    <tr>
+                        <th scope="row">Dataset present</th>
+                        <td class="u-table-status">
+                            {% if dataset.exists and dataset.image_count %}
+                                <span class="status-badge status-badge--success">Ready</span>
+                            {% else %}
+                                <span class="status-badge status-badge--danger">Missing</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Identities</th>
+                        <td>{{ dataset.identity_count|default:0 }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Images</th>
+                        <td>{{ dataset.image_count|default:0 }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Dataset last updated</th>
+                        <td>{{ dataset.last_updated_display|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Model present</th>
+                        <td>
+                            {% if model.model_present and model.classes_present %}
+                                <span class="status-badge status-badge--success">Available</span>
+                            {% else %}
+                                <span class="status-badge status-badge--danger">Missing</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Last trained</th>
+                        <td>{{ model.last_trained_display|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Freshness</th>
+                        <td>
+                            {% if model.stale %}
+                                <span class="status-badge status-badge--warning">Retraining recommended</span>
+                            {% else %}
+                                <span class="status-badge status-badge--success">Up to date</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
     <section class="u-panel" aria-labelledby="webcam-lifecycle">
         <h2 id="webcam-lifecycle" class="u-panel-title">Webcam Lifecycle</h2>
         <div class="u-table-wrapper">
@@ -189,6 +246,103 @@
         {% else %}
             <p class="u-empty-state">No alerts recorded.</p>
         {% endif %}
+    </section>
+
+    <section class="u-panel" aria-labelledby="recognition-activity">
+        <h2 id="recognition-activity" class="u-panel-title">Recognition Activity</h2>
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact" aria-describedby="recognition-activity">
+                <caption class="visually-hidden">Recent recognition decisions and liveness failures</caption>
+                <tbody>
+                    <tr>
+                        <th scope="row">Last attempt</th>
+                        <td>
+                            {% if recognition_state.last_attempt %}
+                                {{ recognition_state.last_attempt.timestamp|default:"-" }}
+                                — {{ recognition_state.last_attempt.username|default:"Unknown" }}
+                                {% if recognition_state.last_attempt.successful %}
+                                    <span class="status-badge status-badge--success">Accepted</span>
+                                {% elif recognition_state.last_attempt.spoof_detected %}
+                                    <span class="status-badge status-badge--warning">Liveness failed</span>
+                                {% else %}
+                                    <span class="status-badge status-badge--danger">Rejected</span>
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Last spoof blocked</th>
+                        <td>
+                            {% if recognition_state.last_spoof %}
+                                {{ recognition_state.last_spoof.timestamp|default:"-" }} — {{ recognition_state.last_spoof.username|default:"Unknown" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Last successful recognition</th>
+                        <td>
+                            {% if recognition_state.last_success %}
+                                {{ recognition_state.last_success.timestamp|default:"-" }} — {{ recognition_state.last_success.username|default:"Unknown" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Last recorded outcome</th>
+                        <td>
+                            {% if recognition_state.last_outcome %}
+                                {{ recognition_state.last_outcome.timestamp|default:"-" }} — {{ recognition_state.last_outcome.username|default:"Unknown" }}
+                                {% if recognition_state.last_outcome.accepted %}
+                                    <span class="status-badge status-badge--success">Accepted</span>
+                                {% else %}
+                                    <span class="status-badge status-badge--danger">Rejected</span>
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="u-panel" aria-labelledby="worker-status">
+        <h2 id="worker-status" class="u-panel-title">Background Worker</h2>
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact" aria-describedby="worker-status">
+                <caption class="visually-hidden">Celery worker reachability</caption>
+                <tbody>
+                    <tr>
+                        <th scope="row">Status</th>
+                        <td>
+                            {% if worker_state.status == "online" %}
+                                <span class="status-badge status-badge--success">Online</span>
+                            {% elif worker_state.status == "not-configured" %}
+                                <span class="status-badge status-badge--warning">Not configured</span>
+                            {% else %}
+                                <span class="status-badge status-badge--danger">Unreachable</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Workers responding</th>
+                        <td>{{ worker_state.workers|default:0 }}</td>
+                    </tr>
+                    {% if worker_state.error %}
+                    <tr>
+                        <th scope="row">Last error</th>
+                        <td>{{ worker_state.error }}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </section>
 </div>
 {% endblock %}

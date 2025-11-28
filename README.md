@@ -16,6 +16,7 @@ Attendance-Management-System-Using-Face-Recognition is a fully refactored and mo
 - **Offline-ready experience:** Installable progressive web app with background sync for attendance submissions and cached UI shell.
 - **Performance Optimized:** Utilizes the efficient "Facenet" model and "SSD" detector for a fast and responsive recognition experience.
 - **Two-stage liveness detection:** A lightweight motion gate now complements DeepFace's anti-spoofing pass so printed photos and screen replays are rejected before attendance is marked.
+- **Operational visibility:** The admin-only System Health dashboard surfaces dataset freshness, model status, recent recognition activity, and Celery worker reachability.
 - **Continuous Integration:** Includes a GitHub Actions workflow to automatically run tests, ensuring code quality and stability.
 
 ## Technical Stack
@@ -214,6 +215,7 @@ With `SENTRY_SEND_DEFAULT_PII` disabled, the integration strips cookies, authori
 - **Issues**: Monitor unhandled exceptions and message breadcrumbs from the Sentry *Issues* dashboard. Pin the view filtered by `environment:production` to quickly detect regressions after each deployment.
 - **Performance**: Track request latency, throughput, and slow transactions with the *Performance* dashboard. Enable sampling via `SENTRY_TRACES_SAMPLE_RATE` to populate the charts and configure alerts for p95 latency regressions.
 - **Real-time**: For incident response, use Sentry's *Releases* view to correlate deploys with spikes in error volume, and subscribe the operations channel to release health alerts.
+- **In-app health**: Use the Django admin System Health page to confirm camera connectivity, dataset freshness, model recency, recent recognition outcomes, and Celery worker reachability without leaving the UI.
 
 ### Containerized deployment workflow
 

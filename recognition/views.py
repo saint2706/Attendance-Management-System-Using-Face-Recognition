@@ -59,7 +59,7 @@ from sentry_sdk import Hub
 from src.common import FaceDataEncryption, InvalidToken, decrypt_bytes
 from users.models import Present, RecognitionAttempt, Time
 
-from . import monitoring
+from . import health, monitoring
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
 from .liveness import LivenessBuffer, is_live_face
 from .metrics_store import log_recognition_outcome
@@ -2111,10 +2111,23 @@ def _mark_attendance(request, check_in: bool):
         },
     )
     if not dataset_index:
+        dataset_snapshot = health.dataset_health()
+        model_snapshot = health.model_health(
+            dataset_last_updated=dataset_snapshot.get("last_updated")
+        )
         attempt_logger.log_failure(
             getattr(request.user, "username", None),
             spoofed=False,
             error="No encrypted training data available for matching.",
+        )
+        logger.warning(
+            "No encrypted training data available for attendance matching.",
+            extra={
+                "flow": "webcam_attendance",
+                "direction": direction,
+                "dataset_images": dataset_snapshot.get("image_count"),
+                "model_present": model_snapshot.get("model_present"),
+            },
         )
         _record_sentry_breadcrumb(
             message="Attendance dataset empty",
@@ -2123,6 +2136,8 @@ def _mark_attendance(request, check_in: bool):
             data={
                 "direction": direction,
                 "load_seconds": round(dataset_load_duration, 6),
+                "dataset_images": dataset_snapshot.get("image_count"),
+                "model_present": model_snapshot.get("model_present"),
             },
         )
         messages.error(
@@ -2201,6 +2216,19 @@ def _mark_attendance(request, check_in: bool):
                             "Ignoring potential match for '%s' due to high distance %.4f",
                             Path(identity_path).parent.name,
                             distance_value,
+                            extra={
+                                "flow": "webcam_attendance",
+                                "direction": direction,
+                                "threshold": distance_threshold,
+                            },
+                        )
+                        attempt_logger.log_failure(
+                            candidate_name,
+                            spoofed=False,
+                            error=(
+                                f"Distance {distance_value:.4f} exceeds threshold"
+                                f" {distance_threshold:.4f}"
+                            ),
                         )
                         _log_outcome(candidate_name, accepted=False, distance=distance_value)
                         continue
