@@ -1,5 +1,7 @@
 # Attendance Management System Using Face Recognition
 
+[![codecov](https://codecov.io/gh/saint2706/Attendance-Management-System-Using-Face-Recognition/graph/badge.svg)](https://codecov.io/gh/saint2706/Attendance-Management-System-Using-Face-Recognition)
+
 Attendance-Management-System-Using-Face-Recognition is a fully refactored and modernized attendance solution that leverages deep learning for face recognition. It provides a seamless and automated way to track employee attendance, eliminating the need for manual record-keeping, and ships with a responsive web interface for a great user experience on any device.
 
 ![Home Page Light Theme](docs/images/home-light.png)
@@ -81,6 +83,23 @@ Attendance-Management-System-Using-Face-Recognition is a fully refactored and mo
     ```
     This ensures the generated icons, `manifest.json`, and `sw.js` are published alongside the rest of the static files when you deploy with WhiteNoise or another static file server.
 
+## Quick demo (synthetic data)
+
+Use the bundled helper to generate an **encrypted synthetic** dataset and matching demo accounts:
+
+```bash
+make demo
+```
+
+This will:
+
+- Apply migrations.
+- Generate synthetic avatars into `sample_data/face_recognition_data/training_dataset/` and copy them to `face_recognition_data/training_dataset/` so the runtime pipeline can load them immediately.
+- Create a demo superuser (`demo_admin` / `demo_admin_pass`).
+- Create three matching demo users (`user_001`, `user_002`, `user_003`), all with password `demo_user_pass`.
+
+Start the server with `python manage.py runserver` and sign in with the demo credentials above. The synthetic dataset is fully encrypted with the configured `DATA_ENCRYPTION_KEY`, so embeddings and caching behave the same as production assets.
+
 ## Performance Monitoring
 
 Silk is bundled to profile database queries, view timings, and cache usage without leaving the Django admin. The dependency is already pinned in `requirements.txt`/`pyproject.toml`, so installing the project requirements pulls it in automatically.
@@ -111,11 +130,11 @@ For more detailed information, please refer to the full documentation:
 
 ## Reproducibility
 
-The repository now ships with a tiny, synthetic dataset under
+The repository can generate a tiny, synthetic dataset under
 `sample_data/face_recognition_data/training_dataset/` so reviewers can exercise
 the full recognition pipeline without requesting encrypted production assets.
 Run the following command after installing dependencies to regenerate the
-metrics referenced in the documentation:
+metrics referenced in the documentation (the dataset will be created on the fly if missing):
 
 ```bash
 make reproduce

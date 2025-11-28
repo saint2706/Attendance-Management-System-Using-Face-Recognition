@@ -113,7 +113,8 @@ The project is organized into the following directories:
 -   `users`: The Django app that handles user management.
 -   `face_recognition_data`: The directory where the face recognition data is stored.
 -   `sample_data`: A fully synthetic dataset with three demo identities. It mirrors the `face_recognition_data/training_dataset/`
-    layout so you can run the evaluation suite without encrypted production assets.
+    layout so you can run the evaluation suite without encrypted production assets. Use `make demo` or
+    `python scripts/bootstrap_demo.py` to regenerate the encrypted JPEGs into both locations when they are missing locally.
 
 ## 3. Architecture Overview
 

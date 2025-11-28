@@ -10,10 +10,14 @@ from .crypto import (
     encrypt_face_bytes,
     encrypt_face_encoding,
 )
+from .demo_data import SYNTHETIC_USERS, generate_encrypted_dataset, sync_demo_dataset
 from .seeding import set_global_seed
 
 __all__ = [
     "set_global_seed",
+    "generate_encrypted_dataset",
+    "sync_demo_dataset",
+    "SYNTHETIC_USERS",
     "encrypt_bytes",
     "decrypt_bytes",
     "encrypt_face_bytes",

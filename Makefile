@@ -1,6 +1,6 @@
 # Makefile for Attendance-Management-System-Using-Face-Recognition
 
-.PHONY: all setup run clean lint test migrate train evaluate report reproduce install-hooks
+.PHONY: all setup run clean lint test migrate train evaluate report reproduce install-hooks demo
 
 # Default target
 all: setup run
@@ -49,8 +49,18 @@ migrate:
 
 # Run the development server
 run:
-	@echo "Starting the development server at http://127.0.0.1:8000/"
-	python manage.py runserver
+        @echo "Starting the development server at http://127.0.0.1:8000/"
+        python manage.py runserver
+
+# Bootstrap a self-contained demo with synthetic data
+demo:
+        @echo "=== Preparing demo environment ==="
+        python manage.py migrate --noinput
+        python scripts/bootstrap_demo.py
+        @echo "--- Demo credentials ---"
+        @echo "Admin: demo_admin / demo_admin_pass"
+        @echo "Users: user_001, user_002, user_003 (password: demo_user_pass)"
+        @echo "Launch the server with: python manage.py runserver"
 
 # Train target retained for compatibility but training happens automatically
 train:

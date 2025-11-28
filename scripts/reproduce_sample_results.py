@@ -14,6 +14,20 @@ def _project_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
+def _prepare_sample_dataset(dataset_root: Path) -> None:
+    """Ensure an encrypted synthetic dataset exists for reproducibility runs."""
+
+    if dataset_root.exists() and any(dataset_root.glob("*/*.jpg")):
+        return
+
+    dataset_root.mkdir(parents=True, exist_ok=True)
+
+    sys.path.insert(0, str(_project_root()))
+    from src.common import generate_encrypted_dataset
+
+    generate_encrypted_dataset(dataset_root)
+
+
 def _default_paths() -> tuple[Path, Path, Path]:
     base = _project_root()
     dataset_root = base / "sample_data" / "face_recognition_data" / "training_dataset"
@@ -110,6 +124,9 @@ def main(argv: Optional[list[str]] = None) -> int:
     split_csv = args.split_csv.resolve()
     reports_dir = args.reports_dir.resolve()
 
+    _ensure_django_ready()
+    _prepare_sample_dataset(dataset_root)
+
     try:
         sample_count = _validate_dataset(dataset_root)
     except Exception as exc:  # pragma: no cover - CLI helper
@@ -127,7 +144,6 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     reports_dir.mkdir(parents=True, exist_ok=True)
 
-    _ensure_django_ready()
     _patch_dataset_root(dataset_root)
 
     from src.common.seeding import set_global_seed
