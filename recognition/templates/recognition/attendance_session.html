@@ -1,0 +1,142 @@
+{% extends "recognition/base.html" %}
+
+{% block title %}Attendance Session - Smart Attendance System{% endblock %}
+
+{% block content %}
+<header class="u-dashboard-header mb-4">
+    <div>
+        <p class="text-sm text-muted mb-2">Live recognition overview</p>
+        <h1 class="u-dashboard-title">Attendance Session</h1>
+    </div>
+    <div class="u-dashboard-badge">
+        <i class="fas fa-broadcast-tower icon-lg" aria-hidden="true"></i>
+        <span>Realtime log with liveness</span>
+    </div>
+</header>
+
+{% if onboarding_state.steps %}
+    <div class="alert alert-warning d-flex align-items-start gap-3 card-elevated" role="status">
+        <i class="fas fa-flag-checkered text-warning mt-1" aria-hidden="true"></i>
+        <div>
+            <h2 class="h5 mb-2">Finish first-run setup</h2>
+            <p class="mb-3 text-sm">Complete these steps before running a live attendance session.</p>
+            <div class="row">
+                {% for step in onboarding_state.steps %}
+                    <div class="col-12 col-lg-6 mb-2">
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded bg-light">
+                            <div class="me-3">
+                                <p class="mb-1 fw-semibold">{{ step.title }}</p>
+                                <p class="mb-0 text-muted text-sm">{{ step.description }}</p>
+                            </div>
+                            <a class="btn btn-outline-primary btn-sm" href="{{ step.cta.url }}">
+                                <i class="fas {{ step.cta.icon }} me-2" aria-hidden="true"></i>{{ step.cta.label }}
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<section class="u-section" aria-labelledby="session-actions">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+        <div>
+            <h2 id="session-actions" class="u-section-title mb-1">Session controls</h2>
+            <p class="text-muted mb-0">Start or stop attendance capture from a single place.</p>
+        </div>
+        <div class="btn-group" role="group" aria-label="Session action buttons">
+            <a class="btn btn-success" href="{% url 'mark-your-attendance' %}">
+                <i class="fas fa-circle-play me-2" aria-hidden="true"></i>Start check-in
+            </a>
+            <a class="btn btn-outline-success" href="{% url 'mark-your-attendance-out' %}">
+                <i class="fas fa-circle-stop me-2" aria-hidden="true"></i>Start check-out
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-lg-4 mb-3">
+            <div class="card h-100 card-elevated">
+                <div class="card-body">
+                    <p class="text-muted text-sm mb-1">Dataset</p>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h3 class="h2 mb-0">{{ dataset_snapshot.image_count|default:0 }}</h3>
+                        <span class="badge {% if dataset_snapshot.image_count %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            {% if dataset_snapshot.image_count %}Ready{% else %}Missing{% endif %}
+                        </span>
+                    </div>
+                    <p class="mb-0 text-sm">Encrypted images available for matching.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-4 mb-3">
+            <div class="card h-100 card-elevated">
+                <div class="card-body">
+                    <p class="text-muted text-sm mb-1">Model</p>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h3 class="h2 mb-0">{% if model_snapshot.model_present %}Trained{% else %}Not ready{% endif %}</h3>
+                        {% if model_snapshot.model_present %}
+                            <span class="badge {% if model_snapshot.stale %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                                {% if model_snapshot.stale %}Retrain recommended{% else %}Fresh{% endif %}
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger">Missing</span>
+                        {% endif %}
+                    </div>
+                    <p class="mb-0 text-sm">Last trained: {{ model_snapshot.last_trained_display|default:"n/a" }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-4 mb-3">
+            <div class="card h-100 card-elevated">
+                <div class="card-body">
+                    <p class="text-muted text-sm mb-1">Recent activity</p>
+                    <p class="mb-2 h2">{{ recent_activity.last_attempt.timestamp|default:"No attempts" }}</p>
+                    <p class="mb-0 text-sm text-muted">Latest attempt: {{ recent_activity.last_attempt.username|default:"n/a" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="u-section" aria-labelledby="live-log">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+        <div>
+            <h2 id="live-log" class="u-section-title mb-1">Live recognition log</h2>
+            <p class="text-muted mb-0">Recent attempts with liveness and confidence details. Updates automatically.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 text-sm text-muted">
+            <span class="badge bg-success">Accepted</span>
+            <span class="badge bg-danger">Rejected</span>
+            <span class="badge bg-warning text-dark">Liveness failed</span>
+        </div>
+    </div>
+
+    <div class="card card-elevated" id="attendance-log" data-feed-url="{% url 'attendance-session-feed' %}">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Time</th>
+                        <th scope="col">User</th>
+                        <th scope="col">Direction</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Liveness</th>
+                        <th scope="col">Confidence</th>
+                    </tr>
+                </thead>
+                <tbody id="attendance-log-body">
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">Waiting for recognition events...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script src="{% static 'js/attendance-session.js' %}" defer></script>
+{% endblock %}

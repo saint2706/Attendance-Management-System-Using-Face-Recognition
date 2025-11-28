@@ -13,6 +13,31 @@
     </div>
 </header>
 
+{% if onboarding_state.steps %}
+    <div class="alert alert-info d-flex align-items-start gap-3 card-elevated mb-4" role="status">
+        <i class="fas fa-seedling text-primary mt-1" aria-hidden="true"></i>
+        <div>
+            <h2 class="h5 mb-2">First-run checklist</h2>
+            <p class="mb-3 text-sm">Complete these actions to get recognition flowing end-to-end.</p>
+            <div class="row">
+                {% for step in onboarding_state.steps %}
+                    <div class="col-12 col-lg-6 mb-2">
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded bg-light">
+                            <div class="me-3">
+                                <p class="mb-1 fw-semibold">{{ step.title }}</p>
+                                <p class="mb-0 text-muted text-sm">{{ step.description }}</p>
+                            </div>
+                            <a class="btn btn-outline-primary btn-sm" href="{{ step.cta.url }}">
+                                <i class="fas {{ step.cta.icon }} me-2" aria-hidden="true"></i>{{ step.cta.label }}
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
 <section class="u-section" aria-labelledby="admin-actions">
     <h2 id="admin-actions" class="u-section-title u-section-title--center">Admin Actions</h2>
     <div class="row text-center">
@@ -74,6 +99,21 @@
                         </h3>
                         <p class="card-text text-sm mb-0">
                             Access detailed attendance reports and analytics.
+                        </p>
+                    </a>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3 mb-4">
+            <article class="card h-100 card-elevated">
+                <div class="card-body card-body-lg d-flex flex-column justify-content-center">
+                    <a href="{% url 'attendance-session' %}" class="link-reset">
+                        <i class="fas fa-broadcast-tower card-icon icon-xxl mb-4" aria-hidden="true"></i>
+                        <h3 class="card-title mb-3">
+                            Attendance Session
+                        </h3>
+                        <p class="card-text text-sm mb-0">
+                            Monitor live recognition with liveness outcomes and recent events.
                         </p>
                     </a>
                 </div>

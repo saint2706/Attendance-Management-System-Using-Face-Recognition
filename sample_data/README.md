@@ -1,7 +1,9 @@
 # Sample Face Recognition Dataset
 
 This directory contains a **fully synthetic** dataset that mirrors the on-disk
-layout expected by the face-recognition pipeline:
+layout expected by the face-recognition pipeline. The assets are generated on
+the fly by the helper scripts (see below) and encrypted with the active
+``DATA_ENCRYPTION_KEY`` so they are ready for the runtime pipeline.
 
 ```
 sample_data/
@@ -45,4 +47,14 @@ for username, (_, color) in users.items():
 
 Feel free to extend this directory locally with additional synthetic subjects.
 The reproducibility workflow automatically points the evaluation engine at this
-folder, so production deployments remain unaffected.
+folder, so production deployments remain unaffected. If the images are missing
+locally, regenerate them with:
+
+```bash
+python scripts/bootstrap_demo.py --admin-password demo_admin_pass --user-password demo_user_pass
+```
+
+The command above refreshes the encrypted JPEGs in both
+`sample_data/face_recognition_data/training_dataset/` and
+`face_recognition_data/training_dataset/` so the recognition pipeline can use
+them immediately.

@@ -1,5 +1,7 @@
 # Attendance Management System Using Face Recognition
 
+[![codecov](https://codecov.io/gh/saint2706/Attendance-Management-System-Using-Face-Recognition/graph/badge.svg)](https://codecov.io/gh/saint2706/Attendance-Management-System-Using-Face-Recognition)
+
 Attendance-Management-System-Using-Face-Recognition is a fully refactored and modernized attendance solution that leverages deep learning for face recognition. It provides a seamless and automated way to track employee attendance, eliminating the need for manual record-keeping, and ships with a responsive web interface for a great user experience on any device.
 
 ![Home Page Light Theme](docs/images/home-light.png)
@@ -14,16 +16,19 @@ Attendance-Management-System-Using-Face-Recognition is a fully refactored and mo
 - **Offline-ready experience:** Installable progressive web app with background sync for attendance submissions and cached UI shell.
 - **Performance Optimized:** Utilizes the efficient "Facenet" model and "SSD" detector for a fast and responsive recognition experience.
 - **Two-stage liveness detection:** A lightweight motion gate now complements DeepFace's anti-spoofing pass so printed photos and screen replays are rejected before attendance is marked.
+- **Structured attendance sessions:** A dedicated live session view surfaces recent recognitions with timestamps, confidence, and liveness outcomes alongside start/stop controls.
+- **Operational visibility:** The admin-only System Health dashboard surfaces dataset freshness, model status, recent recognition activity, and Celery worker reachability.
 - **Continuous Integration:** Includes a GitHub Actions workflow to automatically run tests, ensuring code quality and stability.
 
 ## Technical Stack
 
-- **Backend:** Django 5+
-- **Face Recognition:** DeepFace (wrapping Facenet)
-- **Frontend:** HTML5, CSS3, Bootstrap 5, Custom CSS Design System
+- **Backend:** Django 5+ with Celery workers for async training/evaluation jobs
+- **Face Recognition:** DeepFace (Facenet) + SSD detector with a motion-based liveness gate
+- **Frontend:** HTML5, CSS3, Bootstrap 5, Custom CSS Design System (installable PWA)
 - **JavaScript:** Vanilla JS (no framework dependencies)
-- **Database:** Configurable via `DATABASE_URL` (PostgreSQL recommended; falls back to SQLite for local development)
-- **Testing:** Django's built-in test framework, Playwright (planned)
+- **Database & cache:** Configurable via `DATABASE_URL` (PostgreSQL recommended; SQLite for local development) and Redis for Celery/async queues
+- **Observability:** Sentry integration plus Silk for request profiling
+- **Testing & CI:** Pytest with coverage + Playwright UI checks, executed in GitHub Actions
 
 ## Getting Started
 
@@ -53,6 +58,18 @@ Attendance-Management-System-Using-Face-Recognition is a fully refactored and mo
 
 4.  **Configure environment variables:**
     - Copy `.env.example` to `.env`.
+    - Generate secrets if you don't already have them:
+      ```bash
+      python - <<'PY'
+      from cryptography.fernet import Fernet
+      import secrets
+
+      print('DJANGO_SECRET_KEY=', secrets.token_urlsafe(50))
+      print('DATA_ENCRYPTION_KEY=', Fernet.generate_key().decode())
+      print('FACE_DATA_ENCRYPTION_KEY=', Fernet.generate_key().decode())
+      PY
+      ```
+    - Paste the values into `.env` and keep the same keys across runs so encrypted face data remains readable locally.
     - (Optional) Start the bundled Postgres service if you want to run against PostgreSQL instead of SQLite:
       ```bash
       docker compose up -d postgres
@@ -81,6 +98,31 @@ Attendance-Management-System-Using-Face-Recognition is a fully refactored and mo
     ```
     This ensures the generated icons, `manifest.json`, and `sw.js` are published alongside the rest of the static files when you deploy with WhiteNoise or another static file server.
 
+## Quick demo (synthetic data)
+
+Use the bundled helper to generate an **encrypted synthetic** dataset and matching demo accounts:
+
+```bash
+make demo
+```
+
+This will:
+
+- Apply migrations.
+- Generate synthetic avatars into `sample_data/face_recognition_data/training_dataset/` and copy them to `face_recognition_data/training_dataset/` so the runtime pipeline can load them immediately.
+- Create a demo superuser (`demo_admin` / `demo_admin_pass`).
+- Create three matching demo users (`user_001`, `user_002`, `user_003`), all with password `demo_user_pass`.
+
+Start the server with `python manage.py runserver` and sign in with the demo credentials above. The synthetic dataset is fully encrypted with the configured `DATA_ENCRYPTION_KEY`, so embeddings and caching behave the same as production assets.
+
+Prefer to inspect or regenerate the dataset manually? Run `python scripts/bootstrap_demo.py --help` for options, or consult [sample_data/README.md](sample_data/README.md) for a deeper walkthrough of how the encrypted JPEGs are produced and reused across demo/test runs.
+
+### Run a live attendance session
+
+- Visit **Dashboard → Attendance Session** to view a structured, auto-refreshing log of recent recognition attempts with liveness outcomes and match confidence.
+- The first-run checklist on the dashboard will prompt you to register an employee, add photos, and train the model if any prerequisites are missing.
+- Use the check-in/check-out controls on the session page to start the same webcam-based flow used elsewhere in the app while keeping an eye on the live feed.
+
 ## Performance Monitoring
 
 Silk is bundled to profile database queries, view timings, and cache usage without leaving the Django admin. The dependency is already pinned in `requirements.txt`/`pyproject.toml`, so installing the project requirements pulls it in automatically.
@@ -100,7 +142,7 @@ Silk is bundled to profile database queries, view timings, and cache usage witho
 For more detailed information, please refer to the full documentation:
 
 - **[User Guide](USER_GUIDE.md)**: A comprehensive guide for non-programmers on using and understanding the system.
-- **[Developer Guide](DEVELOPER_GUIDE.md)**: Information for developers on the system's architecture, evaluation pipeline, and management commands.
+- **[Developer Guide](DEVELOPER_GUIDE.md)**: Information for developers on the system's architecture, evaluation pipeline, management commands, and environment configuration (including encryption keys).
 - **[Contributing Guide](CONTRIBUTING.md)**: Instructions for setting up the development environment and contributing to the project.
 - **[API Reference](API_REFERENCE.md)**: Details on URL patterns, API endpoints, and command-line tools.
 - **[Architecture Overview](ARCHITECTURE.md)**: A high-level overview of the system architecture and data flows.
@@ -111,11 +153,11 @@ For more detailed information, please refer to the full documentation:
 
 ## Reproducibility
 
-The repository now ships with a tiny, synthetic dataset under
+The repository can generate a tiny, synthetic dataset under
 `sample_data/face_recognition_data/training_dataset/` so reviewers can exercise
 the full recognition pipeline without requesting encrypted production assets.
 Run the following command after installing dependencies to regenerate the
-metrics referenced in the documentation:
+metrics referenced in the documentation (the dataset will be created on the fly if missing):
 
 ```bash
 make reproduce
@@ -180,6 +222,7 @@ With `SENTRY_SEND_DEFAULT_PII` disabled, the integration strips cookies, authori
 - **Issues**: Monitor unhandled exceptions and message breadcrumbs from the Sentry *Issues* dashboard. Pin the view filtered by `environment:production` to quickly detect regressions after each deployment.
 - **Performance**: Track request latency, throughput, and slow transactions with the *Performance* dashboard. Enable sampling via `SENTRY_TRACES_SAMPLE_RATE` to populate the charts and configure alerts for p95 latency regressions.
 - **Real-time**: For incident response, use Sentry's *Releases* view to correlate deploys with spikes in error volume, and subscribe the operations channel to release health alerts.
+- **In-app health**: Use the Django admin System Health page to confirm camera connectivity, dataset freshness, model recency, recent recognition outcomes, and Celery worker reachability without leaving the UI.
 
 ### Containerized deployment workflow
 
@@ -230,6 +273,7 @@ The `web` service serves the Django application through Gunicorn on port `8000`,
       ```
 
 2.  **Continuous Integration:** Configure the CI job to export `DATABASE_URL` (for example, `postgres://postgres:postgres@localhost:5432/postgres`) before invoking `pytest` so the same migrations and tests execute against Postgres automatically.
+    - Coverage is enforced in CI; the suite fails if overall coverage drops below 60%, and the Codecov badge at the top of this README reflects the latest run.
 
 ## Evaluation & Benchmarking
 

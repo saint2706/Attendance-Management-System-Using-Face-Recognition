@@ -29,6 +29,7 @@ from urllib.parse import urljoin
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.cache import cache
@@ -59,10 +60,11 @@ from sentry_sdk import Hub
 from src.common import FaceDataEncryption, InvalidToken, decrypt_bytes
 from users.models import Present, RecognitionAttempt, Time
 
-from . import monitoring
+from . import health, monitoring
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
 from .liveness import LivenessBuffer, is_live_face
 from .metrics_store import log_recognition_outcome
+from .models import RecognitionOutcome
 from .pipeline import extract_embedding, find_closest_dataset_match, is_within_distance_threshold
 from .webcam_manager import get_webcam_manager
 
@@ -1650,10 +1652,103 @@ def dashboard(request):
     """
     if request.user.is_staff or request.user.is_superuser:
         logger.debug("Rendering admin dashboard for %s", request.user)
-        return render(request, "recognition/admin_dashboard.html")
+        dataset_snapshot = health.dataset_health()
+        model_snapshot = health.model_health(
+            dataset_last_updated=dataset_snapshot.get("last_updated")
+        )
+        onboarding_state = _build_onboarding_state(
+            dataset_snapshot=dataset_snapshot, model_snapshot=model_snapshot
+        )
+        return render(
+            request,
+            "recognition/admin_dashboard.html",
+            {
+                "dataset_snapshot": dataset_snapshot,
+                "model_snapshot": model_snapshot,
+                "onboarding_state": onboarding_state,
+            },
+        )
 
     logger.debug("Rendering employee dashboard for %s", request.user)
     return render(request, "recognition/employee_dashboard.html")
+
+
+def _build_onboarding_state(
+    *, dataset_snapshot: Dict[str, Any], model_snapshot: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Summarize first-run readiness and suggested actions for admins."""
+
+    user_count = (
+        get_user_model()
+        .objects.filter(is_staff=False, is_superuser=False)
+        .count()
+    )
+    onboarding_steps = []
+
+    if user_count == 0:
+        onboarding_steps.append(
+            {
+                "title": "Create your first employee",
+                "description": "Add at least one employee record so the model has someone to learn.",
+                "cta": {
+                    "url": reverse("register"),
+                    "label": "Register employee",
+                    "icon": "fa-user-plus",
+                },
+            }
+        )
+
+    if dataset_snapshot.get("image_count", 0) == 0:
+        onboarding_steps.append(
+            {
+                "title": "Capture or upload face samples",
+                "description": "Add a handful of photos per employee to build the encrypted dataset.",
+                "cta": {
+                    "url": reverse("add-photos"),
+                    "label": "Add photos",
+                    "icon": "fa-camera",
+                },
+            }
+        )
+
+    if not model_snapshot.get("model_present"):
+        onboarding_steps.append(
+            {
+                "title": "Train the recognition model",
+                "description": "Kick off training once photos are in place to enable attendance matching.",
+                "cta": {
+                    "url": reverse("train"),
+                    "label": "Start training",
+                    "icon": "fa-brain",
+                },
+            }
+        )
+
+    if not onboarding_steps and model_snapshot.get("stale"):
+        onboarding_steps.append(
+            {
+                "title": "Refresh the model",
+                "description": "New photos were added after the last training run. Retrain to keep matches accurate.",
+                "cta": {
+                    "url": reverse("train"),
+                    "label": "Retrain now",
+                    "icon": "fa-rotate-right",
+                },
+            }
+        )
+
+    readiness = {
+        "has_users": user_count > 0,
+        "has_dataset": dataset_snapshot.get("image_count", 0) > 0,
+        "model_ready": bool(model_snapshot.get("model_present")),
+    }
+
+    return {
+        "user_count": user_count,
+        "readiness": readiness,
+        "steps": onboarding_steps,
+        "model_stale": model_snapshot.get("stale", False),
+    }
 
 
 @login_required
@@ -2016,6 +2111,89 @@ def _is_headless_environment() -> bool:
     return True
 
 
+@login_required
+def attendance_session(request):
+    """Render a structured attendance session view with live recognition activity."""
+
+    if not (request.user.is_staff or request.user.is_superuser):
+        return redirect("not-authorised")
+
+    dataset_snapshot = health.dataset_health()
+    model_snapshot = health.model_health(
+        dataset_last_updated=dataset_snapshot.get("last_updated")
+    )
+    onboarding_state = _build_onboarding_state(
+        dataset_snapshot=dataset_snapshot, model_snapshot=model_snapshot
+    )
+
+    return render(
+        request,
+        "recognition/attendance_session.html",
+        {
+            "dataset_snapshot": dataset_snapshot,
+            "model_snapshot": model_snapshot,
+            "onboarding_state": onboarding_state,
+            "recent_activity": health.recognition_activity(),
+        },
+    )
+
+
+@login_required
+def attendance_session_feed(request) -> JsonResponse:
+    """Return a live feed of recent recognition attempts and outcomes for the UI log."""
+
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({"detail": "Not authorised"}, status=403)
+
+    try:
+        minutes = int(request.GET.get("minutes", "60"))
+    except (TypeError, ValueError):
+        minutes = 60
+
+    since = timezone.now() - datetime.timedelta(minutes=max(minutes, 1))
+    outcome_records = RecognitionOutcome.objects.filter(created_at__gte=since)[
+        :50
+    ]
+    attempt_records = RecognitionAttempt.objects.filter(created_at__gte=since)[
+        :50
+    ]
+
+    events: list[dict[str, Any]] = []
+    for outcome in outcome_records:
+        events.append(
+            {
+                "event_type": "outcome",
+                "timestamp": outcome.created_at.isoformat(),
+                "username": outcome.username,
+                "direction": outcome.direction,
+                "accepted": outcome.accepted,
+                "confidence": outcome.confidence,
+                "distance": outcome.distance,
+                "threshold": outcome.threshold,
+                "source": outcome.source,
+            }
+        )
+
+    for attempt in attempt_records:
+        liveness_status = "failed" if attempt.spoof_detected else "passed"
+        events.append(
+            {
+                "event_type": "attempt",
+                "timestamp": attempt.created_at.isoformat(),
+                "username": attempt.username
+                or (attempt.user.username if attempt.user else ""),
+                "direction": attempt.direction,
+                "successful": attempt.successful,
+                "liveness": liveness_status,
+                "error": attempt.error_message,
+                "source": attempt.source,
+            }
+        )
+
+    events.sort(key=lambda item: item["timestamp"], reverse=True)
+    return JsonResponse({"events": events})
+
+
 def _mark_attendance(request, check_in: bool):
     """
     Core logic for marking attendance (both in and out) using face recognition.
@@ -2111,10 +2289,23 @@ def _mark_attendance(request, check_in: bool):
         },
     )
     if not dataset_index:
+        dataset_snapshot = health.dataset_health()
+        model_snapshot = health.model_health(
+            dataset_last_updated=dataset_snapshot.get("last_updated")
+        )
         attempt_logger.log_failure(
             getattr(request.user, "username", None),
             spoofed=False,
             error="No encrypted training data available for matching.",
+        )
+        logger.warning(
+            "No encrypted training data available for attendance matching.",
+            extra={
+                "flow": "webcam_attendance",
+                "direction": direction,
+                "dataset_images": dataset_snapshot.get("image_count"),
+                "model_present": model_snapshot.get("model_present"),
+            },
         )
         _record_sentry_breadcrumb(
             message="Attendance dataset empty",
@@ -2123,6 +2314,8 @@ def _mark_attendance(request, check_in: bool):
             data={
                 "direction": direction,
                 "load_seconds": round(dataset_load_duration, 6),
+                "dataset_images": dataset_snapshot.get("image_count"),
+                "model_present": model_snapshot.get("model_present"),
             },
         )
         messages.error(
@@ -2201,6 +2394,19 @@ def _mark_attendance(request, check_in: bool):
                             "Ignoring potential match for '%s' due to high distance %.4f",
                             Path(identity_path).parent.name,
                             distance_value,
+                            extra={
+                                "flow": "webcam_attendance",
+                                "direction": direction,
+                                "threshold": distance_threshold,
+                            },
+                        )
+                        attempt_logger.log_failure(
+                            candidate_name,
+                            spoofed=False,
+                            error=(
+                                f"Distance {distance_value:.4f} exceeds threshold"
+                                f" {distance_threshold:.4f}"
+                            ),
                         )
                         _log_outcome(candidate_name, accepted=False, distance=distance_value)
                         continue
