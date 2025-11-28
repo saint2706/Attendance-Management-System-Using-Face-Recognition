@@ -20,12 +20,13 @@ Attendance-Management-System-Using-Face-Recognition is a fully refactored and mo
 
 ## Technical Stack
 
-- **Backend:** Django 5+
-- **Face Recognition:** DeepFace (wrapping Facenet)
-- **Frontend:** HTML5, CSS3, Bootstrap 5, Custom CSS Design System
+- **Backend:** Django 5+ with Celery workers for async training/evaluation jobs
+- **Face Recognition:** DeepFace (Facenet) + SSD detector with a motion-based liveness gate
+- **Frontend:** HTML5, CSS3, Bootstrap 5, Custom CSS Design System (installable PWA)
 - **JavaScript:** Vanilla JS (no framework dependencies)
-- **Database:** Configurable via `DATABASE_URL` (PostgreSQL recommended; falls back to SQLite for local development)
-- **Testing:** Django's built-in test framework, Playwright (planned)
+- **Database & cache:** Configurable via `DATABASE_URL` (PostgreSQL recommended; SQLite for local development) and Redis for Celery/async queues
+- **Observability:** Sentry integration plus Silk for request profiling
+- **Testing & CI:** Pytest with coverage + Playwright UI checks, executed in GitHub Actions
 
 ## Getting Started
 
@@ -55,6 +56,18 @@ Attendance-Management-System-Using-Face-Recognition is a fully refactored and mo
 
 4.  **Configure environment variables:**
     - Copy `.env.example` to `.env`.
+    - Generate secrets if you don't already have them:
+      ```bash
+      python - <<'PY'
+      from cryptography.fernet import Fernet
+      import secrets
+
+      print('DJANGO_SECRET_KEY=', secrets.token_urlsafe(50))
+      print('DATA_ENCRYPTION_KEY=', Fernet.generate_key().decode())
+      print('FACE_DATA_ENCRYPTION_KEY=', Fernet.generate_key().decode())
+      PY
+      ```
+    - Paste the values into `.env` and keep the same keys across runs so encrypted face data remains readable locally.
     - (Optional) Start the bundled Postgres service if you want to run against PostgreSQL instead of SQLite:
       ```bash
       docker compose up -d postgres
@@ -100,6 +113,8 @@ This will:
 
 Start the server with `python manage.py runserver` and sign in with the demo credentials above. The synthetic dataset is fully encrypted with the configured `DATA_ENCRYPTION_KEY`, so embeddings and caching behave the same as production assets.
 
+Prefer to inspect or regenerate the dataset manually? Run `python scripts/bootstrap_demo.py --help` for options, or consult [sample_data/README.md](sample_data/README.md) for a deeper walkthrough of how the encrypted JPEGs are produced and reused across demo/test runs.
+
 ## Performance Monitoring
 
 Silk is bundled to profile database queries, view timings, and cache usage without leaving the Django admin. The dependency is already pinned in `requirements.txt`/`pyproject.toml`, so installing the project requirements pulls it in automatically.
@@ -119,7 +134,7 @@ Silk is bundled to profile database queries, view timings, and cache usage witho
 For more detailed information, please refer to the full documentation:
 
 - **[User Guide](USER_GUIDE.md)**: A comprehensive guide for non-programmers on using and understanding the system.
-- **[Developer Guide](DEVELOPER_GUIDE.md)**: Information for developers on the system's architecture, evaluation pipeline, and management commands.
+- **[Developer Guide](DEVELOPER_GUIDE.md)**: Information for developers on the system's architecture, evaluation pipeline, management commands, and environment configuration (including encryption keys).
 - **[Contributing Guide](CONTRIBUTING.md)**: Instructions for setting up the development environment and contributing to the project.
 - **[API Reference](API_REFERENCE.md)**: Details on URL patterns, API endpoints, and command-line tools.
 - **[Architecture Overview](ARCHITECTURE.md)**: A high-level overview of the system architecture and data flows.
