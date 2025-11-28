@@ -104,6 +104,16 @@ urlpatterns = [
         name="mark-your-attendance-out",
     ),
     path(
+        "attendance_session/",
+        recog_views.attendance_session,
+        name="attendance-session",
+    ),
+    path(
+        "attendance_session/feed/",
+        recog_views.attendance_session_feed,
+        name="attendance-session-feed",
+    ),
+    path(
         "api/face-recognition/",
         recog_views.FaceRecognitionAPI.as_view(),
         name="face-recognition-api",

@@ -16,6 +16,7 @@ Attendance-Management-System-Using-Face-Recognition is a fully refactored and mo
 - **Offline-ready experience:** Installable progressive web app with background sync for attendance submissions and cached UI shell.
 - **Performance Optimized:** Utilizes the efficient "Facenet" model and "SSD" detector for a fast and responsive recognition experience.
 - **Two-stage liveness detection:** A lightweight motion gate now complements DeepFace's anti-spoofing pass so printed photos and screen replays are rejected before attendance is marked.
+- **Structured attendance sessions:** A dedicated live session view surfaces recent recognitions with timestamps, confidence, and liveness outcomes alongside start/stop controls.
 - **Operational visibility:** The admin-only System Health dashboard surfaces dataset freshness, model status, recent recognition activity, and Celery worker reachability.
 - **Continuous Integration:** Includes a GitHub Actions workflow to automatically run tests, ensuring code quality and stability.
 
@@ -115,6 +116,12 @@ This will:
 Start the server with `python manage.py runserver` and sign in with the demo credentials above. The synthetic dataset is fully encrypted with the configured `DATA_ENCRYPTION_KEY`, so embeddings and caching behave the same as production assets.
 
 Prefer to inspect or regenerate the dataset manually? Run `python scripts/bootstrap_demo.py --help` for options, or consult [sample_data/README.md](sample_data/README.md) for a deeper walkthrough of how the encrypted JPEGs are produced and reused across demo/test runs.
+
+### Run a live attendance session
+
+- Visit **Dashboard → Attendance Session** to view a structured, auto-refreshing log of recent recognition attempts with liveness outcomes and match confidence.
+- The first-run checklist on the dashboard will prompt you to register an employee, add photos, and train the model if any prerequisites are missing.
+- Use the check-in/check-out controls on the session page to start the same webcam-based flow used elsewhere in the app while keeping an eye on the live feed.
 
 ## Performance Monitoring
 
