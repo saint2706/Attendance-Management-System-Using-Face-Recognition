@@ -10,6 +10,11 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-attendance} -d ${POSTGRES_DB:-attendance}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
@@ -18,15 +23,22 @@ services:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   web:
     build:
       context: .
-    image: attendance-system:latest
+    image: ${IMAGE_NAME:-attendance-system}:${IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
       - "${WEB_PORT:-8000}:8000"
     environment:
@@ -48,7 +60,7 @@ services:
       - media_data:/app/media
 
   celery:
-    image: attendance-system:latest
+    image: ${IMAGE_NAME:-attendance-system}:${IMAGE_TAG:-latest}
     restart: unless-stopped
     working_dir: /app
     command: >-
@@ -71,8 +83,36 @@ services:
       - face_recognition_data:/app/face_recognition_data
       - media_data:/app/media
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery-beat:
+    image: ${IMAGE_NAME:-attendance-system}:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    working_dir: /app
+    command: >-
+      celery -A attendance_system_facial_recognition beat --loglevel=info
+    environment:
+      DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings.production
+      DJANGO_DEBUG: "0"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY must be set}
+      DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?DATA_ENCRYPTION_KEY must be set}
+      FACE_DATA_ENCRYPTION_KEY: ${FACE_DATA_ENCRYPTION_KEY:?FACE_DATA_ENCRYPTION_KEY must be set}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DB_NAME: ${POSTGRES_DB:-attendance}
+      DB_USER: ${POSTGRES_USER:-attendance}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-attendance}
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
 volumes:
   postgres_data:
