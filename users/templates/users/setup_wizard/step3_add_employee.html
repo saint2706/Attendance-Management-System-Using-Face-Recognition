@@ -1,0 +1,180 @@
+{% extends "users/setup_wizard/base_wizard.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block wizard_content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        {% if not employee_created %}
+            <!-- Step A: Create Employee Account -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="h5 mb-0">
+                        <i class="fas fa-user-plus me-2" aria-hidden="true"></i>
+                        Create Employee Account
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="create_employee" value="1">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_username" class="form-label">Username *</label>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_email" class="form-label">Email</label>
+                                {{ form.email }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_first_name" class="form-label">First Name</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_last_name" class="form-label">Last Name</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_password1" class="form-label">Password *</label>
+                                {{ form.password1 }}
+                                {% if form.password1.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.password1.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text">{{ form.password1.help_text }}</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_password2" class="form-label">Confirm Password *</label>
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.password2.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-check me-2" aria-hidden="true"></i>
+                                Create Employee
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <!-- Employee Created - Show Success and Photo Capture -->
+            <div class="alert alert-success d-flex align-items-center mb-4">
+                <i class="fas fa-check-circle fa-2x me-3" aria-hidden="true"></i>
+                <div>
+                    <strong>Employee Created!</strong>
+                    <p class="mb-0">Username: <code>{{ first_employee_username }}</code></p>
+                </div>
+            </div>
+
+            {% if not photos_captured %}
+                <!-- Step B: Capture Photos -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h3 class="h5 mb-0">
+                            <i class="fas fa-camera me-2" aria-hidden="true"></i>
+                            Capture Employee Photos
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-4">
+                            Now we need to capture photos of <strong>{{ first_employee_username }}</strong> for face recognition.
+                            Click the button below to open the photo capture interface.
+                        </p>
+
+                        <div class="text-center mb-4">
+                            <a href="{% url 'add-photos' %}?username={{ first_employee_username|urlencode }}&wizard=1" 
+                               class="btn btn-info btn-lg"
+                               target="_blank">
+                                <i class="fas fa-camera me-2" aria-hidden="true"></i>
+                                Open Photo Capture
+                            </a>
+                            <p class="text-muted text-sm mt-2">
+                                Opens in a new tab. Return here after capturing photos.
+                            </p>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h4 class="h6 mb-2">
+                                <i class="fas fa-lightbulb me-2" aria-hidden="true"></i>
+                                Photo Capture Tips
+                            </h4>
+                            <ul class="mb-0 text-sm">
+                                <li>Ensure good lighting conditions</li>
+                                <li>Keep the face clearly visible and centered</li>
+                                <li>Remove sunglasses or hats</li>
+                                <li>Capture 5-10 photos from slightly different angles</li>
+                            </ul>
+                        </div>
+
+                        <hr>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="confirm_photos" value="1">
+                            
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" id="id_photos_captured" name="photos_captured" required>
+                                <label class="form-check-label" for="id_photos_captured">
+                                    <strong>Photos captured successfully</strong>
+                                    <span class="d-block text-muted text-sm">
+                                        I have captured photos for this employee
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check me-2" aria-hidden="true"></i>
+                                    Confirm Photos Captured
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Photos captured - Ready to proceed -->
+                <div class="alert alert-success d-flex align-items-center mb-4">
+                    <i class="fas fa-images fa-2x me-3" aria-hidden="true"></i>
+                    <div>
+                        <strong>Photos Captured!</strong>
+                        <p class="mb-0">Ready to train the recognition model.</p>
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <!-- Navigation -->
+        <div class="d-flex justify-content-between mt-6 pt-4 border-top">
+            <a href="{% url 'setup-wizard-step2' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2" aria-hidden="true"></i>
+                Previous Step
+            </a>
+            {% if employee_created and photos_captured %}
+                <a href="{% url 'setup-wizard-step4' %}" class="btn btn-primary btn-lg">
+                    Continue to Training
+                    <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i>
+                </a>
+            {% else %}
+                <button type="button" class="btn btn-secondary btn-lg" disabled>
+                    Complete steps above to continue
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,195 @@
+{% extends "users/setup_wizard/base_wizard.html" %}
+{% load static %}
+
+{% block wizard_content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <!-- Camera Preview Section -->
+        <div class="row mb-4">
+            <div class="col-12 col-md-6 mb-4 mb-md-0">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-camera icon-hero text-primary mb-3" aria-hidden="true"></i>
+                        <h3 class="h5 mb-3">Camera Test</h3>
+                        <p class="text-muted text-sm mb-4">
+                            Click the button below to open your camera and verify it's working correctly.
+                        </p>
+                        <div class="camera-preview-container mb-3" style="min-height: 200px; background: var(--color-bg-secondary, #f8f9fa); border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                            <video id="cameraPreview" class="d-none w-100" autoplay muted playsinline style="border-radius: 0.5rem;"></video>
+                            <div id="cameraPlaceholder" class="text-muted">
+                                <i class="fas fa-video-slash fa-3x mb-2"></i>
+                                <p class="mb-0">Camera preview will appear here</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary" id="startCamera">
+                            <i class="fas fa-video me-2" aria-hidden="true"></i>
+                            Start Camera
+                        </button>
+                        <button type="button" class="btn btn-danger d-none" id="stopCamera">
+                            <i class="fas fa-stop me-2" aria-hidden="true"></i>
+                            Stop Camera
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-user-shield icon-hero text-success mb-3" aria-hidden="true"></i>
+                        <h3 class="h5 mb-3">Liveness Detection</h3>
+                        <p class="text-muted text-sm mb-4">
+                            The system uses motion-based liveness detection to prevent photo spoofing.
+                        </p>
+                        <div class="alert alert-info text-start">
+                            <h4 class="h6 mb-2">How it works:</h4>
+                            <ul class="mb-0 text-sm ps-3">
+                                <li>Blink naturally while looking at the camera</li>
+                                <li>Move your head slightly left and right</li>
+                                <li>Keep your face within the camera frame</li>
+                            </ul>
+                        </div>
+                        <div id="livenessStatus" class="alert alert-secondary">
+                            <i class="fas fa-hourglass-half me-2" aria-hidden="true"></i>
+                            Waiting for camera test...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Form -->
+        <form method="post" id="step2Form">
+            {% csrf_token %}
+            
+            <div class="card card-accent card-accent--success mb-4">
+                <div class="card-body">
+                    <h3 class="h5 mb-3">
+                        <i class="fas fa-clipboard-check me-2 text-success" aria-hidden="true"></i>
+                        Confirmation Checklist
+                    </h3>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="id_camera_tested" name="camera_tested" {% if form.camera_tested.value %}checked{% endif %}>
+                        <label class="form-check-label" for="id_camera_tested">
+                            <strong>Camera is working correctly</strong>
+                            <span class="d-block text-muted text-sm">I can see myself in the camera preview</span>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="id_liveness_tested" name="liveness_tested" {% if form.liveness_tested.value %}checked{% endif %}>
+                        <label class="form-check-label" for="id_liveness_tested">
+                            <strong>Liveness detection is understood</strong>
+                            <span class="d-block text-muted text-sm">I understand how to pass the liveness check (blinking, head movement)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
+                    Please check both boxes to continue.
+                </div>
+            {% endif %}
+
+            <!-- Navigation -->
+            <div class="d-flex justify-content-between mt-6 pt-4 border-top">
+                <a href="{% url 'setup-wizard-step1' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2" aria-hidden="true"></i>
+                    Previous Step
+                </a>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    Continue
+                    <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startBtn = document.getElementById('startCamera');
+    const stopBtn = document.getElementById('stopCamera');
+    const preview = document.getElementById('cameraPreview');
+    const placeholder = document.getElementById('cameraPlaceholder');
+    const livenessStatus = document.getElementById('livenessStatus');
+    const cameraCheckbox = document.getElementById('id_camera_tested');
+
+    let stream = null;
+
+    function showCameraError(message) {
+        livenessStatus.className = 'alert alert-danger';
+        livenessStatus.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>' + message;
+        cameraCheckbox.checked = false;
+        stopCamera();
+    }
+
+    async function startCamera() {
+        try {
+            // Check if getUserMedia is supported
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showCameraError('Camera access is not supported in this browser.');
+                return;
+            }
+
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    facingMode: 'user'
+                } 
+            });
+
+            // Monitor track ended events (camera disconnected or permission revoked)
+            stream.getTracks().forEach(track => {
+                track.addEventListener('ended', () => {
+                    showCameraError('Camera was disconnected or permission was revoked.');
+                });
+            });
+
+            preview.srcObject = stream;
+            preview.classList.remove('d-none');
+            placeholder.classList.add('d-none');
+            startBtn.classList.add('d-none');
+            stopBtn.classList.remove('d-none');
+            
+            // Update liveness status
+            livenessStatus.className = 'alert alert-success';
+            livenessStatus.innerHTML = '<i class="fas fa-check-circle me-2"></i>Camera connected! Try moving your head to test liveness.';
+            
+            // Auto-check camera checkbox
+            cameraCheckbox.checked = true;
+        } catch (err) {
+            console.error('Camera access error:', err);
+            let message = 'Camera access denied. Please allow camera permissions.';
+            if (err.name === 'NotFoundError') {
+                message = 'No camera found. Please connect a camera and try again.';
+            } else if (err.name === 'NotAllowedError') {
+                message = 'Camera permission denied. Please allow camera access in your browser settings.';
+            } else if (err.name === 'NotReadableError') {
+                message = 'Camera is in use by another application. Please close other apps and try again.';
+            }
+            showCameraError(message);
+        }
+    }
+
+    function stopCamera() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        preview.classList.add('d-none');
+        placeholder.classList.remove('d-none');
+        startBtn.classList.remove('d-none');
+        stopBtn.classList.add('d-none');
+    }
+
+    startBtn.addEventListener('click', startCamera);
+    stopBtn.addEventListener('click', stopCamera);
+
+    // Clean up on page unload
+    window.addEventListener('beforeunload', stopCamera);
+});
+</script>
+{% endblock %}

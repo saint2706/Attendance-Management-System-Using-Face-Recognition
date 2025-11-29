@@ -1,0 +1,188 @@
+{% extends "users/setup_wizard/base_wizard.html" %}
+{% load static %}
+
+{% block wizard_content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <!-- Training Status -->
+        <div class="text-center mb-6">
+            <i class="fas fa-brain icon-hero text-primary mb-4" aria-hidden="true"></i>
+            
+            {% if model_trained %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle fa-2x mb-2" aria-hidden="true"></i>
+                    <h3 class="h5 mb-2">Model Training Complete!</h3>
+                    <p class="mb-0">The face recognition model has been trained successfully.</p>
+                </div>
+            {% elif task %}
+                <div class="alert alert-info">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h3 class="h5 mb-0">Training in Progress</h3>
+                        <code class="text-sm">{{ task.task_id }}</code>
+                    </div>
+                    <p class="mb-2">
+                        Status: <strong class="text-uppercase">{{ task.status }}</strong>
+                        {% if task.ready %}
+                            {% if task.successful %}
+                                - Completed successfully!
+                            {% else %}
+                                - Training failed. Please try again.
+                            {% endif %}
+                        {% else %}
+                            - Processing in background...
+                        {% endif %}
+                    </p>
+                    {% if not task.ready %}
+                        <div class="progress mb-3" style="height: 4px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" 
+                                 style="width: 75%"
+                                 aria-valuenow="75" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                        <p class="text-sm text-muted mb-0">
+                            <i class="fas fa-sync-alt fa-spin me-2" aria-hidden="true"></i>
+                            Refresh this page to check progress
+                        </p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p class="text-muted text-lg mb-4">
+                    The AI model needs to learn to recognize faces from the captured photos.
+                    This process runs in the background and typically takes 1-2 minutes.
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- Start Training Form -->
+        {% if not model_trained and not task %}
+            <div class="card card-accent card-accent--primary mb-4">
+                <div class="card-body">
+                    <h3 class="h5 mb-3">
+                        <i class="fas fa-rocket me-2 text-primary" aria-hidden="true"></i>
+                        Ready to Train
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Click the button below to start the training process. This will:
+                    </p>
+                    <ul class="text-muted mb-4">
+                        <li>Process all captured employee photos</li>
+                        <li>Extract facial feature embeddings</li>
+                        <li>Train the recognition classifier</li>
+                        <li>Validate model accuracy</li>
+                    </ul>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="start_training" value="1">
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-rocket me-2" aria-hidden="true"></i>
+                                Start Training
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Refresh Button for Pending Training -->
+        {% if task and not task.ready %}
+            <div class="text-center mb-4">
+                <a href="{% url 'setup-wizard-step4' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-sync-alt me-2" aria-hidden="true"></i>
+                    Refresh Status
+                </a>
+            </div>
+        {% endif %}
+
+        <!-- How It Works -->
+        <div class="card card-muted">
+            <div class="card-body">
+                <h3 class="h5 mb-3">
+                    <i class="fas fa-info-circle me-2 text-info" aria-hidden="true"></i>
+                    How Model Training Works
+                </h3>
+                <div class="row text-sm">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0">
+                                <span class="badge bg-primary rounded-circle" style="width: 24px; height: 24px; line-height: 24px;">1</span>
+                            </div>
+                            <div>
+                                <strong>Face Detection</strong>
+                                <p class="text-muted mb-0">Identifies face regions in photos using SSD detector</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0">
+                                <span class="badge bg-primary rounded-circle" style="width: 24px; height: 24px; line-height: 24px;">2</span>
+                            </div>
+                            <div>
+                                <strong>Feature Extraction</strong>
+                                <p class="text-muted mb-0">Creates 128-d embeddings using Facenet model</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0">
+                                <span class="badge bg-primary rounded-circle" style="width: 24px; height: 24px; line-height: 24px;">3</span>
+                            </div>
+                            <div>
+                                <strong>Classifier Training</strong>
+                                <p class="text-muted mb-0">SVM classifier learns to distinguish employees</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0">
+                                <span class="badge bg-primary rounded-circle" style="width: 24px; height: 24px; line-height: 24px;">4</span>
+                            </div>
+                            <div>
+                                <strong>Encryption & Storage</strong>
+                                <p class="text-muted mb-0">Model securely encrypted before saving</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="d-flex justify-content-between mt-6 pt-4 border-top">
+            <a href="{% url 'setup-wizard-step3' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2" aria-hidden="true"></i>
+                Previous Step
+            </a>
+            {% if model_trained %}
+                <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="continue" value="1">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        Continue
+                        <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i>
+                    </button>
+                </form>
+            {% else %}
+                <button type="button" class="btn btn-secondary btn-lg" disabled>
+                    Train model to continue
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if task and not task.ready %}
+<script>
+    // Auto-refresh page every 10 seconds while training
+    setTimeout(function() {
+        window.location.reload();
+    }, 10000);
+</script>
+{% endif %}
+{% endblock %}

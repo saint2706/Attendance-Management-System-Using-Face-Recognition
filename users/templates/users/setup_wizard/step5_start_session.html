@@ -1,0 +1,217 @@
+{% extends "users/setup_wizard/base_wizard.html" %}
+{% load static %}
+
+{% block wizard_content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <!-- Completion Celebration -->
+        <div class="text-center mb-6">
+            <div class="mb-4">
+                <i class="fas fa-trophy text-warning" style="font-size: 4rem;" aria-hidden="true"></i>
+            </div>
+            <h3 class="h4 mb-3">You're Almost Done!</h3>
+            <p class="text-muted text-lg">
+                Your attendance system is fully configured. Start your first attendance session to complete the setup.
+            </p>
+        </div>
+
+        <!-- Setup Summary -->
+        <div class="card card-accent card-accent--success mb-4">
+            <div class="card-header bg-success text-white">
+                <h3 class="h5 mb-0">
+                    <i class="fas fa-clipboard-check me-2" aria-hidden="true"></i>
+                    Setup Summary
+                </h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="d-flex align-items-center mb-3">
+                        <span class="badge bg-success rounded-circle me-3" style="width: 24px; height: 24px;">
+                            <i class="fas fa-check" aria-hidden="true"></i>
+                        </span>
+                        <span>Organization: <strong>{{ progress.org_name }}</strong></span>
+                    </li>
+                    <li class="d-flex align-items-center mb-3">
+                        <span class="badge bg-success rounded-circle me-3" style="width: 24px; height: 24px;">
+                            <i class="fas fa-check" aria-hidden="true"></i>
+                        </span>
+                        <span>Timezone: <strong>{{ progress.org_timezone }}</strong></span>
+                    </li>
+                    <li class="d-flex align-items-center mb-3">
+                        <span class="badge bg-success rounded-circle me-3" style="width: 24px; height: 24px;">
+                            <i class="fas fa-check" aria-hidden="true"></i>
+                        </span>
+                        <span>Camera & Liveness: <strong>Tested</strong></span>
+                    </li>
+                    <li class="d-flex align-items-center mb-3">
+                        <span class="badge bg-success rounded-circle me-3" style="width: 24px; height: 24px;">
+                            <i class="fas fa-check" aria-hidden="true"></i>
+                        </span>
+                        <span>First Employee: <strong>{{ progress.first_employee_username }}</strong></span>
+                    </li>
+                    <li class="d-flex align-items-center">
+                        <span class="badge bg-success rounded-circle me-3" style="width: 24px; height: 24px;">
+                            <i class="fas fa-check" aria-hidden="true"></i>
+                        </span>
+                        <span>Recognition Model: <strong>Trained</strong></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Start Session Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="h5 mb-0">
+                    <i class="fas fa-play-circle me-2 text-primary" aria-hidden="true"></i>
+                    Start Your First Session
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <p class="text-muted mb-4">
+                        Choose the type of attendance session you want to start:
+                    </p>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="card h-100 border-primary" style="cursor: pointer;" onclick="document.getElementById('session_check_in').click();">
+                                <div class="card-body text-center">
+                                    <input type="radio" 
+                                           class="form-check-input position-absolute" 
+                                           style="top: 1rem; right: 1rem;"
+                                           id="session_check_in" 
+                                           name="session_type" 
+                                           value="check_in" 
+                                           checked>
+                                    <i class="fas fa-sign-in-alt text-success" style="font-size: 3rem;" aria-hidden="true"></i>
+                                    <h4 class="h5 mt-3 mb-2">Check-in Session</h4>
+                                    <p class="text-muted text-sm mb-0">
+                                        Start the day by marking employees as they arrive
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100" style="cursor: pointer;" onclick="document.getElementById('session_check_out').click();">
+                                <div class="card-body text-center">
+                                    <input type="radio" 
+                                           class="form-check-input position-absolute" 
+                                           style="top: 1rem; right: 1rem;"
+                                           id="session_check_out" 
+                                           name="session_type" 
+                                           value="check_out">
+                                    <i class="fas fa-sign-out-alt text-danger" style="font-size: 3rem;" aria-hidden="true"></i>
+                                    <h4 class="h5 mt-3 mb-2">Check-out Session</h4>
+                                    <p class="text-muted text-sm mb-0">
+                                        End the day by marking employees as they leave
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
+                        The attendance session will use the camera to recognize faces and mark attendance automatically.
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-flag-checkered me-2" aria-hidden="true"></i>
+                            Complete Setup & Start Session
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- What's Next -->
+        <div class="card card-muted">
+            <div class="card-body">
+                <h3 class="h5 mb-3">
+                    <i class="fas fa-road me-2 text-info" aria-hidden="true"></i>
+                    What's Next?
+                </h3>
+                <div class="row text-sm">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex gap-2">
+                            <i class="fas fa-users text-primary mt-1" aria-hidden="true"></i>
+                            <div>
+                                <strong>Add More Employees</strong>
+                                <p class="text-muted mb-0">Register and capture photos for your team</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex gap-2">
+                            <i class="fas fa-chart-line text-success mt-1" aria-hidden="true"></i>
+                            <div>
+                                <strong>View Reports</strong>
+                                <p class="text-muted mb-0">Track attendance patterns and generate reports</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex gap-2">
+                            <i class="fas fa-cog text-warning mt-1" aria-hidden="true"></i>
+                            <div>
+                                <strong>Configure Settings</strong>
+                                <p class="text-muted mb-0">Adjust recognition thresholds and options</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex gap-2">
+                            <i class="fas fa-book text-info mt-1" aria-hidden="true"></i>
+                            <div>
+                                <strong>Read the Guide</strong>
+                                <p class="text-muted mb-0">Learn about advanced features in the docs</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="d-flex justify-content-between mt-6 pt-4 border-top">
+            <a href="{% url 'setup-wizard-step4' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2" aria-hidden="true"></i>
+                Previous Step
+            </a>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+                Skip & Go to Dashboard
+                <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add visual selection to session type cards
+    const cards = document.querySelectorAll('.card[onclick]');
+    const radios = document.querySelectorAll('input[name="session_type"]');
+    
+    function updateSelection() {
+        cards.forEach(card => {
+            const radio = card.querySelector('input[type="radio"]');
+            if (radio && radio.checked) {
+                card.classList.add('border-primary', 'bg-light');
+            } else {
+                card.classList.remove('border-primary', 'bg-light');
+            }
+        });
+    }
+    
+    radios.forEach(radio => {
+        radio.addEventListener('change', updateSelection);
+    });
+    
+    updateSelection();
+});
+</script>
+{% endblock %}

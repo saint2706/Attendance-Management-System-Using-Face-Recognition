@@ -100,6 +100,122 @@ class Time(models.Model):
         return f"{self.user.username} - {formatted_time} - {event_type}"
 
 
+class SetupWizardProgress(models.Model):
+    """
+    Tracks the progress of the setup wizard for each admin user.
+
+    This model stores the wizard state including the current step,
+    completion status, and any collected data from each step.
+    """
+
+    class Step(models.IntegerChoices):
+        """Wizard steps."""
+
+        ORG_DETAILS = 1, "Organization Details"
+        CAMERA_TEST = 2, "Camera & Liveness Test"
+        ADD_EMPLOYEE = 3, "Add First Employee"
+        TRAIN_MODEL = 4, "Train Recognition Model"
+        START_SESSION = 5, "Start Attendance Session"
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="setup_wizard_progress",
+        help_text="The admin user this wizard progress belongs to.",
+    )
+    current_step = models.IntegerField(
+        choices=Step.choices,
+        default=Step.ORG_DETAILS,
+        help_text="The current step in the setup wizard.",
+    )
+    completed = models.BooleanField(
+        default=False,
+        help_text="Whether the wizard has been completed.",
+    )
+    org_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Organization name entered in step 1.",
+    )
+    org_timezone = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Organization timezone entered in step 1.",
+    )
+    camera_tested = models.BooleanField(
+        default=False,
+        help_text="Whether the camera test was passed in step 2.",
+    )
+    liveness_tested = models.BooleanField(
+        default=False,
+        help_text="Whether the liveness test was passed in step 2.",
+    )
+    first_employee_username = models.CharField(
+        max_length=150,
+        blank=True,
+        help_text="Username of the first employee added in step 3.",
+    )
+    first_employee_photos_captured = models.BooleanField(
+        default=False,
+        help_text="Whether photos were captured for the first employee in step 3.",
+    )
+    model_trained = models.BooleanField(
+        default=False,
+        help_text="Whether the model was trained in step 4.",
+    )
+    training_task_id = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Celery task ID for the training job.",
+    )
+    first_session_started = models.BooleanField(
+        default=False,
+        help_text="Whether the first attendance session was started in step 5.",
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When the wizard progress was created.",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="When the wizard progress was last updated.",
+    )
+
+    class Meta:
+        verbose_name = "Setup Wizard Progress"
+        verbose_name_plural = "Setup Wizard Progress"
+
+    def __str__(self) -> str:
+        """Return a human readable representation."""
+        step_display = self.get_current_step_display()
+        status = "completed" if self.completed else f"step {self.current_step}"
+        return f"{self.user.username} - {status} ({step_display})"
+
+    def can_proceed_to_step(self, step: int) -> bool:
+        """Check if the user can proceed to the given step."""
+        if step == self.Step.ORG_DETAILS:
+            return True
+        if step == self.Step.CAMERA_TEST:
+            return bool(self.org_name and self.org_timezone)
+        if step == self.Step.ADD_EMPLOYEE:
+            return self.camera_tested and self.liveness_tested
+        if step == self.Step.TRAIN_MODEL:
+            return bool(self.first_employee_username and self.first_employee_photos_captured)
+        if step == self.Step.START_SESSION:
+            return self.model_trained
+        return False
+
+    def get_step_status(self, step: int) -> str:
+        """Return the status of a specific step."""
+        if step < self.current_step:
+            return "completed"
+        if step == self.current_step:
+            return "current"
+        if self.can_proceed_to_step(step):
+            return "available"
+        return "locked"
+
+
 class RecognitionAttempt(models.Model):
     """Persist metadata for each recognition attempt."""
 
