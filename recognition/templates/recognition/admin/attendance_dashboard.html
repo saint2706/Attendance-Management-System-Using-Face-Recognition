@@ -371,7 +371,7 @@
 
 {% block extra_scripts %}
 {{ block.super }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-ygbLLXPKb9BwMjlC7TZkGx/2/L1T68OuF2ZMz9G6uL0b3qS/C9x5YH4jvYt9NJxD" crossorigin="anonymous"></script>
 <script>
 (function() {
     const chartData = {{ chart_data_json|safe }};

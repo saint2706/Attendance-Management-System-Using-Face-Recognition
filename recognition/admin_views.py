@@ -210,6 +210,20 @@ def system_health_dashboard(request: HttpRequest) -> HttpResponse:
     return render(request, "recognition/admin/system_health.html", context)
 
 
+# Reusable filter for unknown face attempts
+def _unknown_face_filter() -> Q:
+    """Return a Q object to filter for unknown face attempts."""
+    return (
+        Q(successful=False)
+        & ~Q(spoof_detected=True)
+        & (Q(username="") | Q(username__isnull=True))
+    )
+
+
+# Default limit for dashboard record display
+DASHBOARD_RECORD_LIMIT = 100
+
+
 def _get_chart_data_for_period(days: int = 7) -> dict[str, Any]:
     """Aggregate recognition outcomes for the specified period for chart display."""
     since = timezone.now() - datetime.timedelta(days=days)
@@ -228,9 +242,8 @@ def _get_chart_data_for_period(days: int = 7) -> dict[str, Any]:
 
     # Get unknown face attempts (failed attempts with no username)
     unknown_attempts = list(
-        RecognitionAttempt.objects.filter(created_at__gte=since, successful=False)
-        .exclude(spoof_detected=True)
-        .filter(Q(username="") | Q(username__isnull=True))
+        RecognitionAttempt.objects.filter(created_at__gte=since)
+        .filter(_unknown_face_filter())
         .values("created_at")
     )
 
@@ -279,12 +292,11 @@ def _get_summary_stats(date_from: datetime.date | None, date_to: datetime.date |
     accepted = outcomes.filter(accepted=True).count()
     rejected = outcomes.filter(accepted=False).count()
     liveness_failures = attempts.filter(spoof_detected=True).count()
-    unknown_faces = (
-        attempts.filter(successful=False)
-        .exclude(spoof_detected=True)
-        .filter(Q(username="") | Q(username__isnull=True))
-        .count()
-    )
+    unknown_faces = attempts.filter(_unknown_face_filter()).count()
+
+    acceptance_rate = 0
+    if total_outcomes:
+        acceptance_rate = round((accepted or 0) / total_outcomes * 100, 1)
 
     return {
         "total_outcomes": total_outcomes,
@@ -292,7 +304,7 @@ def _get_summary_stats(date_from: datetime.date | None, date_to: datetime.date |
         "rejected": rejected,
         "liveness_failures": liveness_failures,
         "unknown_faces": unknown_faces,
-        "acceptance_rate": round(accepted / total_outcomes * 100, 1) if total_outcomes else 0,
+        "acceptance_rate": acceptance_rate,
     }
 
 
@@ -327,20 +339,31 @@ def attendance_dashboard(request: HttpRequest) -> HttpResponse:
         outcome_filters &= Q(username__icontains=employee)
         attempt_filters &= Q(username__icontains=employee) | Q(user__username__icontains=employee)
 
-    # Apply outcome filter
+    # Apply outcome filter - track if we should skip outcomes entirely
+    skip_outcomes = False
     if outcome_filter == "success":
         outcome_filters &= Q(accepted=True)
         attempt_filters &= Q(successful=True)
     elif outcome_filter == "liveness_fail":
         attempt_filters &= Q(spoof_detected=True)
-        outcome_filters &= Q(pk__in=[])  # No outcomes match liveness fails directly
+        # Liveness failures are only tracked in attempts, not outcomes
+        skip_outcomes = True
     elif outcome_filter == "low_confidence":
         outcome_filters &= Q(accepted=False)
         attempt_filters &= Q(successful=False) & Q(spoof_detected=False)
 
-    # Fetch filtered data
-    outcomes = RecognitionOutcome.objects.filter(outcome_filters).order_by("-created_at")[:100]
-    attempts = RecognitionAttempt.objects.filter(attempt_filters).order_by("-created_at")[:100]
+    # Fetch filtered data (limit configurable via DASHBOARD_RECORD_LIMIT)
+    if skip_outcomes:
+        outcomes = RecognitionOutcome.objects.none()
+    else:
+        outcomes = (
+            RecognitionOutcome.objects.filter(outcome_filters)
+            .order_by("-created_at")[:DASHBOARD_RECORD_LIMIT]
+        )
+    attempts = (
+        RecognitionAttempt.objects.filter(attempt_filters)
+        .order_by("-created_at")[:DASHBOARD_RECORD_LIMIT]
+    )
 
     # Get chart data
     chart_data = _get_chart_data_for_period(days=7)
