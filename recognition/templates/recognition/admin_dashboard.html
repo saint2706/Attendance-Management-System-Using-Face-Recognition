@@ -8,6 +8,9 @@
         Admin Dashboard
     </h1>
     <div class="d-flex gap-3">
+        <a href="{% url 'setup-wizard' %}" class="btn btn-primary btn-sm d-flex align-items-center">
+            <i class="fas fa-magic me-2"></i>Setup Wizard
+        </a>
         <a href="https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/blob/main/USER_GUIDE.md" target="_blank" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
             <i class="fas fa-book me-2"></i>User Guide
         </a>
@@ -23,7 +26,7 @@
         <i class="fas fa-seedling text-primary mt-1" aria-hidden="true"></i>
         <div>
             <h2 class="h5 mb-2">First-run checklist</h2>
-            <p class="mb-3 text-sm">Complete these actions to get recognition flowing end-to-end.</p>
+            <p class="mb-3 text-sm">Complete these actions to get recognition flowing end-to-end. <a href="{% url 'setup-wizard' %}" class="fw-semibold">Use the guided wizard</a> for step-by-step help.</p>
             <div class="row">
                 {% for step in onboarding_state.steps %}
                     <div class="col-12 col-lg-6 mb-2">

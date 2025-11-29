@@ -1,0 +1,147 @@
+{% extends "recognition/base.html" %}
+{% load static %}
+
+{% block title %}Setup Wizard - {{ step_title }} - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <!-- Wizard Header -->
+            <header class="text-center mb-6">
+                <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
+                    <i class="fas fa-magic text-primary" aria-hidden="true"></i>
+                    <span class="badge bg-primary">Setup Wizard</span>
+                </div>
+                <h1 class="text-3xl font-weight-bold mb-2">Welcome to Smart Attendance</h1>
+                <p class="text-muted text-lg max-w-600 mx-auto">
+                    Let's get your attendance system set up in just a few simple steps.
+                </p>
+            </header>
+
+            <!-- Progress Steps -->
+            <nav class="wizard-progress mb-6" aria-label="Setup wizard progress">
+                <ol class="d-flex justify-content-between list-unstyled mb-0 position-relative">
+                    {% for step in steps %}
+                        <li class="wizard-step flex-grow-1 text-center position-relative {% if step.status == 'completed' %}wizard-step--completed{% elif step.status == 'current' %}wizard-step--current{% elif step.status == 'available' %}wizard-step--available{% else %}wizard-step--locked{% endif %}">
+                            <div class="wizard-step-indicator mx-auto mb-2">
+                                {% if step.status == 'completed' %}
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                {% else %}
+                                    {{ step.number }}
+                                {% endif %}
+                            </div>
+                            <span class="wizard-step-label text-sm">{{ step.name }}</span>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </nav>
+
+            <!-- Step Content -->
+            <article class="card card-elevated">
+                <div class="card-body card-body-lg">
+                    <div class="text-center mb-6">
+                        <span class="badge bg-secondary mb-3">Step {{ current_step }} of {{ total_steps }}</span>
+                        <h2 class="text-2xl font-weight-bold mb-2">{{ step_title }}</h2>
+                        <p class="text-muted">{{ step_description }}</p>
+                    </div>
+
+                    {% block wizard_content %}{% endblock %}
+                </div>
+            </article>
+
+            <!-- Skip Option -->
+            <div class="text-center mt-4">
+                <p class="text-muted text-sm mb-2">
+                    Already know what you're doing?
+                </p>
+                <a href="{% url 'setup-wizard-skip' %}" class="text-sm text-muted">
+                    <i class="fas fa-forward me-1" aria-hidden="true"></i>
+                    Skip wizard and configure manually
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .wizard-progress {
+        padding: 0 1rem;
+    }
+
+    .wizard-progress ol::before {
+        content: '';
+        position: absolute;
+        top: 1.25rem;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        background: var(--color-border, #dee2e6);
+        z-index: 0;
+    }
+
+    .wizard-step-indicator {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+        background: var(--color-bg-secondary, #f8f9fa);
+        border: 2px solid var(--color-border, #dee2e6);
+        color: var(--color-text-muted, #6c757d);
+        transition: all 0.2s ease;
+    }
+
+    .wizard-step--completed .wizard-step-indicator {
+        background: var(--color-success, #198754);
+        border-color: var(--color-success, #198754);
+        color: white;
+    }
+
+    .wizard-step--current .wizard-step-indicator {
+        background: var(--color-primary, #0d6efd);
+        border-color: var(--color-primary, #0d6efd);
+        color: white;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
+    }
+
+    .wizard-step--available .wizard-step-indicator {
+        border-color: var(--color-primary, #0d6efd);
+        color: var(--color-primary, #0d6efd);
+    }
+
+    .wizard-step--locked .wizard-step-indicator {
+        opacity: 0.5;
+    }
+
+    .wizard-step-label {
+        display: block;
+        color: var(--color-text-muted, #6c757d);
+    }
+
+    .wizard-step--current .wizard-step-label {
+        color: var(--color-primary, #0d6efd);
+        font-weight: 600;
+    }
+
+    .wizard-step--completed .wizard-step-label {
+        color: var(--color-success, #198754);
+    }
+
+    @media (max-width: 768px) {
+        .wizard-step-label {
+            display: none;
+        }
+
+        .wizard-step-indicator {
+            width: 2rem;
+            height: 2rem;
+            font-size: 0.875rem;
+        }
+    }
+</style>
+{% endblock %}

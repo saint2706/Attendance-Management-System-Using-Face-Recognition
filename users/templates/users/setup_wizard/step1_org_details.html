@@ -1,0 +1,66 @@
+{% extends "users/setup_wizard/base_wizard.html" %}
+{% load crispy_forms_tags %}
+
+{% block wizard_content %}
+<form method="post" class="needs-validation" novalidate>
+    {% csrf_token %}
+    
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <!-- Organization Name -->
+            <div class="mb-4">
+                <label for="id_org_name" class="form-label">
+                    <i class="fas fa-building me-2 text-primary" aria-hidden="true"></i>
+                    Organization Name
+                </label>
+                {{ form.org_name }}
+                {% if form.org_name.help_text %}
+                    <div class="form-text">{{ form.org_name.help_text }}</div>
+                {% endif %}
+                {% if form.org_name.errors %}
+                    <div class="invalid-feedback d-block">{{ form.org_name.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Time Zone -->
+            <div class="mb-4">
+                <label for="id_org_timezone" class="form-label">
+                    <i class="fas fa-clock me-2 text-primary" aria-hidden="true"></i>
+                    Time Zone
+                </label>
+                {{ form.org_timezone }}
+                {% if form.org_timezone.help_text %}
+                    <div class="form-text">{{ form.org_timezone.help_text }}</div>
+                {% endif %}
+                {% if form.org_timezone.errors %}
+                    <div class="invalid-feedback d-block">{{ form.org_timezone.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Info Box -->
+            <div class="alert alert-info d-flex align-items-start gap-3 mb-4">
+                <i class="fas fa-info-circle mt-1" aria-hidden="true"></i>
+                <div>
+                    <p class="mb-1"><strong>Why is this important?</strong></p>
+                    <p class="mb-0 text-sm">
+                        Your organization name will appear in reports and notifications. 
+                        The timezone ensures attendance times are recorded accurately for your location.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="d-flex justify-content-between mt-6 pt-4 border-top">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2" aria-hidden="true"></i>
+            Back to Dashboard
+        </a>
+        <button type="submit" class="btn btn-primary btn-lg">
+            Continue
+            <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i>
+        </button>
+    </div>
+</form>
+{% endblock %}
