@@ -1,0 +1,430 @@
+{% extends "recognition/base.html" %}
+{% load static %}
+
+{% block title %}Model Fairness &amp; Limitations{% endblock %}
+
+{% block extra_head %}
+    <style>
+        .u-admin-page {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .u-page-header {
+            margin-bottom: 2rem;
+        }
+        .u-page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .u-page-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        .u-panel {
+            background: var(--surface-primary, #fff);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .u-panel-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .u-table-wrapper {
+            overflow-x: auto;
+        }
+        .u-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .u-table th,
+        .u-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color, #dee2e6);
+        }
+        .u-table th {
+            font-weight: 600;
+            background: var(--surface-secondary, #f8f9fa);
+        }
+        .u-table--compact th,
+        .u-table--compact td {
+            padding: 0.5rem 0.75rem;
+        }
+        .u-table-status {
+            font-family: monospace;
+        }
+        .u-empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .status-badge--success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-badge--danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status-badge--warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .list-spaced li {
+            margin-bottom: 0.5rem;
+        }
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="u-admin-page">
+    <header class="u-page-header">
+        <h1 class="u-page-title">Model Fairness &amp; Limitations</h1>
+        <p class="u-page-subtitle">
+            This dashboard surfaces fairness audit results and limitations of the face recognition model.
+            For detailed methodology, see the <a href="https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/blob/main/docs/FAIRNESS_AND_LIMITATIONS.md" target="_blank" rel="noopener">Fairness &amp; Limitations documentation</a>.
+        </p>
+    </header>
+
+    <!-- Audit Status -->
+    <section class="u-panel" aria-labelledby="audit-status">
+        <h2 id="audit-status" class="u-panel-title">Audit Status</h2>
+        {% if fairness_available %}
+            <div class="u-table-wrapper">
+                <table class="u-table u-table--compact" aria-describedby="audit-status">
+                    <caption class="visually-hidden">Last fairness audit information</caption>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Last Audit Date</th>
+                            <td>
+                                <span class="status-badge status-badge--success">{{ last_audit_date|date:"Y-m-d H:i:s" }} UTC</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Status</th>
+                            <td>
+                                <span class="status-badge status-badge--success">Completed</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="u-empty-state">
+                No fairness audit has been run yet. Generate reports by running:
+                <code>python manage.py fairness_audit --split-csv reports/splits.csv --reports-dir reports/fairness</code>
+            </p>
+        {% endif %}
+    </section>
+
+    <!-- Overall Metrics -->
+    {% if fairness_available and overall_metrics %}
+    <section class="u-panel" aria-labelledby="overall-metrics">
+        <h2 id="overall-metrics" class="u-panel-title">Overall Metrics</h2>
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact" aria-describedby="overall-metrics">
+                <caption class="visually-hidden">Aggregate fairness metrics across all groups</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Metric</th>
+                        <th scope="col">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, value in overall_metrics.items %}
+                    <tr>
+                        <td><strong>{{ key|title }}</strong></td>
+                        <td class="u-table-status">{{ value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Flagged Groups -->
+    {% if flagged_groups %}
+    <section class="u-panel" aria-labelledby="flagged-groups">
+        <h2 id="flagged-groups" class="u-panel-title">
+            <span class="status-badge status-badge--warning">Flagged Groups</span>
+        </h2>
+        <p class="u-page-subtitle" style="margin-bottom: 1rem;">
+            The following groups have elevated False Acceptance Rate (FAR &gt; 10%) or False Rejection Rate (FRR &gt; 15%) and may require attention.
+        </p>
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact" aria-describedby="flagged-groups">
+                <caption class="visually-hidden">Groups with elevated error rates requiring review</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Category</th>
+                        <th scope="col">Group</th>
+                        <th scope="col">FAR</th>
+                        <th scope="col">FRR</th>
+                        <th scope="col">Issue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in flagged_groups %}
+                    <tr>
+                        <td>{{ group.category }}</td>
+                        <td>{{ group.group }}</td>
+                        <td class="u-table-status">{{ group.far }}</td>
+                        <td class="u-table-status">{{ group.frr }}</td>
+                        <td><span class="status-badge status-badge--warning">{{ group.reason }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% elif fairness_available %}
+    <section class="u-panel" aria-labelledby="no-flagged">
+        <h2 id="no-flagged" class="u-panel-title">Flagged Groups</h2>
+        <p class="u-empty-state">
+            <span class="status-badge status-badge--success">No flagged groups</span> — All groups are within acceptable FAR/FRR thresholds.
+        </p>
+    </section>
+    {% endif %}
+
+    <!-- Metrics by Role -->
+    {% if group_metrics.by_role %}
+    <section class="u-panel" aria-labelledby="metrics-by-role">
+        <h2 id="metrics-by-role" class="u-panel-title">Metrics by Role</h2>
+        <p class="u-page-subtitle" style="margin-bottom: 1rem;">
+            Performance breakdown by user role (staff/admin vs. employee).
+        </p>
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact" aria-describedby="metrics-by-role">
+                <caption class="visually-hidden">Fairness metrics grouped by user role</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Group</th>
+                        <th scope="col">Samples</th>
+                        <th scope="col">Accuracy</th>
+                        <th scope="col">Precision</th>
+                        <th scope="col">Recall</th>
+                        <th scope="col">F1</th>
+                        <th scope="col">FAR</th>
+                        <th scope="col">FRR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in group_metrics.by_role %}
+                    <tr>
+                        <td>{{ row.group }}</td>
+                        <td>{{ row.samples }}</td>
+                        <td class="u-table-status">{{ row.accuracy }}</td>
+                        <td class="u-table-status">{{ row.precision }}</td>
+                        <td class="u-table-status">{{ row.recall }}</td>
+                        <td class="u-table-status">{{ row.f1 }}</td>
+                        <td class="u-table-status">{{ row.far }}</td>
+                        <td class="u-table-status">{{ row.frr }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Metrics by Lighting -->
+    {% if group_metrics.by_lighting %}
+    <section class="u-panel" aria-labelledby="metrics-by-lighting">
+        <h2 id="metrics-by-lighting" class="u-panel-title">Metrics by Lighting</h2>
+        <p class="u-page-subtitle" style="margin-bottom: 1rem;">
+            Performance breakdown by estimated lighting conditions (low, moderate, bright).
+        </p>
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact" aria-describedby="metrics-by-lighting">
+                <caption class="visually-hidden">Fairness metrics grouped by lighting conditions</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Condition</th>
+                        <th scope="col">Samples</th>
+                        <th scope="col">Accuracy</th>
+                        <th scope="col">Precision</th>
+                        <th scope="col">Recall</th>
+                        <th scope="col">F1</th>
+                        <th scope="col">FAR</th>
+                        <th scope="col">FRR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in group_metrics.by_lighting %}
+                    <tr>
+                        <td>{{ row.group }}</td>
+                        <td>{{ row.samples }}</td>
+                        <td class="u-table-status">{{ row.accuracy }}</td>
+                        <td class="u-table-status">{{ row.precision }}</td>
+                        <td class="u-table-status">{{ row.recall }}</td>
+                        <td class="u-table-status">{{ row.f1 }}</td>
+                        <td class="u-table-status">{{ row.far }}</td>
+                        <td class="u-table-status">{{ row.frr }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Metrics by Site -->
+    {% if group_metrics.by_site %}
+    <section class="u-panel" aria-labelledby="metrics-by-site">
+        <h2 id="metrics-by-site" class="u-panel-title">Metrics by Site</h2>
+        <p class="u-page-subtitle" style="margin-bottom: 1rem;">
+            Performance breakdown by physical location or site.
+        </p>
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact" aria-describedby="metrics-by-site">
+                <caption class="visually-hidden">Fairness metrics grouped by site location</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Site</th>
+                        <th scope="col">Samples</th>
+                        <th scope="col">Accuracy</th>
+                        <th scope="col">Precision</th>
+                        <th scope="col">Recall</th>
+                        <th scope="col">F1</th>
+                        <th scope="col">FAR</th>
+                        <th scope="col">FRR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in group_metrics.by_site %}
+                    <tr>
+                        <td>{{ row.group }}</td>
+                        <td>{{ row.samples }}</td>
+                        <td class="u-table-status">{{ row.accuracy }}</td>
+                        <td class="u-table-status">{{ row.precision }}</td>
+                        <td class="u-table-status">{{ row.recall }}</td>
+                        <td class="u-table-status">{{ row.f1 }}</td>
+                        <td class="u-table-status">{{ row.far }}</td>
+                        <td class="u-table-status">{{ row.frr }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Metrics by Source -->
+    {% if group_metrics.by_source %}
+    <section class="u-panel" aria-labelledby="metrics-by-source">
+        <h2 id="metrics-by-source" class="u-panel-title">Metrics by Source</h2>
+        <p class="u-page-subtitle" style="margin-bottom: 1rem;">
+            Performance breakdown by capture source (webcam, API, kiosk, etc.).
+        </p>
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact" aria-describedby="metrics-by-source">
+                <caption class="visually-hidden">Fairness metrics grouped by capture source</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Source</th>
+                        <th scope="col">Samples</th>
+                        <th scope="col">Accuracy</th>
+                        <th scope="col">Precision</th>
+                        <th scope="col">Recall</th>
+                        <th scope="col">F1</th>
+                        <th scope="col">FAR</th>
+                        <th scope="col">FRR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in group_metrics.by_source %}
+                    <tr>
+                        <td>{{ row.group }}</td>
+                        <td>{{ row.samples }}</td>
+                        <td class="u-table-status">{{ row.accuracy }}</td>
+                        <td class="u-table-status">{{ row.precision }}</td>
+                        <td class="u-table-status">{{ row.recall }}</td>
+                        <td class="u-table-status">{{ row.f1 }}</td>
+                        <td class="u-table-status">{{ row.far }}</td>
+                        <td class="u-table-status">{{ row.frr }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Generated Reports -->
+    {% if report_files %}
+    <section class="u-panel" aria-labelledby="generated-reports">
+        <h2 id="generated-reports" class="u-panel-title">Generated Reports</h2>
+        <p class="u-page-subtitle" style="margin-bottom: 1rem;">
+            Downloadable report files from the last audit run.
+        </p>
+        <ul class="list-spaced">
+            {% for report in report_files %}
+            <li>
+                <strong>{{ report.name }}</strong>
+                <code>reports/fairness/{{ report.path }}</code>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    <!-- Known Limitations -->
+    <section class="u-panel" aria-labelledby="known-limitations">
+        <h2 id="known-limitations" class="u-panel-title">Known Limitations</h2>
+        <ul class="list-spaced">
+            <li>
+                <strong>No demographic data:</strong> The system does not store sensitive demographic attributes (gender, ethnicity, age). Fairness is measured using proxy groups (role, site, lighting) rather than demographic groups.
+            </li>
+            <li>
+                <strong>Small sample sizes:</strong> Some groups may have very few samples, making their metrics less reliable. Review the "Samples" column before drawing conclusions.
+            </li>
+            <li>
+                <strong>Lighting heuristic:</strong> The lighting classification is based on grayscale mean pixel intensity—a coarse proxy that cannot distinguish shadows, glare, or occlusions.
+            </li>
+            <li>
+                <strong>Temporal drift:</strong> Model performance may degrade over time as cameras change or new conditions arise. Re-run audits periodically.
+            </li>
+        </ul>
+        <p style="margin-top: 1rem;">
+            For a complete discussion of limitations, see the
+            <a href="https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/blob/main/docs/FAIRNESS_AND_LIMITATIONS.md" target="_blank" rel="noopener">
+                Fairness &amp; Limitations documentation
+            </a>.
+        </p>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="u-panel" aria-labelledby="quick-actions">
+        <h2 id="quick-actions" class="u-panel-title">Quick Actions</h2>
+        <ul class="list-spaced">
+            <li><a href="{% url 'admin_evaluation_dashboard' %}">View Evaluation Dashboard</a></li>
+            <li><a href="{% url 'admin_system_health' %}">View System Health</a></li>
+            <li><a href="{% url 'admin_attendance_dashboard' %}">View Attendance Dashboard</a></li>
+        </ul>
+    </section>
+</div>
+
+{% endblock %}

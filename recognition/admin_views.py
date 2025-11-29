@@ -484,3 +484,106 @@ def export_attendance_csv(request: HttpRequest) -> HttpResponse:
         )
 
     return response
+
+
+@staff_member_required(login_url="login")
+def fairness_dashboard(request: HttpRequest) -> HttpResponse:
+    """Render model fairness & limitations dashboard for admins."""
+    reports_dir = Path(settings.BASE_DIR) / "reports" / "fairness"
+
+    context: dict[str, Any] = {
+        "fairness_available": False,
+        "last_audit_date": None,
+        "summary_content": None,
+        "group_metrics": {},
+        "flagged_groups": [],
+        "overall_metrics": {},
+    }
+
+    summary_path = reports_dir / "summary.md"
+    if summary_path.exists():
+        context["fairness_available"] = True
+
+        # Get last audit date from file modification time
+        mtime = summary_path.stat().st_mtime
+        context["last_audit_date"] = datetime.datetime.fromtimestamp(
+            mtime, tz=datetime.timezone.utc
+        )
+
+        # Parse summary.md for overall metrics
+        summary_content = summary_path.read_text(encoding="utf-8")
+        context["summary_content"] = summary_content
+
+        # Extract overall metrics from markdown table
+        overall_metrics = {}
+        in_overall_section = False
+        for line in summary_content.split("\n"):
+            if "## Overall evaluation" in line:
+                in_overall_section = True
+                continue
+            if in_overall_section and line.startswith("| ") and " | " in line:
+                parts = [p.strip() for p in line.split("|") if p.strip()]
+                if len(parts) == 2 and parts[0] not in ("Metric", "---"):
+                    overall_metrics[parts[0]] = parts[1]
+            if in_overall_section and line.startswith("## ") and "Overall" not in line:
+                in_overall_section = False
+        context["overall_metrics"] = overall_metrics
+
+    # Load group metrics from CSV files
+    csv_files = {
+        "by_role": "metrics_by_role.csv",
+        "by_site": "metrics_by_site.csv",
+        "by_source": "metrics_by_source.csv",
+        "by_lighting": "metrics_by_lighting.csv",
+    }
+
+    flagged_groups = []
+    far_threshold = 0.10  # Flag groups with FAR > 10%
+    frr_threshold = 0.15  # Flag groups with FRR > 15%
+
+    for key, filename in csv_files.items():
+        csv_path = reports_dir / filename
+        if csv_path.exists():
+            rows = []
+            with open(csv_path, encoding="utf-8", newline="") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    rows.append(row)
+                    # Check for flagged groups (high FAR or FRR)
+                    try:
+                        far = float(row.get("far", 0))
+                        frr = float(row.get("frr", 0))
+                        group_name = row.get("group", "unknown")
+                        if far > far_threshold or frr > frr_threshold:
+                            flagged_groups.append({
+                                "category": key.replace("by_", "").title(),
+                                "group": group_name,
+                                "far": f"{far:.4f}",
+                                "frr": f"{frr:.4f}",
+                                "reason": (
+                                    "High FAR" if far > far_threshold else ""
+                                ) + (
+                                    " & High FRR" if far > far_threshold and frr > frr_threshold
+                                    else ("High FRR" if frr > frr_threshold else "")
+                                ),
+                            })
+                    except (ValueError, TypeError):
+                        pass
+            context["group_metrics"][key] = rows
+
+    context["flagged_groups"] = flagged_groups
+
+    # Check for report files to link
+    report_files = []
+    if summary_path.exists():
+        report_files.append({"name": "Summary Report", "path": "summary.md"})
+    for key, filename in csv_files.items():
+        csv_path = reports_dir / filename
+        if csv_path.exists():
+            report_files.append({
+                "name": f"Metrics by {key.replace('by_', '').title()}",
+                "path": filename,
+            })
+    context["report_files"] = report_files
+
+    return render(request, "recognition/admin/fairness_dashboard.html", context)

@@ -344,5 +344,14 @@
             </table>
         </div>
     </section>
+
+    <section class="u-panel" aria-labelledby="quick-actions">
+        <h2 id="quick-actions" class="u-panel-title">Quick Actions</h2>
+        <ul class="list-spaced">
+            <li><a href="{% url 'admin_evaluation_dashboard' %}">View Evaluation Dashboard</a></li>
+            <li><a href="{% url 'admin_fairness_dashboard' %}">View Model Fairness &amp; Limitations</a></li>
+            <li><a href="{% url 'admin_attendance_dashboard' %}">View Attendance Dashboard</a></li>
+        </ul>
+    </section>
 </div>
 {% endblock %}
