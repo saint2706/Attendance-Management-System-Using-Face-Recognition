@@ -1,0 +1,435 @@
+{% extends "recognition/base.html" %}
+{% load static %}
+
+{% block title %}Attendance Dashboard{% endblock %}
+
+{% block extra_head %}
+    <style>
+        .u-admin-page {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .u-page-header {
+            margin-bottom: 2rem;
+        }
+        .u-page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .u-page-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        .u-panel {
+            background: var(--surface-primary, #fff);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .u-panel-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .u-filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 1.5rem;
+        }
+        .u-filter-form .form-group {
+            flex: 1 1 180px;
+            min-width: 140px;
+        }
+        .u-filter-form .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            color: var(--text-secondary);
+        }
+        .u-filter-form .form-control,
+        .u-filter-form .form-select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color, #dee2e6);
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+        }
+        .u-filter-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .u-stat-card {
+            background: var(--surface-secondary, #f8f9fa);
+            border-radius: 0.5rem;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+        .u-stat-card h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-primary);
+        }
+        .u-stat-card p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0.25rem 0 0;
+        }
+        .u-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .u-chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .u-export-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--primary, #0d6efd);
+            color: #fff;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .u-export-btn:hover {
+            background: var(--primary-hover, #0056b3);
+            color: #fff;
+        }
+        .u-filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--surface-secondary, #f8f9fa);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color, #dee2e6);
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .u-filter-btn:hover {
+            background: var(--surface-tertiary, #e9ecef);
+        }
+        .u-table-wrapper {
+            overflow-x: auto;
+        }
+        .u-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .u-table th,
+        .u-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color, #dee2e6);
+        }
+        .u-table th {
+            font-weight: 600;
+            background: var(--surface-secondary, #f8f9fa);
+        }
+        .u-empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .status-badge--success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-badge--danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status-badge--warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .list-spaced li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="u-admin-page">
+    <header class="u-page-header">
+        <h1 class="u-page-title">Attendance Dashboard</h1>
+        <p class="u-page-subtitle">
+            Filter attendance sessions, view metrics, and export reports. Visual charts show trends over time.
+        </p>
+    </header>
+
+    <!-- Filters & Search -->
+    <section class="u-panel" aria-labelledby="filters-section">
+        <h2 id="filters-section" class="u-panel-title">Filters &amp; Search</h2>
+        <form method="get" class="u-filter-form">
+            <div class="form-group">
+                <label for="id_date_from">From Date</label>
+                {{ form.date_from }}
+            </div>
+            <div class="form-group">
+                <label for="id_date_to">To Date</label>
+                {{ form.date_to }}
+            </div>
+            <div class="form-group">
+                <label for="id_employee">Employee</label>
+                {{ form.employee }}
+            </div>
+            <div class="form-group">
+                <label for="id_outcome">Outcome</label>
+                {{ form.outcome }}
+            </div>
+            <div class="u-filter-actions">
+                <button type="submit" class="u-filter-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                    </svg>
+                    Apply Filters
+                </button>
+                <a href="{% url 'admin_attendance_dashboard' %}" class="u-filter-btn">Clear</a>
+                <a href="{% url 'admin_attendance_export' %}?{{ request.GET.urlencode }}" class="u-export-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    </svg>
+                    Export CSV
+                </a>
+            </div>
+        </form>
+    </section>
+
+    <!-- Summary Statistics -->
+    <section class="u-panel" aria-labelledby="summary-section">
+        <h2 id="summary-section" class="u-panel-title">Summary Statistics</h2>
+        <div class="u-stat-grid">
+            <div class="u-stat-card">
+                <h3>{{ summary_stats.total_outcomes }}</h3>
+                <p>Total Outcomes</p>
+            </div>
+            <div class="u-stat-card">
+                <h3>{{ summary_stats.accepted }}</h3>
+                <p>Accepted</p>
+            </div>
+            <div class="u-stat-card">
+                <h3>{{ summary_stats.rejected }}</h3>
+                <p>Rejected</p>
+            </div>
+            <div class="u-stat-card">
+                <h3>{{ summary_stats.liveness_failures }}</h3>
+                <p>Liveness Failures</p>
+            </div>
+            <div class="u-stat-card">
+                <h3>{{ summary_stats.unknown_faces }}</h3>
+                <p>Unknown Faces</p>
+            </div>
+            <div class="u-stat-card">
+                <h3>{{ summary_stats.acceptance_rate }}%</h3>
+                <p>Acceptance Rate</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visual Charts -->
+    <section class="u-panel" aria-labelledby="charts-section">
+        <h2 id="charts-section" class="u-panel-title">Weekly Activity Chart</h2>
+        <p class="u-page-subtitle" style="margin-bottom: 1rem;">
+            Daily breakdown of check-ins, liveness failures, and unknown face attempts over the past 7 days.
+        </p>
+        <div class="u-chart-container">
+            <canvas id="attendanceChart"></canvas>
+        </div>
+    </section>
+
+    <!-- Recognition Outcomes Table -->
+    <section class="u-panel" aria-labelledby="outcomes-section">
+        <h2 id="outcomes-section" class="u-panel-title">Recognition Outcomes</h2>
+        {% if outcomes %}
+            <div class="u-table-wrapper">
+                <table class="u-table" aria-describedby="outcomes-section">
+                    <caption class="visually-hidden">Filtered recognition outcomes</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Timestamp</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Direction</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Confidence</th>
+                            <th scope="col">Distance</th>
+                            <th scope="col">Source</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for outcome in outcomes %}
+                        <tr>
+                            <td>{{ outcome.created_at|date:"Y-m-d H:i:s" }}</td>
+                            <td>{{ outcome.username|default:"-" }}</td>
+                            <td>{{ outcome.direction|default:"-" }}</td>
+                            <td>
+                                {% if outcome.accepted %}
+                                    <span class="status-badge status-badge--success">Accepted</span>
+                                {% else %}
+                                    <span class="status-badge status-badge--danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>{% if outcome.confidence is not None %}{{ outcome.confidence|floatformat:4 }}{% else %}-{% endif %}</td>
+                            <td>{% if outcome.distance is not None %}{{ outcome.distance|floatformat:4 }}{% else %}-{% endif %}</td>
+                            <td>{{ outcome.source|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="u-empty-state">No recognition outcomes match your filters.</p>
+        {% endif %}
+    </section>
+
+    <!-- Recognition Attempts Table -->
+    <section class="u-panel" aria-labelledby="attempts-section">
+        <h2 id="attempts-section" class="u-panel-title">Recognition Attempts</h2>
+        {% if attempts %}
+            <div class="u-table-wrapper">
+                <table class="u-table" aria-describedby="attempts-section">
+                    <caption class="visually-hidden">Filtered recognition attempts</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Timestamp</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Direction</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Liveness</th>
+                            <th scope="col">Source</th>
+                            <th scope="col">Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attempt in attempts %}
+                        <tr>
+                            <td>{{ attempt.created_at|date:"Y-m-d H:i:s" }}</td>
+                            <td>{{ attempt.username|default:attempt.user.username|default:"-" }}</td>
+                            <td>{{ attempt.get_direction_display }}</td>
+                            <td>
+                                {% if attempt.successful %}
+                                    <span class="status-badge status-badge--success">Success</span>
+                                {% else %}
+                                    <span class="status-badge status-badge--danger">Failed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if attempt.spoof_detected %}
+                                    <span class="status-badge status-badge--warning">Failed</span>
+                                {% else %}
+                                    <span class="status-badge status-badge--success">Passed</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ attempt.source|default:"-" }}</td>
+                            <td>{{ attempt.error_message|default:"-"|truncatewords:10 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="u-empty-state">No recognition attempts match your filters.</p>
+        {% endif %}
+    </section>
+
+    <!-- Navigation -->
+    <section class="u-panel" aria-labelledby="nav-section">
+        <h2 id="nav-section" class="u-panel-title">Related Pages</h2>
+        <ul class="list-spaced">
+            <li><a href="{% url 'admin_system_health' %}">System Health Dashboard</a></li>
+            <li><a href="{% url 'admin_evaluation_dashboard' %}">Evaluation Dashboard</a></li>
+            <li><a href="{% url 'attendance-session' %}">Live Attendance Session</a></li>
+            <li><a href="{% url 'dashboard' %}">Main Dashboard</a></li>
+        </ul>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    const chartData = {{ chart_data_json|safe }};
+    const ctx = document.getElementById('attendanceChart');
+    
+    if (ctx && chartData.labels && chartData.labels.length > 0) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: 'Check-ins',
+                        data: chartData.check_ins,
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Liveness Failures',
+                        data: chartData.liveness_failures,
+                        backgroundColor: 'rgba(255, 193, 7, 0.7)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Unknown Faces',
+                        data: chartData.unknown_faces,
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                        borderColor: 'rgba(220, 53, 69, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        ctx.parentElement.innerHTML = '<p class="u-empty-state">No chart data available for the past 7 days.</p>';
+    }
+})();
+</script>
+{% endblock %}

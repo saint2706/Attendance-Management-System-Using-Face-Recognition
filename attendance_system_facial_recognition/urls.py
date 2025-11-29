@@ -73,6 +73,16 @@ urlpatterns = [
         recog_admin_views.system_health_dashboard,
         name="admin_system_health",
     ),
+    path(
+        "admin/attendance-dashboard/",
+        recog_admin_views.attendance_dashboard,
+        name="admin_attendance_dashboard",
+    ),
+    path(
+        "admin/attendance-dashboard/export/",
+        recog_admin_views.export_attendance_csv,
+        name="admin_attendance_export",
+    ),
     # Core pages
     path("", recog_views.home, name="home"),
     path("dashboard/", recog_views.dashboard, name="dashboard"),

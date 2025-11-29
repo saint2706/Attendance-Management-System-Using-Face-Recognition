@@ -74,3 +74,44 @@ class DateForm_2(forms.Form):
         widget=forms.DateInput(attrs={"type": "date"}),
         input_formats=["%Y-%m-%d"],
     )
+
+
+class AttendanceSessionFilterForm(forms.Form):
+    """
+    A form for filtering attendance sessions and recognition outcomes.
+
+    This form is used by admins to filter sessions by date range, employee,
+    and recognition outcome (success, liveness fail, low confidence).
+    """
+
+    OUTCOME_CHOICES = [
+        ("", "All outcomes"),
+        ("success", "Success"),
+        ("liveness_fail", "Liveness failed"),
+        ("low_confidence", "Low confidence / rejected"),
+    ]
+
+    date_from = forms.DateField(
+        label="From",
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        input_formats=["%Y-%m-%d"],
+    )
+    date_to = forms.DateField(
+        label="To",
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        input_formats=["%Y-%m-%d"],
+    )
+    employee = forms.CharField(
+        label="Employee",
+        required=False,
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Username"}),
+    )
+    outcome = forms.ChoiceField(
+        label="Outcome",
+        required=False,
+        choices=OUTCOME_CHOICES,
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
