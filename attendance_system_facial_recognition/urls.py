@@ -83,6 +83,16 @@ urlpatterns = [
         recog_admin_views.export_attendance_csv,
         name="admin_attendance_export",
     ),
+    path(
+        "admin/fairness/",
+        recog_admin_views.fairness_dashboard,
+        name="admin_fairness_dashboard",
+    ),
+    path(
+        "admin/recognition-trends/",
+        recog_admin_views.recognition_accuracy_trends,
+        name="admin_recognition_trends",
+    ),
     # Core pages
     path("", recog_views.home, name="home"),
     path("dashboard/", recog_views.dashboard, name="dashboard"),

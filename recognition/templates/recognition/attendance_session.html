@@ -113,7 +113,20 @@
         </div>
     </div>
 
-    <div class="card card-elevated" id="attendance-log" data-feed-url="{% url 'attendance-session-feed' %}">
+    <!-- Privacy Notice -->
+    <div class="alert alert-info d-flex align-items-start gap-3 mb-3" role="note">
+        <i class="fas fa-shield-halved text-info mt-1" aria-hidden="true"></i>
+        <div>
+            <p class="mb-1"><strong>Privacy &amp; Data Usage</strong></p>
+            <p class="mb-0 text-sm">
+                Your facial data is processed securely using encryption. Images are only used for attendance verification 
+                and are not shared with third parties. For details, see our 
+                <a href="https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/blob/main/DATA_CARD.md" target="_blank" rel="noopener">Data Card</a>.
+            </p>
+        </div>
+    </div>
+
+    <div class="card card-elevated" id="attendance-log" data-feed-url="{% url 'attendance-session-feed' %}"">>
         <div class="table-responsive">
             <table class="table align-middle mb-0">
                 <thead class="table-light">
