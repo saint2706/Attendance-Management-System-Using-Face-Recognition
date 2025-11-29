@@ -308,6 +308,25 @@ Attendance is accepted when the cosine distance is less than or equal to `RECOGN
 
 3.  **Production deployments:** Run `python manage.py migrate` as part of the release pipeline after setting the new database variables. Review logs for schema drift and keep a recent backup of the managed Postgres instance before upgrading.
 
+## Contributing
+
+We welcome contributions from the community! Whether you're fixing a bug, improving documentation, or proposing new features, your help is appreciated.
+
+- **[Contributing Guide](CONTRIBUTING.md)**: How to set up your development environment and submit changes
+- **[Code of Conduct](CODE_OF_CONDUCT.md)**: Our community standards and expectations
+- **[Support](SUPPORT.md)**: How to get help and where to ask questions
+- **[Security Policy](SECURITY.md)**: How to report security vulnerabilities
+
+### Quick Start for Contributors
+
+1. Fork the repository
+2. Clone your fork and set up the development environment (see [CONTRIBUTING.md](CONTRIBUTING.md))
+3. Create a feature branch
+4. Make your changes with tests
+5. Submit a pull request
+
+Look for issues labeled [`good first issue`](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/labels/good%20first%20issue) if you're new to the project.
+
 ## License
 
 This project is licensed under the terms of the [LICENSE](LICENSE) file.
