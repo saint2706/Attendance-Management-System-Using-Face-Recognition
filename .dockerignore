@@ -26,6 +26,9 @@ node_modules/
 .DS_Store
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
 
 # Local data directories
 media/
@@ -41,10 +44,12 @@ docker-compose.override.yml
 reports/
 coverage.xml
 pytestdebug.log
+.tox/
 
 # Git metadata
 .git
 .gitignore
+.gitattributes
 
 # Miscellaneous cache directories
 .cache/
@@ -53,3 +58,25 @@ pytestdebug.log
 # Machine learning artifacts
 recognition/models/
 recognition/datasets/
+
+# Documentation (not needed in runtime)
+docs/
+*.md
+!README.md
+
+# GitHub specific files
+.github/
+
+# Sample data (not needed in production image)
+sample_data/
+
+# Configuration files for development tools
+.pre-commit-config.yaml
+.lighthouserc.js
+pytest.ini
+pyproject.toml
+Makefile
+
+# Environment files
+.env*
+!.env.example

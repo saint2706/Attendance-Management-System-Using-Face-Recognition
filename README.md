@@ -30,6 +30,72 @@ Attendance-Management-System-Using-Face-Recognition is a fully refactored and mo
 - **Observability:** Sentry integration plus Silk for request profiling
 - **Testing & CI:** Pytest with coverage + Playwright UI checks, executed in GitHub Actions
 
+## Docker Image
+
+Pre-built Docker images are automatically published to GitHub Container Registry (GHCR) on every push to `main` and on tagged releases.
+
+### Quick Start with Docker
+
+```bash
+# Pull the latest image
+docker pull ghcr.io/saint2706/attendance-management-system-using-face-recognition:latest
+
+# Run with minimal configuration
+docker run -d \
+  -p 8000:8000 \
+  -e DJANGO_SECRET_KEY="your-secret-key" \
+  -e DATA_ENCRYPTION_KEY="your-fernet-key" \
+  -e FACE_DATA_ENCRYPTION_KEY="your-fernet-key" \
+  -e DJANGO_ALLOWED_HOSTS="localhost,127.0.0.1" \
+  ghcr.io/saint2706/attendance-management-system-using-face-recognition:latest
+```
+
+### Available Tags
+
+| Tag | Description |
+|-----|-------------|
+| `latest` | Latest build from `main` branch |
+| `main-<sha>` | Specific commit from `main` branch (e.g., `main-abc1234`) |
+| `vX.Y.Z` | Semantic versioned release (e.g., `v1.0.0`) |
+| `X.Y.Z` | Semantic versioned release without `v` prefix |
+| `sha-<sha>` | Specific commit SHA |
+
+### Using Docker Compose
+
+For a complete local setup with PostgreSQL, Redis, and Celery workers:
+
+```bash
+# Clone the repository
+git clone https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition.git
+cd Attendance-Management-System-Using-Face-Recognition
+
+# Create environment file
+cp .env.example .env
+# Edit .env with your secrets (see Configuration section below)
+
+# Start all services
+docker compose up -d
+
+# Apply database migrations
+docker compose exec web python manage.py migrate
+
+# Create admin user
+docker compose exec web python manage.py createsuperuser
+```
+
+The application will be available at `http://localhost:8000`.
+
+### Required Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `DJANGO_SECRET_KEY` | Django secret key (generate with `secrets.token_urlsafe(50)`) |
+| `DATA_ENCRYPTION_KEY` | Fernet key for data encryption |
+| `FACE_DATA_ENCRYPTION_KEY` | Fernet key for face data encryption |
+| `DJANGO_ALLOWED_HOSTS` | Comma-separated list of allowed hosts |
+
+For complete deployment instructions including production setup, SSL configuration, and Nginx reverse proxy, see the [Deployment Guide](DEPLOYMENT.md).
+
 ## Getting Started
 
 ### Prerequisites

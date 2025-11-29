@@ -17,6 +17,7 @@ RUN apt-get update \
         libsm6 \
         libxext6 \
         libxrender1 \
+        curl \
     && rm -rf /var/lib/apt/lists/*
 
 FROM python-base AS build
@@ -57,11 +58,29 @@ ENV PATH="/venv/bin:$PATH" \
 
 WORKDIR /app
 
+# Create a non-root user for running the application
+RUN groupadd --gid 1000 appgroup \
+    && useradd --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
+
 # Copy virtual environment with installed dependencies
 COPY --from=build /venv /venv
 
 # Copy application code and collected static files
 COPY --from=build /app /app
 
+# Create directories for runtime data and set ownership
+RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
+    && chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose the application port
+EXPOSE 8000
+
+# Health check to verify the application is running
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl --fail http://localhost:8000/ || exit 1
+
 # Default command runs the production WSGI server
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "attendance_system_facial_recognition.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--threads", "4", "--worker-class", "gthread", "attendance_system_facial_recognition.wsgi:application"]
