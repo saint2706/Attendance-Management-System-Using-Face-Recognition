@@ -29,7 +29,8 @@ class TestServerSmokeTests:
         """The login page should be accessible without authentication."""
         response = client.get(reverse("login"))
         assert response.status_code == 200
-        assert b"Login" in response.content or b"login" in response.content.lower()
+        content_lower = response.content.lower()
+        assert b"login" in content_lower
 
     def test_static_files_configured(self, client: Client) -> None:
         """Static files should be served (at least in debug mode)."""
@@ -115,44 +116,36 @@ class TestKeyEndpointsSmokeTests:
 class TestManagementCommandsSmokeTests:
     """Verify management commands can be invoked without errors."""
 
-    def test_prepare_splits_command_exists(self) -> None:
+    @pytest.fixture(scope="class")
+    def available_commands(self) -> dict:
+        """Get all available management commands once per test class."""
+        from django.core.management import get_commands
+        return get_commands()
+
+    def test_prepare_splits_command_exists(self, available_commands: dict) -> None:
         """The prepare_splits management command should be importable."""
-        from django.core.management import get_commands
-        commands = get_commands()
-        assert "prepare_splits" in commands
+        assert "prepare_splits" in available_commands
 
-    def test_eval_command_exists(self) -> None:
+    def test_eval_command_exists(self, available_commands: dict) -> None:
         """The eval management command should be importable."""
-        from django.core.management import get_commands
-        commands = get_commands()
-        assert "eval" in commands
+        assert "eval" in available_commands
 
-    def test_fairness_audit_command_exists(self) -> None:
+    def test_fairness_audit_command_exists(self, available_commands: dict) -> None:
         """The fairness_audit management command should be importable."""
-        from django.core.management import get_commands
-        commands = get_commands()
-        assert "fairness_audit" in commands
+        assert "fairness_audit" in available_commands
 
-    def test_evaluate_liveness_command_exists(self) -> None:
+    def test_evaluate_liveness_command_exists(self, available_commands: dict) -> None:
         """The evaluate_liveness management command should be importable."""
-        from django.core.management import get_commands
-        commands = get_commands()
-        assert "evaluate_liveness" in commands
+        assert "evaluate_liveness" in available_commands
 
-    def test_ablation_command_exists(self) -> None:
+    def test_ablation_command_exists(self, available_commands: dict) -> None:
         """The ablation management command should be importable."""
-        from django.core.management import get_commands
-        commands = get_commands()
-        assert "ablation" in commands
+        assert "ablation" in available_commands
 
-    def test_export_reports_command_exists(self) -> None:
+    def test_export_reports_command_exists(self, available_commands: dict) -> None:
         """The export_reports management command should be importable."""
-        from django.core.management import get_commands
-        commands = get_commands()
-        assert "export_reports" in commands
+        assert "export_reports" in available_commands
 
-    def test_threshold_select_command_exists(self) -> None:
+    def test_threshold_select_command_exists(self, available_commands: dict) -> None:
         """The threshold_select management command should be importable."""
-        from django.core.management import get_commands
-        commands = get_commands()
-        assert "threshold_select" in commands
+        assert "threshold_select" in available_commands
