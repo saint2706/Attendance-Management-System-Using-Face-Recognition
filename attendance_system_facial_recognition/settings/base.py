@@ -8,6 +8,7 @@ It is configured to read sensitive values from environment variables for securit
 
 import os
 import sys
+import warnings
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -238,7 +239,11 @@ if _NIGHTLY_EVAL_SCHEDULE:
             _NIGHTLY_EVAL_SCHEDULE
         )
     except ValueError:
-        pass  # Keep default if invalid
+        warnings.warn(
+            f"Invalid CELERY_NIGHTLY_EVAL_SCHEDULE value: {_NIGHTLY_EVAL_SCHEDULE!r}. "
+            "Expected an integer (seconds). Using default.",
+            stacklevel=1,
+        )
 
 _WEEKLY_FAIRNESS_SCHEDULE = os.environ.get("CELERY_WEEKLY_FAIRNESS_SCHEDULE")
 if _WEEKLY_FAIRNESS_SCHEDULE:
@@ -247,7 +252,11 @@ if _WEEKLY_FAIRNESS_SCHEDULE:
             _WEEKLY_FAIRNESS_SCHEDULE
         )
     except ValueError:
-        pass
+        warnings.warn(
+            f"Invalid CELERY_WEEKLY_FAIRNESS_SCHEDULE value: {_WEEKLY_FAIRNESS_SCHEDULE!r}. "
+            "Expected an integer (seconds). Using default.",
+            stacklevel=1,
+        )
 
 _LIVENESS_EVAL_SCHEDULE = os.environ.get("CELERY_LIVENESS_EVAL_SCHEDULE")
 if _LIVENESS_EVAL_SCHEDULE:
@@ -256,7 +265,11 @@ if _LIVENESS_EVAL_SCHEDULE:
             _LIVENESS_EVAL_SCHEDULE
         )
     except ValueError:
-        pass
+        warnings.warn(
+            f"Invalid CELERY_LIVENESS_EVAL_SCHEDULE value: {_LIVENESS_EVAL_SCHEDULE!r}. "
+            "Expected an integer (seconds). Using default.",
+            stacklevel=1,
+        )
 
 # Feature flag to enable/disable scheduled evaluations
 CELERY_BEAT_ENABLED = _get_bool_env("CELERY_BEAT_ENABLED", default=True)

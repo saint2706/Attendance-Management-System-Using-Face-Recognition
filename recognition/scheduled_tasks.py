@@ -6,7 +6,6 @@ import logging
 import time
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Optional
 
 from django.conf import settings
 from django.db.models import Avg, Count, Q
@@ -27,7 +26,7 @@ def _get_reports_dir() -> Path:
 def _run_face_recognition_evaluation(
     evaluation_type: str,
     task_id: str,
-    limit_samples: Optional[int] = None,
+    limit_samples: int | None = None,
 ) -> ModelEvaluationResult:
     """Execute face recognition evaluation and persist results."""
     from src.evaluation.face_recognition_eval import EvaluationConfig, run_face_recognition_evaluation
@@ -91,8 +90,8 @@ def _run_face_recognition_evaluation(
 def run_scheduled_evaluation(
     self,
     evaluation_type: str = "nightly",
-    limit_samples: Optional[int] = None,
-) -> dict[str, Any]:
+    limit_samples: int | None = None,
+) -> dict:
     """
     Run a scheduled face recognition evaluation.
 
@@ -135,8 +134,8 @@ def run_scheduled_evaluation(
 @shared_task(bind=True, name="recognition.scheduled_tasks.run_fairness_audit")
 def run_fairness_audit(
     self,
-    limit_samples: Optional[int] = None,
-) -> dict[str, Any]:
+    limit_samples: int | None = None,
+) -> dict:
     """
     Run a scheduled fairness audit.
 
@@ -223,7 +222,7 @@ def run_fairness_audit(
 def run_liveness_evaluation(
     self,
     days_back: int = 7,
-) -> dict[str, Any]:
+) -> dict:
     """
     Run a scheduled liveness evaluation based on recent liveness check results.
 

@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Helpers for surfacing system health and artifact freshness to admins."""
+
+from __future__ import annotations
 
 import datetime as dt
 import logging

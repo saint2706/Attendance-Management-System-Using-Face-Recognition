@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import datetime as dt
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
-from django.utils import timezone
 
 from recognition import health
 from recognition.models import LivenessResult, ModelEvaluationResult

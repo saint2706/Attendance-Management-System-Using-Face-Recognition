@@ -393,6 +393,8 @@ class ModelEvaluationResult(models.Model):
 
         trends = {}
         metrics = ["accuracy", "precision", "recall", "f1_score", "far", "frr"]
+        # Use epsilon to avoid marking tiny numerical differences as meaningful changes
+        epsilon = 0.001
 
         for metric in metrics:
             current_val = getattr(self, metric)
@@ -404,9 +406,19 @@ class ModelEvaluationResult(models.Model):
             diff = current_val - previous_val
             # For FAR and FRR, lower is better
             if metric in ("far", "frr"):
-                direction = "improved" if diff < 0 else ("degraded" if diff > 0 else "stable")
+                if diff < -epsilon:
+                    direction = "improved"
+                elif diff > epsilon:
+                    direction = "degraded"
+                else:
+                    direction = "stable"
             else:
-                direction = "improved" if diff > 0 else ("degraded" if diff < 0 else "stable")
+                if diff > epsilon:
+                    direction = "improved"
+                elif diff < -epsilon:
+                    direction = "degraded"
+                else:
+                    direction = "stable"
 
             trends[metric] = {
                 "current": current_val,
