@@ -137,23 +137,37 @@
 
     <div class="mt-3 row text-muted text-sm">
         <div class="col-md-6">
-            <p class="mb-1">
-                <i class="fas fa-info-circle me-2"></i>
-                <strong>Liveness failed / Spoof detected:</strong><br>
-                The system detected a potential photo or screen attack. Blink or move slightly.
-            </p>
+            <div class="p-3 rounded bg-light mb-2">
+                <p class="mb-1">
+                    <i class="fas fa-shield-exclamation me-2 text-warning"></i>
+                    <strong>Liveness failed / Spoof detected</strong>
+                </p>
+                <p class="mb-0 text-sm">
+                    The system detected a potential photo, video, or screen attack. 
+                    To pass liveness checks, blink naturally or move your head slightly while 
+                    keeping your face within the camera frame.
+                    <a href="https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/blob/main/USER_GUIDE.md#troubleshooting" target="_blank" class="ms-1">Learn more</a>
+                </p>
+            </div>
         </div>
         <div class="col-md-6">
-             <p class="mb-1">
-                <i class="fas fa-eye-slash me-2"></i>
-                <strong>Face not recognized:</strong><br>
-                The confidence score was below the threshold. Improve lighting or retrain.
-            </p>
+            <div class="p-3 rounded bg-light mb-2">
+                <p class="mb-1">
+                    <i class="fas fa-eye-slash me-2 text-danger"></i>
+                    <strong>Face not recognized / Below confidence threshold</strong>
+                </p>
+                <p class="mb-0 text-sm">
+                    The face embedding distance exceeded the acceptance threshold. 
+                    Try improving lighting conditions, ensuring the face is clearly visible, 
+                    or recapture photos for better training data.
+                    <a href="https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/blob/main/USER_GUIDE.md#troubleshooting" target="_blank" class="ms-1">Learn more</a>
+                </p>
+            </div>
         </div>
     </div>
     <div class="mt-2 text-end">
-        <a href="https://github.com/v7labs/attendance-system-facial-recognition/blob/main/USER_GUIDE.md#troubleshooting" target="_blank" class="text-sm">
-            <i class="fas fa-book me-1"></i>Troubleshooting Guide
+        <a href="https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/blob/main/USER_GUIDE.md#troubleshooting" target="_blank" class="text-sm">
+            <i class="fas fa-book me-1"></i>Full Troubleshooting Guide
         </a>
     </div>
 </section>

@@ -7,9 +7,14 @@
     <h1 class="u-dashboard-title">
         Employee Dashboard
     </h1>
-    <div class="u-dashboard-badge">
-        <i class="fas fa-user-circle icon-lg" aria-hidden="true"></i>
-        <span>Welcome, {{ user.username }}!</span>
+    <div class="d-flex gap-3">
+        <a href="https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/blob/main/USER_GUIDE.md#for-employees" target="_blank" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
+            <i class="fas fa-book me-2"></i>User Guide
+        </a>
+        <div class="u-dashboard-badge">
+            <i class="fas fa-user-circle icon-lg" aria-hidden="true"></i>
+            <span>Welcome, {{ user.username }}!</span>
+        </div>
     </div>
 </header>
 
@@ -87,11 +92,16 @@
                 Need Help?
             </h2>
             <p class="text-lg mb-6 opacity-90">
-                If you have questions about using the attendance system or need assistance, please contact your administrator.
+                If you have questions about using the attendance system or need assistance, please contact your administrator or check the troubleshooting guide.
             </p>
-            <a href="{% url 'home' %}" class="btn btn-wide btn-contrast">
-                <i class="fas fa-home" aria-hidden="true"></i> Back to Home
-            </a>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{% url 'home' %}" class="btn btn-wide btn-contrast">
+                    <i class="fas fa-home" aria-hidden="true"></i> Back to Home
+                </a>
+                <a href="https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/blob/main/USER_GUIDE.md#troubleshooting" target="_blank" class="btn btn-wide btn-outline-light">
+                    <i class="fas fa-book" aria-hidden="true"></i> Troubleshooting Guide
+                </a>
+            </div>
         </div>
     </div>
 </section>
