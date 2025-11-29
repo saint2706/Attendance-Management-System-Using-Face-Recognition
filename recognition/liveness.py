@@ -2,14 +2,40 @@
 
 from __future__ import annotations
 
+import logging
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Iterable, Optional, Sequence
+from enum import Enum
+from typing import Any, Iterable, Optional, Sequence
 
 import cv2
 import numpy as np
 
 ArrayLike = np.ndarray
+
+logger = logging.getLogger(__name__)
+
+
+class ChallengeType(str, Enum):
+    """Types of liveness challenges."""
+
+    MOTION = "motion"
+    BLINK = "blink"
+    HEAD_TURN = "head_turn"
+    ANTI_SPOOF = "anti_spoof"
+
+
+@dataclass(frozen=True)
+class LivenessCheckResult:
+    """Result of a liveness check with confidence scoring."""
+
+    passed: bool
+    confidence: float
+    challenge_type: ChallengeType
+    motion_score: Optional[float] = None
+    frames_analyzed: int = 0
+    threshold_used: Optional[float] = None
+    details: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -156,6 +182,94 @@ def _compute_motion_score(frames: Sequence[ArrayLike]) -> Optional[float]:
     return float(np.median(magnitudes))
 
 
+def _compute_horizontal_motion(frames: Sequence[ArrayLike]) -> tuple[float, float]:
+    """Compute left/right motion components from optical flow.
+    
+    Returns:
+        Tuple of (left_motion, right_motion) scores.
+    """
+    left_scores: list[float] = []
+    right_scores: list[float] = []
+    
+    for prev, curr in zip(frames, frames[1:]):
+        try:
+            prev_float = prev.astype(np.float32) / 255.0
+            curr_float = curr.astype(np.float32) / 255.0
+            if hasattr(cv2, "calcOpticalFlowFarneback"):
+                flow = cv2.calcOpticalFlowFarneback(
+                    prev_float,
+                    curr_float,
+                    None,
+                    0.5,
+                    1,
+                    11,
+                    2,
+                    5,
+                    1.1,
+                    0,
+                )
+                if isinstance(flow, np.ndarray):
+                    # Horizontal flow (x component)
+                    horizontal = flow[..., 0]
+                    left_motion = float(np.mean(np.maximum(-horizontal, 0)))
+                    right_motion = float(np.mean(np.maximum(horizontal, 0)))
+                    left_scores.append(left_motion)
+                    right_scores.append(right_motion)
+        except Exception:  # pragma: no cover
+            pass
+    
+    if not left_scores:
+        return 0.0, 0.0
+    
+    return float(np.mean(left_scores)), float(np.mean(right_scores))
+
+
+def _detect_blink_pattern(frames: Sequence[ArrayLike]) -> tuple[int, float]:
+    """Detect blink patterns using eye aspect ratio changes.
+    
+    Returns:
+        Tuple of (blink_count, blink_confidence).
+    """
+    # This is a simplified blink detection using intensity variance
+    # A full implementation would use facial landmark detection
+    intensities: list[float] = []
+    
+    for frame in frames:
+        if frame is None or frame.size == 0:
+            continue
+        # Focus on upper portion of face where eyes are
+        height = frame.shape[0]
+        eye_region = frame[int(height * 0.2):int(height * 0.5), :]
+        if eye_region.size > 0:
+            intensities.append(float(np.mean(eye_region)))
+    
+    if len(intensities) < 3:
+        return 0, 0.0
+    
+    # Detect intensity dips (potential blinks)
+    intensities_arr = np.array(intensities)
+    mean_intensity = np.mean(intensities_arr)
+    threshold = mean_intensity * 0.85  # 15% drop indicates potential blink
+    
+    # Count transitions below threshold
+    below_threshold = intensities_arr < threshold
+    blink_count = 0
+    in_blink = False
+    
+    for is_below in below_threshold:
+        if is_below and not in_blink:
+            blink_count += 1
+            in_blink = True
+        elif not is_below:
+            in_blink = False
+    
+    # Confidence based on intensity variance
+    variance = float(np.var(intensities_arr))
+    confidence = min(1.0, variance / 100.0)  # Normalize variance to confidence
+    
+    return blink_count, confidence
+
+
 def is_live_face(
     frames: Sequence[ArrayLike],
     *,
@@ -188,4 +302,179 @@ def is_live_face(
     return score >= motion_threshold
 
 
-__all__ = ["LivenessBuffer", "is_live_face"]
+def check_liveness_with_challenge(
+    frames: Sequence[ArrayLike],
+    *,
+    face_region: Optional[dict[str, int]] = None,
+    challenge_type: ChallengeType = ChallengeType.MOTION,
+    motion_threshold: float = 1.1,
+    blink_required: int = 1,
+    head_turn_threshold: float = 0.02,
+) -> LivenessCheckResult:
+    """Perform a liveness check with the specified challenge type.
+    
+    Args:
+        frames: Sequence of frames to analyze.
+        face_region: Optional face bounding box for cropping.
+        challenge_type: Type of liveness challenge to perform.
+        motion_threshold: Threshold for motion-based liveness.
+        blink_required: Number of blinks required for blink challenge.
+        head_turn_threshold: Threshold for head turn detection.
+    
+    Returns:
+        LivenessCheckResult with pass/fail status and confidence.
+    """
+    min_frames = 3
+    prepared: list[ArrayLike] = []
+    
+    for frame in frames:
+        prepared_frame = _prepare_gray_frame(frame, face_region)
+        if prepared_frame is not None:
+            prepared.append(prepared_frame)
+    
+    frames_analyzed = len(prepared)
+    
+    if frames_analyzed < min_frames:
+        return LivenessCheckResult(
+            passed=False,
+            confidence=0.0,
+            challenge_type=challenge_type,
+            motion_score=None,
+            frames_analyzed=frames_analyzed,
+            threshold_used=motion_threshold,
+            details={"error": "insufficient_frames", "required": min_frames},
+        )
+    
+    if challenge_type == ChallengeType.MOTION:
+        motion_score = _compute_motion_score(prepared)
+        if motion_score is None:
+            return LivenessCheckResult(
+                passed=False,
+                confidence=0.0,
+                challenge_type=challenge_type,
+                motion_score=None,
+                frames_analyzed=frames_analyzed,
+                threshold_used=motion_threshold,
+                details={"error": "motion_computation_failed"},
+            )
+        
+        passed = motion_score >= motion_threshold
+        # Convert motion score to confidence (0-1 range)
+        confidence = min(1.0, motion_score / (motion_threshold * 2))
+        
+        return LivenessCheckResult(
+            passed=passed,
+            confidence=confidence,
+            challenge_type=challenge_type,
+            motion_score=motion_score,
+            frames_analyzed=frames_analyzed,
+            threshold_used=motion_threshold,
+            details={"raw_motion_score": motion_score},
+        )
+    
+    elif challenge_type == ChallengeType.BLINK:
+        blink_count, blink_confidence = _detect_blink_pattern(prepared)
+        passed = blink_count >= blink_required
+        
+        return LivenessCheckResult(
+            passed=passed,
+            confidence=blink_confidence,
+            challenge_type=challenge_type,
+            motion_score=None,
+            frames_analyzed=frames_analyzed,
+            threshold_used=float(blink_required),
+            details={"blink_count": blink_count, "required": blink_required},
+        )
+    
+    elif challenge_type == ChallengeType.HEAD_TURN:
+        left_motion, right_motion = _compute_horizontal_motion(prepared)
+        total_horizontal = left_motion + right_motion
+        passed = total_horizontal >= head_turn_threshold
+        confidence = min(1.0, total_horizontal / (head_turn_threshold * 2))
+        
+        return LivenessCheckResult(
+            passed=passed,
+            confidence=confidence,
+            challenge_type=challenge_type,
+            motion_score=total_horizontal,
+            frames_analyzed=frames_analyzed,
+            threshold_used=head_turn_threshold,
+            details={
+                "left_motion": left_motion,
+                "right_motion": right_motion,
+                "total_horizontal": total_horizontal,
+            },
+        )
+    
+    # Default to motion-based check for unknown challenge types
+    motion_score = _compute_motion_score(prepared)
+    passed = motion_score is not None and motion_score >= motion_threshold
+    confidence = min(1.0, (motion_score or 0) / (motion_threshold * 2))
+    
+    return LivenessCheckResult(
+        passed=passed,
+        confidence=confidence,
+        challenge_type=ChallengeType.MOTION,
+        motion_score=motion_score,
+        frames_analyzed=frames_analyzed,
+        threshold_used=motion_threshold,
+        details={"fallback": True},
+    )
+
+
+def run_multi_challenge_liveness(
+    frames: Sequence[ArrayLike],
+    *,
+    face_region: Optional[dict[str, int]] = None,
+    challenges: Sequence[ChallengeType] | None = None,
+    require_all: bool = False,
+    motion_threshold: float = 1.1,
+) -> tuple[bool, float, list[LivenessCheckResult]]:
+    """Run multiple liveness challenges and aggregate results.
+    
+    Args:
+        frames: Sequence of frames to analyze.
+        face_region: Optional face bounding box for cropping.
+        challenges: List of challenge types to run. Defaults to [MOTION].
+        require_all: If True, all challenges must pass. If False, any can pass.
+        motion_threshold: Threshold for motion-based challenges.
+    
+    Returns:
+        Tuple of (overall_passed, aggregate_confidence, individual_results).
+    """
+    if challenges is None:
+        challenges = [ChallengeType.MOTION]
+    
+    results: list[LivenessCheckResult] = []
+    
+    for challenge in challenges:
+        result = check_liveness_with_challenge(
+            frames,
+            face_region=face_region,
+            challenge_type=challenge,
+            motion_threshold=motion_threshold,
+        )
+        results.append(result)
+    
+    if not results:
+        return False, 0.0, []
+    
+    passed_count = sum(1 for r in results if r.passed)
+    total_confidence = sum(r.confidence for r in results) / len(results)
+    
+    if require_all:
+        overall_passed = all(r.passed for r in results)
+    else:
+        overall_passed = any(r.passed for r in results)
+    
+    return overall_passed, total_confidence, results
+
+
+__all__ = [
+    "LivenessBuffer",
+    "is_live_face",
+    "ChallengeType",
+    "LivenessCheckResult",
+    "check_liveness_with_challenge",
+    "run_multi_challenge_liveness",
+]

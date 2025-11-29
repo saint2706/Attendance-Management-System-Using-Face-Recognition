@@ -1,0 +1,120 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Import Threshold Profile{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="u-admin-page">
+    <header class="u-page-header">
+        <h1 class="u-page-title">Import Threshold Profile</h1>
+        <p class="u-page-subtitle">
+            Import a threshold from evaluation sweep artifacts.
+        </p>
+    </header>
+
+    {% if has_sweep_data %}
+    <section class="u-panel" aria-labelledby="sweep-heading">
+        <h2 id="sweep-heading" class="u-panel-title">Available Threshold Data</h2>
+        <div class="u-info-grid">
+            <div class="u-info-item">
+                <span class="u-info-label">Method</span>
+                <span class="u-info-value">{{ sweep_data.method|default:"manual" }}</span>
+            </div>
+            <div class="u-info-item">
+                <span class="u-info-label">Selected Threshold</span>
+                <span class="u-info-value"><strong>{{ sweep_data.threshold|floatformat:4 }}</strong></span>
+            </div>
+            {% if sweep_data.eer %}
+            <div class="u-info-item">
+                <span class="u-info-label">EER</span>
+                <span class="u-info-value">{{ sweep_data.eer|floatformat:4 }}</span>
+            </div>
+            {% endif %}
+            {% if sweep_data.f1_score %}
+            <div class="u-info-item">
+                <span class="u-info-label">F1 Score</span>
+                <span class="u-info-value">{{ sweep_data.f1_score|floatformat:4 }}</span>
+            </div>
+            {% endif %}
+            {% if sweep_data.actual_far %}
+            <div class="u-info-item">
+                <span class="u-info-label">Actual FAR</span>
+                <span class="u-info-value">{{ sweep_data.actual_far|floatformat:4 }}</span>
+            </div>
+            {% endif %}
+            {% if sweep_data.tpr %}
+            <div class="u-info-item">
+                <span class="u-info-label">TPR</span>
+                <span class="u-info-value">{{ sweep_data.tpr|floatformat:4 }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="u-panel" aria-labelledby="import-heading">
+        <h2 id="import-heading" class="u-panel-title">Import Settings</h2>
+        
+        <form method="post" class="u-form">
+            {% csrf_token %}
+            
+            <div class="u-form-row">
+                <div class="u-form-group">
+                    <label for="id_import_method" class="u-form-label">Import Method</label>
+                    {{ form.import_method }}
+                    <small class="u-form-help">Select the threshold selection method used</small>
+                </div>
+            </div>
+            
+            <div class="u-form-row">
+                <div class="u-form-group">
+                    <label for="id_profile_name" class="u-form-label">Profile Name</label>
+                    {{ form.profile_name }}
+                    <small class="u-form-help">A unique name for this profile</small>
+                    {% if form.profile_name.errors %}
+                    <div class="u-form-error">{{ form.profile_name.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="u-form-row">
+                <div class="u-form-group">
+                    <label for="id_sites" class="u-form-label">Sites (Optional)</label>
+                    {{ form.sites }}
+                    <small class="u-form-help">Comma-separated list of site codes</small>
+                </div>
+            </div>
+            
+            <div class="u-form-row">
+                <div class="u-form-group u-form-group--checkbox">
+                    {{ form.set_as_default }}
+                    <label for="id_set_as_default" class="u-form-label">Set as default profile</label>
+                </div>
+            </div>
+            
+            <div class="u-form-actions">
+                <button type="submit" class="u-btn u-btn--primary">Import Profile</button>
+                <a href="{% url 'admin_threshold_profiles' %}" class="u-btn u-btn--secondary">Cancel</a>
+            </div>
+        </form>
+    </section>
+    {% else %}
+    <section class="u-panel" aria-labelledby="no-data-heading">
+        <h2 id="no-data-heading" class="u-panel-title">No Data Available</h2>
+        <div class="u-empty-state">
+            <p>No threshold sweep data is available for import.</p>
+            <p>Run the evaluation pipeline first to generate threshold selection data:</p>
+            <pre><code>python manage.py eval
+python manage.py threshold_select --method eer</code></pre>
+            <p><a href="{% url 'admin_threshold_profiles' %}" class="u-btn u-btn--secondary">Back to Profiles</a></p>
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

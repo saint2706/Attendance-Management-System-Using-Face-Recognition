@@ -10,6 +10,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.http import FileResponse, Http404, HttpRequest
 from django.urls import include, path
@@ -92,6 +93,48 @@ urlpatterns = [
         "admin/recognition-trends/",
         recog_admin_views.recognition_accuracy_trends,
         name="admin_recognition_trends",
+    ),
+    # Threshold Profile Management
+    path(
+        "admin/threshold-profiles/",
+        recog_admin_views.threshold_profiles,
+        name="admin_threshold_profiles",
+    ),
+    path(
+        "admin/threshold-profiles/create/",
+        recog_admin_views.threshold_profile_create,
+        name="admin_threshold_profile_create",
+    ),
+    path(
+        "admin/threshold-profiles/<int:profile_id>/edit/",
+        recog_admin_views.threshold_profile_edit,
+        name="admin_threshold_profile_edit",
+    ),
+    path(
+        "admin/threshold-profiles/<int:profile_id>/delete/",
+        recog_admin_views.threshold_profile_delete,
+        name="admin_threshold_profile_delete",
+    ),
+    path(
+        "admin/threshold-profiles/<int:profile_id>/set-default/",
+        recog_admin_views.threshold_profile_set_default,
+        name="admin_threshold_profile_set_default",
+    ),
+    path(
+        "admin/threshold-profiles/import/",
+        recog_admin_views.threshold_profile_import,
+        name="admin_threshold_profile_import",
+    ),
+    path(
+        "api/threshold/",
+        recog_admin_views.threshold_profile_api,
+        name="api_threshold_profile",
+    ),
+    # Liveness Results Dashboard
+    path(
+        "admin/liveness-results/",
+        recog_admin_views.liveness_results_dashboard,
+        name="admin_liveness_results",
     ),
     # Core pages
     path("", recog_views.home, name="home"),
@@ -176,6 +219,8 @@ urlpatterns = [
     ),
     # Error/Status Pages
     path("not_authorised", recog_views.not_authorised, name="not-authorised"),
+    # Django Admin
+    path("django-admin/", admin.site.urls),
 ]
 
 if settings.DEBUG:
