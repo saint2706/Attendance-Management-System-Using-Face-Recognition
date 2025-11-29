@@ -1676,103 +1676,156 @@ def dashboard(request):
 def _build_onboarding_state(
     *, dataset_snapshot: Dict[str, Any], model_snapshot: Dict[str, Any]
 ) -> Dict[str, Any]:
-    """Summarize first-run readiness and suggested actions for admins."""
+    """Summarize first-run readiness and suggested actions for admins.
 
-    user_count = (
-        get_user_model()
-        .objects.filter(is_staff=False, is_superuser=False)
-        .count()
+    The checklist covers all prerequisites for end-to-end recognition:
+    1. Webcam connected and accessible
+    2. Encryption keys configured (FACE_DATA_ENCRYPTION_KEY)
+    3. At least one employee registered
+    4. At least one employee with photos captured
+    5. Recognition model trained
+
+    See USER_GUIDE.md for detailed setup instructions.
+    """
+    # Base URL for documentation links - use the actual repo
+    docs_base_url = (
+        "https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/blob/main"
     )
+
+    user_count = get_user_model().objects.filter(is_staff=False, is_superuser=False).count()
+    image_count = dataset_snapshot.get("image_count", 0)
+    identity_count = dataset_snapshot.get("identity_count", 0)
     onboarding_steps = []
 
-    if user_count == 0:
-        onboarding_steps.append(
-            {
-                "title": "Create your first employee",
-                "description": "Add at least one employee record so the model has someone to learn.",
-                "cta": {
-                    "url": reverse("register"),
-                    "label": "Register employee",
-                    "icon": "fa-user-plus",
-                },
-            }
-        )
-
-    if dataset_snapshot.get("image_count", 0) == 0:
-        onboarding_steps.append(
-            {
-                "title": "Capture or upload face samples",
-                "description": "Add a handful of photos per employee to build the encrypted dataset.",
-                "cta": {
-                    "url": reverse("add-photos"),
-                    "label": "Add photos",
-                    "icon": "fa-camera",
-                },
-            }
-        )
-
-    if not model_snapshot.get("model_present"):
-        onboarding_steps.append(
-            {
-                "title": "Train the recognition model",
-                "description": "Kick off training once photos are in place to enable attendance matching.",
-                "cta": {
-                    "url": reverse("train"),
-                    "label": "Start training",
-                    "icon": "fa-brain",
-                },
-            }
-        )
-
-    if not onboarding_steps and model_snapshot.get("stale"):
-        onboarding_steps.append(
-            {
-                "title": "Refresh the model",
-                "description": "New photos were added after the last training run. Retrain to keep matches accurate.",
-                "cta": {
-                    "url": reverse("train"),
-                    "label": "Retrain now",
-                    "icon": "fa-rotate-right",
-                },
-            }
-        )
-
+    # Step 1: Encryption keys must be configured for secure biometric storage
     if not os.environ.get("FACE_DATA_ENCRYPTION_KEY"):
-        onboarding_steps.insert(
-            0,
+        onboarding_steps.append(
             {
                 "title": "Configure encryption keys",
-                "description": "Set FACE_DATA_ENCRYPTION_KEY in your environment to secure biometric data.",
+                "description": (
+                    "Set FACE_DATA_ENCRYPTION_KEY in your environment to encrypt "
+                    "biometric data at rest. See the Deployment Guide for details."
+                ),
                 "cta": {
-                    "url": "https://github.com/v7labs/attendance-system-facial-recognition/blob/main/DEPLOYMENT.md#3-configuration",
+                    "url": f"{docs_base_url}/DEPLOYMENT.md#3-configuration",
                     "label": "View Config Guide",
                     "icon": "fa-key",
                 },
             },
         )
 
-    if user_count == 0 and not dataset_snapshot.get("image_count", 0):
-        onboarding_steps.insert(
-            0,
+    # Step 2: Webcam availability check (shown when no employees or photos exist)
+    if user_count == 0 and image_count == 0:
+        onboarding_steps.append(
             {
                 "title": "Connect a webcam",
-                "description": "Ensure a webcam is connected and accessible for capturing photos.",
+                "description": (
+                    "Ensure a webcam is connected and accessible for capturing photos. "
+                    "Grant browser camera permissions when prompted."
+                ),
                 "cta": {
-                    "url": "https://github.com/v7labs/attendance-system-facial-recognition/blob/main/USER_GUIDE.md#troubleshooting",
-                    "label": "Troubleshoot",
+                    "url": f"{docs_base_url}/USER_GUIDE.md#troubleshooting",
+                    "label": "Troubleshooting Guide",
                     "icon": "fa-video",
                 },
             },
         )
 
+    # Step 3: At least one employee must be registered
+    if user_count == 0:
+        onboarding_steps.append(
+            {
+                "title": "Register your first employee",
+                "description": (
+                    "Add at least one employee account. Each employee needs a username "
+                    "and profile before you can capture their photos."
+                ),
+                "cta": {
+                    "url": reverse("register"),
+                    "label": "Register Employee",
+                    "icon": "fa-user-plus",
+                },
+            }
+        )
+
+    # Step 4: At least one employee must have photos captured
+    if image_count == 0:
+        onboarding_steps.append(
+            {
+                "title": "Capture employee photos",
+                "description": (
+                    "Use the webcam to capture face photos for each employee. "
+                    "Multiple photos improve recognition accuracy."
+                ),
+                "cta": {
+                    "url": reverse("add-photos"),
+                    "label": "Add Photos",
+                    "icon": "fa-camera",
+                },
+            }
+        )
+    elif user_count > 0 and identity_count < user_count:
+        # Some employees exist but not all have photos
+        onboarding_steps.append(
+            {
+                "title": "Add photos for remaining employees",
+                "description": (
+                    f"Only {identity_count} of {user_count} employees have photos. "
+                    "Capture photos for all employees to enable recognition."
+                ),
+                "cta": {
+                    "url": reverse("add-photos"),
+                    "label": "Add Photos",
+                    "icon": "fa-camera",
+                },
+            }
+        )
+
+    # Step 5: Model must be trained
+    if not model_snapshot.get("model_present"):
+        onboarding_steps.append(
+            {
+                "title": "Train the recognition model",
+                "description": (
+                    "Start training once photos are captured. The model learns to "
+                    "recognize employees from their face embeddings."
+                ),
+                "cta": {
+                    "url": reverse("train"),
+                    "label": "Start Training",
+                    "icon": "fa-brain",
+                },
+            }
+        )
+    elif model_snapshot.get("stale"):
+        # Model exists but is outdated
+        onboarding_steps.append(
+            {
+                "title": "Retrain the model",
+                "description": (
+                    "New photos were added since the last training. "
+                    "Retrain to include the latest employee data."
+                ),
+                "cta": {
+                    "url": reverse("train"),
+                    "label": "Retrain Now",
+                    "icon": "fa-rotate-right",
+                },
+            }
+        )
+
     readiness = {
+        "has_encryption_key": bool(os.environ.get("FACE_DATA_ENCRYPTION_KEY")),
         "has_users": user_count > 0,
-        "has_dataset": dataset_snapshot.get("image_count", 0) > 0,
+        "has_dataset": image_count > 0,
+        "all_users_have_photos": user_count > 0 and identity_count >= user_count,
         "model_ready": bool(model_snapshot.get("model_present")),
+        "model_fresh": not model_snapshot.get("stale", False),
     }
 
     return {
         "user_count": user_count,
+        "identity_count": identity_count,
         "readiness": readiness,
         "steps": onboarding_steps,
         "model_stale": model_snapshot.get("stale", False),
@@ -2147,9 +2200,7 @@ def attendance_session(request):
         return redirect("not-authorised")
 
     dataset_snapshot = health.dataset_health()
-    model_snapshot = health.model_health(
-        dataset_last_updated=dataset_snapshot.get("last_updated")
-    )
+    model_snapshot = health.model_health(dataset_last_updated=dataset_snapshot.get("last_updated"))
     onboarding_state = _build_onboarding_state(
         dataset_snapshot=dataset_snapshot, model_snapshot=model_snapshot
     )
@@ -2179,12 +2230,8 @@ def attendance_session_feed(request) -> JsonResponse:
         minutes = 60
 
     since = timezone.now() - datetime.timedelta(minutes=max(minutes, 1))
-    outcome_records = RecognitionOutcome.objects.filter(created_at__gte=since)[
-        :50
-    ]
-    attempt_records = RecognitionAttempt.objects.filter(created_at__gte=since)[
-        :50
-    ]
+    outcome_records = RecognitionOutcome.objects.filter(created_at__gte=since)[:50]
+    attempt_records = RecognitionAttempt.objects.filter(created_at__gte=since)[:50]
 
     events: list[dict[str, Any]] = []
     for outcome in outcome_records:
@@ -2208,8 +2255,7 @@ def attendance_session_feed(request) -> JsonResponse:
             {
                 "event_type": "attempt",
                 "timestamp": attempt.created_at.isoformat(),
-                "username": attempt.username
-                or (attempt.user.username if attempt.user else ""),
+                "username": attempt.username or (attempt.user.username if attempt.user else ""),
                 "direction": attempt.direction,
                 "successful": attempt.successful,
                 "liveness": liveness_status,
