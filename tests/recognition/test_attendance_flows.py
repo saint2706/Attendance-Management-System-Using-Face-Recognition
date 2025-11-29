@@ -268,11 +268,14 @@ def test_registration_training_and_attendance_flow(client, django_user_model, mo
     class _CaptureResult:
         id = "capture-task-id"
 
+    def _mock_capture_delay(username):
+        capture_request["username"] = username
+        return _CaptureResult()
+
     monkeypatch.setattr(
         tasks.capture_dataset,
         "delay",
-        lambda username: capture_request.setdefault("username", username)
-        or _CaptureResult(),
+        _mock_capture_delay,
     )
 
     add_photos_response = client.post(reverse("add-photos"), data={"username": employee.username})
@@ -285,11 +288,14 @@ def test_registration_training_and_attendance_flow(client, django_user_model, mo
 
     train_request: Dict[str, str | None] = {}
 
+    def _mock_train_delay(initiated_by=None):
+        train_request["initiated_by"] = initiated_by
+        return _TrainResult()
+
     monkeypatch.setattr(
         tasks.train_recognition_model,
         "delay",
-        lambda initiated_by=None: train_request.setdefault("initiated_by", initiated_by)
-        or _TrainResult(),
+        _mock_train_delay,
     )
 
     training_response = client.post(reverse("train"))
