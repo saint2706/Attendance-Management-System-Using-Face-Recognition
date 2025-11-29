@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import csv
+import datetime
 import json
 from pathlib import Path
 from typing import Any, Callable
@@ -13,8 +15,12 @@ from django.db.models.functions import TruncDate, TruncWeek
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
+
+from users.models import RecognitionAttempt
 
 from . import health, monitoring
+from .forms import AttendanceSessionFilterForm
 from .models import RecognitionOutcome
 
 
@@ -202,3 +208,279 @@ def system_health_dashboard(request: HttpRequest) -> HttpResponse:
         "metrics_url": request.build_absolute_uri(reverse("monitoring-metrics")),
     }
     return render(request, "recognition/admin/system_health.html", context)
+
+
+# Reusable filter for unknown face attempts
+def _unknown_face_filter() -> Q:
+    """Return a Q object to filter for unknown face attempts."""
+    return (
+        Q(successful=False)
+        & ~Q(spoof_detected=True)
+        & (Q(username="") | Q(username__isnull=True))
+    )
+
+
+# Default limit for dashboard record display
+DASHBOARD_RECORD_LIMIT = 100
+
+
+def _get_chart_data_for_period(days: int = 7) -> dict[str, Any]:
+    """Aggregate recognition outcomes for the specified period for chart display."""
+    since = timezone.now() - datetime.timedelta(days=days)
+
+    # Use simpler aggregation to avoid SQLite compatibility issues
+    outcomes = list(
+        RecognitionOutcome.objects.filter(created_at__gte=since)
+        .values("created_at", "accepted")
+    )
+
+    # Get liveness failure data from RecognitionAttempt
+    liveness_attempts = list(
+        RecognitionAttempt.objects.filter(created_at__gte=since, spoof_detected=True)
+        .values("created_at")
+    )
+
+    # Get unknown face attempts (failed attempts with no username)
+    unknown_attempts = list(
+        RecognitionAttempt.objects.filter(created_at__gte=since)
+        .filter(_unknown_face_filter())
+        .values("created_at")
+    )
+
+    # Aggregate by day in Python to avoid SQLite EXPLAIN issues with aggregates
+    daily_check_ins: dict[str, int] = {}
+    for outcome in outcomes:
+        if outcome.get("accepted"):
+            day = outcome["created_at"].date().isoformat()
+            daily_check_ins[day] = daily_check_ins.get(day, 0) + 1
+
+    daily_liveness: dict[str, int] = {}
+    for attempt in liveness_attempts:
+        day = attempt["created_at"].date().isoformat()
+        daily_liveness[day] = daily_liveness.get(day, 0) + 1
+
+    daily_unknown: dict[str, int] = {}
+    for attempt in unknown_attempts:
+        day = attempt["created_at"].date().isoformat()
+        daily_unknown[day] = daily_unknown.get(day, 0) + 1
+
+    # Collect all unique days and sort them
+    all_days = set(daily_check_ins.keys()) | set(daily_liveness.keys()) | set(daily_unknown.keys())
+    sorted_days = sorted(all_days)
+
+    return {
+        "labels": sorted_days,
+        "check_ins": [daily_check_ins.get(day, 0) for day in sorted_days],
+        "liveness_failures": [daily_liveness.get(day, 0) for day in sorted_days],
+        "unknown_faces": [daily_unknown.get(day, 0) for day in sorted_days],
+    }
+
+
+def _get_summary_stats(date_from: datetime.date | None, date_to: datetime.date | None) -> dict:
+    """Calculate summary statistics for the given date range."""
+    filters = Q()
+
+    if date_from:
+        filters &= Q(created_at__date__gte=date_from)
+    if date_to:
+        filters &= Q(created_at__date__lte=date_to)
+
+    outcomes = RecognitionOutcome.objects.filter(filters)
+    attempts = RecognitionAttempt.objects.filter(filters)
+
+    total_outcomes = outcomes.count()
+    accepted = outcomes.filter(accepted=True).count()
+    rejected = outcomes.filter(accepted=False).count()
+    liveness_failures = attempts.filter(spoof_detected=True).count()
+    unknown_faces = attempts.filter(_unknown_face_filter()).count()
+
+    acceptance_rate = 0
+    if total_outcomes:
+        acceptance_rate = round((accepted or 0) / total_outcomes * 100, 1)
+
+    return {
+        "total_outcomes": total_outcomes,
+        "accepted": accepted,
+        "rejected": rejected,
+        "liveness_failures": liveness_failures,
+        "unknown_faces": unknown_faces,
+        "acceptance_rate": acceptance_rate,
+    }
+
+
+@staff_member_required(login_url="login")
+def attendance_dashboard(request: HttpRequest) -> HttpResponse:
+    """Render attendance dashboard with filters, search, and visual charts."""
+    form = AttendanceSessionFilterForm(request.GET or None)
+
+    # Default to last 7 days if no filter is provided
+    date_from = None
+    date_to = None
+    employee = None
+    outcome_filter = None
+
+    if form.is_valid():
+        date_from = form.cleaned_data.get("date_from")
+        date_to = form.cleaned_data.get("date_to")
+        employee = form.cleaned_data.get("employee")
+        outcome_filter = form.cleaned_data.get("outcome")
+
+    # Build queryset filters
+    outcome_filters = Q()
+    attempt_filters = Q()
+
+    if date_from:
+        outcome_filters &= Q(created_at__date__gte=date_from)
+        attempt_filters &= Q(created_at__date__gte=date_from)
+    if date_to:
+        outcome_filters &= Q(created_at__date__lte=date_to)
+        attempt_filters &= Q(created_at__date__lte=date_to)
+    if employee:
+        outcome_filters &= Q(username__icontains=employee)
+        attempt_filters &= Q(username__icontains=employee) | Q(user__username__icontains=employee)
+
+    # Apply outcome filter - track if we should skip outcomes entirely
+    skip_outcomes = False
+    if outcome_filter == "success":
+        outcome_filters &= Q(accepted=True)
+        attempt_filters &= Q(successful=True)
+    elif outcome_filter == "liveness_fail":
+        attempt_filters &= Q(spoof_detected=True)
+        # Liveness failures are only tracked in attempts, not outcomes
+        skip_outcomes = True
+    elif outcome_filter == "low_confidence":
+        outcome_filters &= Q(accepted=False)
+        attempt_filters &= Q(successful=False) & Q(spoof_detected=False)
+
+    # Fetch filtered data (limit configurable via DASHBOARD_RECORD_LIMIT)
+    if skip_outcomes:
+        outcomes = RecognitionOutcome.objects.none()
+    else:
+        outcomes = (
+            RecognitionOutcome.objects.filter(outcome_filters)
+            .order_by("-created_at")[:DASHBOARD_RECORD_LIMIT]
+        )
+    attempts = (
+        RecognitionAttempt.objects.filter(attempt_filters)
+        .order_by("-created_at")[:DASHBOARD_RECORD_LIMIT]
+    )
+
+    # Get chart data
+    chart_data = _get_chart_data_for_period(days=7)
+    summary_stats = _get_summary_stats(date_from, date_to)
+
+    context = {
+        "form": form,
+        "outcomes": outcomes,
+        "attempts": attempts,
+        "chart_data_json": json.dumps(chart_data),
+        "summary_stats": summary_stats,
+    }
+    return render(request, "recognition/admin/attendance_dashboard.html", context)
+
+
+@staff_member_required(login_url="login")
+def export_attendance_csv(request: HttpRequest) -> HttpResponse:
+    """Export filtered attendance data as CSV."""
+    form = AttendanceSessionFilterForm(request.GET or None)
+
+    date_from = None
+    date_to = None
+    employee = None
+    outcome_filter = None
+
+    if form.is_valid():
+        date_from = form.cleaned_data.get("date_from")
+        date_to = form.cleaned_data.get("date_to")
+        employee = form.cleaned_data.get("employee")
+        outcome_filter = form.cleaned_data.get("outcome")
+
+    # Build queryset filters for outcomes
+    outcome_filters = Q()
+    if date_from:
+        outcome_filters &= Q(created_at__date__gte=date_from)
+    if date_to:
+        outcome_filters &= Q(created_at__date__lte=date_to)
+    if employee:
+        outcome_filters &= Q(username__icontains=employee)
+    if outcome_filter == "success":
+        outcome_filters &= Q(accepted=True)
+    elif outcome_filter == "low_confidence":
+        outcome_filters &= Q(accepted=False)
+
+    outcomes = RecognitionOutcome.objects.filter(outcome_filters).order_by("-created_at")
+
+    # Build queryset filters for attempts
+    attempt_filters = Q()
+    if date_from:
+        attempt_filters &= Q(created_at__date__gte=date_from)
+    if date_to:
+        attempt_filters &= Q(created_at__date__lte=date_to)
+    if employee:
+        attempt_filters &= Q(username__icontains=employee) | Q(user__username__icontains=employee)
+    if outcome_filter == "success":
+        attempt_filters &= Q(successful=True)
+    elif outcome_filter == "liveness_fail":
+        attempt_filters &= Q(spoof_detected=True)
+    elif outcome_filter == "low_confidence":
+        attempt_filters &= Q(successful=False) & Q(spoof_detected=False)
+
+    attempts = RecognitionAttempt.objects.filter(attempt_filters).order_by("-created_at")
+
+    # Create CSV response
+    response = HttpResponse(content_type="text/csv")
+    filename = f"attendance_report_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+    writer.writerow(
+        [
+            "Timestamp",
+            "Username",
+            "Direction",
+            "Status",
+            "Confidence",
+            "Distance",
+            "Threshold",
+            "Liveness",
+            "Source",
+            "Error Message",
+        ]
+    )
+
+    # Write outcomes
+    for outcome in outcomes:
+        writer.writerow(
+            [
+                outcome.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                outcome.username,
+                outcome.direction,
+                "Accepted" if outcome.accepted else "Rejected",
+                f"{outcome.confidence:.4f}" if outcome.confidence is not None else "",
+                f"{outcome.distance:.4f}" if outcome.distance is not None else "",
+                f"{outcome.threshold:.4f}" if outcome.threshold is not None else "",
+                "",
+                outcome.source,
+                "",
+            ]
+        )
+
+    # Write attempts (only those not already covered by outcomes)
+    for attempt in attempts:
+        liveness_status = "Failed" if attempt.spoof_detected else "Passed"
+        writer.writerow(
+            [
+                attempt.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                attempt.username or (attempt.user.username if attempt.user else ""),
+                attempt.direction,
+                "Success" if attempt.successful else "Failed",
+                "",
+                "",
+                "",
+                liveness_status,
+                attempt.source,
+                attempt.error_message,
+            ]
+        )
+
+    return response

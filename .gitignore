@@ -7,6 +7,10 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# Egg info
+*.egg-info/
+src/*.egg-info/
+
 # Media files
 media/
 face_recognition_data/
