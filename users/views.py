@@ -295,6 +295,8 @@ def setup_wizard_step4(request):
             if result.successful():
                 progress.model_trained = True
                 progress.save()
+        except ImportError:
+            logger.warning("Celery is not available; task status cannot be retrieved.")
         except Exception:
             logger.debug("Could not fetch task status", exc_info=True)
 
@@ -313,6 +315,11 @@ def setup_wizard_step4(request):
                     f"Training started! Task ID: {async_result.id}",
                 )
                 return redirect("setup-wizard-step4")
+            except ImportError:
+                logger.exception("Celery tasks not available")
+                messages.error(
+                    request, "Training service not available. Please check configuration."
+                )
             except Exception:
                 logger.exception("Failed to start training")
                 messages.error(request, "Failed to start training. Please try again.")

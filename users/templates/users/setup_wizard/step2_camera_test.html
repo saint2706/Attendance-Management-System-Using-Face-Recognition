@@ -118,8 +118,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let stream = null;
 
+    function showCameraError(message) {
+        livenessStatus.className = 'alert alert-danger';
+        livenessStatus.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>' + message;
+        cameraCheckbox.checked = false;
+        stopCamera();
+    }
+
     async function startCamera() {
         try {
+            // Check if getUserMedia is supported
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showCameraError('Camera access is not supported in this browser.');
+                return;
+            }
+
             stream = await navigator.mediaDevices.getUserMedia({ 
                 video: { 
                     width: { ideal: 640 },
@@ -127,6 +140,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     facingMode: 'user'
                 } 
             });
+
+            // Monitor track ended events (camera disconnected or permission revoked)
+            stream.getTracks().forEach(track => {
+                track.addEventListener('ended', () => {
+                    showCameraError('Camera was disconnected or permission was revoked.');
+                });
+            });
+
             preview.srcObject = stream;
             preview.classList.remove('d-none');
             placeholder.classList.add('d-none');
@@ -140,9 +161,16 @@ document.addEventListener('DOMContentLoaded', function() {
             // Auto-check camera checkbox
             cameraCheckbox.checked = true;
         } catch (err) {
-            console.error('Camera access denied:', err);
-            livenessStatus.className = 'alert alert-danger';
-            livenessStatus.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Camera access denied. Please allow camera permissions.';
+            console.error('Camera access error:', err);
+            let message = 'Camera access denied. Please allow camera permissions.';
+            if (err.name === 'NotFoundError') {
+                message = 'No camera found. Please connect a camera and try again.';
+            } else if (err.name === 'NotAllowedError') {
+                message = 'Camera permission denied. Please allow camera access in your browser settings.';
+            } else if (err.name === 'NotReadableError') {
+                message = 'Camera is in use by another application. Please close other apps and try again.';
+            }
+            showCameraError(message);
         }
     }
 
