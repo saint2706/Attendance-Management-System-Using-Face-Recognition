@@ -251,3 +251,172 @@ class RecognitionOutcome(models.Model):
 
         cutoff = timezone.now() - timedelta(days=days)
         cls.objects.filter(created_at__lt=cutoff).delete()
+
+
+class ModelEvaluationResult(models.Model):
+    """Persisted evaluation metrics for tracking model health over time."""
+
+    class EvaluationType(models.TextChoices):
+        SCHEDULED_NIGHTLY = "nightly", "Scheduled Nightly"
+        SCHEDULED_WEEKLY = "weekly", "Scheduled Weekly"
+        FAIRNESS_AUDIT = "fairness", "Fairness Audit"
+        LIVENESS_EVAL = "liveness", "Liveness Evaluation"
+        MANUAL = "manual", "Manual Evaluation"
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    evaluation_type = models.CharField(
+        max_length=16,
+        choices=EvaluationType.choices,
+        default=EvaluationType.MANUAL,
+    )
+
+    # Core evaluation metrics
+    accuracy = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Overall accuracy of the model",
+    )
+    precision = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Weighted precision score",
+    )
+    recall = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Weighted recall score",
+    )
+    f1_score = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Weighted F1 score",
+    )
+    far = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="False Accept Rate",
+    )
+    frr = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="False Reject Rate",
+    )
+
+    # Evaluation metadata
+    samples_evaluated = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of samples used for evaluation",
+    )
+    threshold_used = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Distance threshold used for evaluation",
+    )
+    identities_evaluated = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of unique identities in evaluation set",
+    )
+
+    # Liveness-specific metrics
+    liveness_pass_rate = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Liveness check pass rate (0.0 to 1.0)",
+    )
+    liveness_samples = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of liveness checks evaluated",
+    )
+
+    # Task tracking
+    task_id = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Celery task ID that generated this result",
+    )
+    duration_seconds = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Time taken to run the evaluation in seconds",
+    )
+    error_message = models.TextField(
+        blank=True,
+        help_text="Error message if evaluation failed",
+    )
+    success = models.BooleanField(
+        default=True,
+        help_text="Whether the evaluation completed successfully",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["created_at", "evaluation_type"]),
+            models.Index(fields=["evaluation_type", "success"]),
+        ]
+        verbose_name = "Model Evaluation Result"
+        verbose_name_plural = "Model Evaluation Results"
+
+    def __str__(self) -> str:
+        status = "✓" if self.success else "✗"
+        return f"{status} {self.get_evaluation_type_display()} @ {self.created_at:%Y-%m-%d %H:%M}"
+
+    @classmethod
+    def get_latest(
+        cls, evaluation_type: Optional[str] = None, successful_only: bool = True
+    ) -> Optional["ModelEvaluationResult"]:
+        """Return the most recent evaluation result."""
+        qs = cls.objects.all()
+        if evaluation_type:
+            qs = qs.filter(evaluation_type=evaluation_type)
+        if successful_only:
+            qs = qs.filter(success=True)
+        return qs.order_by("-created_at").first()
+
+    @classmethod
+    def get_previous(
+        cls, current: "ModelEvaluationResult", evaluation_type: Optional[str] = None
+    ) -> Optional["ModelEvaluationResult"]:
+        """Return the evaluation result immediately before the provided one."""
+        qs = cls.objects.filter(created_at__lt=current.created_at, success=True)
+        if evaluation_type:
+            qs = qs.filter(evaluation_type=evaluation_type)
+        return qs.order_by("-created_at").first()
+
+    def compute_trend(self, previous: Optional["ModelEvaluationResult"] = None) -> dict:
+        """Compute metric trends compared to the previous evaluation."""
+        if previous is None:
+            previous = self.get_previous(self, self.evaluation_type)
+
+        if previous is None:
+            return {"has_previous": False, "trends": {}}
+
+        trends = {}
+        metrics = ["accuracy", "precision", "recall", "f1_score", "far", "frr"]
+
+        for metric in metrics:
+            current_val = getattr(self, metric)
+            previous_val = getattr(previous, metric)
+
+            if current_val is None or previous_val is None:
+                continue
+
+            diff = current_val - previous_val
+            # For FAR and FRR, lower is better
+            if metric in ("far", "frr"):
+                direction = "improved" if diff < 0 else ("degraded" if diff > 0 else "stable")
+            else:
+                direction = "improved" if diff > 0 else ("degraded" if diff < 0 else "stable")
+
+            trends[metric] = {
+                "current": current_val,
+                "previous": previous_val,
+                "diff": diff,
+                "direction": direction,
+            }
+
+        return {
+            "has_previous": True,
+            "previous_date": previous.created_at,
+            "trends": trends,
+        }

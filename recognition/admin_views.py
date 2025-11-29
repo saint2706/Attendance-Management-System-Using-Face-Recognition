@@ -200,12 +200,14 @@ def system_health_dashboard(request: HttpRequest) -> HttpResponse:
     model = health.model_health(dataset_last_updated=dataset.get("last_updated"))
     recognition_state = health.recognition_activity()
     worker_state = health.worker_health()
+    evaluation_state = health.evaluation_health()
     context = {
         "snapshot": snapshot,
         "dataset": dataset,
         "model": model,
         "recognition_state": recognition_state,
         "worker_state": worker_state,
+        "evaluation_state": evaluation_state,
         "metrics_url": request.build_absolute_uri(reverse("monitoring-metrics")),
     }
     return render(request, "recognition/admin/system_health.html", context)

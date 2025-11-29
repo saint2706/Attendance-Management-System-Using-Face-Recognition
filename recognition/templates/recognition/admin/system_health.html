@@ -35,7 +35,7 @@
                 <tbody>
                     {% for key, value in snapshot.thresholds.items %}
                     <tr>
-                        <td>{{ key|replace:"_"," "|title }}</td>
+                        <td>{{ key }}</td>
                         <td class="u-table-status">{{ value|floatformat:3 }}</td>
                     </tr>
                     {% endfor %}
@@ -306,6 +306,219 @@
                                 -
                             {% endif %}
                         </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="u-panel" aria-labelledby="model-health">
+        <h2 id="model-health" class="u-panel-title">Model Health</h2>
+        <p class="u-panel-subtitle">Automated evaluation metrics and trend analysis</p>
+
+        {% if evaluation_state.latest_evaluation %}
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact" aria-describedby="model-health">
+                <caption class="visually-hidden">Latest model evaluation metrics and trends</caption>
+                <tbody>
+                    <tr>
+                        <th scope="row">Last Evaluation</th>
+                        <td>
+                            {{ evaluation_state.latest_evaluation.created_at_display|default:"-" }}
+                            <span class="u-muted">({{ evaluation_state.latest_evaluation.evaluation_type_display }})</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Accuracy</th>
+                        <td class="u-table-status">
+                            {% if evaluation_state.latest_evaluation.accuracy is not None %}
+                                {{ evaluation_state.latest_evaluation.accuracy|floatformat:4 }}
+                                {% if evaluation_state.trends.has_previous and evaluation_state.trends.trends.accuracy %}
+                                    {% with trend=evaluation_state.trends.trends.accuracy %}
+                                        {% if trend.direction == "improved" %}
+                                            <span class="status-badge status-badge--success" title="Previous: {{ trend.previous|floatformat:4 }}">↑ +{{ trend.diff|floatformat:4 }}</span>
+                                        {% elif trend.direction == "degraded" %}
+                                            <span class="status-badge status-badge--danger" title="Previous: {{ trend.previous|floatformat:4 }}">↓ {{ trend.diff|floatformat:4 }}</span>
+                                        {% else %}
+                                            <span class="status-badge" title="Previous: {{ trend.previous|floatformat:4 }}">→ stable</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">F1 Score</th>
+                        <td class="u-table-status">
+                            {% if evaluation_state.latest_evaluation.f1_score is not None %}
+                                {{ evaluation_state.latest_evaluation.f1_score|floatformat:4 }}
+                                {% if evaluation_state.trends.has_previous and evaluation_state.trends.trends.f1_score %}
+                                    {% with trend=evaluation_state.trends.trends.f1_score %}
+                                        {% if trend.direction == "improved" %}
+                                            <span class="status-badge status-badge--success" title="Previous: {{ trend.previous|floatformat:4 }}">↑ +{{ trend.diff|floatformat:4 }}</span>
+                                        {% elif trend.direction == "degraded" %}
+                                            <span class="status-badge status-badge--danger" title="Previous: {{ trend.previous|floatformat:4 }}">↓ {{ trend.diff|floatformat:4 }}</span>
+                                        {% else %}
+                                            <span class="status-badge" title="Previous: {{ trend.previous|floatformat:4 }}">→ stable</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">False Accept Rate (FAR)</th>
+                        <td class="u-table-status">
+                            {% if evaluation_state.latest_evaluation.far is not None %}
+                                {{ evaluation_state.latest_evaluation.far|floatformat:4 }}
+                                {% if evaluation_state.trends.has_previous and evaluation_state.trends.trends.far %}
+                                    {% with trend=evaluation_state.trends.trends.far %}
+                                        {% if trend.direction == "improved" %}
+                                            <span class="status-badge status-badge--success" title="Previous: {{ trend.previous|floatformat:4 }}">↓ {{ trend.diff|floatformat:4 }}</span>
+                                        {% elif trend.direction == "degraded" %}
+                                            <span class="status-badge status-badge--danger" title="Previous: {{ trend.previous|floatformat:4 }}">↑ +{{ trend.diff|floatformat:4 }}</span>
+                                        {% else %}
+                                            <span class="status-badge" title="Previous: {{ trend.previous|floatformat:4 }}">→ stable</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">False Reject Rate (FRR)</th>
+                        <td class="u-table-status">
+                            {% if evaluation_state.latest_evaluation.frr is not None %}
+                                {{ evaluation_state.latest_evaluation.frr|floatformat:4 }}
+                                {% if evaluation_state.trends.has_previous and evaluation_state.trends.trends.frr %}
+                                    {% with trend=evaluation_state.trends.trends.frr %}
+                                        {% if trend.direction == "improved" %}
+                                            <span class="status-badge status-badge--success" title="Previous: {{ trend.previous|floatformat:4 }}">↓ {{ trend.diff|floatformat:4 }}</span>
+                                        {% elif trend.direction == "degraded" %}
+                                            <span class="status-badge status-badge--danger" title="Previous: {{ trend.previous|floatformat:4 }}">↑ +{{ trend.diff|floatformat:4 }}</span>
+                                        {% else %}
+                                            <span class="status-badge" title="Previous: {{ trend.previous|floatformat:4 }}">→ stable</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Samples Evaluated</th>
+                        <td>{{ evaluation_state.latest_evaluation.samples_evaluated|default:0 }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Identities</th>
+                        <td>{{ evaluation_state.latest_evaluation.identities_evaluated|default:0 }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Threshold Used</th>
+                        <td>{{ evaluation_state.latest_evaluation.threshold_used|floatformat:4|default:"-" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3 class="u-panel-subtitle">Recent Evaluation History</h3>
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact">
+                <thead>
+                    <tr>
+                        <th scope="col">Type</th>
+                        <th scope="col">Last Run</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Nightly Evaluation</td>
+                        <td>{% if evaluation_state.latest_nightly %}{{ evaluation_state.latest_nightly.created_at_display }}{% else %}-{% endif %}</td>
+                        <td>
+                            {% if evaluation_state.latest_nightly %}
+                                {% if evaluation_state.latest_nightly.success %}
+                                    <span class="status-badge status-badge--success">Passed</span>
+                                {% else %}
+                                    <span class="status-badge status-badge--danger">Failed</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="status-badge status-badge--warning">Never run</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Fairness Audit</td>
+                        <td>{% if evaluation_state.latest_fairness %}{{ evaluation_state.latest_fairness.created_at_display }}{% else %}-{% endif %}</td>
+                        <td>
+                            {% if evaluation_state.latest_fairness %}
+                                {% if evaluation_state.latest_fairness.success %}
+                                    <span class="status-badge status-badge--success">Passed</span>
+                                {% else %}
+                                    <span class="status-badge status-badge--danger">Failed</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="status-badge status-badge--warning">Never run</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Liveness Evaluation</td>
+                        <td>{% if evaluation_state.latest_liveness %}{{ evaluation_state.latest_liveness.created_at_display }}{% else %}-{% endif %}</td>
+                        <td>
+                            {% if evaluation_state.latest_liveness %}
+                                {% if evaluation_state.latest_liveness.success %}
+                                    <span class="status-badge status-badge--success">Passed</span>
+                                    {% if evaluation_state.latest_liveness.liveness_pass_rate is not None %}
+                                        <span class="u-muted">({{ evaluation_state.latest_liveness.liveness_pass_rate|floatformat:1 }}% pass rate)</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="status-badge status-badge--danger">Failed</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="status-badge status-badge--warning">Never run</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        {% if evaluation_state.recent_failures > 0 %}
+        <p class="u-warning-text">
+            ⚠️ {{ evaluation_state.recent_failures }} evaluation failure{{ evaluation_state.recent_failures|pluralize }} in the last 7 days
+        </p>
+        {% endif %}
+
+        {% else %}
+        <p class="u-empty-state">No evaluations have been run yet. Enable scheduled tasks to automatically monitor model health.</p>
+        {% endif %}
+
+        <h3 class="u-panel-subtitle">Scheduled Tasks</h3>
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact">
+                <tbody>
+                    <tr>
+                        <th scope="row">Celery Beat Status</th>
+                        <td>
+                            {% if evaluation_state.scheduled_tasks_enabled %}
+                                <span class="status-badge status-badge--success">Enabled</span>
+                                <span class="u-muted">({{ evaluation_state.scheduled_tasks_count }} tasks configured)</span>
+                            {% else %}
+                                <span class="status-badge status-badge--warning">Disabled</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Total Evaluations</th>
+                        <td>{{ evaluation_state.total_evaluations|default:0 }}</td>
                     </tr>
                 </tbody>
             </table>

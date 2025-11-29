@@ -208,6 +208,59 @@ FACE_DATA_ENCRYPTION_KEY = _load_face_data_encryption_key()
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379/1")
 
+# Celery Beat scheduled tasks configuration
+CELERY_BEAT_SCHEDULE = {
+    "scheduled-nightly-evaluation": {
+        "task": "recognition.scheduled_tasks.run_scheduled_evaluation",
+        "schedule": 86400,  # Daily at midnight (configurable via env)
+        "kwargs": {"evaluation_type": "nightly"},
+        "options": {"queue": "evaluation"},
+    },
+    "scheduled-weekly-fairness-audit": {
+        "task": "recognition.scheduled_tasks.run_fairness_audit",
+        "schedule": 604800,  # Weekly (7 days)
+        "kwargs": {},
+        "options": {"queue": "evaluation"},
+    },
+    "scheduled-liveness-evaluation": {
+        "task": "recognition.scheduled_tasks.run_liveness_evaluation",
+        "schedule": 86400,  # Daily
+        "kwargs": {},
+        "options": {"queue": "evaluation"},
+    },
+}
+
+# Allow customization of evaluation schedules via environment variables
+_NIGHTLY_EVAL_SCHEDULE = os.environ.get("CELERY_NIGHTLY_EVAL_SCHEDULE")
+if _NIGHTLY_EVAL_SCHEDULE:
+    try:
+        CELERY_BEAT_SCHEDULE["scheduled-nightly-evaluation"]["schedule"] = int(
+            _NIGHTLY_EVAL_SCHEDULE
+        )
+    except ValueError:
+        pass  # Keep default if invalid
+
+_WEEKLY_FAIRNESS_SCHEDULE = os.environ.get("CELERY_WEEKLY_FAIRNESS_SCHEDULE")
+if _WEEKLY_FAIRNESS_SCHEDULE:
+    try:
+        CELERY_BEAT_SCHEDULE["scheduled-weekly-fairness-audit"]["schedule"] = int(
+            _WEEKLY_FAIRNESS_SCHEDULE
+        )
+    except ValueError:
+        pass
+
+_LIVENESS_EVAL_SCHEDULE = os.environ.get("CELERY_LIVENESS_EVAL_SCHEDULE")
+if _LIVENESS_EVAL_SCHEDULE:
+    try:
+        CELERY_BEAT_SCHEDULE["scheduled-liveness-evaluation"]["schedule"] = int(
+            _LIVENESS_EVAL_SCHEDULE
+        )
+    except ValueError:
+        pass
+
+# Feature flag to enable/disable scheduled evaluations
+CELERY_BEAT_ENABLED = _get_bool_env("CELERY_BEAT_ENABLED", default=True)
+
 LOCALHOST_ALIASES: tuple[str, ...] = ("localhost", "127.0.0.1", "[::1]")
 
 
