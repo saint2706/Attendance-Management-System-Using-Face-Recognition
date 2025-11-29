@@ -10,6 +10,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.http import FileResponse, Http404, HttpRequest
 from django.urls import include, path
@@ -218,6 +219,8 @@ urlpatterns = [
     ),
     # Error/Status Pages
     path("not_authorised", recog_views.not_authorised, name="not-authorised"),
+    # Django Admin
+    path("django-admin/", admin.site.urls),
 ]
 
 if settings.DEBUG:
