@@ -86,7 +86,7 @@ class TestCheckLivenessWithChallenge:
         for i in range(5):
             frame = np.zeros((64, 64, 3), dtype=np.uint8)
             # Add varying intensity to simulate motion
-            frame[:, :, 0] = i * 20  # Varying blue channel
+            frame[:, :, 0] = i * 20  # Varying red channel (index 0 in BGR/RGB)
             frames.append(frame)
         
         result = check_liveness_with_challenge(

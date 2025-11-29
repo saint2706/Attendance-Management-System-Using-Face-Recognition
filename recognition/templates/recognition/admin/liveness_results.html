@@ -79,13 +79,9 @@
                         <td>{{ item.total }}</td>
                         <td>{{ item.passed }}</td>
                         <td>
-                            {% if item.total > 0 %}
-                            <span class="u-badge {% if item.passed > item.total|add:'-1'|floatformat:0|mul:0.8 %}u-badge--success{% else %}u-badge--warning{% endif %}">
-                                {{ item.passed|div:item.total|mul:100|floatformat:1 }}%
+                            <span class="u-badge {% if item.pass_rate > 80 %}u-badge--success{% elif item.pass_rate > 50 %}u-badge--warning{% else %}u-badge--danger{% endif %}">
+                                {{ item.pass_rate|floatformat:1 }}%
                             </span>
-                            {% else %}
-                            -
-                            {% endif %}
                         </td>
                         <td>{{ item.avg_confidence|floatformat:4|default:"-" }}</td>
                         <td>{{ item.avg_motion|floatformat:4|default:"-" }}</td>
@@ -118,13 +114,7 @@
                         <td>{{ day.total }}</td>
                         <td class="u-text-success">{{ day.passed }}</td>
                         <td class="u-text-danger">{{ day.failed }}</td>
-                        <td>
-                            {% if day.total > 0 %}
-                            {{ day.passed|div:day.total|mul:100|floatformat:1 }}%
-                            {% else %}
-                            -
-                            {% endif %}
-                        </td>
+                        <td>{{ day.pass_rate|floatformat:1 }}%</td>
                     </tr>
                     {% endfor %}
                 </tbody>

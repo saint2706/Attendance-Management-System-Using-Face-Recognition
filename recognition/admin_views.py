@@ -799,8 +799,8 @@ def liveness_results_dashboard(request: HttpRequest) -> HttpResponse:
     passed_count = results.filter(challenge_status="passed").count()
     failed_count = results.filter(challenge_status="failed").count()
     
-    # Aggregate by challenge type
-    by_challenge = (
+    # Aggregate by challenge type with pass rates computed
+    by_challenge_raw = (
         LivenessResult.objects.filter(created_at__gte=since)
         .values("challenge_type")
         .annotate(
@@ -810,9 +810,13 @@ def liveness_results_dashboard(request: HttpRequest) -> HttpResponse:
             avg_motion=Avg("motion_score"),
         )
     )
+    by_challenge = []
+    for item in by_challenge_raw:
+        item["pass_rate"] = (item["passed"] / item["total"] * 100) if item["total"] else 0
+        by_challenge.append(item)
     
-    # Daily trend
-    daily_trend = (
+    # Daily trend with pass rates
+    daily_trend_raw = (
         LivenessResult.objects.filter(created_at__gte=since)
         .annotate(day=TruncDate("created_at"))
         .values("day")
@@ -823,6 +827,10 @@ def liveness_results_dashboard(request: HttpRequest) -> HttpResponse:
         )
         .order_by("day")
     )
+    daily_trend = []
+    for item in daily_trend_raw:
+        item["pass_rate"] = (item["passed"] / item["total"] * 100) if item["total"] else 0
+        daily_trend.append(item)
     
     context = {
         "results": results,
@@ -830,8 +838,8 @@ def liveness_results_dashboard(request: HttpRequest) -> HttpResponse:
         "passed_count": passed_count,
         "failed_count": failed_count,
         "pass_rate": (passed_count / total_checks * 100) if total_checks else 0,
-        "by_challenge": list(by_challenge),
-        "daily_trend": list(daily_trend),
+        "by_challenge": by_challenge,
+        "daily_trend": daily_trend,
         "days": days,
     }
     

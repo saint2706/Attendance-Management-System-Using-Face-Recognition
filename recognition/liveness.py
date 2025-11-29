@@ -6,7 +6,7 @@ import logging
 from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Iterable, NamedTuple, Optional, Sequence
+from typing import Any, Iterable, Optional, Sequence
 
 import cv2
 import numpy as np
@@ -25,7 +25,8 @@ class ChallengeType(str, Enum):
     ANTI_SPOOF = "anti_spoof"
 
 
-class LivenessCheckResult(NamedTuple):
+@dataclass(frozen=True)
+class LivenessCheckResult:
     """Result of a liveness check with confidence scoring."""
 
     passed: bool
@@ -34,7 +35,7 @@ class LivenessCheckResult(NamedTuple):
     motion_score: Optional[float] = None
     frames_analyzed: int = 0
     threshold_used: Optional[float] = None
-    details: dict[str, Any] = {}
+    details: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
