@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Delete Threshold Profile{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="u-admin-page">
+    <header class="u-page-header">
+        <h1 class="u-page-title">Delete Threshold Profile</h1>
+    </header>
+
+    <section class="u-panel u-panel--warning" aria-labelledby="delete-heading">
+        <h2 id="delete-heading" class="u-panel-title">Confirm Deletion</h2>
+        
+        <div class="u-alert u-alert--warning">
+            <p>Are you sure you want to delete the threshold profile <strong>"{{ profile.name }}"</strong>?</p>
+            <p>This action cannot be undone.</p>
+        </div>
+        
+        <div class="u-info-grid">
+            <div class="u-info-item">
+                <span class="u-info-label">Profile Name</span>
+                <span class="u-info-value">{{ profile.name }}</span>
+            </div>
+            <div class="u-info-item">
+                <span class="u-info-label">Threshold</span>
+                <span class="u-info-value">{{ profile.distance_threshold|floatformat:4 }}</span>
+            </div>
+            <div class="u-info-item">
+                <span class="u-info-label">Sites</span>
+                <span class="u-info-value">{{ profile.sites|default:"None" }}</span>
+            </div>
+            <div class="u-info-item">
+                <span class="u-info-label">Is Default</span>
+                <span class="u-info-value">{% if profile.is_default %}Yes{% else %}No{% endif %}</span>
+            </div>
+        </div>
+        
+        <form method="post" class="u-form">
+            {% csrf_token %}
+            <div class="u-form-actions">
+                <button type="submit" class="u-btn u-btn--danger">Delete Profile</button>
+                <a href="{% url 'admin_threshold_profiles' %}" class="u-btn u-btn--secondary">Cancel</a>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

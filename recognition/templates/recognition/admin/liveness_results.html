@@ -1,0 +1,190 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Liveness Results{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="u-admin-page">
+    <header class="u-page-header">
+        <h1 class="u-page-title">Liveness Results Dashboard</h1>
+        <p class="u-page-subtitle">
+            Monitor liveness check outcomes and confidence scores.
+        </p>
+    </header>
+
+    <section class="u-panel" aria-labelledby="filter-heading">
+        <h2 id="filter-heading" class="u-panel-title">Filter</h2>
+        <form method="get" class="u-form u-form--inline">
+            <div class="u-form-group">
+                <label for="days" class="u-form-label">Time Period</label>
+                <select name="days" id="days" class="form-select">
+                    <option value="1" {% if days == 1 %}selected{% endif %}>Last 24 hours</option>
+                    <option value="7" {% if days == 7 %}selected{% endif %}>Last 7 days</option>
+                    <option value="30" {% if days == 30 %}selected{% endif %}>Last 30 days</option>
+                    <option value="90" {% if days == 90 %}selected{% endif %}>Last 90 days</option>
+                </select>
+            </div>
+            <button type="submit" class="u-btn u-btn--primary">Apply</button>
+        </form>
+    </section>
+
+    <section class="u-panel" aria-labelledby="summary-heading">
+        <h2 id="summary-heading" class="u-panel-title">Summary Statistics</h2>
+        <div class="u-stats-grid">
+            <div class="u-stat-card">
+                <span class="u-stat-value">{{ total_checks }}</span>
+                <span class="u-stat-label">Total Checks</span>
+            </div>
+            <div class="u-stat-card u-stat-card--success">
+                <span class="u-stat-value">{{ passed_count }}</span>
+                <span class="u-stat-label">Passed</span>
+            </div>
+            <div class="u-stat-card u-stat-card--danger">
+                <span class="u-stat-value">{{ failed_count }}</span>
+                <span class="u-stat-label">Failed</span>
+            </div>
+            <div class="u-stat-card">
+                <span class="u-stat-value">{{ pass_rate|floatformat:1 }}%</span>
+                <span class="u-stat-label">Pass Rate</span>
+            </div>
+        </div>
+    </section>
+
+    {% if by_challenge %}
+    <section class="u-panel" aria-labelledby="challenge-heading">
+        <h2 id="challenge-heading" class="u-panel-title">Results by Challenge Type</h2>
+        <div class="u-table-wrapper">
+            <table class="u-table" aria-describedby="challenge-heading">
+                <thead>
+                    <tr>
+                        <th scope="col">Challenge Type</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Passed</th>
+                        <th scope="col">Pass Rate</th>
+                        <th scope="col">Avg Confidence</th>
+                        <th scope="col">Avg Motion Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in by_challenge %}
+                    <tr>
+                        <td><strong>{{ item.challenge_type|title }}</strong></td>
+                        <td>{{ item.total }}</td>
+                        <td>{{ item.passed }}</td>
+                        <td>
+                            {% if item.total > 0 %}
+                            <span class="u-badge {% if item.passed > item.total|add:'-1'|floatformat:0|mul:0.8 %}u-badge--success{% else %}u-badge--warning{% endif %}">
+                                {{ item.passed|div:item.total|mul:100|floatformat:1 }}%
+                            </span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>{{ item.avg_confidence|floatformat:4|default:"-" }}</td>
+                        <td>{{ item.avg_motion|floatformat:4|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if daily_trend %}
+    <section class="u-panel" aria-labelledby="trend-heading">
+        <h2 id="trend-heading" class="u-panel-title">Daily Trend</h2>
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact" aria-describedby="trend-heading">
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Passed</th>
+                        <th scope="col">Failed</th>
+                        <th scope="col">Pass Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day in daily_trend %}
+                    <tr>
+                        <td>{{ day.day|date:"Y-m-d" }}</td>
+                        <td>{{ day.total }}</td>
+                        <td class="u-text-success">{{ day.passed }}</td>
+                        <td class="u-text-danger">{{ day.failed }}</td>
+                        <td>
+                            {% if day.total > 0 %}
+                            {{ day.passed|div:day.total|mul:100|floatformat:1 }}%
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="u-panel" aria-labelledby="recent-heading">
+        <h2 id="recent-heading" class="u-panel-title">Recent Results</h2>
+        {% if results %}
+        <div class="u-table-wrapper">
+            <table class="u-table u-table--compact" aria-describedby="recent-heading">
+                <thead>
+                    <tr>
+                        <th scope="col">Timestamp</th>
+                        <th scope="col">Username</th>
+                        <th scope="col">Challenge</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Confidence</th>
+                        <th scope="col">Motion Score</th>
+                        <th scope="col">Frames</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr>
+                        <td>{{ result.created_at|date:"Y-m-d H:i:s" }}</td>
+                        <td>{{ result.username|default:"-" }}</td>
+                        <td>{{ result.challenge_type|title }}</td>
+                        <td>
+                            <span class="u-badge {% if result.challenge_status == 'passed' %}u-badge--success{% elif result.challenge_status == 'failed' %}u-badge--danger{% else %}u-badge--warning{% endif %}">
+                                {{ result.challenge_status|title }}
+                            </span>
+                        </td>
+                        <td>{{ result.liveness_confidence|floatformat:4|default:"-" }}</td>
+                        <td>{{ result.motion_score|floatformat:4|default:"-" }}</td>
+                        <td>{{ result.frames_analyzed }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="u-empty-state">
+            <p>No liveness results found for the selected period.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="u-panel" aria-labelledby="guide-heading">
+        <h2 id="guide-heading" class="u-panel-title">Challenge Types Guide</h2>
+        <div class="u-content">
+            <ul>
+                <li><strong>Motion</strong>: Basic inter-frame motion detection. Verifies the subject is a live person showing natural movement.</li>
+                <li><strong>Blink</strong>: Detects eye blink patterns. Requires the subject to blink naturally or on command.</li>
+                <li><strong>Head Turn</strong>: Detects left/right head movement. Verifies 3D presence through horizontal motion.</li>
+                <li><strong>Anti-Spoof</strong>: Uses the DeepFace anti-spoofing model to detect presentation attacks.</li>
+            </ul>
+        </div>
+    </section>
+</div>
+{% endblock %}

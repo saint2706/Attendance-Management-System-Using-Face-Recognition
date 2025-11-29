@@ -1,0 +1,146 @@
+{% extends "admin/base_site.html" %}
+{% load static crispy_forms_tags %}
+
+{% block title %}{{ action }} Threshold Profile{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="u-admin-page">
+    <header class="u-page-header">
+        <h1 class="u-page-title">{{ action }} Threshold Profile</h1>
+        <p class="u-page-subtitle">
+            {% if action == 'Create' %}
+            Define a new threshold profile for site-specific recognition tuning.
+            {% else %}
+            Modify the settings for this threshold profile.
+            {% endif %}
+        </p>
+    </header>
+
+    <section class="u-panel" aria-labelledby="form-heading">
+        <h2 id="form-heading" class="u-panel-title">Profile Settings</h2>
+        
+        <form method="post" class="u-form">
+            {% csrf_token %}
+            
+            <div class="u-form-section">
+                <h3 class="u-form-section-title">Basic Information</h3>
+                <div class="u-form-row">
+                    <div class="u-form-group">
+                        <label for="id_name" class="u-form-label">Profile Name</label>
+                        {{ form.name }}
+                        {% if form.name.help_text %}
+                        <small class="u-form-help">{{ form.name.help_text }}</small>
+                        {% endif %}
+                        {% if form.name.errors %}
+                        <div class="u-form-error">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="u-form-row">
+                    <div class="u-form-group">
+                        <label for="id_description" class="u-form-label">Description</label>
+                        {{ form.description }}
+                        {% if form.description.help_text %}
+                        <small class="u-form-help">{{ form.description.help_text }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="u-form-section">
+                <h3 class="u-form-section-title">Threshold Settings</h3>
+                <div class="u-form-row u-form-row--inline">
+                    <div class="u-form-group">
+                        <label for="id_distance_threshold" class="u-form-label">Distance Threshold</label>
+                        {{ form.distance_threshold }}
+                        <small class="u-form-help">{{ form.distance_threshold.help_text }}</small>
+                        {% if form.distance_threshold.errors %}
+                        <div class="u-form-error">{{ form.distance_threshold.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="u-form-group">
+                        <label for="id_selection_method" class="u-form-label">Selection Method</label>
+                        {{ form.selection_method }}
+                    </div>
+                </div>
+                <div class="u-form-row u-form-row--inline">
+                    <div class="u-form-group">
+                        <label for="id_target_far" class="u-form-label">Target FAR</label>
+                        {{ form.target_far }}
+                        <small class="u-form-help">False Accept Rate target (optional)</small>
+                    </div>
+                    <div class="u-form-group">
+                        <label for="id_target_frr" class="u-form-label">Target FRR</label>
+                        {{ form.target_frr }}
+                        <small class="u-form-help">False Reject Rate target (optional)</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="u-form-section">
+                <h3 class="u-form-section-title">Site Assignment</h3>
+                <div class="u-form-row">
+                    <div class="u-form-group">
+                        <label for="id_sites" class="u-form-label">Sites</label>
+                        {{ form.sites }}
+                        <small class="u-form-help">{{ form.sites.help_text }}</small>
+                    </div>
+                </div>
+                <div class="u-form-row">
+                    <div class="u-form-group u-form-group--checkbox">
+                        {{ form.is_default }}
+                        <label for="id_is_default" class="u-form-label">Set as default profile</label>
+                        <small class="u-form-help">Use this profile when no site-specific profile matches</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="u-form-actions">
+                <button type="submit" class="u-btn u-btn--primary">
+                    {% if action == 'Create' %}Create Profile{% else %}Save Changes{% endif %}
+                </button>
+                <a href="{% url 'admin_threshold_profiles' %}" class="u-btn u-btn--secondary">Cancel</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="u-panel" aria-labelledby="guide-heading">
+        <h2 id="guide-heading" class="u-panel-title">Threshold Selection Guide</h2>
+        <div class="u-content">
+            <table class="u-table u-table--compact">
+                <thead>
+                    <tr>
+                        <th>Use Case</th>
+                        <th>Threshold Range</th>
+                        <th>Trade-off</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>High Security</td>
+                        <td>0.25 - 0.35</td>
+                        <td>Low FAR, higher FRR (more false rejects)</td>
+                    </tr>
+                    <tr>
+                        <td>Balanced</td>
+                        <td>0.35 - 0.45</td>
+                        <td>EER-based, balanced errors</td>
+                    </tr>
+                    <tr>
+                        <td>Convenience</td>
+                        <td>0.45 - 0.55</td>
+                        <td>Low FRR, higher FAR (more false accepts)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -7,7 +7,7 @@ from typing import Optional
 
 from django.db import transaction
 
-from .models import RecognitionOutcome
+from .models import LivenessResult, RecognitionOutcome
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +34,9 @@ def log_recognition_outcome(
     distance: float | None = None,
     threshold: float | None = None,
     source: str | None = None,
+    liveness_confidence: float | None = None,
+    liveness_passed: bool | None = None,
+    profile_name: str | None = None,
 ) -> None:
     """Persist a recognition outcome without impacting the calling flow."""
 
@@ -49,6 +52,9 @@ def log_recognition_outcome(
                 threshold=threshold,
                 confidence=confidence,
                 source=source or "",
+                liveness_confidence=liveness_confidence,
+                liveness_passed=liveness_passed,
+                profile_name=profile_name or "",
             )
     except Exception:  # pragma: no cover - defensive persistence
         logger.debug("Unable to persist recognition outcome", exc_info=True)
@@ -60,4 +66,35 @@ def log_recognition_outcome(
         logger.debug("Failed to apply outcome retention policy", exc_info=True)
 
 
-__all__ = ["log_recognition_outcome"]
+def log_liveness_result(
+    *,
+    username: str | None = None,
+    site: str | None = None,
+    source: str | None = None,
+    challenge_type: str = "motion",
+    challenge_status: str = "passed",
+    liveness_confidence: float | None = None,
+    motion_score: float | None = None,
+    threshold_used: float | None = None,
+    frames_analyzed: int = 0,
+) -> None:
+    """Persist a liveness check result for auditing and analytics."""
+
+    try:
+        with transaction.atomic():
+            LivenessResult.objects.create(
+                username=username or "",
+                site=site or "",
+                source=source or "",
+                challenge_type=challenge_type,
+                challenge_status=challenge_status,
+                liveness_confidence=liveness_confidence,
+                motion_score=motion_score,
+                threshold_used=threshold_used,
+                frames_analyzed=frames_analyzed,
+            )
+    except Exception:  # pragma: no cover - defensive persistence
+        logger.debug("Unable to persist liveness result", exc_info=True)
+
+
+__all__ = ["log_recognition_outcome", "log_liveness_result"]

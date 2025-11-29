@@ -1,0 +1,161 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Threshold Profiles{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="u-admin-page">
+    <header class="u-page-header">
+        <h1 class="u-page-title">Threshold Profiles</h1>
+        <p class="u-page-subtitle">
+            Manage named threshold profiles for different sites and operating points.
+            System default threshold: <strong>{{ system_default|floatformat:4 }}</strong>
+        </p>
+    </header>
+
+    <section class="u-panel" aria-labelledby="actions-heading">
+        <h2 id="actions-heading" class="u-panel-title">Actions</h2>
+        <div class="u-button-group">
+            <a href="{% url 'admin_threshold_profile_create' %}" class="u-btn u-btn--primary">
+                <span class="u-btn-icon">+</span> Create Profile
+            </a>
+            {% if has_sweep_data %}
+            <a href="{% url 'admin_threshold_profile_import' %}" class="u-btn u-btn--secondary">
+                <span class="u-btn-icon">↓</span> Import from Evaluation
+            </a>
+            {% endif %}
+        </div>
+    </section>
+
+    {% if has_sweep_data %}
+    <section class="u-panel" aria-labelledby="sweep-heading">
+        <h2 id="sweep-heading" class="u-panel-title">Latest Threshold Selection</h2>
+        <div class="u-info-grid">
+            <div class="u-info-item">
+                <span class="u-info-label">Method</span>
+                <span class="u-info-value">{{ sweep_data.method|default:"manual" }}</span>
+            </div>
+            <div class="u-info-item">
+                <span class="u-info-label">Selected Threshold</span>
+                <span class="u-info-value"><strong>{{ sweep_data.threshold|floatformat:4 }}</strong></span>
+            </div>
+            {% if sweep_data.eer %}
+            <div class="u-info-item">
+                <span class="u-info-label">EER</span>
+                <span class="u-info-value">{{ sweep_data.eer|floatformat:4 }}</span>
+            </div>
+            {% endif %}
+            {% if sweep_data.actual_far %}
+            <div class="u-info-item">
+                <span class="u-info-label">FAR</span>
+                <span class="u-info-value">{{ sweep_data.actual_far|floatformat:4 }}</span>
+            </div>
+            {% endif %}
+            {% if sweep_data.tpr %}
+            <div class="u-info-item">
+                <span class="u-info-label">TPR</span>
+                <span class="u-info-value">{{ sweep_data.tpr|floatformat:4 }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="u-panel" aria-labelledby="profiles-heading">
+        <h2 id="profiles-heading" class="u-panel-title">Configured Profiles</h2>
+
+        {% if profiles %}
+        <div class="u-table-wrapper">
+            <table class="u-table" aria-describedby="profiles-heading">
+                <caption class="visually-hidden">List of threshold profiles</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Threshold</th>
+                        <th scope="col">Method</th>
+                        <th scope="col">Sites</th>
+                        <th scope="col">Default</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for profile in profiles %}
+                    <tr>
+                        <td>
+                            <strong>{{ profile.name }}</strong>
+                            {% if profile.description %}
+                            <br><small class="u-text-muted">{{ profile.description|truncatewords:10 }}</small>
+                            {% endif %}
+                        </td>
+                        <td class="u-table-status">
+                            <span class="u-badge {% if profile.distance_threshold < 0.35 %}u-badge--success{% elif profile.distance_threshold > 0.5 %}u-badge--warning{% else %}u-badge--info{% endif %}">
+                                {{ profile.distance_threshold|floatformat:4 }}
+                            </span>
+                        </td>
+                        <td>{{ profile.get_selection_method_display }}</td>
+                        <td>{{ profile.sites|default:"-" }}</td>
+                        <td>
+                            {% if profile.is_default %}
+                            <span class="u-badge u-badge--success">Yes</span>
+                            {% else %}
+                            <span class="u-text-muted">No</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="u-action-group">
+                                <a href="{% url 'admin_threshold_profile_edit' profile.id %}" 
+                                   class="u-btn u-btn--small u-btn--secondary" title="Edit">Edit</a>
+                                {% if not profile.is_default %}
+                                <a href="{% url 'admin_threshold_profile_set_default' profile.id %}" 
+                                   class="u-btn u-btn--small u-btn--link" title="Set Default">Set Default</a>
+                                {% endif %}
+                                <a href="{% url 'admin_threshold_profile_delete' profile.id %}" 
+                                   class="u-btn u-btn--small u-btn--danger" title="Delete">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="u-empty-state">
+            <p>No threshold profiles configured yet.</p>
+            <p>
+                <a href="{% url 'admin_threshold_profile_create' %}" class="u-btn u-btn--primary">
+                    Create your first profile
+                </a>
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="u-panel" aria-labelledby="usage-heading">
+        <h2 id="usage-heading" class="u-panel-title">Usage Guide</h2>
+        <div class="u-content">
+            <h3>Operating Points</h3>
+            <ul>
+                <li><strong>Low FAR (strict)</strong>: Threshold ~0.3. Reduces false accepts but may increase false rejects. Good for high-security areas.</li>
+                <li><strong>EER-based (balanced)</strong>: Threshold ~0.4. Balances false accepts and false rejects. Good for general use.</li>
+                <li><strong>Low FRR (lenient)</strong>: Threshold ~0.5-0.6. Reduces false rejects but may increase false accepts. Good for convenience-focused areas.</li>
+            </ul>
+            
+            <h3>Site Assignment</h3>
+            <p>Assign profiles to specific sites using comma-separated site codes. The system will automatically select the appropriate threshold based on the request's site header.</p>
+            
+            <h3>CLI Usage</h3>
+            <pre><code>python manage.py threshold_profile list
+python manage.py threshold_profile create --name "strict" --threshold 0.3 --default
+python manage.py threshold_profile import --file reports/selected_threshold.json --name "eer_based"
+python manage.py threshold_profile get-threshold --site "office1"</code></pre>
+        </div>
+    </section>
+</div>
+{% endblock %}
