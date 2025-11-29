@@ -7,9 +7,14 @@
     <h1 class="u-dashboard-title">
         Admin Dashboard
     </h1>
-    <div class="u-dashboard-badge">
-        <i class="fas fa-user-circle icon-lg" aria-hidden="true"></i>
-        <span>Welcome, {{ user.username }}!</span>
+    <div class="d-flex gap-3">
+        <a href="https://github.com/v7labs/attendance-system-facial-recognition/blob/main/USER_GUIDE.md" target="_blank" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
+            <i class="fas fa-book me-2"></i>User Guide
+        </a>
+        <div class="u-dashboard-badge">
+            <i class="fas fa-user-circle icon-lg" aria-hidden="true"></i>
+            <span>Welcome, {{ user.username }}!</span>
+        </div>
     </div>
 </header>
 

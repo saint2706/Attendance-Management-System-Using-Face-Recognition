@@ -1737,6 +1737,34 @@ def _build_onboarding_state(
             }
         )
 
+    if not os.environ.get("FACE_DATA_ENCRYPTION_KEY"):
+        onboarding_steps.insert(
+            0,
+            {
+                "title": "Configure encryption keys",
+                "description": "Set FACE_DATA_ENCRYPTION_KEY in your environment to secure biometric data.",
+                "cta": {
+                    "url": "https://github.com/v7labs/attendance-system-facial-recognition/blob/main/DEPLOYMENT.md#3-configuration",
+                    "label": "View Config Guide",
+                    "icon": "fa-key",
+                },
+            },
+        )
+
+    if user_count == 0 and not dataset_snapshot.get("image_count", 0):
+        onboarding_steps.insert(
+            0,
+            {
+                "title": "Connect a webcam",
+                "description": "Ensure a webcam is connected and accessible for capturing photos.",
+                "cta": {
+                    "url": "https://github.com/v7labs/attendance-system-facial-recognition/blob/main/USER_GUIDE.md#troubleshooting",
+                    "label": "Troubleshoot",
+                    "icon": "fa-video",
+                },
+            },
+        )
+
     readiness = {
         "has_users": user_count > 0,
         "has_dataset": dataset_snapshot.get("image_count", 0) > 0,
@@ -1790,7 +1818,7 @@ def add_photos(request):
                     return redirect(f"{reverse('add-photos')}?task_id={async_result.id}")
 
             messages.warning(request, "No such username found. Please register employee first.")
-            return redirect("dashboard")
+            return redirect("add-photos")
     else:
         form = usernameForm()
 
