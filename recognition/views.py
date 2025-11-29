@@ -1679,8 +1679,8 @@ def _build_onboarding_state(
     """Summarize first-run readiness and suggested actions for admins.
 
     The checklist covers all prerequisites for end-to-end recognition:
-    1. Webcam connected and accessible
-    2. Encryption keys configured (FACE_DATA_ENCRYPTION_KEY)
+    1. Encryption keys configured (FACE_DATA_ENCRYPTION_KEY)
+    2. Webcam connected and accessible
     3. At least one employee registered
     4. At least one employee with photos captured
     5. Recognition model trained
