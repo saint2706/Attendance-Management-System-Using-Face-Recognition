@@ -1,0 +1,17 @@
+LICENSE
+README.md
+pyproject.toml
+src/__init__.py
+src/attendance_system_facial_recognition.egg-info/PKG-INFO
+src/attendance_system_facial_recognition.egg-info/SOURCES.txt
+src/attendance_system_facial_recognition.egg-info/dependency_links.txt
+src/attendance_system_facial_recognition.egg-info/requires.txt
+src/attendance_system_facial_recognition.egg-info/top_level.txt
+src/common/__init__.py
+src/common/crypto.py
+src/common/demo_data.py
+src/common/seeding.py
+src/evaluation/__init__.py
+src/evaluation/face_recognition_eval.py
+src/evaluation/fairness.py
+tests/test_smoke.py
