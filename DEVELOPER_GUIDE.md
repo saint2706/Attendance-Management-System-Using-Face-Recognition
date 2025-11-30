@@ -309,3 +309,108 @@ Use the `CameraManager` utility (`recognition/static/js/camera.js`) to initialis
 ```
 
 Always pair preview components with lifecycle events (`hidden.bs.modal`, `beforeunload`, etc.) that call `stop()` so the browser can release the webcam promptly.
+
+## 10. UI & Diagnostics
+
+The application includes several admin-only dashboards that help developers debug operational issues without leaving the browser.
+
+### System Health Dashboard
+
+The System Health page (`/admin/health/`) provides a quick overview of:
+
+- **Dataset freshness** – when face images were last added or updated.
+- **Model status** – whether the recognition pipeline has loaded embeddings.
+- **Recent recognition activity** – a summary of recent recognition attempts with success/failure counts.
+- **Celery worker reachability** – confirms that background task workers are responding.
+
+Use this dashboard to verify camera connectivity and model status after deploying changes or restarting services.
+
+### Performance Profiling with Silk
+
+The Silk profiler (`/silk/`) captures detailed request timings, database query counts, and cache hits/misses. In development mode (`DJANGO_DEBUG=1`), the dashboard is accessible without authentication. In production, only staff users can view profiles.
+
+Key debugging workflows:
+
+1. **Slow page loads** – check the "Most time overall" view to identify bottlenecks.
+2. **N+1 queries** – the "Most queries" view highlights views that issue excessive database calls.
+3. **Cache misses** – review individual requests to see which cache keys are hit or missed.
+
+### Fairness and Evaluation Dashboards
+
+- **Fairness Dashboard** (`/admin/fairness/`) – displays per-group metrics (role, site, source, lighting) from the latest fairness audit.
+- **Evaluation Dashboard** (`/admin/evaluation/`) – shows model performance metrics, confusion matrices, and threshold sweep results.
+
+These views help developers understand how recognition accuracy varies across different conditions and user groups.
+
+## 11. Regenerating Documentation Screenshots
+
+The repository includes a helper script to capture a canonical set of screenshots for documentation. This ensures screenshots stay up-to-date as the UI evolves.
+
+### Prerequisites
+
+1. Install Playwright:
+   ```bash
+   pip install pytest-playwright
+   playwright install chromium
+   ```
+
+2. Bootstrap the demo environment:
+   ```bash
+   make demo
+   ```
+
+3. Start the development server:
+   ```bash
+   python manage.py runserver
+   ```
+
+### Capturing screenshots
+
+With the server running, execute:
+
+```bash
+make docs-screenshots
+```
+
+Or run the script directly:
+
+```bash
+python scripts/capture_screenshots.py
+```
+
+### What the script captures
+
+The script logs in with the demo admin credentials and captures:
+
+| Screenshot | Path | Description |
+|------------|------|-------------|
+| Home page | `docs/screenshots/home.png` | Landing page with primary actions |
+| Login page | `docs/screenshots/login.png` | User authentication screen |
+| Admin dashboard | `docs/screenshots/admin-dashboard.png` | Admin home with first-run checklist |
+| Employee registration | `docs/screenshots/employee-registration.png` | Form for registering new employees |
+| Employee enrollment | `docs/screenshots/employee-enrollment.png` | Photo capture for face recognition |
+| Attendance session | `docs/screenshots/attendance-session.png` | Live recognition feed and logs |
+| Reports | `docs/screenshots/reports.png` | Attendance reports dashboard |
+| System health | `docs/screenshots/system-health.png` | Operational health dashboard |
+| Fairness dashboard | `docs/screenshots/fairness-dashboard.png` | Per-group fairness metrics |
+| Evaluation dashboard | `docs/screenshots/evaluation-dashboard.png` | Model performance metrics |
+
+### Options
+
+```bash
+python scripts/capture_screenshots.py --help
+```
+
+- `--base-url` – change the server URL (default: `http://127.0.0.1:8000`)
+- `--output-dir` – change the output directory (default: `docs/screenshots/`)
+- `--admin-username` / `--admin-password` – use different credentials
+- `--headed` – show the browser window during capture (useful for debugging)
+
+### Manual screenshot updates
+
+If you prefer to capture screenshots manually:
+
+1. Run the demo environment and log in with `demo_admin` / `demo_admin_pass`.
+2. Navigate to each screen and capture using your browser or OS screenshot tools.
+3. Save images to `docs/screenshots/` using the filenames listed above.
+4. Ensure images are reasonably sized (1280×800 or similar) for consistency.

@@ -2,6 +2,10 @@
 
 This guide provides a comprehensive walkthrough of the Attendance Management System Using Face Recognition, designed for non-technical users. It covers everything from logging in to interpreting attendance reports.
 
+## Quick Start
+
+If you are new to the system, start with the [Beginner Setup section in the README](README.md#beginner-setup-fast-demo-no-prior-experience-required) to get a demo running in minutes.
+
 ## 1. Core Concepts
 
 - **Face Recognition:** The system uses a webcam to identify employees by their unique facial features. Each face is converted into a secure digital signature (an "embedding"). When an employee clocks in or out, the system compares the new embedding to the stored ones to find a match.
@@ -13,8 +17,18 @@ This guide provides a comprehensive walkthrough of the Attendance Management Sys
 ### Logging In
 
 1.  Navigate to the system's home page.
+
+    ![Home page](docs/images/home-light.png)
+    
+    *The home page shows the main actions: Mark Time-In, Mark Time-Out, and Dashboard Login.*
+
 2.  Click on the **Dashboard Login** button.
 3.  Enter your username and password.
+
+    ![Login page](docs/images/login.png)
+    
+    *Enter your credentials on the login page.*
+
 4.  Click **Login**.
 
 ### For Employees
@@ -34,10 +48,21 @@ This guide provides a comprehensive walkthrough of the Attendance Management Sys
 
 ### For Admins
 
+After logging in as an admin, you will see the Admin Dashboard with a first-run checklist (if setup is incomplete) and quick-action cards.
+
+![Admin dashboard](docs/images/admin-dashboard-light.png)
+
+*The admin dashboard provides quick access to employee management, photo capture, and reports.*
+
 #### Registering a New Employee
 
 1.  Log in to your admin dashboard.
 2.  Click on **Register Employee**.
+
+    ![Register employee](docs/images/register.png)
+    
+    *The registration form for adding a new employee to the system.*
+
 3.  Fill in the new employee's details (username, full name, role, and department) and click **Register**. The form validates duplicates automatically and prompts you to upload profile photos during the next step.
 
 #### Adding Employee Photos
@@ -45,6 +70,17 @@ This guide provides a comprehensive walkthrough of the Attendance Management Sys
 1.  From the admin dashboard, click on **Add Photos**.
 2.  Enter the username of the employee and click **Add Photos**.
 3.  The system will automatically capture a set of images to create a face profile for the employee. Ensure the employee is in a well-lit area and facing the camera.
+
+#### Running an Attendance Session
+
+The Attendance Session view provides a live feed of recognition attempts with real-time results.
+
+1.  From the admin dashboard, click on **Attendance Session**.
+2.  The session page displays:
+    - Recent recognition attempts with timestamps
+    - Match confidence scores
+    - Liveness detection outcomes
+    - Check-in/check-out controls
 
 #### Viewing Attendance Reports
 

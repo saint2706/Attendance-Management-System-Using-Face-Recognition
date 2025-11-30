@@ -1,6 +1,6 @@
 # Makefile for Attendance-Management-System-Using-Face-Recognition
 
-.PHONY: all setup run clean lint test migrate train evaluate report reproduce install-hooks demo
+.PHONY: all setup run clean lint test migrate train evaluate report reproduce install-hooks demo docs-screenshots
 
 # Default target
 all: setup run
@@ -99,3 +99,10 @@ reproduce:
 	python scripts/reproduce_sample_results.py
 	@echo "=== Reproducibility workflow complete ==="
 	@echo "Artifacts available in reports/sample_repro/."
+
+# Capture documentation screenshots (requires running server)
+docs-screenshots:
+	@echo "=== Capturing documentation screenshots ==="
+	@echo "Make sure the dev server is running: python manage.py runserver"
+	python scripts/capture_screenshots.py
+	@echo "=== Screenshots saved to docs/screenshots/ ==="

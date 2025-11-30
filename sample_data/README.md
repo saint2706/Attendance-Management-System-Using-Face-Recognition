@@ -5,6 +5,8 @@ layout expected by the face-recognition pipeline. The assets are generated on
 the fly by the helper scripts (see below) and encrypted with the active
 ``DATA_ENCRYPTION_KEY`` so they are ready for the runtime pipeline.
 
+> **Quick start:** To see this dataset in action, follow the [Beginner Setup](../README.md#beginner-setup-fast-demo-no-prior-experience-required) instructions in the main README. The demo environment uses these synthetic faces to let you explore the full attendance workflow without setting up real employee photos.
+
 ```
 sample_data/
   face_recognition_data/
@@ -17,6 +19,19 @@ sample_data/
 Each user folder stores three 256×256 JPEG frames that were procedurally
 generated with Pillow. The shapes and colours intentionally resemble stylised
 avatars instead of real faces, so the repository never ships personal data.
+
+## Demo Credentials
+
+When you run `make demo`, the following accounts are created to match this dataset:
+
+| Username | Password | Role |
+|----------|----------|------|
+| `demo_admin` | `demo_admin_pass` | Admin (superuser) |
+| `user_001` | `demo_user_pass` | Employee |
+| `user_002` | `demo_user_pass` | Employee |
+| `user_003` | `demo_user_pass` | Employee |
+
+## Dataset Generation
 
 The dataset is distributed purely for **testing and documentation** purposes.
 It is safe to check into version control and can be regenerated with the helper
@@ -58,3 +73,10 @@ The command above refreshes the encrypted JPEGs in both
 `sample_data/face_recognition_data/training_dataset/` and
 `face_recognition_data/training_dataset/` so the recognition pipeline can use
 them immediately.
+
+## Related Documentation
+
+- [Beginner Setup](../README.md#beginner-setup-fast-demo-no-prior-experience-required) – Get a demo running in minutes
+- [User Guide](../USER_GUIDE.md) – Learn how to use the system
+- [Developer Guide](../DEVELOPER_GUIDE.md) – Technical details for contributors
+- [Data Card](../DATA_CARD.md) – Data model documentation
