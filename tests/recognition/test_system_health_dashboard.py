@@ -3,8 +3,9 @@ from __future__ import annotations
 import datetime as dt
 import os
 
-import pytest
 from django.urls import reverse
+
+import pytest
 
 from recognition import health
 from recognition.models import RecognitionOutcome
@@ -54,7 +55,6 @@ def test_health_helpers_report_dataset_and_model(tmp_path, monkeypatch):
     assert model_snapshot["stale"] is True
 
 
-
 def test_recognition_activity_captures_attempts(django_user_model):
     """Recognition activity should expose last attempts and outcomes."""
 
@@ -81,7 +81,6 @@ def test_recognition_activity_captures_attempts(django_user_model):
 
     assert activity["last_attempt"]["spoof_detected"] is True
     assert activity["last_outcome"]["accepted"] is False
-
 
 
 def test_system_health_dashboard_context(client, django_user_model, monkeypatch):
@@ -128,9 +127,7 @@ def test_system_health_dashboard_context(client, django_user_model, monkeypatch)
             "last_outcome": None,
         },
     )
-    monkeypatch.setattr(
-        health, "worker_health", lambda: {"status": "online", "workers": 1}
-    )
+    monkeypatch.setattr(health, "worker_health", lambda: {"status": "online", "workers": 1})
 
     response = client.get(reverse("admin_system_health"))
 

@@ -3,10 +3,11 @@
 import csv
 import io
 
-import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
+
+import pytest
 
 from recognition.models import RecognitionOutcome
 from users.models import RecognitionAttempt

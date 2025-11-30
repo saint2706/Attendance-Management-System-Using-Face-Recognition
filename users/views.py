@@ -150,9 +150,7 @@ def setup_wizard_step1(request):
     context = _build_wizard_context(progress)
     context["form"] = form
     context["step_title"] = "Organization Details"
-    context["step_description"] = (
-        "Let's start by setting up your organization's basic information."
-    )
+    context["step_description"] = "Let's start by setting up your organization's basic information."
 
     return render(request, "users/setup_wizard/step1_org_details.html", context)
 
@@ -232,9 +230,7 @@ def setup_wizard_step3(request):
                 user = form.save()
                 progress.first_employee_username = user.username
                 progress.save()
-                messages.success(
-                    request, f"Employee '{user.username}' created successfully!"
-                )
+                messages.success(request, f"Employee '{user.username}' created successfully!")
                 return redirect("setup-wizard-step3")
         elif "confirm_photos" in request.POST:
             photo_form = PhotoCaptureConfirmForm(request.POST)
@@ -305,9 +301,7 @@ def setup_wizard_step4(request):
             try:
                 from recognition.tasks import train_recognition_model
 
-                async_result = train_recognition_model.delay(
-                    initiated_by=request.user.username
-                )
+                async_result = train_recognition_model.delay(initiated_by=request.user.username)
                 progress.training_task_id = async_result.id
                 progress.save()
                 messages.info(
@@ -330,9 +324,7 @@ def setup_wizard_step4(request):
 
     context = _build_wizard_context(progress)
     context["step_title"] = "Train Recognition Model"
-    context["step_description"] = (
-        "Train the AI model to recognize faces from the captured photos."
-    )
+    context["step_description"] = "Train the AI model to recognize faces from the captured photos."
     context["task"] = task_context
     context["model_trained"] = progress.model_trained
     context["form"] = TrainingConfirmForm()

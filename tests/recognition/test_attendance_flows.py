@@ -439,7 +439,9 @@ def test_liveness_failure_blocks_attendance(client, django_user_model, monkeypat
 def test_unknown_face_does_not_create_attendance_records(client, django_user_model, monkeypatch):
     """High-distance matches should be ignored and not create attendance records."""
 
-    employee = django_user_model.objects.create_user(username="unknown-face", password="Password!234")
+    employee = django_user_model.objects.create_user(
+        username="unknown-face", password="Password!234"
+    )
     client.force_login(employee)
 
     dummy_frame = np.zeros((10, 10, 3), dtype=np.uint8)
@@ -497,9 +499,7 @@ def test_unknown_face_does_not_create_attendance_records(client, django_user_mod
 def test_missing_training_data_short_circuits_attendance(client, django_user_model, monkeypatch):
     """The attendance flow should guide users when no encrypted dataset is present."""
 
-    employee = django_user_model.objects.create_user(
-        username="no-dataset", password="Password!234"
-    )
+    employee = django_user_model.objects.create_user(username="no-dataset", password="Password!234")
     client.force_login(employee)
 
     monkeypatch.setattr(

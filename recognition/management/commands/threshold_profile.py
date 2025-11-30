@@ -13,7 +13,6 @@ Usage:
 """
 
 import json
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -241,9 +240,7 @@ class Command(BaseCommand):
 
             for profile in profiles:
                 default_mark = " [DEFAULT]" if profile.is_default else ""
-                self.stdout.write(
-                    self.style.SUCCESS(f"  {profile.name}{default_mark}")
-                )
+                self.stdout.write(self.style.SUCCESS(f"  {profile.name}{default_mark}"))
                 self.stdout.write(f"    Threshold: {profile.distance_threshold:.4f}")
                 if profile.description:
                     self.stdout.write(f"    Description: {profile.description}")
@@ -276,7 +273,9 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(
-            self.style.SUCCESS(f"\n✓ Created profile '{profile.name}' with threshold {profile.distance_threshold:.4f}")
+            self.style.SUCCESS(
+                f"\n✓ Created profile '{profile.name}' with threshold {profile.distance_threshold:.4f}"
+            )
         )
         if profile.is_default:
             self.stdout.write(self.style.SUCCESS("  Set as default profile"))
@@ -432,5 +431,5 @@ class Command(BaseCommand):
             self.stdout.write(f"Threshold: {threshold:.4f}")
         else:
             self.stdout.write(f"Site: {site_code or '(default)'}")
-            self.stdout.write(f"Profile: (system default)")
+            self.stdout.write("Profile: (system default)")
             self.stdout.write(f"Threshold: {threshold:.4f}")

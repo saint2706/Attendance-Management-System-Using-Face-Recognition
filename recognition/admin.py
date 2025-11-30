@@ -43,20 +43,32 @@ class ThresholdProfileAdmin(admin.ModelAdmin):
     ordering = ("-is_default", "name")
     readonly_fields = ("created_at", "updated_at")
     fieldsets = (
-        (None, {
-            "fields": ("name", "description", "is_default"),
-        }),
-        ("Threshold Settings", {
-            "fields": ("distance_threshold", "selection_method", "target_far", "target_frr"),
-        }),
-        ("Site Assignment", {
-            "fields": ("sites",),
-            "description": "Comma-separated list of site codes where this profile applies.",
-        }),
-        ("Metadata", {
-            "fields": ("created_at", "updated_at"),
-            "classes": ("collapse",),
-        }),
+        (
+            None,
+            {
+                "fields": ("name", "description", "is_default"),
+            },
+        ),
+        (
+            "Threshold Settings",
+            {
+                "fields": ("distance_threshold", "selection_method", "target_far", "target_frr"),
+            },
+        ),
+        (
+            "Site Assignment",
+            {
+                "fields": ("sites",),
+                "description": "Comma-separated list of site codes where this profile applies.",
+            },
+        ),
+        (
+            "Metadata",
+            {
+                "fields": ("created_at", "updated_at"),
+                "classes": ("collapse",),
+            },
+        ),
     )
 
 

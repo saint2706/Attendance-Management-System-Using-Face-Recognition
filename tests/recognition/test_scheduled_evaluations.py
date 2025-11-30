@@ -360,18 +360,26 @@ class TestSystemHealthDashboardWithEvaluation:
                 "last_outcome": None,
             },
         )
-        monkeypatch.setattr(
-            health, "worker_health", lambda: {"status": "online", "workers": 1}
-        )
+        monkeypatch.setattr(health, "worker_health", lambda: {"status": "online", "workers": 1})
         # Mock monitoring.get_health_snapshot
         monkeypatch.setattr(
             monitoring,
             "get_health_snapshot",
             lambda: {
                 "thresholds": {},
-                "camera": {"running": False, "consumers": 0, "last_start": None, "last_stop": None, "last_error": None},
+                "camera": {
+                    "running": False,
+                    "consumers": 0,
+                    "last_start": None,
+                    "last_stop": None,
+                    "last_error": None,
+                },
                 "frames": {"last_frame_timestamp": None, "last_frame_delay": None},
-                "metrics": {"camera_start": {"success": 0, "failure": 0}, "camera_stop": {"success": 0, "failure": 0, "timeout": 0}, "frame_drop_total": 0},
+                "metrics": {
+                    "camera_start": {"success": 0, "failure": 0},
+                    "camera_stop": {"success": 0, "failure": 0, "timeout": 0},
+                    "frame_drop_total": 0,
+                },
                 "stages": {},
                 "alerts": [],
             },

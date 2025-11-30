@@ -1,13 +1,9 @@
 """Tests for the fairness dashboard admin view."""
 
-import csv
-import io
-from pathlib import Path
-from unittest import mock
-
-import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+
+import pytest
 
 
 @pytest.mark.django_db

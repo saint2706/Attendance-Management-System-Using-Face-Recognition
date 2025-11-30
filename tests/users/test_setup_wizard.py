@@ -1,13 +1,12 @@
 """Tests for the setup wizard functionality."""
 
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.test import Client
 from django.urls import reverse
 
 import pytest
 
 from users.models import SetupWizardProgress
-
 
 User = get_user_model()
 

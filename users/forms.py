@@ -9,7 +9,6 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-
 # Get common timezones for the dropdown
 COMMON_TIMEZONES = [
     ("UTC", "UTC"),

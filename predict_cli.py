@@ -29,6 +29,7 @@ def _setup_django():
     )
     try:
         import django
+
         if not django.apps.apps.ready:
             django.setup()
         return True
@@ -68,29 +69,30 @@ def get_score_band(score: float, policy: dict) -> tuple:
 def get_threshold_from_profile(profile_name: str = None, site_code: str = None) -> tuple:
     """
     Get threshold from a profile name or site code.
-    
+
     Returns:
         Tuple of (threshold, profile_name) where profile_name may be None for system default.
     """
     if not _setup_django():
         return None, None
-    
+
     try:
-        from recognition.models import ThresholdProfile
         from django.conf import settings
-        
+
+        from recognition.models import ThresholdProfile
+
         if profile_name:
             try:
                 profile = ThresholdProfile.objects.get(name=profile_name)
                 return profile.distance_threshold, profile.name
             except ThresholdProfile.DoesNotExist:
                 logger.warning(f"Profile '{profile_name}' not found, using system default")
-        
+
         if site_code:
             profile = ThresholdProfile.get_for_site(site_code)
             if profile:
                 return profile.distance_threshold, profile.name
-        
+
         # Return system default
         system_default = float(getattr(settings, "RECOGNITION_DISTANCE_THRESHOLD", 0.4))
         return system_default, None
@@ -229,20 +231,22 @@ def main():
             lines.append(f"Profile: {result['profile_used']}")
         if result.get("site_code"):
             lines.append(f"Site: {result['site_code']}")
-        lines.extend([
-            "",
-            f"Band: {result['band'].upper()}",
-            f"Description: {result['band_description']}",
-            "",
-            f"Recommended Action: {result['action']}",
-            f"Action Description: {result['action_description']}",
-            "",
-            f"Mark Attendance: {'Yes' if result['mark_attendance'] else 'No'}",
-            f"Requires Secondary Auth: {'Yes' if result['requires_secondary_auth'] else 'No'}",
-            "",
-            f"User Message: {result['user_message']}",
-            "=" * 60,
-        ])
+        lines.extend(
+            [
+                "",
+                f"Band: {result['band'].upper()}",
+                f"Description: {result['band_description']}",
+                "",
+                f"Recommended Action: {result['action']}",
+                f"Action Description: {result['action_description']}",
+                "",
+                f"Mark Attendance: {'Yes' if result['mark_attendance'] else 'No'}",
+                f"Requires Secondary Auth: {'Yes' if result['requires_secondary_auth'] else 'No'}",
+                "",
+                f"User Message: {result['user_message']}",
+                "=" * 60,
+            ]
+        )
         logger.info("\n".join(lines), extra=log_context)
 
 
