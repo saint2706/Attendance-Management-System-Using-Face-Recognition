@@ -1,7 +1,6 @@
 """Tests for threshold profile management."""
 
 import os
-import sys
 from io import StringIO
 
 import django
@@ -11,10 +10,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recogn
 if not django.apps.apps.ready:
     django.setup()
 
-import pytest
-from django.test import TestCase
+from django.test import TestCase  # noqa: E402
 
-from recognition.models import ThresholdProfile
+from recognition.models import ThresholdProfile  # noqa: E402
 
 
 class TestThresholdProfileModel(TestCase):
@@ -45,10 +43,10 @@ class TestThresholdProfileModel(TestCase):
             distance_threshold=0.5,
             is_default=True,
         )
-        
+
         # Refresh profile1 from database
         profile1.refresh_from_db()
-        
+
         # profile1 should no longer be default
         assert profile1.is_default is False
         assert profile2.is_default is True
@@ -60,7 +58,7 @@ class TestThresholdProfileModel(TestCase):
             distance_threshold=0.4,
             sites="site1, site2, site3",
         )
-        
+
         profile = ThresholdProfile.get_for_site("site2")
         assert profile is not None
         assert profile.name == "site_profile"
@@ -77,7 +75,7 @@ class TestThresholdProfileModel(TestCase):
             distance_threshold=0.5,
             sites="other_site",
         )
-        
+
         profile = ThresholdProfile.get_for_site("unknown_site")
         assert profile is not None
         assert profile.name == "default_profile"
@@ -89,14 +87,14 @@ class TestThresholdProfileModel(TestCase):
             distance_threshold=0.45,
             sites="lab1, lab2",
         )
-        
+
         threshold = ThresholdProfile.get_threshold_for_site("lab1")
         assert threshold == 0.45
 
     def test_get_threshold_for_site_uses_system_default(self):
         """Test that system default is used when no profile matches."""
         from django.conf import settings
-        
+
         expected = float(getattr(settings, "RECOGNITION_DISTANCE_THRESHOLD", 0.4))
         threshold = ThresholdProfile.get_threshold_for_site("unknown")
         assert threshold == expected
@@ -127,7 +125,7 @@ class TestThresholdProfileCommand(TestCase):
             name="test_profile",
             distance_threshold=0.4,
         )
-        
+
         out = StringIO()
         call_command("threshold_profile", "list", stdout=out)
         output = out.getvalue()
@@ -140,10 +138,11 @@ class TestThresholdProfileCommand(TestCase):
             name="json_test",
             distance_threshold=0.35,
         )
-        
+
         out = StringIO()
         call_command("threshold_profile", "list", "--json", stdout=out)
         import json
+
         data = json.loads(out.getvalue())
         assert len(data) == 1
         assert data[0]["name"] == "json_test"
@@ -155,15 +154,18 @@ class TestThresholdProfileCommand(TestCase):
         call_command(
             "threshold_profile",
             "create",
-            "--name", "cmd_profile",
-            "--threshold", "0.38",
-            "--description", "Created via CLI",
+            "--name",
+            "cmd_profile",
+            "--threshold",
+            "0.38",
+            "--description",
+            "Created via CLI",
             stdout=out,
         )
-        
+
         output = out.getvalue()
         assert "Created profile" in output
-        
+
         profile = ThresholdProfile.objects.get(name="cmd_profile")
         assert profile.distance_threshold == 0.38
         assert profile.description == "Created via CLI"
@@ -174,19 +176,20 @@ class TestThresholdProfileCommand(TestCase):
             name="update_test",
             distance_threshold=0.4,
         )
-        
+
         out = StringIO()
         call_command(
             "threshold_profile",
             "update",
             "update_test",
-            "--threshold", "0.45",
+            "--threshold",
+            "0.45",
             stdout=out,
         )
-        
+
         output = out.getvalue()
         assert "Updated profile" in output
-        
+
         profile = ThresholdProfile.objects.get(name="update_test")
         assert profile.distance_threshold == 0.45
 
@@ -197,15 +200,16 @@ class TestThresholdProfileCommand(TestCase):
             distance_threshold=0.42,
             sites="test_site",
         )
-        
+
         out = StringIO()
         call_command(
             "threshold_profile",
             "get-threshold",
-            "--site", "test_site",
+            "--site",
+            "test_site",
             stdout=out,
         )
-        
+
         output = out.getvalue()
         assert "get_test" in output
         assert "0.4200" in output

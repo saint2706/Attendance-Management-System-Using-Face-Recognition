@@ -217,9 +217,7 @@ def system_health_dashboard(request: HttpRequest) -> HttpResponse:
 def _unknown_face_filter() -> Q:
     """Return a Q object to filter for unknown face attempts."""
     return (
-        Q(successful=False)
-        & ~Q(spoof_detected=True)
-        & (Q(username="") | Q(username__isnull=True))
+        Q(successful=False) & ~Q(spoof_detected=True) & (Q(username="") | Q(username__isnull=True))
     )
 
 
@@ -233,14 +231,14 @@ def _get_chart_data_for_period(days: int = 7) -> dict[str, Any]:
 
     # Use simpler aggregation to avoid SQLite compatibility issues
     outcomes = list(
-        RecognitionOutcome.objects.filter(created_at__gte=since)
-        .values("created_at", "accepted")
+        RecognitionOutcome.objects.filter(created_at__gte=since).values("created_at", "accepted")
     )
 
     # Get liveness failure data from RecognitionAttempt
     liveness_attempts = list(
-        RecognitionAttempt.objects.filter(created_at__gte=since, spoof_detected=True)
-        .values("created_at")
+        RecognitionAttempt.objects.filter(created_at__gte=since, spoof_detected=True).values(
+            "created_at"
+        )
     )
 
     # Get unknown face attempts (failed attempts with no username)
@@ -359,14 +357,12 @@ def attendance_dashboard(request: HttpRequest) -> HttpResponse:
     if skip_outcomes:
         outcomes = RecognitionOutcome.objects.none()
     else:
-        outcomes = (
-            RecognitionOutcome.objects.filter(outcome_filters)
-            .order_by("-created_at")[:DASHBOARD_RECORD_LIMIT]
-        )
-    attempts = (
-        RecognitionAttempt.objects.filter(attempt_filters)
-        .order_by("-created_at")[:DASHBOARD_RECORD_LIMIT]
-    )
+        outcomes = RecognitionOutcome.objects.filter(outcome_filters).order_by("-created_at")[
+            :DASHBOARD_RECORD_LIMIT
+        ]
+    attempts = RecognitionAttempt.objects.filter(attempt_filters).order_by("-created_at")[
+        :DASHBOARD_RECORD_LIMIT
+    ]
 
     # Get chart data
     chart_data = _get_chart_data_for_period(days=7)
@@ -558,18 +554,20 @@ def fairness_dashboard(request: HttpRequest) -> HttpResponse:
                         frr = float(row.get("frr", 0))
                         group_name = row.get("group", "unknown")
                         if far > far_threshold or frr > frr_threshold:
-                            flagged_groups.append({
-                                "category": key.replace("by_", "").title(),
-                                "group": group_name,
-                                "far": f"{far:.4f}",
-                                "frr": f"{frr:.4f}",
-                                "reason": (
-                                    "High FAR" if far > far_threshold else ""
-                                ) + (
-                                    " & High FRR" if far > far_threshold and frr > frr_threshold
-                                    else ("High FRR" if frr > frr_threshold else "")
-                                ),
-                            })
+                            flagged_groups.append(
+                                {
+                                    "category": key.replace("by_", "").title(),
+                                    "group": group_name,
+                                    "far": f"{far:.4f}",
+                                    "frr": f"{frr:.4f}",
+                                    "reason": ("High FAR" if far > far_threshold else "")
+                                    + (
+                                        " & High FRR"
+                                        if far > far_threshold and frr > frr_threshold
+                                        else ("High FRR" if frr > frr_threshold else "")
+                                    ),
+                                }
+                            )
                     except (ValueError, TypeError):
                         pass
             context["group_metrics"][key] = rows
@@ -583,10 +581,12 @@ def fairness_dashboard(request: HttpRequest) -> HttpResponse:
     for key, filename in csv_files.items():
         csv_path = reports_dir / filename
         if csv_path.exists():
-            report_files.append({
-                "name": f"Metrics by {key.replace('by_', '').title()}",
-                "path": filename,
-            })
+            report_files.append(
+                {
+                    "name": f"Metrics by {key.replace('by_', '').title()}",
+                    "path": filename,
+                }
+            )
     context["report_files"] = report_files
 
     return render(request, "recognition/admin/fairness_dashboard.html", context)
@@ -596,29 +596,29 @@ def fairness_dashboard(request: HttpRequest) -> HttpResponse:
 def threshold_profiles(request: HttpRequest) -> HttpResponse:
     """List and manage threshold profiles."""
     profiles = ThresholdProfile.objects.all()
-    
+
     # Get the current system default threshold
     system_default = getattr(settings, "RECOGNITION_DISTANCE_THRESHOLD", 0.4)
-    
+
     # Load threshold sweep data if available
     reports_dir = Path(settings.BASE_DIR) / "reports"
     threshold_file = reports_dir / "selected_threshold.json"
     sweep_data = None
-    
+
     if threshold_file.exists():
         try:
             with open(threshold_file) as f:
                 sweep_data = json.load(f)
         except (json.JSONDecodeError, OSError):
             pass
-    
+
     context = {
         "profiles": profiles,
         "system_default": system_default,
         "sweep_data": sweep_data,
         "has_sweep_data": sweep_data is not None,
     }
-    
+
     return render(request, "recognition/admin/threshold_profiles.html", context)
 
 
@@ -636,7 +636,7 @@ def threshold_profile_create(request: HttpRequest) -> HttpResponse:
             return redirect("admin_threshold_profiles")
     else:
         form = ThresholdProfileForm()
-    
+
     context = {"form": form, "action": "Create"}
     return render(request, "recognition/admin/threshold_profile_form.html", context)
 
@@ -649,7 +649,7 @@ def threshold_profile_edit(request: HttpRequest, profile_id: int) -> HttpRespons
     except ThresholdProfile.DoesNotExist:
         messages.error(request, "Profile not found.")
         return redirect("admin_threshold_profiles")
-    
+
     if request.method == "POST":
         form = ThresholdProfileForm(request.POST, instance=profile)
         if form.is_valid():
@@ -658,7 +658,7 @@ def threshold_profile_edit(request: HttpRequest, profile_id: int) -> HttpRespons
             return redirect("admin_threshold_profiles")
     else:
         form = ThresholdProfileForm(instance=profile)
-    
+
     context = {"form": form, "action": "Edit", "profile": profile}
     return render(request, "recognition/admin/threshold_profile_form.html", context)
 
@@ -671,13 +671,13 @@ def threshold_profile_delete(request: HttpRequest, profile_id: int) -> HttpRespo
     except ThresholdProfile.DoesNotExist:
         messages.error(request, "Profile not found.")
         return redirect("admin_threshold_profiles")
-    
+
     if request.method == "POST":
         name = profile.name
         profile.delete()
         messages.success(request, f"Deleted threshold profile '{name}'")
         return redirect("admin_threshold_profiles")
-    
+
     context = {"profile": profile}
     return render(request, "recognition/admin/threshold_profile_delete.html", context)
 
@@ -690,7 +690,7 @@ def threshold_profile_set_default(request: HttpRequest, profile_id: int) -> Http
     except ThresholdProfile.DoesNotExist:
         messages.error(request, "Profile not found.")
         return redirect("admin_threshold_profiles")
-    
+
     profile.is_default = True
     profile.save()
     messages.success(request, f"Set '{profile.name}' as the default profile")
@@ -702,7 +702,7 @@ def threshold_profile_import(request: HttpRequest) -> HttpResponse:
     """Import a threshold from evaluation artifacts."""
     reports_dir = Path(settings.BASE_DIR) / "reports"
     threshold_file = reports_dir / "selected_threshold.json"
-    
+
     sweep_data = None
     if threshold_file.exists():
         try:
@@ -710,7 +710,7 @@ def threshold_profile_import(request: HttpRequest) -> HttpResponse:
                 sweep_data = json.load(f)
         except (json.JSONDecodeError, OSError):
             pass
-    
+
     if request.method == "POST":
         form = ThresholdImportForm(request.POST)
         if form.is_valid():
@@ -718,22 +718,22 @@ def threshold_profile_import(request: HttpRequest) -> HttpResponse:
             name = form.cleaned_data["profile_name"]
             sites = form.cleaned_data.get("sites", "")
             set_default = form.cleaned_data.get("set_as_default", False)
-            
+
             # Check if profile name already exists
             if ThresholdProfile.objects.filter(name=name).exists():
                 messages.error(request, f"Profile '{name}' already exists.")
                 return redirect("admin_threshold_profile_import")
-            
+
             # Get threshold from sweep data
             if sweep_data is None:
                 messages.error(request, "No threshold sweep data available. Run evaluation first.")
                 return redirect("admin_threshold_profile_import")
-            
+
             threshold = sweep_data.get("threshold")
             if threshold is None:
                 messages.error(request, "Invalid threshold data.")
                 return redirect("admin_threshold_profile_import")
-            
+
             profile = ThresholdProfile.objects.create(
                 name=name,
                 description=f"Imported from evaluation using {method} method",
@@ -744,7 +744,7 @@ def threshold_profile_import(request: HttpRequest) -> HttpResponse:
                 sites=sites,
                 is_default=set_default,
             )
-            
+
             messages.success(
                 request,
                 f"Imported profile '{profile.name}' with threshold {profile.distance_threshold:.4f}",
@@ -752,7 +752,7 @@ def threshold_profile_import(request: HttpRequest) -> HttpResponse:
             return redirect("admin_threshold_profiles")
     else:
         form = ThresholdImportForm()
-    
+
     context = {
         "form": form,
         "sweep_data": sweep_data,
@@ -765,16 +765,16 @@ def threshold_profile_import(request: HttpRequest) -> HttpResponse:
 def threshold_profile_api(request: HttpRequest) -> JsonResponse:
     """API endpoint for getting threshold by site code."""
     site_code = request.GET.get("site", "")
-    
+
     profile = ThresholdProfile.get_for_site(site_code)
     threshold = ThresholdProfile.get_threshold_for_site(site_code)
-    
+
     response_data = {
         "site": site_code,
         "threshold": threshold,
         "profile": None,
     }
-    
+
     if profile:
         response_data["profile"] = {
             "id": profile.id,
@@ -782,7 +782,7 @@ def threshold_profile_api(request: HttpRequest) -> JsonResponse:
             "distance_threshold": profile.distance_threshold,
             "is_default": profile.is_default,
         }
-    
+
     return JsonResponse(response_data)
 
 
@@ -792,15 +792,15 @@ def liveness_results_dashboard(request: HttpRequest) -> HttpResponse:
     # Get date range filter
     days = int(request.GET.get("days", 7))
     since = timezone.now() - datetime.timedelta(days=days)
-    
+
     # Get liveness results
     results = LivenessResult.objects.filter(created_at__gte=since).order_by("-created_at")[:100]
-    
+
     # Aggregate statistics
     total_checks = results.count()
     passed_count = results.filter(challenge_status="passed").count()
     failed_count = results.filter(challenge_status="failed").count()
-    
+
     # Aggregate by challenge type with pass rates computed
     by_challenge_raw = (
         LivenessResult.objects.filter(created_at__gte=since)
@@ -816,7 +816,7 @@ def liveness_results_dashboard(request: HttpRequest) -> HttpResponse:
     for item in by_challenge_raw:
         item["pass_rate"] = (item["passed"] / item["total"] * 100) if item["total"] else 0
         by_challenge.append(item)
-    
+
     # Daily trend with pass rates
     daily_trend_raw = (
         LivenessResult.objects.filter(created_at__gte=since)
@@ -833,7 +833,7 @@ def liveness_results_dashboard(request: HttpRequest) -> HttpResponse:
     for item in daily_trend_raw:
         item["pass_rate"] = (item["passed"] / item["total"] * 100) if item["total"] else 0
         daily_trend.append(item)
-    
+
     context = {
         "results": results,
         "total_checks": total_checks,
@@ -844,5 +844,5 @@ def liveness_results_dashboard(request: HttpRequest) -> HttpResponse:
         "daily_trend": daily_trend,
         "days": days,
     }
-    
+
     return render(request, "recognition/admin/liveness_results.html", context)

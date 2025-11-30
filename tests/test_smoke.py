@@ -8,10 +8,10 @@ These tests are designed to quickly validate that:
 
 from __future__ import annotations
 
-import pytest
-from django.test import Client, override_settings
+from django.test import Client
 from django.urls import reverse
 
+import pytest
 
 pytestmark = pytest.mark.django_db
 
@@ -51,7 +51,7 @@ class TestAuthenticationSmokeTests:
 
     def test_can_login_with_valid_credentials(self, client: Client, django_user_model) -> None:
         """Valid credentials should allow login and redirect to dashboard."""
-        user = django_user_model.objects.create_user(
+        django_user_model.objects.create_user(
             username="smoke_test_user",
             password="SmokeTestPass123!",
             is_staff=True,
@@ -120,6 +120,7 @@ class TestManagementCommandsSmokeTests:
     def available_commands(self) -> dict:
         """Get all available management commands once per test class."""
         from django.core.management import get_commands
+
         return get_commands()
 
     def test_prepare_splits_command_exists(self, available_commands: dict) -> None:

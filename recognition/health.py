@@ -165,7 +165,11 @@ def recognition_activity() -> Dict[str, Any]:
             return None
         return {
             "username": attempt.username or (attempt.user.username if attempt.user else ""),
-            "direction": attempt.get_direction_display() if hasattr(attempt, "get_direction_display") else attempt.direction,
+            "direction": (
+                attempt.get_direction_display()
+                if hasattr(attempt, "get_direction_display")
+                else attempt.direction
+            ),
             "timestamp": _isoformat_or_none(attempt.created_at),
             "successful": attempt.successful,
             "spoof_detected": attempt.spoof_detected,

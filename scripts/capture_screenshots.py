@@ -56,15 +56,9 @@ def _parse_args() -> argparse.Namespace:
         help="Admin password for authenticated screenshots.",
     )
     parser.add_argument(
-        "--headless",
-        action="store_true",
-        default=True,
-        help="Run browser in headless mode (default: True).",
-    )
-    parser.add_argument(
         "--headed",
         action="store_true",
-        help="Run browser in headed mode (shows browser window).",
+        help="Run browser in headed mode (shows browser window). Default is headless.",
     )
     return parser.parse_args()
 
@@ -202,7 +196,7 @@ def main() -> int:
     project_root = _project_root()
     output_dir = Path(args.output_dir) if args.output_dir else project_root / "docs" / "screenshots"
 
-    headless = args.headless and not args.headed
+    headless = not args.headed
 
     print("=" * 60)
     print("Screenshot Capture for Documentation")

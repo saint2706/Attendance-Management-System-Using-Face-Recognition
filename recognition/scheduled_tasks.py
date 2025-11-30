@@ -29,7 +29,10 @@ def _run_face_recognition_evaluation(
     limit_samples: int | None = None,
 ) -> ModelEvaluationResult:
     """Execute face recognition evaluation and persist results."""
-    from src.evaluation.face_recognition_eval import EvaluationConfig, run_face_recognition_evaluation
+    from src.evaluation.face_recognition_eval import (
+        EvaluationConfig,
+        run_face_recognition_evaluation,
+    )
 
     start_time = time.time()
     reports_dir = _get_reports_dir() / "evaluation" / evaluation_type
@@ -142,7 +145,8 @@ def run_fairness_audit(
     Returns:
         Dictionary with audit results and metadata
     """
-    from src.evaluation.fairness import FairnessAuditConfig, run_fairness_audit as _run_audit
+    from src.evaluation.fairness import FairnessAuditConfig
+    from src.evaluation.fairness import run_fairness_audit as _run_audit
 
     task_id = self.request.id or ""
     start_time = time.time()
@@ -161,9 +165,7 @@ def run_fairness_audit(
 
         # Extract key metrics from the evaluation
         metrics = audit_result.evaluation.metrics
-        identities = {
-            s.ground_truth for s in audit_result.evaluation.samples if s.ground_truth
-        }
+        identities = {s.ground_truth for s in audit_result.evaluation.samples if s.ground_truth}
 
         result = ModelEvaluationResult.objects.create(
             evaluation_type=ModelEvaluationResult.EvaluationType.FAIRNESS_AUDIT,
@@ -281,12 +283,9 @@ def run_liveness_evaluation(
         )["avg_confidence"]
 
         # Get breakdown by challenge type
-        by_challenge = (
-            results.values("challenge_type")
-            .annotate(
-                total=Count("id"),
-                passed=Count("id", filter=Q(challenge_status="passed")),
-            )
+        by_challenge = results.values("challenge_type").annotate(
+            total=Count("id"),
+            passed=Count("id", filter=Q(challenge_status="passed")),
         )
 
         duration = time.time() - start_time

@@ -135,40 +135,52 @@ class ThresholdProfileForm(forms.ModelForm):
             "is_default",
         ]
         widgets = {
-            "name": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "e.g., strict_office",
-            }),
-            "description": forms.Textarea(attrs={
-                "class": "form-control",
-                "rows": 3,
-                "placeholder": "Description of when/where this profile should be used",
-            }),
-            "distance_threshold": forms.NumberInput(attrs={
-                "class": "form-control",
-                "step": "0.01",
-                "min": "0",
-                "max": "2",
-            }),
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "e.g., strict_office",
+                }
+            ),
+            "description": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                    "placeholder": "Description of when/where this profile should be used",
+                }
+            ),
+            "distance_threshold": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "step": "0.01",
+                    "min": "0",
+                    "max": "2",
+                }
+            ),
             "selection_method": forms.Select(attrs={"class": "form-select"}),
-            "target_far": forms.NumberInput(attrs={
-                "class": "form-control",
-                "step": "0.001",
-                "min": "0",
-                "max": "1",
-                "placeholder": "e.g., 0.01",
-            }),
-            "target_frr": forms.NumberInput(attrs={
-                "class": "form-control",
-                "step": "0.001",
-                "min": "0",
-                "max": "1",
-                "placeholder": "e.g., 0.05",
-            }),
-            "sites": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "e.g., site1, site2, lab_a",
-            }),
+            "target_far": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "step": "0.001",
+                    "min": "0",
+                    "max": "1",
+                    "placeholder": "e.g., 0.01",
+                }
+            ),
+            "target_frr": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "step": "0.001",
+                    "min": "0",
+                    "max": "1",
+                    "placeholder": "e.g., 0.05",
+                }
+            ),
+            "sites": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "e.g., site1, site2, lab_a",
+                }
+            ),
             "is_default": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
         help_texts = {
@@ -194,19 +206,23 @@ class ThresholdImportForm(forms.Form):
     profile_name = forms.CharField(
         label="Profile Name",
         max_length=100,
-        widget=forms.TextInput(attrs={
-            "class": "form-control",
-            "placeholder": "e.g., strict_office",
-        }),
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "e.g., strict_office",
+            }
+        ),
     )
     sites = forms.CharField(
         label="Sites",
         required=False,
         max_length=500,
-        widget=forms.TextInput(attrs={
-            "class": "form-control",
-            "placeholder": "e.g., site1, site2",
-        }),
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "e.g., site1, site2",
+            }
+        ),
     )
     set_as_default = forms.BooleanField(
         label="Set as default profile",

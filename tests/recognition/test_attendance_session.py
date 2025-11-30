@@ -1,6 +1,7 @@
-import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+
+import pytest
 
 from recognition.models import RecognitionOutcome
 from users.models import RecognitionAttempt
