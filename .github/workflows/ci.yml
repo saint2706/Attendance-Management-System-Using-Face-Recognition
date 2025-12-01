@@ -29,6 +29,12 @@ on:
       - "pyproject.toml"
       - "pytest.ini"
   workflow_dispatch:
+    inputs:
+      run_slow_tests:
+        description: 'Run slow/integration tests'
+        required: false
+        default: 'false'
+        type: boolean
 
 permissions:
   contents: read
@@ -38,9 +44,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  # Fast tests job - runs on every push and PR
+  tests_fast:
+    name: Fast Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 15
     services:
       postgres:
         image: postgres:16
@@ -93,10 +101,6 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements-dev.txt
 
-      - name: Install Playwright browsers
-        run: |
-          playwright install chromium --with-deps
-
       - name: Validate Django project
         run: |
           python manage.py check
@@ -128,24 +132,154 @@ jobs:
           black --check --line-length=100 .
           isort --check-only --profile=black --line-length=100 .
 
-      - name: Run tests
+      - name: Run fast tests (excludes slow, ui, e2e)
         env:
           DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
         run: |
-          pytest -m "not ui"
+          pytest -m "not slow and not ui and not e2e" -n auto --maxfail=5 --durations=10 -v
+
+  # Slow tests job - runs on main push, schedule, or manual trigger
+  tests_slow:
+    name: Slow/Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Run on main branch push, manual dispatch with run_slow_tests=true, or scheduled
+    if: github.ref == 'refs/heads/main' || github.event.inputs.run_slow_tests == 'true'
+    needs: tests_fast
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ams
+          POSTGRES_PASSWORD: ams
+          POSTGRES_DB: ams
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ams -d ams"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DJANGO_DEBUG: "1"
+      DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+      DJANGO_SECRET_KEY: "dev-secret-long-value-with-more-than-fifty-characters-12345"
+      DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
+      FACE_DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
+      RECOGNITION_HEADLESS: "True"
+      DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+            pyproject.toml
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libglib2.0-0 libsm6 libxrender1 libxext6
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements-dev.txt
+
+      - name: Apply database migrations
+        run: |
+          python manage.py migrate --noinput
+
+      - name: Run slow and integration tests
+        env:
+          DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
+        run: |
+          pytest -m "slow or integration" --no-cov -v --durations=20
+
+      - name: Smoke test - prepare splits
+        run: |
+          python manage.py prepare_splits --seed 42 || echo "Splits preparation skipped (no data)"
+
+      - name: Smoke test - eval
+        run: |
+          python manage.py eval --seed 42 --n-bootstrap 100 || echo "Eval skipped (no data)"
+
+  # UI tests job - runs on main branch push or manual trigger
+  tests_ui:
+    name: UI/E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Run on main branch push or manual dispatch
+    if: github.ref == 'refs/heads/main' || github.event.inputs.run_slow_tests == 'true'
+    needs: tests_fast
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ams
+          POSTGRES_PASSWORD: ams
+          POSTGRES_DB: ams
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ams -d ams"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DJANGO_DEBUG: "1"
+      DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+      DJANGO_SECRET_KEY: "dev-secret-long-value-with-more-than-fifty-characters-12345"
+      DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
+      FACE_DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
+      RECOGNITION_HEADLESS: "True"
+      DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+            pyproject.toml
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libglib2.0-0 libsm6 libxrender1 libxext6
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements-dev.txt
+
+      - name: Install Playwright browsers
+        run: |
+          playwright install chromium --with-deps
+
+      - name: Apply database migrations
+        run: |
+          python manage.py migrate --noinput
+
+      - name: Collect static files
+        run: |
+          python manage.py collectstatic --noinput
 
       - name: Run Playwright UI tests
         env:
           DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
         run: |
-          pytest --no-cov -m "ui" tests/ui
-
-      - name: Smoke test - prepare splits
-        if: matrix.python-version == '3.12'
-        run: |
-          python manage.py prepare_splits --seed 42 || echo "Splits preparation skipped (no data)"
-
-      - name: Smoke test - eval
-        if: matrix.python-version == '3.12'
-        run: |
-          python manage.py eval --seed 42 --n-bootstrap 100 || echo "Eval skipped (no data)"
+          pytest -m "ui or e2e" --no-cov -v tests/ui

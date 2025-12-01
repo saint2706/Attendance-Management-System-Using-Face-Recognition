@@ -23,6 +23,8 @@ User = get_user_model()
 
 
 @pytest.mark.django_db
+@pytest.mark.slow
+@pytest.mark.integration
 class TestFaceRecognitionWorkflow:
     """Validate the most important steps of the face recognition pipeline."""
 

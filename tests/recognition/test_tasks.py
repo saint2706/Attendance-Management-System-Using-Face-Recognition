@@ -15,6 +15,9 @@ if not django.apps.apps.ready:
 from recognition.tasks import process_attendance_batch  # noqa: E402
 from users.models import Present, RecognitionAttempt, Time  # noqa: E402
 
+# Mark tests as slow since they use Celery eager mode with DB transactions
+pytestmark = [pytest.mark.slow, pytest.mark.integration]
+
 
 @pytest.mark.django_db(transaction=True)
 def test_process_attendance_batch_creates_records(settings, django_user_model):

@@ -44,12 +44,22 @@ def test_health_helpers_report_dataset_and_model(tmp_path, monkeypatch):
     assert dataset_snapshot["identity_count"] == 1
     assert dataset_snapshot["exists"] is True
 
-    stale_reference = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(seconds=5)
-    os.utime(image_path, (stale_reference.timestamp(), stale_reference.timestamp()))
-    os.utime(model_path, (stale_reference.timestamp() - 100, stale_reference.timestamp() - 100))
-    os.utime(classes_path, (stale_reference.timestamp() - 100, stale_reference.timestamp() - 100))
+    # Make the image newer than the model to simulate stale model artifacts
+    # Set model to be older (past timestamp) and image to be newer (future timestamp)
+    import time
 
-    model_snapshot = health.model_health(dataset_last_updated=dataset_snapshot["last_updated"])
+    past_time = time.time() - 100
+    future_time = time.time() + 100
+    os.utime(model_path, (past_time, past_time))
+    os.utime(classes_path, (past_time, past_time))
+    os.utime(image_path, (future_time, future_time))
+
+    # Re-capture dataset health after modifying timestamps to get updated last_updated
+    updated_dataset_snapshot = health.dataset_health()
+
+    model_snapshot = health.model_health(
+        dataset_last_updated=updated_dataset_snapshot["last_updated"]
+    )
     assert model_snapshot["model_present"] is True
     assert model_snapshot["classes_present"] is True
     assert model_snapshot["stale"] is True

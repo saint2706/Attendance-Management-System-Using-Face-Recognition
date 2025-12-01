@@ -1,6 +1,6 @@
 # Makefile for Attendance-Management-System-Using-Face-Recognition
 
-.PHONY: all setup run clean lint test migrate train evaluate report reproduce install-hooks demo docs-screenshots
+.PHONY: all setup run clean lint test test-fast test-slow test-all test-coverage migrate train evaluate report reproduce install-hooks demo docs-screenshots
 
 # Default target
 all: setup run
@@ -34,11 +34,35 @@ format:
 	isort --profile=black --line-length=100 .
 	@echo "Code formatting complete."
 
-# Run tests
-test:
-	@echo "Running tests..."
-	python manage.py test
-	@echo "Tests complete."
+# Run fast tests (default - excludes slow, ui, and e2e tests)
+test-fast:
+	@echo "Running fast tests..."
+	pytest -m "not slow and not ui and not e2e" --maxfail=5 --durations=10 -v
+	@echo "Fast tests complete."
+
+# Run slow and integration tests
+test-slow:
+	@echo "Running slow and integration tests..."
+	pytest -m "slow or integration" --no-cov -v
+	@echo "Slow tests complete."
+
+# Run UI/E2E tests
+test-ui:
+	@echo "Running UI/E2E tests..."
+	pytest -m "ui or e2e" --no-cov -v tests/ui
+	@echo "UI tests complete."
+
+# Run all tests including slow and e2e (full suite)
+test-all:
+	@echo "Running all tests..."
+	pytest -m "" --cov=. --cov-report=html --cov-report=term-missing --cov-report=xml --cov-fail-under=60 -v
+	@echo "All tests complete."
+
+# Run tests with coverage (alias for test-all)
+test-coverage: test-all
+
+# Run tests (alias for test-fast for backward compatibility)
+test: test-fast
 
 # Run database migrations
 migrate:
