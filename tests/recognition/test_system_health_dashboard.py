@@ -57,7 +57,9 @@ def test_health_helpers_report_dataset_and_model(tmp_path, monkeypatch):
     # Re-capture dataset health after modifying timestamps to get updated last_updated
     updated_dataset_snapshot = health.dataset_health()
 
-    model_snapshot = health.model_health(dataset_last_updated=updated_dataset_snapshot["last_updated"])
+    model_snapshot = health.model_health(
+        dataset_last_updated=updated_dataset_snapshot["last_updated"]
+    )
     assert model_snapshot["model_present"] is True
     assert model_snapshot["classes_present"] is True
     assert model_snapshot["stale"] is True
