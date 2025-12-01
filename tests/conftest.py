@@ -1,7 +1,18 @@
-"""Shared pytest fixtures and test bootstrapping for the project."""
-
 import sys
 from unittest.mock import MagicMock
 
-# Ensure OpenCV imports don't fail in environments without the native bindings.
-sys.modules.setdefault("cv2", MagicMock(name="cv2"))
+# Attempt to import tensorflow/deepface. If they fail, mock them.
+try:
+    import tensorflow
+    import deepface
+except ImportError:
+    # Mock tensorflow
+    tf_mock = MagicMock()
+    sys.modules["tensorflow"] = tf_mock
+    sys.modules["tensorflow.python"] = tf_mock
+    sys.modules["tensorflow.python.pywrap_tensorflow"] = tf_mock
+    
+    # Mock deepface
+    df_mock = MagicMock()
+    sys.modules["deepface"] = df_mock
+    sys.modules["deepface.DeepFace"] = df_mock

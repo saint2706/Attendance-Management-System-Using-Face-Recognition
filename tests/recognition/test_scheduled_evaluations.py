@@ -40,11 +40,15 @@ class TestModelEvaluationResult:
     def test_get_latest_returns_most_recent(self):
         """Should return the most recent evaluation result."""
         # Create older result
-        ModelEvaluationResult.objects.create(
+        older = ModelEvaluationResult.objects.create(
             evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
             accuracy=0.90,
             success=True,
         )
+        # Ensure the older result is strictly older
+        from django.utils import timezone
+        older.created_at = timezone.now() - dt.timedelta(seconds=1)
+        older.save()
 
         # Create newer result
         newer = ModelEvaluationResult.objects.create(
@@ -114,7 +118,7 @@ class TestModelEvaluationResult:
     def test_compute_trend_with_previous(self):
         """Should compute trends correctly when previous evaluation exists."""
         # Create older result
-        ModelEvaluationResult.objects.create(
+        older = ModelEvaluationResult.objects.create(
             evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
             accuracy=0.90,
             precision=0.89,
@@ -123,6 +127,10 @@ class TestModelEvaluationResult:
             frr=0.10,
             success=True,
         )
+        # Ensure the older result is strictly older
+        from django.utils import timezone
+        older.created_at = timezone.now() - dt.timedelta(seconds=1)
+        older.save()
 
         # Create newer result with improved metrics
         newer = ModelEvaluationResult.objects.create(
@@ -145,12 +153,16 @@ class TestModelEvaluationResult:
     def test_compute_trend_degraded_metrics(self):
         """Should detect degraded metrics correctly."""
         # Create older result with good metrics
-        ModelEvaluationResult.objects.create(
+        older = ModelEvaluationResult.objects.create(
             evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
             accuracy=0.95,
             far=0.02,
             success=True,
         )
+        # Ensure the older result is strictly older
+        from django.utils import timezone
+        older.created_at = timezone.now() - dt.timedelta(seconds=1)
+        older.save()
 
         # Create newer result with worse metrics
         newer = ModelEvaluationResult.objects.create(
