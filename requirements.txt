@@ -17,10 +17,9 @@ opencv-python==4.9.0.80
 scikit-learn==1.5.0
 tf-keras==2.20.1
 numpy==1.26.4
-pandas==2.3.3
-scipy==1.16.3
+pandas==2.2.3
+scipy==1.14.1
 prometheus-client==0.20.0
 PyYAML==6.0.2
-pytest-playwright==0.4.4
 cryptography==43.0.3
-psycopg2-binary
+psycopg2-binary==2.9.9
