@@ -16,6 +16,8 @@ import pytest
 from recognition import views
 from users.models import Present, Time
 
+# Fast unit tests: admin registration, add photos (mocked), admin views
+# Slow integration tests: mark attendance, full training flow (marked individually)
 pytestmark = [pytest.mark.django_db, pytest.mark.attendance_flows]
 
 
@@ -108,6 +110,8 @@ class _StubWebcamManager:
         return _StubConsumer(self._frame)
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @override_settings(
     RECOGNITION_HEADLESS=True,
     RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=1,
@@ -233,6 +237,8 @@ def test_attendance_dashboard_shows_summary_metrics(client, monkeypatch):
     assert response.context["last_week_graph_url"] == "last-week.png"
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @override_settings(
     RECOGNITION_HEADLESS=True,
     RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=1,
@@ -368,6 +374,8 @@ def test_registration_training_and_attendance_flow(client, django_user_model, mo
     assert records[0]["present"] == {employee.username: True}
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @override_settings(
     RECOGNITION_HEADLESS=True,
     RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=1,
@@ -430,6 +438,8 @@ def test_liveness_failure_blocks_attendance(client, django_user_model, monkeypat
     assert views.LIVENESS_FAILURE_MESSAGE in message_texts
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @override_settings(
     RECOGNITION_HEADLESS=True,
     RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=1,
@@ -491,6 +501,8 @@ def test_unknown_face_does_not_create_attendance_records(client, django_user_mod
     assert response.url == reverse("home")
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @override_settings(
     RECOGNITION_HEADLESS=True,
     RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=1,

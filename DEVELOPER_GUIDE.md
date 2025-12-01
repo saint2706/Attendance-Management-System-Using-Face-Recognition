@@ -108,17 +108,51 @@ This section provides a step-by-step guide to setting up and running the project
 
 ### Running Tests
 
--   **Locally:**
+The test suite is organized into fast and slow tests to optimize CI/CD pipelines and developer experience.
 
-    ```bash
-    pytest
-    ```
+#### Test Markers
 
--   **In Docker:**
+The project uses pytest markers to categorize tests:
 
-    ```bash
-    docker compose exec web pytest
-    ```
+| Marker | Description |
+|--------|-------------|
+| `slow` | Tests that take >1s per test (model loading, heavy file I/O, training) |
+| `integration` | Tests that cross Django app boundaries or hit Celery/Redis |
+| `ui` | UI/browser tests using Playwright |
+| `e2e` | End-to-end UI workflows (full stack, live server) |
+| `django_db` | Tests that need database access |
+| `attendance_flows` | Tests covering core attendance workflows |
+
+#### Running Tests Locally
+
+```bash
+# Run fast tests only (default, excludes slow, ui, e2e)
+make test-fast
+# or: pytest
+
+# Run slow and integration tests
+make test-slow
+
+# Run UI/E2E tests (requires Playwright)
+make test-ui
+
+# Run all tests with coverage
+make test-all
+```
+
+#### Running Tests in Docker
+
+```bash
+docker compose exec web pytest                              # Fast tests
+docker compose exec web pytest -m "slow or integration"    # Slow tests
+docker compose exec web pytest -m ""                       # All tests
+```
+
+#### CI/CD Test Strategy
+
+- **Pull Requests**: Only fast tests run (excludes `slow`, `ui`, `e2e`)
+- **Main Branch Push**: Fast tests + slow/integration tests + UI tests
+- **Manual Trigger**: Can opt-in to run slow tests via `workflow_dispatch`
 
 ## 2. Project Structure
 
@@ -231,7 +265,12 @@ The project includes a comprehensive `Makefile` for common development tasks.
 
 ### Testing and Evaluation
 
--   `make test`: Run all Django tests
+-   `make test`: Run fast tests (alias for `test-fast`)
+-   `make test-fast`: Run fast tests only (excludes slow, ui, e2e markers)
+-   `make test-slow`: Run slow and integration tests
+-   `make test-ui`: Run UI/E2E tests with Playwright
+-   `make test-all`: Run all tests with coverage reporting
+-   `make test-coverage`: Same as `test-all`
 -   `make evaluate`: Run performance evaluation with metrics and drop artifacts in `reports/evaluation/`
 -   `make ablation`: Run ablation experiments
 -   `make report`: Generate comprehensive reports (metrics summary, confusion matrix, FAR/FRR sweep)

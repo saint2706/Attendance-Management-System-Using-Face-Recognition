@@ -15,6 +15,7 @@ from django.contrib.messages.storage.fallback import FallbackStorage
 from django.test import RequestFactory, TestCase, override_settings
 
 import numpy as np
+import pytest
 from cryptography.fernet import Fernet
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
@@ -32,6 +33,9 @@ from src.common import FaceDataEncryption, decrypt_bytes, encrypt_bytes  # noqa:
 
 TEST_FERNET_KEY = Fernet.generate_key()
 TEST_FACE_FERNET_KEY = Fernet.generate_key()
+
+# Mark all tests in this module as integration tests (slow, cross-app boundaries)
+pytestmark = [pytest.mark.integration, pytest.mark.slow]
 
 
 class DummyModel:

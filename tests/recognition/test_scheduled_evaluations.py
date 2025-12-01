@@ -234,6 +234,8 @@ class TestEvaluationHealth:
         assert result["scheduled_tasks_count"] == 2
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 class TestScheduledTasks:
     """Tests for the scheduled Celery tasks."""
 
