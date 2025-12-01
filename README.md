@@ -2,23 +2,26 @@
 
 [![codecov](https://codecov.io/gh/saint2706/Attendance-Management-System-Using-Face-Recognition/graph/badge.svg)](https://codecov.io/gh/saint2706/Attendance-Management-System-Using-Face-Recognition)
 
-Attendance-Management-System-Using-Face-Recognition is a fully refactored and modernized attendance solution that leverages deep learning for face recognition. It provides a seamless and automated way to track employee attendance, eliminating the need for manual record-keeping, and ships with a responsive web interface for a great user experience on any device.
+> **A production-ready, privacy-first attendance solution that just works.**
 
-![Home Page Light Theme](docs/images/home-light.png)
+**Attendance-Management-System-Using-Face-Recognition** is a modern, full-stack solution for automated time-tracking. It combines state-of-the-art deep learning (FaceNet) with a robust Django backend to deliver a seamless experience for employees and admins alike.
 
-## Features
+![Home Page Light Theme](docs/screenshots/home-light.png)
 
-- **Automated Attendance:** Mark time-in and time-out effortlessly using real-time face recognition.
-- **Responsive Web Interface:** A clean, modern, and intuitive UI that works beautifully on desktops, tablets, and mobile devices.
-- **Admin Dashboard:** A powerful dashboard for administrators to manage employees, add user photos, and view comprehensive attendance reports.
-- **Employee Dashboard:** A personalized dashboard for employees to view their own attendance records.
-- **Automatic Training:** The face recognition model updates automatically when new employee photos are added.
-- **Offline-ready experience:** Installable progressive web app with background sync for attendance submissions and cached UI shell.
-- **Performance Optimized:** Utilizes the efficient "Facenet" model and "SSD" detector for a fast and responsive recognition experience.
-- **Two-stage liveness detection:** A lightweight motion gate now complements DeepFace's anti-spoofing pass so printed photos and screen replays are rejected before attendance is marked.
-- **Structured attendance sessions:** A dedicated live session view surfaces recent recognitions with timestamps, confidence, and liveness outcomes alongside start/stop controls.
-- **Operational visibility:** The admin-only System Health dashboard surfaces dataset freshness, model status, recent recognition activity, and Celery worker reachability.
-- **Continuous Integration:** Includes a GitHub Actions workflow to automatically run tests, ensuring code quality and stability.
+## Why this project?
+
+- **🚀 Zero-Touch Attendance:** Employees just walk up to the camera. No badges, no PINs.
+- **🔒 Privacy First:** Face data is encrypted at rest. Liveness detection prevents spoofing.
+- **📱 Any Device:** Responsive PWA design works on tablets, mobiles, and desktops.
+- **⚡ Production Ready:** Dockerized, tested, and scalable with Redis + Celery.
+
+## Key Features
+
+- **Real-time Recognition:** Instant identification using the efficient "Facenet" model.
+- **Anti-Spoofing:** Two-stage liveness detection (motion + texture) rejects photos and screens.
+- **Smart Dashboard:** Comprehensive admin panel for reports, user management, and system health.
+- **Offline Capable:** PWA architecture ensures basic functionality even with spotty internet.
+- **Automated Training:** The model retrains itself in the background when new users are added.
 
 ## Technical Stack
 
@@ -232,27 +235,68 @@ Screenshots of these screens are available in the [Screenshots](#screenshots) se
 - **Read the User Guide:** See [USER_GUIDE.md](USER_GUIDE.md) for detailed instructions on all features.
 - **Production deployment:** When ready to deploy for real use, follow the [Deployment Guide](DEPLOYMENT.md) and [Security & Compliance Guide](docs/security.md).
 
+## 10-Minute Demo Script (for Stakeholders)
+
+Use this script to demonstrate the system's core value in a presentation or meeting.
+
+**Prerequisite:** Follow the [Beginner Setup](#beginner-setup-fast-demo-no-prior-experience-required) above to get the app running.
+
+**1. The "Zero-Touch" Experience (2 mins)**
+   - **Action:** Go to the Home Page. Click "Attendance Session" (login as `demo_admin` if prompted).
+   - **Narrative:** "This is the kiosk view. In a real office, this runs on a tablet at the entrance."
+   - **Action:** Show the live camera feed. (If you have a webcam, try to check in. If not, explain: "It detects faces in real-time.")
+   - **Highlight:** Point out the "Liveness: Active" indicator. "We use advanced anti-spoofing so you can't cheat with a photo."
+
+**2. The Admin Power View (3 mins)**
+   - **Action:** Go to **Dashboard**.
+   - **Narrative:** "Managers get a complete bird's-eye view."
+   - **Action:** Click **System Health**.
+   - **Highlight:** Show the "Model Status" and "Dataset" cards. "The system monitors its own health and retrains automatically when new employees are added."
+
+**3. Onboarding a New Employee (3 mins)**
+   - **Action:** Go to **Register Employee**.
+   - **Input:** Create a user (e.g., `alice_wonder`, Role: `Employee`).
+   - **Action:** Click **Add Photos**.
+   - **Narrative:** "Onboarding is instant. We take 5-10 snapshots right here, and the system learns their face immediately."
+   - **Note:** If you don't have a camera, explain that the system uses the pre-loaded synthetic data for the demo users (`user_001`, etc.).
+
+**4. Reporting & Analytics (2 mins)**
+   - **Action:** Go to **Reports** -> **Attendance by Date**.
+   - **Action:** Select today's date.
+   - **Narrative:** "Payroll is automated. We see exact clock-in/out times and total hours calculated instantly."
+
+**5. Conclusion**
+   - "It's secure, privacy-focused, and requires zero manual data entry."
+
 ## Screenshots
 
 Here are some key screens from the application:
 
 ### Home Page
 
-![Home page](docs/images/home-light.png)
+![Home page](docs/screenshots/home-light.png)
 
 *The landing page where users can mark attendance or access the dashboard.*
 
 ### Login Page
 
-![Login page](docs/images/login.png)
+![Login page](docs/screenshots/login.png)
 
 *The secure login page for accessing dashboards and admin features.*
 
 ### Admin Dashboard
 
-![Admin dashboard](docs/images/admin-dashboard-light.png)
+![Admin dashboard](docs/screenshots/admin-dashboard-light.png)
 
 *The admin dashboard showing the first-run checklist and quick actions for managing employees and viewing reports.*
+
+## Releases & Versioning
+
+This project follows [Semantic Versioning](https://semver.org/).
+
+- **Stable:** The `main` branch is always stable and deployable.
+- **Tags:** Releases are tagged (e.g., `v1.0.0`).
+- **Docker:** Images are automatically published to GHCR with matching tags.
 
 ## Getting Started
 

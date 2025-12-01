@@ -18,14 +18,14 @@ If you are new to the system, start with the [Beginner Setup section in the READ
 
 1.  Navigate to the system's home page.
 
-    ![Home page](docs/images/home-light.png)
+    ![Home page](docs/screenshots/home-light.png)
     
     *The home page shows the main actions: Mark Time-In, Mark Time-Out, and Dashboard Login.*
 
 2.  Click on the **Dashboard Login** button.
 3.  Enter your username and password.
 
-    ![Login page](docs/images/login.png)
+    ![Login page](docs/screenshots/login.png)
     
     *Enter your credentials on the login page.*
 
@@ -50,7 +50,7 @@ If you are new to the system, start with the [Beginner Setup section in the READ
 
 After logging in as an admin, you will see the Admin Dashboard with a first-run checklist (if setup is incomplete) and quick-action cards.
 
-![Admin dashboard](docs/images/admin-dashboard-light.png)
+![Admin dashboard](docs/screenshots/admin-dashboard-light.png)
 
 *The admin dashboard provides quick access to employee management, photo capture, and reports.*
 
@@ -59,7 +59,7 @@ After logging in as an admin, you will see the Admin Dashboard with a first-run 
 1.  Log in to your admin dashboard.
 2.  Click on **Register Employee**.
 
-    ![Register employee](docs/images/register.png)
+    ![Register employee](docs/screenshots/register.png)
     
     *The registration form for adding a new employee to the system.*
 

@@ -9,6 +9,8 @@ This guide describes how to build, configure, and deploy the Attendance Manageme
 -   Python 3.12+ (for local execution)
 
 ---
+> **Note:** This guide presents an **opinionated reference architecture** based on Docker Compose. While the system supports other deployment methods (Kubernetes, bare metal), we recommend this setup for its balance of simplicity and reliability for most use cases.
+---
 
 ## Quick Start: Single-Node Production Deployment
 
