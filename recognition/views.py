@@ -2538,6 +2538,24 @@ def _mark_attendance(request, check_in: bool):
                                 2,
                             )
 
+
+
+                except Exception:
+                    logger.exception(
+                        "Error during face recognition loop",
+                        extra={
+                            "flow": "webcam_attendance",
+                            "direction": direction,
+                        },
+                    )
+                finally:
+                    iteration_duration = time.perf_counter() - iteration_start
+                    monitoring.observe_stage_duration(
+                        "recognition_iteration",
+                        iteration_duration,
+                        threshold_key="recognition_iteration",
+                    )
+
                     if not headless:
                         cv2.imshow(window_title, frame)
                         if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -2556,22 +2574,6 @@ def _mark_attendance(request, check_in: bool):
                                 },
                             )
                             break
-
-                except Exception:
-                    logger.exception(
-                        "Error during face recognition loop",
-                        extra={
-                            "flow": "webcam_attendance",
-                            "direction": direction,
-                        },
-                    )
-                finally:
-                    iteration_duration = time.perf_counter() - iteration_start
-                    monitoring.observe_stage_duration(
-                        "recognition_iteration",
-                        iteration_duration,
-                        threshold_key="recognition_iteration",
-                    )
     finally:
         if not headless:
             cv2.destroyAllWindows()

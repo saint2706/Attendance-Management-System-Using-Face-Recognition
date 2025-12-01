@@ -226,5 +226,7 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-if settings.DEBUG or getattr(settings, "SILKY_AUTHORISATION", False):
+if "silk" in settings.INSTALLED_APPS and (
+    settings.DEBUG or getattr(settings, "SILKY_AUTHORISATION", False)
+):
     urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]

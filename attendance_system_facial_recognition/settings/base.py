@@ -403,7 +403,6 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "recognition.apps.RecognitionConfig",
     # Third-party packages
-    "silk",
     "django_ratelimit",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -417,7 +416,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "silk.middleware.SilkyMiddleware",
+
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -426,6 +425,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+if not TESTING:
+    INSTALLED_APPS.append("silk")
+    MIDDLEWARE.insert(0, "silk.middleware.SilkyMiddleware")
 
 # The root URL configuration module for the project.
 ROOT_URLCONF = "attendance_system_facial_recognition.urls"
