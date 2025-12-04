@@ -247,6 +247,9 @@ def run_liveness_evaluation(
     )
 
     try:
+        if not isinstance(days_back, int) or isinstance(days_back, bool) or days_back <= 0:
+            raise ValueError("days_back must be a positive integer")
+
         since = timezone.now() - timedelta(days=days_back)
 
         # Aggregate liveness results
