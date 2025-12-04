@@ -324,6 +324,18 @@ class TestScheduledTasks:
         # 2 passed out of 3 = ~0.667
         assert 0.6 < result["liveness_pass_rate"] < 0.7
 
+    @pytest.mark.parametrize("days_back", [0, -1, "7", 3.5])
+    def test_run_liveness_evaluation_invalid_window(self, settings, days_back):
+        """Should return a clear error when the lookback window is invalid."""
+        settings.CELERY_TASK_ALWAYS_EAGER = True
+
+        from recognition.scheduled_tasks import run_liveness_evaluation
+
+        result = run_liveness_evaluation.apply(kwargs={"days_back": days_back}).get()
+
+        assert result["success"] is False
+        assert "positive integer" in result["error_message"]
+
 
 class TestSystemHealthDashboardWithEvaluation:
     """Tests for the system health dashboard with evaluation state."""
