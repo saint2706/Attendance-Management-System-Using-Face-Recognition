@@ -676,6 +676,23 @@ if _attendance_methods:
 else:
     RECOGNITION_ATTENDANCE_RATE_LIMIT_METHODS = ("POST",)
 
+DEFAULT_FACE_API_RATE_LIMIT = "5/m"
+RECOGNITION_FACE_API_RATE_LIMIT = os.environ.get(
+    "RECOGNITION_FACE_API_RATE_LIMIT", DEFAULT_FACE_API_RATE_LIMIT
+)
+
+_raw_api_keys = os.environ.get("RECOGNITION_API_KEYS", "")
+if _raw_api_keys:
+    RECOGNITION_API_KEYS = tuple(
+        key.strip() for key in _raw_api_keys.split(",") if key.strip()
+    )
+else:
+    RECOGNITION_API_KEYS: tuple[str, ...] = ()
+
+RECOGNITION_JWT_SECRET = os.environ.get("RECOGNITION_JWT_SECRET", "")
+RECOGNITION_JWT_ISSUER = os.environ.get("RECOGNITION_JWT_ISSUER")
+RECOGNITION_JWT_AUDIENCE = os.environ.get("RECOGNITION_JWT_AUDIENCE")
+
 RECOGNITION_CAMERA_START_ALERT_SECONDS = _get_float_env(
     "RECOGNITION_CAMERA_START_ALERT_SECONDS",
     default=3.0,
