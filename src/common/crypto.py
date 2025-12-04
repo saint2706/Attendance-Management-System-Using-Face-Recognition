@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Union
+from typing import Iterable, Union
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 import numpy as np
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 
 BytesLike = Union[bytes, bytearray, memoryview]
 
@@ -22,6 +22,25 @@ def _coerce_key_bytes(key: BytesLike | str) -> bytes:
     return bytes(key)
 
 
+def _parse_key_material(key: BytesLike | str | Iterable[BytesLike | str]) -> list[bytes]:
+    """Return a list of Fernet key bytes from strings or iterables.
+
+    Accepts comma-delimited strings to allow transient dual-key operation
+    during rotation windows.
+    """
+
+    if isinstance(key, (list, tuple, set)):
+        return [_coerce_key_bytes(item) for item in key]
+
+    if isinstance(key, str) and "," in key:
+        parts = [segment.strip() for segment in key.split(",") if segment.strip()]
+        if not parts:
+            raise ImproperlyConfigured("No usable keys found in configuration string.")
+        return [_coerce_key_bytes(segment) for segment in parts]
+
+    return [_coerce_key_bytes(key)]
+
+
 @dataclass(slots=True)
 class _FernetWrapper:
     """Lazily instantiate a Fernet cipher using a Django setting."""
@@ -30,23 +49,25 @@ class _FernetWrapper:
     key_override: BytesLike | str | None = None
     _cipher: Fernet | None = None
 
-    def _resolve_key(self) -> bytes:
+    def _resolve_keys(self) -> list[bytes]:
         key = self.key_override
         if key is None:
             key = getattr(settings, self.setting_name, None)
         if key is None:
             raise ImproperlyConfigured(f"{self.setting_name} is not configured.")
 
-        key_bytes = _coerce_key_bytes(key)
+        key_material = _parse_key_material(key)
         try:
-            Fernet(key_bytes)
+            for item in key_material:
+                Fernet(item)
         except (TypeError, ValueError) as exc:  # pragma: no cover - defensive
             raise ImproperlyConfigured(f"{self.setting_name} is invalid.") from exc
-        return key_bytes
+        return key_material
 
     def _get_cipher(self) -> Fernet:
         if self._cipher is None:
-            self._cipher = Fernet(self._resolve_key())
+            keys = self._resolve_keys()
+            self._cipher = MultiFernet([Fernet(item) for item in keys])
         return self._cipher
 
     def encrypt(self, payload: BytesLike) -> bytes:
