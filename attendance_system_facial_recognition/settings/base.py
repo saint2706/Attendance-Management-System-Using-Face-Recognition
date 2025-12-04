@@ -6,6 +6,7 @@ installed applications, middleware, and custom application-specific parameters.
 It is configured to read sensitive values from environment variables for security.
 """
 
+import json
 import os
 import sys
 import warnings
@@ -21,6 +22,10 @@ from cryptography.fernet import Fernet
 # Define the project's base directory.
 # `BASE_DIR` points to the root of the Django project.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+LOCAL_ENV_PATH = Path(os.environ.get("LOCAL_ENV_PATH", BASE_DIR / ".env"))
+DEV_KEY_CACHE_PATH = Path(
+    os.environ.get("DEV_ENCRYPTION_KEY_FILE", BASE_DIR / ".dev_encryption_keys.json")
+)
 
 
 # --- Security Settings ---
@@ -149,27 +154,120 @@ if SECRET_KEY == DEFAULT_SECRET_KEY and not DEBUG:
     )
 
 
+def _validate_fernet_key(key: str | bytes, setting_name: str) -> bytes:
+    """Ensure the provided key material is a valid Fernet key."""
+
+    key_bytes = key.encode() if isinstance(key, str) else key
+    try:
+        Fernet(key_bytes)
+    except (
+        ValueError,
+        TypeError,
+    ) as exc:  # pragma: no cover - defensive programming
+        raise ImproperlyConfigured(
+            f"{setting_name} must be a valid 32-byte base64-encoded Fernet key."
+        ) from exc
+    return key_bytes
+
+
+def _read_local_env_value(var_name: str) -> str | None:
+    """Return a value from a local ``.env`` file if present."""
+
+    if not LOCAL_ENV_PATH.exists():
+        return None
+
+    try:
+        for raw_line in LOCAL_ENV_PATH.read_text().splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            if key.strip() != var_name:
+                continue
+            return value.strip().strip("\"").strip("'")
+    except OSError as exc:  # pragma: no cover - defensive programming
+        warnings.warn(f"Unable to read {LOCAL_ENV_PATH}: {exc}")
+
+    return None
+
+
+def _read_configured_key(var_name: str, *, allow_dotenv: bool) -> str | None:
+    """Resolve a key from the environment and, optionally, a ``.env`` file."""
+
+    value = os.environ.get(var_name)
+    if value:
+        return value
+
+    if allow_dotenv:
+        return _read_local_env_value(var_name)
+
+    return None
+
+
+def _load_cached_dev_key(var_name: str) -> bytes | None:
+    """Load a previously generated development key from disk."""
+
+    if not DEV_KEY_CACHE_PATH.exists():
+        return None
+
+    try:
+        cache = json.loads(DEV_KEY_CACHE_PATH.read_text())
+    except (OSError, json.JSONDecodeError) as exc:  # pragma: no cover - defensive programming
+        warnings.warn(f"Ignoring invalid dev key cache file: {exc}")
+        return None
+
+    cached_value = cache.get(var_name)
+    if not cached_value:
+        return None
+
+    try:
+        return _validate_fernet_key(cached_value, var_name)
+    except ImproperlyConfigured:
+        warnings.warn(f"Ignoring invalid cached {var_name}; regenerating.")
+        return None
+
+
+def _persist_dev_key(var_name: str, key: bytes) -> None:
+    """Persist generated development keys so they survive restarts."""
+
+    try:
+        existing = (
+            json.loads(DEV_KEY_CACHE_PATH.read_text())
+            if DEV_KEY_CACHE_PATH.exists()
+            else {}
+        )
+    except (OSError, json.JSONDecodeError):  # pragma: no cover - defensive programming
+        existing = {}
+
+    existing[var_name] = key.decode()
+
+    try:
+        DEV_KEY_CACHE_PATH.write_text(json.dumps(existing, indent=2))
+    except OSError as exc:  # pragma: no cover - defensive programming
+        warnings.warn(f"Unable to persist dev encryption key cache: {exc}")
+
+
+def _deterministic_dev_key(var_name: str) -> bytes:
+    """Return a stable key for DEBUG/TESTING sessions, persisting when generated."""
+
+    cached_key = _load_cached_dev_key(var_name)
+    if cached_key:
+        return cached_key
+
+    key_bytes = Fernet.generate_key()
+    _persist_dev_key(var_name, key_bytes)
+    return key_bytes
+
+
 def _load_data_encryption_key() -> bytes:
     """Load the symmetric encryption key used for sensitive assets."""
 
-    key = os.environ.get("DATA_ENCRYPTION_KEY")
+    key = _read_configured_key("DATA_ENCRYPTION_KEY", allow_dotenv=DEBUG or TESTING)
     if key:
-        key_bytes = key.encode()
-        try:
-            Fernet(key_bytes)
-        except (
-            ValueError,
-            TypeError,
-        ) as exc:  # pragma: no cover - defensive programming
-            raise ImproperlyConfigured(
-                "DATA_ENCRYPTION_KEY must be a valid 32-byte base64-encoded Fernet key."
-            ) from exc
-        return key_bytes
+        return _validate_fernet_key(key, "DATA_ENCRYPTION_KEY")
 
     if DEBUG or TESTING:
-        # During development and automated tests fall back to an ephemeral key
-        # to avoid leaking plaintext assets to disk.
-        return Fernet.generate_key()
+        return _deterministic_dev_key("DATA_ENCRYPTION_KEY")
 
     raise ImproperlyConfigured(
         "DATA_ENCRYPTION_KEY environment variable must be set in production environments."
@@ -182,22 +280,12 @@ DATA_ENCRYPTION_KEY = _load_data_encryption_key()
 def _load_face_data_encryption_key() -> bytes:
     """Load the Fernet key used to encrypt cached facial encodings."""
 
-    key = os.environ.get("FACE_DATA_ENCRYPTION_KEY")
+    key = _read_configured_key("FACE_DATA_ENCRYPTION_KEY", allow_dotenv=DEBUG or TESTING)
     if key:
-        key_bytes = key.encode()
-        try:
-            Fernet(key_bytes)
-        except (
-            ValueError,
-            TypeError,
-        ) as exc:  # pragma: no cover - defensive programming
-            raise ImproperlyConfigured(
-                "FACE_DATA_ENCRYPTION_KEY must be a valid 32-byte base64-encoded Fernet key."
-            ) from exc
-        return key_bytes
+        return _validate_fernet_key(key, "FACE_DATA_ENCRYPTION_KEY")
 
     if DEBUG or TESTING:
-        return Fernet.generate_key()
+        return _deterministic_dev_key("FACE_DATA_ENCRYPTION_KEY")
 
     raise ImproperlyConfigured(
         "FACE_DATA_ENCRYPTION_KEY environment variable must be set in production environments."
