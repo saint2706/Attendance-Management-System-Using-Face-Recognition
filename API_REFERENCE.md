@@ -10,8 +10,10 @@ This endpoint accepts an image or a pre-computed face embedding and returns the 
 
 - **URL:** `/api/face-recognition/`
 - **HTTP Method:** `POST`
-- **Authentication:** Not required. The endpoint is public but is rate-limited by IP address to prevent abuse.
-- **Rate Limiting:** `5 requests per minute` per IP address.
+- **Authentication:** Required. Clients must either be logged in with a valid session cookie or supply one of the following:
+  - `X-API-Key` header matching one of the `RECOGNITION_API_KEYS` configured via environment variables.
+  - `Authorization: Bearer <JWT>` header signed with `RECOGNITION_JWT_SECRET` (optional `RECOGNITION_JWT_ISSUER`/`RECOGNITION_JWT_AUDIENCE`).
+- **Rate Limiting:** `5 requests per minute` by authenticated session, API key, or JWT subject (fallback to IP). Override via `RECOGNITION_FACE_API_RATE_LIMIT`.
 
 ### Request Payload
 
@@ -59,7 +61,10 @@ A prediction is accepted when `distance ≤ threshold` (default `0.4`); higher v
 
 #### Error Responses
 
+Authentication and validation failures return a JSON body with an `error` field describing the issue (for example, `{"error": "Invalid API key provided."}`).
+
 - **`400 Bad Request`:** The request payload is invalid (e.g., malformed JSON, invalid Base64 data, or missing `image` and `embedding`).
+- **`401 Unauthorized`:** Missing or invalid credentials (no session, incorrect API key, malformed/expired JWT, or JWT support not configured).
 - **`429 Too Many Requests`:** The client has exceeded the rate limit.
 - **`500 Internal Server Error`:** An unexpected error occurred during the face recognition process.
 - **`503 Service Unavailable`:** The system has no enrolled face embeddings to compare against.
