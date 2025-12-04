@@ -66,3 +66,15 @@ For production deployments, the following security settings are recommended:
 ## Sentry Error Tracking
 
 The application uses Sentry for error tracking. Sentry is configured to not send sensitive payloads.
+
+## Encryption Key Rotation Procedure
+
+To keep encrypted artifacts fresh without downtime, use a dual-key rotation with backups:
+
+1. **Back up encrypted assets:** snapshot `face_recognition_data/` (including `training_dataset/` and `encodings/`) before any mutation. The rotation command supports `--backup-dir` for this.
+2. **Stage dual keys:** set `DATA_ENCRYPTION_KEY` and `FACE_DATA_ENCRYPTION_KEY` to comma-separated values of `"<new>,<current>"`. The first key is used for new writes; both are accepted for reads during the cutover window.
+3. **Re-encrypt artifacts:** run `python manage.py rotate_encryption_keys --new-data-key <new_data_key> --new-face-key <new_face_key>` from the Django root. The command decrypts using the active key set and re-encrypts datasets, models, and facial encodings with the new keys atomically.
+4. **Restart services:** update environment variables to the **new key only**, then restart web, worker, and scheduler processes to drop the old key while continuing to serve traffic.
+5. **Validate:** confirm attendance marking and recognition flows still operate and that new records decrypt with the new key only.
+
+If anything fails, restore the pre-rotation backups and revert the environment variables to the previous keys before retrying.
