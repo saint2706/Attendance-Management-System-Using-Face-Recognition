@@ -193,7 +193,8 @@ class TestFaceRecognitionWorkflow:
             def read(self):
                 with self._lock:
                     self._counter += 1
-                    return np.full((2, 2, 3), self._counter, dtype=np.uint8)
+                    # Use uint16 to avoid uint8 overflow (wraps at 255) in fast concurrent tests
+                    return np.full((2, 2, 3), self._counter, dtype=np.uint16)
 
             def stop(self):
                 pass
