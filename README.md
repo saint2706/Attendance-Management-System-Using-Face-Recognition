@@ -113,11 +113,11 @@ This section shows the **quickest way** to run a local demo of the system and ex
 
 ### Step-by-step instructions
 
-**1. Install Python**
+### 1. Install Python
 
 Download and install Python 3.12 or newer from [python.org](https://www.python.org/downloads/). During installation on Windows, check "Add Python to PATH".
 
-**2. Download this repository**
+### 2. Download this repository
 
 Open a terminal (Command Prompt on Windows, Terminal on macOS/Linux) and run:
 
@@ -128,7 +128,7 @@ cd Attendance-Management-System-Using-Face-Recognition
 
 > **Tip:** If you do not have Git installed, download the repository as a ZIP from GitHub and extract it.
 
-**3. Create a virtual environment (isolates project dependencies)**
+### 3. Create a virtual environment (isolates project dependencies)
 
 ```bash
 python -m venv venv
@@ -136,24 +136,29 @@ python -m venv venv
 
 This creates a folder called `venv` that keeps project libraries separate from your system.
 
-**4. Activate the virtual environment**
+### 4. Activate the virtual environment
 
 - **macOS / Linux:**
+
   ```bash
   source venv/bin/activate
   ```
+
 - **Windows (Command Prompt):**
+
   ```cmd
   venv\Scripts\activate
   ```
+
 - **Windows (PowerShell):**
+
   ```powershell
   .\venv\Scripts\Activate.ps1
   ```
 
 You should see `(venv)` at the start of your terminal prompt.
 
-**5. Install project dependencies**
+### 5. Install project dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -161,7 +166,7 @@ pip install -r requirements.txt
 
 This downloads all the libraries the project needs. It may take a few minutes.
 
-**6. Set up environment variables**
+### 6. Set up environment variables
 
 Copy the example environment file:
 
@@ -173,37 +178,40 @@ cp .env.example .env
 
 The default values in `.env.example` are pre-configured for local demos.
 
-**7. Bootstrap the demo (creates database, sample data, and demo accounts)**
+### 7. Bootstrap the demo (creates database, sample data, and demo accounts)
 
 ```bash
 make demo
 ```
 
 > **Windows note:** If `make` is not available, run these commands instead:
+>
 > ```bash
 > python manage.py migrate --noinput
 > python scripts/bootstrap_demo.py
 > ```
 
 This command:
+
 - Creates the database tables.
 - Generates synthetic face images for three demo users.
 - Creates a demo admin account and three demo employee accounts.
 
-**8. Start the development server**
+### 8. Start the development server
 
 ```bash
 python manage.py runserver
 ```
 
 You should see output like:
-```
+
+```text
 Starting development server at http://127.0.0.1:8000/
 ```
 
-**9. Open the app in your browser**
+### 9. Open the app in your browser
 
-Navigate to **http://127.0.0.1:8000/** in your web browser.
+Navigate to <http://127.0.0.1:8000/> in your web browser.
 
 ### Demo login credentials
 
@@ -241,32 +249,37 @@ Use this script to demonstrate the system's core value in a presentation or meet
 
 **Prerequisite:** Follow the [Beginner Setup](#beginner-setup-fast-demo-no-prior-experience-required) above to get the app running.
 
-**1. The "Zero-Touch" Experience (2 mins)**
-   - **Action:** Go to the Home Page. Click "Attendance Session" (login as `demo_admin` if prompted).
-   - **Narrative:** "This is the kiosk view. In a real office, this runs on a tablet at the entrance."
-   - **Action:** Show the live camera feed. (If you have a webcam, try to check in. If not, explain: "It detects faces in real-time.")
-   - **Highlight:** Point out the "Liveness: Active" indicator. "We use advanced anti-spoofing so you can't cheat with a photo."
+### 1. The "Zero-Touch" Experience (2 mins)
 
-**2. The Admin Power View (3 mins)**
-   - **Action:** Go to **Dashboard**.
-   - **Narrative:** "Managers get a complete bird's-eye view."
-   - **Action:** Click **System Health**.
-   - **Highlight:** Show the "Model Status" and "Dataset" cards. "The system monitors its own health and retrains automatically when new employees are added."
+- **Action:** Go to the Home Page. Click "Attendance Session" (login as `demo_admin` if prompted).
+- **Narrative:** "This is the kiosk view. In a real office, this runs on a tablet at the entrance."
+- **Action:** Show the live camera feed. (If you have a webcam, try to check in. If not, explain: "It detects faces in real-time.")
+- **Highlight:** Point out the "Liveness: Active" indicator. "We use advanced anti-spoofing so you can't cheat with a photo."
 
-**3. Onboarding a New Employee (3 mins)**
-   - **Action:** Go to **Register Employee**.
-   - **Input:** Create a user (e.g., `alice_wonder`, Role: `Employee`).
-   - **Action:** Click **Add Photos**.
-   - **Narrative:** "Onboarding is instant. We take 5-10 snapshots right here, and the system learns their face immediately."
-   - **Note:** If you don't have a camera, explain that the system uses the pre-loaded synthetic data for the demo users (`user_001`, etc.).
+### 2. The Admin Power View (3 mins)
 
-**4. Reporting & Analytics (2 mins)**
-   - **Action:** Go to **Reports** -> **Attendance by Date**.
-   - **Action:** Select today's date.
-   - **Narrative:** "Payroll is automated. We see exact clock-in/out times and total hours calculated instantly."
+- **Action:** Go to **Dashboard**.
+- **Narrative:** "Managers get a complete bird's-eye view."
+- **Action:** Click **System Health**.
+- **Highlight:** Show the "Model Status" and "Dataset" cards. "The system monitors its own health and retrains automatically when new employees are added."
 
-**5. Conclusion**
-   - "It's secure, privacy-focused, and requires zero manual data entry."
+### 3. Onboarding a New Employee (3 mins)
+
+- **Action:** Go to **Register Employee**.
+- **Input:** Create a user (e.g., `alice_wonder`, Role: `Employee`).
+- **Action:** Click **Add Photos**.
+- **Narrative:** "Onboarding is instant. We take 5-10 snapshots right here, and the system learns their face immediately."
+- **Note:** If you don't have a camera, explain that the system uses the pre-loaded synthetic data for the demo users (`user_001`, etc.).
+
+### 4. Reporting & Analytics (2 mins)
+
+- **Action:** Go to **Reports** -> **Attendance by Date**.
+- **Action:** Select today's date.
+- **Narrative:** "Payroll is automated. We see exact clock-in/out times and total hours calculated instantly."
+
+### 5. Conclusion
+
+- "It's secure, privacy-focused, and requires zero manual data entry."
 
 ## Screenshots
 
@@ -307,26 +320,30 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ### Installation
 
-1.  **Clone the repository:**
+1. **Clone the repository:**
+
     ```bash
     git clone https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition.git
     cd Attendance-Management-System-Using-Face-Recognition
     ```
 
-2.  **Create and activate a virtual environment:**
+2. **Create and activate a virtual environment:**
+
     ```bash
     python -m venv venv
     source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
     ```
 
-3.  **Install the dependencies:**
+3. **Install the dependencies:**
+
     ```bash
     pip install -r requirements.txt
     ```
 
-4.  **Configure environment variables:**
+4. **Configure environment variables:**
     - Copy `.env.example` to `.env`.
     - Generate secrets if you don't already have them:
+
       ```bash
       python - <<'PY'
       from cryptography.fernet import Fernet
@@ -337,33 +354,42 @@ This project follows [Semantic Versioning](https://semver.org/).
       print('FACE_DATA_ENCRYPTION_KEY=', Fernet.generate_key().decode())
       PY
       ```
+
     - Paste the values into `.env` and keep the same keys across runs so encrypted face data remains readable locally.
     - (Optional) Start the bundled Postgres service if you want to run against PostgreSQL instead of SQLite:
+
       ```bash
       docker compose up -d postgres
       ```
 
-5.  **Run database migrations:**
+5. **Run database migrations:**
+
     ```bash
     python manage.py migrate
     ```
 
-6.  **Create a superuser (admin account):**
+6. **Create a superuser (admin account):**
+
     ```bash
     python manage.py createsuperuser
     ```
+
     Follow the prompts to create your admin username, email, and password.
 
-7.  **Run the development server:**
+7. **Run the development server:**
+
     ```bash
     python manage.py runserver
     ```
+
     The application will be available at `http://127.0.0.1:8000/`.
 
-8.  **Collect static assets (including the PWA shell) before packaging builds:**
+8. **Collect static assets (including the PWA shell) before packaging builds:**
+
     ```bash
     python manage.py collectstatic
     ```
+
     This ensures the generated icons, `manifest.json`, and `sw.js` are published alongside the rest of the static files when you deploy with WhiteNoise or another static file server.
 
 ## Quick demo (synthetic data)
@@ -396,9 +422,11 @@ Prefer to inspect or regenerate the dataset manually? Run `python scripts/bootst
 Silk is bundled to profile database queries, view timings, and cache usage without leaving the Django admin. The dependency is already pinned in `requirements.txt`/`pyproject.toml`, so installing the project requirements pulls it in automatically.
 
 1. **Apply Silk migrations** after installing dependencies any time new environments are set up:
+
    ```bash
    python manage.py migrate
    ```
+
    This creates the `silk_*` tables used to persist profiling results.
 2. **Accessing the dashboard:**
    - In development (`DJANGO_DEBUG=1`) visit `http://127.0.0.1:8000/silk/` to inspect live profiles.
@@ -505,21 +533,25 @@ The repository ships with a production-ready `Dockerfile` and Compose definition
    - Load the file automatically by placing it next to `docker-compose.yml` and referencing it with `docker compose --env-file .env.production ...`.
 
 2. **Build the application image**
+
    ```bash
    docker compose --env-file .env.production build web
    ```
 
 3. **Apply database migrations inside the container image**
+
    ```bash
    docker compose --env-file .env.production run --rm web python manage.py migrate
    ```
 
 4. **Start the web and worker services**
+
    ```bash
    docker compose --env-file .env.production up -d web celery
    ```
 
 5. **Tail logs for troubleshooting**
+
    ```bash
    docker compose logs -f web celery
    ```
@@ -528,19 +560,22 @@ The `web` service serves the Django application through Gunicorn on port `8000`,
 
 ### Database migration & testing workflow
 
-1.  **Local development:**
+1. **Local development:**
     - Copy `.env.example` to `.env` and adjust credentials.
     - Start the Postgres service from the provided Docker Compose profile:
+
       ```bash
       docker compose up -d postgres
       ```
+
     - Apply schema migrations against Postgres and run the Django test suite:
+
       ```bash
       python manage.py migrate
       pytest
       ```
 
-2.  **Continuous Integration:** Configure the CI job to export `DATABASE_URL` (for example, `postgres://postgres:postgres@localhost:5432/postgres`) before invoking `pytest` so the same migrations and tests execute against Postgres automatically.
+2. **Continuous Integration:** Configure the CI job to export `DATABASE_URL` (for example, `postgres://postgres:postgres@localhost:5432/postgres`) before invoking `pytest` so the same migrations and tests execute against Postgres automatically.
     - Coverage is enforced in CI; the suite fails if overall coverage drops below 60%, and the Codecov badge at the top of this README reflects the latest run.
 
 ## Evaluation & Benchmarking
@@ -548,14 +583,18 @@ The `web` service serves the Django application through Gunicorn on port `8000`,
 The repository ships with an evaluation harness that reuses the exact face-recognition pipeline deployed in production. It loads the encrypted dataset, computes embeddings through DeepFace, and aggregates the metrics required for referee-quality reports (accuracy, precision, recall, macro F1, FAR, FRR, confusion matrix, and a threshold sweep).
 
 1. **Prepare dataset splits (optional but recommended):**
+
    ```bash
    python manage.py prepare_splits --seed 42
    ```
+
    This command writes `reports/splits.csv`, which identifies the test split consumed during evaluation. If the file is missing the evaluator falls back to scanning the entire `face_recognition_data/training_dataset/` tree.
 2. **Run the evaluation:**
+
    ```bash
    python manage.py eval --split-csv reports/splits.csv
    ```
+
    The command accepts additional knobs such as `--threshold`, `--threshold-start/stop/step`, `--max-samples`, and `--reports-dir` for ad-hoc experiments. A convenience shortcut is also available via `make evaluate`.
 3. **Inspect the reports:** artifacts are written to `reports/evaluation/`:
    - `metrics_summary.json` – accuracy/precision/recall/F1/FAR/FRR plus bookkeeping stats.
@@ -574,7 +613,7 @@ The recognition pipeline compares embeddings with cosine similarity:
 
 Attendance is accepted when the cosine distance is less than or equal to `RECOGNITION_DISTANCE_THRESHOLD`, which defaults to **0.4** in this repository. Tightening the threshold reduces false accepts while loosening it mitigates false rejects. The evaluation harness (`python manage.py eval` or `make evaluate`) sweeps a configurable range via `--threshold-start/stop/step` and records FAR/FRR trade-offs in `reports/evaluation/threshold_sweep.csv`, making it easy to justify any threshold adjustment before shipping.
 
-3.  **Production deployments:** Run `python manage.py migrate` as part of the release pipeline after setting the new database variables. Review logs for schema drift and keep a recent backup of the managed Postgres instance before upgrading.
+1. **Production deployments:** Run `python manage.py migrate` as part of the release pipeline after setting the new database variables. Review logs for schema drift and keep a recent backup of the managed Postgres instance before upgrading.
 
 ## Contributing
 

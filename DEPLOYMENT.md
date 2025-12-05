@@ -4,9 +4,9 @@ This guide describes how to build, configure, and deploy the Attendance Manageme
 
 ## Prerequisites
 
--   Docker Engine 24 or newer
--   Docker Compose v2
--   Python 3.12+ (for local execution)
+- Docker Engine 24 or newer
+- Docker Compose v2
+- Python 3.12+ (for local execution)
 
 ---
 > **Note:** This guide presents an **opinionated reference architecture** based on Docker Compose. While the system supports other deployment methods (Kubernetes, bare metal), we recommend this setup for its balance of simplicity and reliability for most use cases.
@@ -18,7 +18,7 @@ This section provides a complete, portfolio-ready deployment on a single Ubuntu 
 
 ### Architecture Overview
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                     Ubuntu 22.04 VPS                        │
 │  ┌─────────────────────────────────────────────────────┐   │
@@ -41,6 +41,7 @@ This section provides a complete, portfolio-ready deployment on a single Ubuntu 
 ### Step 1: Provision Your Server
 
 **Minimum Requirements:**
+
 - 2 vCPUs, 4GB RAM, 40GB SSD
 - Ubuntu 22.04 LTS
 - Domain name pointed to server IP (e.g., `attendance.yourdomain.com`)
@@ -296,20 +297,23 @@ docker compose --env-file .env.production up -d
 
 For a quick local demonstration with synthetic data:
 
-1.  **Install dependencies:**
+1. **Install dependencies:**
+
     ```bash
     pip install -r requirements.txt
     ```
 
-2.  **Run the demo bootstrap:**
+2. **Run the demo bootstrap:**
+
     ```bash
     make demo
     ```
-    This command will migrate the database, generate synthetic employee records, and create the following accounts:
-    -   **Admin:** `demo_admin` / `demo_admin_pass`
-    -   **Users:** `user_001`, `user_002`, `user_003` (password: `demo_user_pass`)
 
-3.  **Launch the server:**
+    This command will migrate the database, generate synthetic employee records, and create the following accounts:
+    - **Admin:** `demo_admin` / `demo_admin_pass`
+    - **Users:** `user_001`, `user_002`, `user_003` (password: `demo_user_pass`)
+
+3. **Launch the server:**
     Follow the on-screen instructions (typically `python manage.py runserver`).
 
 ## 2. Building the Docker Image
@@ -328,7 +332,7 @@ This will create an image named `attendance-system:latest` that will be used by 
 
 The application is configured using environment variables. Create a `.env.production` file in the project root with the following variables:
 
-```
+```bash
 # Django settings
 DJANGO_DEBUG=0
 DJANGO_SECRET_KEY='your-strong-secret-key'
@@ -362,15 +366,19 @@ docker compose --env-file .env.production run --rm web python manage.py migrate
 
 For staging or quality assurance, you can initialize the Docker stack with demo data:
 
-1.  Start the services:
+1. Start the services:
+
     ```bash
     docker compose --env-file .env.production up -d
     ```
-2.  Initialize the demo data (creates admin and synthetic users):
+
+2. Initialize the demo data (creates admin and synthetic users):
+
     ```bash
     docker compose --env-file .env.production exec web python scripts/bootstrap_demo.py
     ```
-3.  Access the application at `http://localhost:8000`.
+
+3. Access the application at `http://localhost:8000`.
 
 ### Starting the Services (Production)
 
@@ -384,11 +392,11 @@ The application will be available at `http://localhost:8000`.
 
 ## 5. Common Deployment Issues
 
--   **Missing Environment Variables:** The application will fail to start if any of the required environment variables are missing. Ensure that your `.env.production` file is complete and correctly formatted.
--   **Static Files Not Collected Correctly:** The `Dockerfile` runs `collectstatic` during the build process. If you are having issues with static files, ensure that the `DJANGO_SETTINGS_MODULE` is set to `attendance_system_facial_recognition.settings.production` in your `.env.production` file.
--   **Incorrect Database Host:** When running with Docker Compose, the database host is `postgres`. If you are deploying to a different environment, you will need to update the `DB_HOST` environment variable.
--   **Celery Worker Failing:** The Celery worker depends on Redis. Ensure that the Redis container is running before the Celery container starts.
--   **HTTPS Misconfiguration:** In a production environment, you should run the application behind a reverse proxy that handles HTTPS. Ensure that you have correctly configured your reverse proxy and have set `DJANGO_SESSION_COOKIE_SECURE=True` and `DJANGO_CSRF_COOKIE_SECURE=True` in your `.env.production` file.
+- **Missing Environment Variables:** The application will fail to start if any of the required environment variables are missing. Ensure that your `.env.production` file is complete and correctly formatted.
+- **Static Files Not Collected Correctly:** The `Dockerfile` runs `collectstatic` during the build process. If you are having issues with static files, ensure that the `DJANGO_SETTINGS_MODULE` is set to `attendance_system_facial_recognition.settings.production` in your `.env.production` file.
+- **Incorrect Database Host:** When running with Docker Compose, the database host is `postgres`. If you are deploying to a different environment, you will need to update the `DB_HOST` environment variable.
+- **Celery Worker Failing:** The Celery worker depends on Redis. Ensure that the Redis container is running before the Celery container starts.
+- **HTTPS Misconfiguration:** In a production environment, you should run the application behind a reverse proxy that handles HTTPS. Ensure that you have correctly configured your reverse proxy and have set `DJANGO_SESSION_COOKIE_SECURE=True` and `DJANGO_CSRF_COOKIE_SECURE=True` in your `.env.production` file.
 
 ## 6. PWA and Service Worker
 

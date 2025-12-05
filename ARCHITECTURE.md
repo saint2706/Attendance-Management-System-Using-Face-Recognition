@@ -6,16 +6,16 @@ This document provides a high-level overview of the application's architecture, 
 
 The application is built on the following core components:
 
--   **Django**: The web framework that provides the application's structure, including the models, views, and templates.
--   **DeepFace**: A lightweight face recognition and facial attribute analysis (age, gender, emotion, and race) library for Python. It is used to power the face recognition functionality of the application.
--   **PostgreSQL (via `DATABASE_URL`)**: Primary relational database for production deployments. The application falls back to SQLite when no external database URL is provided, which is useful for quick prototyping.
--   **Bootstrap**: The front-end framework that is used to create the application's responsive web interface.
+- **Django**: The web framework that provides the application's structure, including the models, views, and templates.
+- **DeepFace**: A lightweight face recognition and facial attribute analysis (age, gender, emotion, and race) library for Python. It is used to power the face recognition functionality of the application.
+- **PostgreSQL (via `DATABASE_URL`)**: Primary relational database for production deployments. The application falls back to SQLite when no external database URL is provided, which is useful for quick prototyping.
+- **Bootstrap**: The front-end framework that is used to create the application's responsive web interface.
 
 ## 2. Architecture Diagram
 
 The following diagram provides a high-level overview of the application's architecture:
 
-```
+```text
 +-----------------+      +-----------------+      +-----------------+
 |   Web Browser   | <--> |     Django      | <--> |   PostgreSQL    |
 +-----------------+      +-----------------+      +-----------------+
@@ -30,12 +30,12 @@ The following diagram provides a high-level overview of the application's archit
 
 The application's workflow is as follows:
 
-1.  **User Registration**: An admin registers a new employee by creating a new user account for them.
-2.  **Add Photos**: The admin adds photos for the employee by using the "Add Photos" feature. The application uses the webcam to capture a set of photos for face recognition and stores them in the `face_recognition_data` directory.
-3.  **Mark Attendance**: The employee marks their attendance by using the "Mark Time-In" or "Mark Time-Out" feature. The application uses the webcam to capture a frame and sends it to DeepFace for face recognition.
-4.  **Face Recognition**: DeepFace compares the captured frame to the stored face images and returns the name of the recognized employee.
-5.  **Store Attendance**: The application stores the attendance record in the database.
-6.  **View Attendance**: The admin can view the attendance records for all employees, and the employee can view their own attendance records.
+1. **User Registration**: An admin registers a new employee by creating a new user account for them.
+2. **Add Photos**: The admin adds photos for the employee by using the "Add Photos" feature. The application uses the webcam to capture a set of photos for face recognition and stores them in the `face_recognition_data` directory.
+3. **Mark Attendance**: The employee marks their attendance by using the "Mark Time-In" or "Mark Time-Out" feature. The application uses the webcam to capture a frame and sends it to DeepFace for face recognition.
+4. **Face Recognition**: DeepFace compares the captured frame to the stored face images and returns the name of the recognized employee.
+5. **Store Attendance**: The application stores the attendance record in the database.
+6. **View Attendance**: The admin can view the attendance records for all employees, and the employee can view their own attendance records.
 
 ## 4. Evaluation and Validation Architecture
 
@@ -43,7 +43,7 @@ The system includes a comprehensive evaluation pipeline for measuring and improv
 
 ### 4.1 Data Splitting Pipeline
 
-```
+```text
 Face Recognition Data
         |
         v
@@ -62,6 +62,7 @@ Train (70%) Val (15%)  Test (15%)
 ```
 
 **Key Features:**
+
 - Identity-level splitting (all images of a person stay together)
 - Session-based grouping (enrollment batches stay together)
 - Stratified sampling (maintains class balance)
@@ -69,7 +70,7 @@ Train (70%) Val (15%)  Test (15%)
 
 ### 4.2 Metrics Calculation Pipeline
 
-```
+```text
 Test Data
     |
     v
@@ -107,6 +108,7 @@ Test Data
 ```
 
 **Metrics Computed:**
+
 - Verification metrics (ROC AUC, EER, FAR@TPR, TPR@FAR)
 - Calibration metrics (Brier Score, calibration curves)
 - Classification metrics (F1, Precision, Recall at optimal threshold)
@@ -114,7 +116,7 @@ Test Data
 
 ### 4.3 Failure Analysis Architecture
 
-```
+```text
 Predictions
     |
     v
@@ -150,6 +152,7 @@ Predictions
 ```
 
 **Outputs:**
+
 - Ranked failure cases
 - Pattern identification
 - Bias detection
@@ -157,7 +160,7 @@ Predictions
 
 ### 4.4 Ablation Framework
 
-```
+```text
 Component Configurations
     |
     v
@@ -189,6 +192,7 @@ Component Configurations
 ```
 
 **Purpose:**
+
 - Understand component contributions
 - Identify optimal configurations
 - Measure performance trade-offs
@@ -198,7 +202,7 @@ Component Configurations
 
 ### 5.1 Policy-Based Action Mapping
 
-```
+```text
 Face Recognition
     |
     v
@@ -221,6 +225,7 @@ Face Recognition
 ```
 
 **Benefits:**
+
 - Reduces false accepts through secondary verification while keeping the cosine-distance math transparent (`sim(A, B) = (A · B) / (||A|| ||B||)` and `d(A, B) = 1 − sim(A, B)`).
 - Improves user experience for edge cases by treating distance bands consistently.
 - Provides clear guidance to users.
@@ -228,7 +233,7 @@ Face Recognition
 
 ### 5.2 CLI Prediction Tool
 
-```
+```text
 Image File
     |
     v
@@ -258,6 +263,7 @@ Image File
 ```
 
 **Use Cases:**
+
 - Testing before enrollment
 - Debugging recognition issues
 - Batch processing
@@ -267,7 +273,7 @@ Image File
 
 ### 6.1 Enrollment Flow
 
-```
+```text
 Employee --> Register (Admin) --> Add Photos (Webcam) --> Store Images
                                                               |
                                                               v
@@ -279,7 +285,7 @@ Employee --> Register (Admin) --> Add Photos (Webcam) --> Store Images
 
 ### 6.2 Attendance Marking Flow
 
-```
+```text
 Employee --> Click Time-In/Out --> Webcam Capture --> DeepFace Recognition
                                                               |
                                                               v
@@ -302,7 +308,7 @@ Employee --> Click Time-In/Out --> Webcam Capture --> DeepFace Recognition
 
 ### 6.3 Evaluation Flow
 
-```
+```text
 Face Recognition Data --> prepare_splits --> Train/Val/Test Splits
                                                       |
                                                       v
@@ -327,7 +333,7 @@ Face Recognition Data --> prepare_splits --> Train/Val/Test Splits
 
 ## 7. Extended Architecture Diagram
 
-```
+```text
                                     +------------------+
                                     |   Web Browser    |
                                     +--------+---------+
@@ -393,7 +399,7 @@ Face Recognition Data --> prepare_splits --> Train/Val/Test Splits
 
 ## 8. Module Dependencies
 
-```
+```text
 attendance_system_facial_recognition/  (Project Root)
 │
 ├── recognition/                       (Main App)
@@ -428,31 +434,37 @@ attendance_system_facial_recognition/  (Project Root)
 The complete technology stack now includes:
 
 ### Core Framework
+
 - **Django 5+**: Web framework
 - **Python 3.12+**: Programming language
 
 ### Face Recognition
+
 - **DeepFace**: Face recognition library
 - **Facenet**: Embedding model (default)
 - **SSD/OpenCV/MTCNN**: Face detectors
 
 ### Data Science & Evaluation
+
 - **NumPy**: Numerical computing
 - **scikit-learn**: Machine learning metrics
 - **Matplotlib**: Visualization
 - **Pandas**: Data analysis (for failure analysis)
 
 ### Code Quality
+
 - **Black**: Code formatting
 - **isort**: Import sorting
 - **Flake8**: Linting
 - **pre-commit**: Git hooks
 
 ### Configuration & CLI
+
 - **PyYAML**: Configuration parsing
 - **argparse**: CLI argument parsing
 
 ### Database & Frontend
+
 - **PostgreSQL**: Recommended production database (falls back to SQLite when `DATABASE_URL` is unset)
 - **Bootstrap 5**: Frontend framework
 - **HTML5/CSS3**: Web technologies
@@ -460,6 +472,7 @@ The complete technology stack now includes:
 ## 10. Security and Privacy Architecture
 
 ### Data Protection Measures
+
 - Face images stored locally (not in database)
 - Access control via Django authentication
 - Admin-only access to evaluation tools
@@ -467,6 +480,7 @@ The complete technology stack now includes:
 - Configurable data retention policies
 
 ### Privacy by Design
+
 - Purpose limitation (attendance only)
 - Consent required for enrollment
 - Opt-out available (manual attendance)
@@ -474,6 +488,7 @@ The complete technology stack now includes:
 - User rights supported (access, delete, correct, export)
 
 ### Compliance Support
+
 - GDPR-ready architecture
 - CCPA-compliant
 - Data card documentation

@@ -14,7 +14,7 @@ Represents the daily attendance status of an Employee.
 
 **Implicit Relationships:**
 
--   This model is the primary record for daily attendance and is created or updated when an Employee successfully checks in for the first time on a given day.
+- This model is the primary record for daily attendance and is created or updated when an Employee successfully checks in for the first time on a given day.
 
 ## 2. `users.Time`
 
@@ -29,7 +29,7 @@ Records a specific time-in or time-out event for an Employee.
 
 **Implicit Relationships:**
 
--   This model has a conceptual relationship with `users.Present`. Multiple `Time` records can exist for a single `Present` record, representing multiple check-ins and check-outs on the same day.
+- This model has a conceptual relationship with `users.Present`. Multiple `Time` records can exist for a single `Present` record, representing multiple check-ins and check-outs on the same day.
 
 ## 3. `users.RecognitionAttempt`
 
@@ -51,8 +51,7 @@ Persists metadata for each face recognition attempt.
 
 **Implicit Relationships:**
 
--   A successful `RecognitionAttempt` will typically result in the creation of a `Time` record and the creation or update of a `Present` record.
-
+- A successful `RecognitionAttempt` will typically result in the creation of a `Time` record and the creation or update of a `Present` record.
 
 ## 4. `recognition.RecognitionOutcome`
 
@@ -71,24 +70,24 @@ Persists a snapshot of a recognition decision made during attendance flows.
 
 **Implicit Relationships:**
 
--   This model is used for analytics and is not directly linked to the other attendance models via foreign keys. It provides a historical record of recognition decisions.
+- This model is used for analytics and is not directly linked to the other attendance models via foreign keys. It provides a historical record of recognition decisions.
 
 ## Liveness Signals and Limitations
 
--   The motion-based liveness buffer runs entirely in memory during each recognition attempt; no additional biometric data is stored beyond the existing encrypted training images.
--   The detector looks for subtle parallax (blinks, head turns, breathing) across a three-to-five-frame window. Extremely static lighting or perfectly stabilized video replays can therefore lower the score or slip through if the DeepFace anti-spoofing model also agrees.
--   Operators should document any high-risk deployments (e.g., unattended kiosks) and consider pairing this check with hardware sensors or on-device challenge/response if attackers can present high-quality screens within a few centimetres of the camera.
+- The motion-based liveness buffer runs entirely in memory during each recognition attempt; no additional biometric data is stored beyond the existing encrypted training images.
+- The detector looks for subtle parallax (blinks, head turns, breathing) across a three-to-five-frame window. Extremely static lighting or perfectly stabilized video replays can therefore lower the score or slip through if the DeepFace anti-spoofing model also agrees.
+- Operators should document any high-risk deployments (e.g., unattended kiosks) and consider pairing this check with hardware sensors or on-device challenge/response if attackers can present high-quality screens within a few centimetres of the camera.
 
 ## Sample Dataset for Reproducibility
 
--   A `sample_data/` directory now ships with the repository. It mirrors the `face_recognition_data/training_dataset/` layout and contains three procedurally generated, non-identifiable JPEG avatars per identity.
--   The helper script `scripts/reproduce_sample_results.py` temporarily points the evaluation harness at this directory so reviewers can regenerate metrics with `make reproduce` without handling encrypted production photos.
--   The sample dataset is strictly for demos and smoke tests. Replace it with the encrypted `face_recognition_data/` tree before operating in production so the evaluation pipeline reflects the real enrollment set.
+- A `sample_data/` directory now ships with the repository. It mirrors the `face_recognition_data/training_dataset/` layout and contains three procedurally generated, non-identifiable JPEG avatars per identity.
+- The helper script `scripts/reproduce_sample_results.py` temporarily points the evaluation harness at this directory so reviewers can regenerate metrics with `make reproduce` without handling encrypted production photos.
+- The sample dataset is strictly for demos and smoke tests. Replace it with the encrypted `face_recognition_data/` tree before operating in production so the evaluation pipeline reflects the real enrollment set.
 
 ## Evaluation Pipeline & Metrics
 
--   Run `python manage.py prepare_splits --seed 42` to emit `reports/splits.csv`, ensuring every evaluation references the exact same test cohort.
--   Execute `python manage.py eval --split-csv reports/splits.csv` (or `make evaluate`) to compute accuracy, precision, recall, macro F1, FAR, FRR, and the cosine-distance sweep. Artifacts live under `reports/evaluation/`.
--   Use `python scripts/reproduce_sample_results.py` or `make reproduce` to rerun the same harness against the bundled `sample_data/` directory for deterministic demos.
--   Thresholding relies on cosine similarity: `sim(A, B) = (A · B) / (||A|| ||B||)` and `d(A, B) = 1 − sim(A, B)`. Attendance is accepted when `d(A, B) ≤ 0.4` unless a deployment overrides `RECOGNITION_DISTANCE_THRESHOLD`.
--   Run `python manage.py evaluate_liveness` and `python manage.py fairness_audit --split-csv reports/splits.csv --reports-dir reports/fairness` to regenerate the liveness and fairness sections referenced throughout the docs; both commands follow the same reports-directory conventions for traceability.
+- Run `python manage.py prepare_splits --seed 42` to emit `reports/splits.csv`, ensuring every evaluation references the exact same test cohort.
+- Execute `python manage.py eval --split-csv reports/splits.csv` (or `make evaluate`) to compute accuracy, precision, recall, macro F1, FAR, FRR, and the cosine-distance sweep. Artifacts live under `reports/evaluation/`.
+- Use `python scripts/reproduce_sample_results.py` or `make reproduce` to rerun the same harness against the bundled `sample_data/` directory for deterministic demos.
+- Thresholding relies on cosine similarity: `sim(A, B) = (A · B) / (||A|| ||B||)` and `d(A, B) = 1 − sim(A, B)`. Attendance is accepted when `d(A, B) ≤ 0.4` unless a deployment overrides `RECOGNITION_DISTANCE_THRESHOLD`.
+- Run `python manage.py evaluate_liveness` and `python manage.py fairness_audit --split-csv reports/splits.csv --reports-dir reports/fairness` to regenerate the liveness and fairness sections referenced throughout the docs; both commands follow the same reports-directory conventions for traceability.

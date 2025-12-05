@@ -15,7 +15,7 @@ This endpoint accepts an image or a pre-computed face embedding and returns the 
   - `Authorization: Bearer <JWT>` header signed with `RECOGNITION_JWT_SECRET` (optional `RECOGNITION_JWT_ISSUER`/`RECOGNITION_JWT_AUDIENCE`).
 - **Rate Limiting:** `5 requests per minute` by authenticated session, API key, or JWT subject (fallback to IP). Override via `RECOGNITION_FACE_API_RATE_LIMIT`.
 
-### Request Payload
+### Face Recognition Request Payload
 
 The request can be sent as `application/json` or `multipart/form-data`. You must provide either an `image` or an `embedding`.
 
@@ -27,7 +27,7 @@ The request can be sent as `application/json` or `multipart/form-data`. You must
 | `direction` | String                             | Optional. The attendance direction. Can be `"in"` or `"out"`. Defaults to `"in"`.                                                                   |
 | `username`  | String                             | Optional. The username of the employee being verified. This is used for logging and analytics but does not influence the matching process.         |
 
-### Responses
+### Face Recognition Responses
 
 #### Success Response (`200 OK`)
 
@@ -59,7 +59,7 @@ Cosine similarity drives the `distance` value reported above:
 
 A prediction is accepted when `distance ≤ threshold` (default `0.4`); higher values trigger secondary verification or rejection through the policy engine.
 
-#### Error Responses
+#### Face Recognition Error Responses
 
 Authentication and validation failures return a JSON body with an `error` field describing the issue (for example, `{"error": "Invalid API key provided."}`).
 
@@ -80,7 +80,7 @@ This endpoint enqueues a batch of attendance records for asynchronous processing
 - **Authentication:** Required (session authentication). The user must be logged in.
 - **Rate Limiting:** This endpoint is rate-limited to prevent abuse.
 
-### Request Payload
+### Batch API Request Payload
 
 The request body must be a JSON object containing a `records` array.
 
@@ -115,7 +115,7 @@ The request body must be a JSON object containing a `records` array.
 }
 ```
 
-### Responses
+### Batch API Responses
 
 #### Success Response (`202 Accepted`)
 
@@ -133,7 +133,7 @@ A successful request indicates that the batch has been accepted and enqueued for
 - **`status` (string):** The initial status of the task (e.g., `PENDING`).
 - **`total` (integer):** The number of records in the batch.
 
-#### Error Responses
+#### Batch API Error Responses
 
 - **`400 Bad Request`:** The request payload is invalid (e.g., malformed JSON, or the `records` parameter is not a list).
 - **`403 Forbidden`:** The user is not authenticated.

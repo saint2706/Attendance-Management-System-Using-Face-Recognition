@@ -765,6 +765,37 @@ def _build_deepface_optimizations() -> dict[str, object]:
 
 DEEPFACE_OPTIMIZATIONS = _build_deepface_optimizations()
 
+# --- Hardware Acceleration and Performance Configuration ---
+
+# Hardware Acceleration (Cascading Priority: NPU → GPU → CPU)
+# NPU support requires Intel OpenVINO or DirectML (Windows)
+RECOGNITION_ENABLE_NPU = _get_bool_env("RECOGNITION_ENABLE_NPU", default=True)
+RECOGNITION_ENABLE_GPU = _get_bool_env("RECOGNITION_ENABLE_GPU", default=True)
+RECOGNITION_OPENVINO_ENABLED = _get_bool_env("RECOGNITION_OPENVINO_ENABLED", default=True)
+RECOGNITION_DIRECTML_ENABLED = _get_bool_env("RECOGNITION_DIRECTML_ENABLED", default=True)
+
+# Model Selection and Fallback
+# Automatically use lightweight models (OpenFace) on CPU-only systems
+RECOGNITION_MODEL_FALLBACK_ENABLED = _get_bool_env(
+    "RECOGNITION_MODEL_FALLBACK_ENABLED", default=True
+)
+RECOGNITION_LIGHTWEIGHT_MODEL = os.environ.get("RECOGNITION_LIGHTWEIGHT_MODEL", "OpenFace")
+RECOGNITION_NPU_MODEL = os.environ.get(
+    "RECOGNITION_NPU_MODEL", "Facenet"
+)  # Or path to OpenVINO IR model
+
+# Performance Monitoring
+RECOGNITION_PERFORMANCE_LOGGING = _get_bool_env("RECOGNITION_PERFORMANCE_LOGGING", default=False)
+RECOGNITION_HARDWARE_PROFILING = _get_bool_env("RECOGNITION_HARDWARE_PROFILING", default=False)
+
+# Async Processing (Opt-in for high-throughput scenarios)
+RECOGNITION_ENABLE_ASYNC_PROCESSING = _get_bool_env(
+    "RECOGNITION_ENABLE_ASYNC_PROCESSING", default=False
+)
+RECOGNITION_ASYNC_THRESHOLD = _parse_int_env(
+    "RECOGNITION_ASYNC_THRESHOLD", default=10, minimum=1
+)
+
 # Rate limiting configuration for attendance endpoints. Uses django-ratelimit's
 # default cache to track request counts.
 RATELIMIT_USE_CACHE = "default"

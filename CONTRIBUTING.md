@@ -18,38 +18,46 @@ For comprehensive setup instructions, see the [Developer Guide](DEVELOPER_GUIDE.
 
 ### Development Setup
 
-1.  **Clone the repository:**
+1. **Clone the repository:**
+
     ```bash
     git clone https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition.git
     cd Attendance-Management-System-Using-Face-Recognition
     ```
 
-2.  **Create and activate a virtual environment:**
+2. **Create and activate a virtual environment:**
+
     ```bash
     python -m venv venv
     source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
     ```
 
-3.  **Install the dependencies:**
+3. **Install the dependencies:**
+
     ```bash
     pip install -r requirements.txt
     ```
 
-4.  **Run database migrations:**
+4. **Run database migrations:**
+
     ```bash
     python manage.py migrate
     ```
 
-5.  **Create a superuser (admin account):**
+5. **Create a superuser (admin account):**
+
     ```bash
     python manage.py createsuperuser
     ```
+
     Follow the prompts to create your admin username, email, and password.
 
-6.  **Run the development server:**
+6. **Run the development server:**
+
     ```bash
     python manage.py runserver
     ```
+
     The application will be available at `http://127.0.0.1:8000/`.
 
 ## Coding Conventions
@@ -141,25 +149,25 @@ For new feature ideas, use the [Feature Request template](https://github.com/sai
 
 ### Submitting a Pull Request
 
-1.  **Fork the repository:**
+1. **Fork the repository:**
     Create a fork of the repository on GitHub.
 
-2.  **Create a new branch:**
+2. **Create a new branch:**
     Create a new branch for your changes.
 
-3.  **Make your changes:**
+3. **Make your changes:**
     Make your changes to the code.
 
-4.  **Run the tests:**
+4. **Run the tests:**
     Run the tests to ensure that your changes do not break anything.
 
-5.  **Commit your changes:**
+5. **Commit your changes:**
     Commit your changes with a clear and descriptive commit message.
 
-6.  **Push your changes:**
+6. **Push your changes:**
     Push your changes to your fork.
 
-7.  **Create a pull request:**
+7. **Create a pull request:**
     Create a pull request from your fork to the main repository.
 
 ### Code Review
@@ -184,6 +192,7 @@ We use labels to categorize issues and pull requests. Here's what each label mea
 ### For Maintainers
 
 When triaging issues:
+
 - Add `good first issue` to issues that are well-scoped and beginner-friendly
 - Add `help wanted` to issues where community contributions are welcome
 - Add appropriate component labels (e.g., `recognition`, `ui`, `api`) when available
@@ -192,6 +201,6 @@ When triaging issues:
 
 For questions about using the project, see [SUPPORT.md](SUPPORT.md).
 
-## Code of Conduct
+## Contributor Code of Conduct
 
 Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
