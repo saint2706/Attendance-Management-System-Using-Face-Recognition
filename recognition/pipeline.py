@@ -65,6 +65,63 @@ def extract_embedding(
     return normalized, facial_area
 
 
+def extract_all_embeddings(
+    representations,
+) -> list[tuple[np.ndarray, Optional[Dict[str, int]]]]:
+    """Extract embeddings for ALL detected faces in the representation.
+
+    This function is used for multi-face detection scenarios where multiple people
+    need to be recognized from a single frame (e.g., group check-ins).
+
+    Args:
+        representations: The raw payload returned by ``DeepFace.represent``.
+
+    Returns:
+        List of (embedding_vector, facial_area) tuples, one per detected face.
+        Empty list if no valid embeddings found.
+
+    Example:
+        >>> representations = DeepFace.represent(img_path=frame)  # Returns all faces
+        >>> face_embeddings = extract_all_embeddings(representations)
+        >>> print(f"Detected {len(face_embeddings)} faces")
+    """
+    results: list[tuple[np.ndarray, Optional[Dict[str, int]]]] = []
+
+    # Handle single representation (dict format)
+    if isinstance(representations, dict) and "embedding" in representations:
+        embedding, area = extract_embedding(representations)
+        if embedding is not None:
+            results.append((embedding, area))
+        return results
+
+    # Handle list of representations (most common from DeepFace.represent)
+    if isinstance(representations, list):
+        for rep in representations:
+            if isinstance(rep, dict):
+                # Each rep is a dict with 'embedding' and 'facial_area'
+                embedding, area = extract_embedding(rep)
+                if embedding is not None:
+                    results.append((embedding, area))
+            elif isinstance(rep, (list, tuple, np.ndarray)):
+                # Legacy format: list of embedding vectors
+                embedding, area = extract_embedding(rep)
+                if embedding is not None:
+                    results.append((embedding, area))
+
+        return results
+
+    # Handle numpy array format
+    if isinstance(representations, np.ndarray):
+        embedding, area = extract_embedding(representations)
+        if embedding is not None:
+            results.append((embedding, area))
+        return results
+
+    logger.debug("No valid embeddings found in representations: %r", type(representations))
+    return results
+
+
+
 def calculate_embedding_distance(
     candidate: np.ndarray, embedding_vector: np.ndarray, metric: str
 ) -> Optional[float]:

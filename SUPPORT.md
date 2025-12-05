@@ -28,6 +28,7 @@ If your question is not answered in the documentation:
 ### Bug Report
 
 Open a bug report when:
+
 - Something is broken or not working as documented
 - You encounter an error message or unexpected behavior
 - The application crashes or produces incorrect results
@@ -37,6 +38,7 @@ Use the [Bug Report template](https://github.com/saint2706/Attendance-Management
 ### Feature Request
 
 Open a feature request when:
+
 - You have an idea for a new feature
 - You want to suggest an improvement to existing functionality
 - You need support for a new use case
@@ -54,6 +56,7 @@ This is an open-source project maintained by volunteers. While we strive to resp
 ## Contributing
 
 If you'd like to help improve the project, see our [Contributing Guide](CONTRIBUTING.md) for information on:
+
 - Setting up the development environment
 - Coding standards and testing requirements
 - Submitting pull requests

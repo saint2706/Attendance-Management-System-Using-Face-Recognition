@@ -16,35 +16,35 @@ If you are new to the system, start with the [Beginner Setup section in the READ
 
 ### Logging In
 
-1.  Navigate to the system's home page.
+1. Navigate to the system's home page.
 
     ![Home page](docs/screenshots/home-light.png)
-    
+
     *The home page shows the main actions: Mark Time-In, Mark Time-Out, and Dashboard Login.*
 
-2.  Click on the **Dashboard Login** button.
-3.  Enter your username and password.
+2. Click on the **Dashboard Login** button.
+3. Enter your username and password.
 
     ![Login page](docs/screenshots/login.png)
-    
+
     *Enter your credentials on the login page.*
 
-4.  Click **Login**.
+4. Click **Login**.
 
 ### For Employees
 
 #### Marking Attendance
 
-1.  From the home page, click **Mark Time-In** to clock in for the day.
-2.  Position your face in front of the webcam. The system will automatically recognize you and record your check-in time.
-3.  At the end of the day, click **Mark Time-Out** to clock out.
-4.  If the banner "Liveness check failed. Please blink or move your head slightly and try again before marking attendance." appears, blink twice or gently move your head so the system can detect natural motion before retrying.
+1. From the home page, click **Mark Time-In** to clock in for the day.
+2. Position your face in front of the webcam. The system will automatically recognize you and record your check-in time.
+3. At the end of the day, click **Mark Time-Out** to clock out.
+4. If the banner "Liveness check failed. Please blink or move your head slightly and try again before marking attendance." appears, blink twice or gently move your head so the system can detect natural motion before retrying.
 
 #### Viewing Your Attendance
 
-1.  Log in to your dashboard.
-2.  Select a date range to view your attendance history.
-3.  The system will display a table with your check-in and check-out times, as well as the total hours worked for each day.
+1. Log in to your dashboard.
+2. Select a date range to view your attendance history.
+3. The system will display a table with your check-in and check-out times, as well as the total hours worked for each day.
 
 ### For Admins
 
@@ -56,27 +56,27 @@ After logging in as an admin, you will see the Admin Dashboard with a first-run 
 
 #### Registering a New Employee
 
-1.  Log in to your admin dashboard.
-2.  Click on **Register Employee**.
+1. Log in to your admin dashboard.
+2. Click on **Register Employee**.
 
     ![Register employee](docs/screenshots/register.png)
-    
+
     *The registration form for adding a new employee to the system.*
 
-3.  Fill in the new employee's details (username, full name, role, and department) and click **Register**. The form validates duplicates automatically and prompts you to upload profile photos during the next step.
+3. Fill in the new employee's details (username, full name, role, and department) and click **Register**. The form validates duplicates automatically and prompts you to upload profile photos during the next step.
 
 #### Adding Employee Photos
 
-1.  From the admin dashboard, click on **Add Photos**.
-2.  Enter the username of the employee and click **Add Photos**.
-3.  The system will automatically capture a set of images to create a face profile for the employee. Ensure the employee is in a well-lit area and facing the camera.
+1. From the admin dashboard, click on **Add Photos**.
+2. Enter the username of the employee and click **Add Photos**.
+3. The system will automatically capture a set of images to create a face profile for the employee. Ensure the employee is in a well-lit area and facing the camera.
 
 #### Running an Attendance Session
 
 The Attendance Session view provides a live feed of recognition attempts with real-time results.
 
-1.  From the admin dashboard, click on **Attendance Session**.
-2.  The session page displays:
+1. From the admin dashboard, click on **Attendance Session**.
+2. The session page displays:
     - Recent recognition attempts with timestamps
     - Match confidence scores
     - Liveness detection outcomes
@@ -123,7 +123,6 @@ The command reuses the live recognition engine to process the encrypted image da
 Use these reports to fine-tune thresholds before rolling changes into production or to document the system's performance for compliance reviews.
 
 > **How to read the distance column:** The evaluator stores cosine distance for every prediction using `sim(A, B) = (A · B) / (||A|| ||B||)` and `d(A, B) = 1 − sim(A, B)`. Lower values mean the faces are more similar. The live service accepts a match when `d(A, B) ≤ 0.4`, and the threshold sweep demonstrates how FAR increases and FRR decreases as you relax that bound. Review the CSV/PNG outputs when deciding whether to tighten or loosen the threshold for your deployment.
-
 > **Tip for reviewers:** The repository includes a `sample_data/` directory with three synthetic identities so you can rehearse the full workflow without using production assets. Running `make reproduce` will point the evaluation pipeline at that demo dataset and deposit artifacts under `reports/sample_repro/`.
 
 ## 6. Responsible Use & Limitations

@@ -58,20 +58,6 @@ from pandas.plotting import register_matplotlib_converters
 from sentry_sdk import Hub
 import jwt
 
-from src.common import FaceDataEncryption, InvalidToken, decrypt_bytes
-from users.models import Direction, Present, RecognitionAttempt, Time
-
-from . import health, monitoring
-from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
-from .liveness import LivenessBuffer, is_live_face
-from .metrics_store import log_recognition_outcome
-from .models import RecognitionOutcome
-from .pipeline import extract_embedding, find_closest_dataset_match, is_within_distance_threshold
-from .webcam_manager import get_webcam_manager
-
-# Use 'Agg' backend for Matplotlib to avoid GUI-related issues in a web server environment
-mpl.use("Agg")
-
 # Initialize logger for the module
 logger = logging.getLogger(__name__)
 

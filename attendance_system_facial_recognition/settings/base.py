@@ -545,6 +545,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "recognition.context_processors.multi_face_mode",  # Multi-face mode indicator
             ],
         },
     },
@@ -795,6 +796,19 @@ RECOGNITION_ENABLE_ASYNC_PROCESSING = _get_bool_env(
 RECOGNITION_ASYNC_THRESHOLD = _parse_int_env(
     "RECOGNITION_ASYNC_THRESHOLD", default=10, minimum=1
 )
+
+# Multi-Face Detection (for group check-ins)
+# When enabled, system processes all detected faces in frame
+# When disabled (default), only one face processed for accountability
+RECOGNITION_MULTI_FACE_ENABLED = _get_bool_env("RECOGNITION_MULTI_FACE_ENABLED", default=False)
+RECOGNITION_MAX_FACES_PER_FRAME = _parse_int_env(
+    "RECOGNITION_MAX_FACES_PER_FRAME", default=5, minimum=1
+)
+# Minimum face size in pixels to consider (filters out distant/small faces)
+RECOGNITION_MULTI_FACE_MIN_SIZE = _parse_int_env(
+    "RECOGNITION_MULTI_FACE_MIN_SIZE", default=50, minimum=20
+)
+
 
 # Rate limiting configuration for attendance endpoints. Uses django-ratelimit's
 # default cache to track request counts.
