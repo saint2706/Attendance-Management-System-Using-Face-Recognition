@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 def is_multi_face_enabled() -> bool:
     """Check if multi-face detection mode is enabled.
-    
+
     Returns:
         True if multi-face mode is enabled, False for single-person mode (default).
     """
@@ -34,7 +34,7 @@ def is_multi_face_enabled() -> bool:
 
 def get_max_faces_limit() -> int:
     """Get the maximum number of faces to process per frame.
-    
+
     Returns:
         Maximum faces count (default: 5).
     """
@@ -45,32 +45,32 @@ def filter_faces_by_size(
     face_embeddings: List[Tuple[np.ndarray, Optional[Dict[str, int]]]]
 ) -> List[Tuple[np.ndarray, Optional[Dict[str, int]]]]:
     """Filter out faces that are too small based on configured threshold.
-    
+
     Args:
         face_embeddings: List of (embedding, facial_area) tuples.
-    
+
     Returns:
         Filtered list with only faces meeting minimum size requirement.
     """
     min_size = getattr(settings, "RECOGNITION_MULTI_FACE_MIN_SIZE", 50)
-    
+
     filtered = []
     for embedding, facial_area in face_embeddings:
         if facial_area is None:
-            # No size info, keep it
+            # No size info, keep i
             filtered.append((embedding, facial_area))
             continue
-        
+
         # Calculate face dimensions
         width = facial_area.get("w", 0)
         height = facial_area.get("h", 0)
-        
+
         # Check if face meets minimum size
         if width >= min_size and height >= min_size:
             filtered.append((embedding, facial_area))
         else:
             logger.debug(f"Filtered out small face: {width}x{height}px (min: {min_size}px)")
-    
+
     return filtered
 
 
@@ -81,13 +81,13 @@ def process_multi_face_recognition(
     distance_threshold: float,
 ) -> Dict[str, Any]:
     """Process multiple faces from representations and find matches.
-    
+
     Args:
         representations: Raw DeepFace.represent() output.
         dataset_index: List of dataset entries with embeddings.
         distance_metric: Distance metric to use (cosine, euclidean, etc.).
         distance_threshold: Threshold for recognition.
-    
+
     Returns:
         Dictionary with multi-face results:
         {
@@ -98,30 +98,30 @@ def process_multi_face_recognition(
     """
     # Extract all embeddings
     face_embeddings = extract_all_embeddings(representations)
-    
+
     if not face_embeddings:
         return {"faces": [], "count": 0, "mode": "multi", "error": "No faces detected"}
-    
+
     # Filter by size
     face_embeddings = filter_faces_by_size(face_embeddings)
-    
-    # Apply max faces limit
+
+    # Apply max faces limi
     max_faces = get_max_faces_limit()
     if len(face_embeddings) > max_faces:
         logger.info(f"Limiting faces from {len(face_embeddings)} to {max_faces}")
         face_embeddings = face_embeddings[:max_faces]
-    
+
     # Process each face
     results = []
     for embedding_vector, facial_area in face_embeddings:
         # Find match for this face
         match = find_closest_dataset_match(embedding_vector, dataset_index, distance_metric)
-        
+
         face_result: Dict[str, Any] = {
             "embedding": embedding_vector.tolist(),
             "facial_area": facial_area,
         }
-        
+
         if match is None:
             face_result.update({
                 "recognized": False,
@@ -130,7 +130,7 @@ def process_multi_face_recognition(
         else:
             username, distance_value, identity_path = match
             recognized = is_within_distance_threshold(distance_value, distance_threshold)
-            
+
             face_result.update({
                 "recognized": recognized,
                 "match": {
@@ -140,9 +140,9 @@ def process_multi_face_recognition(
                     "threshold": float(distance_threshold),
                 },
             })
-        
+
         results.append(face_result)
-    
+
     return {
         "faces": results,
         "count": len(results),
@@ -159,25 +159,25 @@ def process_single_face_recognition(
     distance_threshold: float,
 ) -> Dict[str, Any]:
     """Process single face (standard/legacy mode).
-    
+
     Args:
         representations: Raw DeepFace.represent() output.
         dataset_index: List of dataset entries with embeddings.
         distance_metric: Distance metric to use.
         distance_threshold: Threshold for recognition.
-    
+
     Returns:
         Dictionary with single-face results (current format).
     """
     extracted_embedding, facial_area = extract_embedding(representations)
-    
+
     if extracted_embedding is None:
         return {
             "recognized": False,
             "error": "No face embedding could be extracted",
             "mode": "single",
         }
-    
+
     try:
         embedding_vector = np.array(extracted_embedding, dtype=float)
     except (TypeError, ValueError):
@@ -186,9 +186,9 @@ def process_single_face_recognition(
             "error": "Invalid embedding generated",
             "mode": "single",
         }
-    
+
     match = find_closest_dataset_match(embedding_vector, dataset_index, distance_metric)
-    
+
     response: Dict[str, Any] = {
         "recognized": False,
         "threshold": float(distance_threshold),
@@ -196,22 +196,22 @@ def process_single_face_recognition(
         "mode": "single",
         "facial_area": facial_area,
     }
-    
+
     if match is None:
         return response
-    
+
     username, distance_value, identity_path = match
     response.update({
         "distance": float(distance_value),
         "identity": identity_path,
     })
-    
+
     if username:
         response["username"] = username
-    
+
     recognized = is_within_distance_threshold(distance_value, distance_threshold)
     response["recognized"] = recognized
-    
+
     return response
 
 
@@ -222,15 +222,15 @@ def process_face_recognition(
     distance_threshold: float,
 ) -> Dict[str, Any]:
     """Process face recognition in either single or multi-face mode.
-    
+
     Automatically selects the appropriate mode based on RECOGNITION_MULTI_FACE_ENABLED setting.
-    
+
     Args:
         representations: Raw DeepFace.represent() output.
         dataset_index: List of dataset entries with embeddings.
         distance_metric: Distance metric to use.
         distance_threshold: Threshold for recognition.
-    
+
     Returns:
         Recognition results dictionary. Format depends on mode:
         - Single mode: {"recognized": bool, "username": str, "distance": float, ...}

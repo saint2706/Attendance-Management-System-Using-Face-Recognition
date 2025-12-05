@@ -415,7 +415,7 @@ def profile_model_performance(
             timings.append(elapsed_ms)
 
         except Exception as exc:  # pragma: no cover - defensive
-            logger.warning(f"Iteration {i+1} failed: {exc}")
+            logger.warning(f"Iteration {i + 1} failed: {exc}")
             continue
 
     if not timings:
