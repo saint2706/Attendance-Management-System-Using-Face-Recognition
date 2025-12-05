@@ -16,10 +16,19 @@ For backward compatibility, all public views are re-exported from this __init__.
 The legacy views.py file is preserved as views_legacy.py for reference and gradual migration.
 """
 
+# Re-export third-party modules used in views for test mocking compatibility
+import imutils
+from deepface import DeepFace
+
+from recognition import monitoring
+from recognition.metrics_store import log_recognition_outcome
+from recognition.pipeline import find_closest_dataset_match
+
 # Import all public views from the legacy module
 # This maintains backward compatibility while we gradually migrate code
 from recognition.views_legacy import (  # API views; Attendance marking views; Dashboard views; Dataset & training views; Reporting views; Utility views; Helper functions used by analytics; Chart generation functions; Dashboard helper functions; Constants and objects used by tasks; Internal helper functions used by tasks; Attendance update functions used by tasks
     DATA_ROOT,
+    LIVENESS_FAILURE_MESSAGE,
     TRAINING_DATASET_ROOT,
     FaceRecognitionAPI,
     _build_dataset_embeddings_for_matching,
@@ -60,6 +69,7 @@ from recognition.views_legacy import (  # API views; Attendance marking views; D
     view_attendance_home,
     view_my_attendance_employee_login,
 )
+from recognition.webcam_manager import get_webcam_manager
 
 from .config import (
     get_deepface_distance_metric,
@@ -123,6 +133,7 @@ __all__ = [
     "DATA_ROOT",
     "TRAINING_DATASET_ROOT",
     "_dataset_embedding_cache",
+    "LIVENESS_FAILURE_MESSAGE",
     # Internal helper functions
     "_get_or_compute_cached_embedding",
     "_is_headless_environment",
@@ -159,4 +170,14 @@ __all__ = [
     "get_lightweight_liveness_min_frames",
     "get_lightweight_liveness_threshold",
     "get_lightweight_liveness_window",
+    # Third-party modules for test mocking
+    "imutils",
+    "DeepFace",
+    "monitoring",
+    # Pipeline functions
+    "find_closest_dataset_match",
+    # Webcam manager
+    "get_webcam_manager",
+    # Metrics
+    "log_recognition_outcome",
 ]
