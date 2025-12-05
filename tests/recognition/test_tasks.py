@@ -66,8 +66,8 @@ def test_process_attendance_batch_creates_records(settings, django_user_model):
 
     times = Time.objects.filter(user=user, date=today).order_by("time")
     assert times.count() == 2
-    assert times.first().out is False
-    assert times.last().out is True
+    assert times.first().direction == Direction.IN
+    assert times.last().direction == Direction.OUT
 
     attempt_in.refresh_from_db()
     attempt_out.refresh_from_db()

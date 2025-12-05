@@ -16,6 +16,7 @@ import pytest
 
 from recognition import tasks
 from recognition import views as recognition_views
+from recognition import views_legacy
 from recognition import webcam_manager as webcam_module
 from users.models import Direction, RecognitionAttempt
 
@@ -82,8 +83,9 @@ class TestFaceRecognitionWorkflow:
             "username": "jane",
             "identity": "jane/reference.jpg",
         }
+        # Patch at the location where functions are used (views_legacy), not where exported
         monkeypatch.setattr(
-            recognition_views,
+            views_legacy,
             "_load_dataset_embeddings_for_matching",
             lambda *args, **kwargs: [dataset_entry],
         )
@@ -93,12 +95,12 @@ class TestFaceRecognitionWorkflow:
             return ("jane", next(distances), "jane/reference.jpg")
 
         monkeypatch.setattr(
-            recognition_views,
+            views_legacy,
             "find_closest_dataset_match",
             _fake_find,
         )
         monkeypatch.setattr(
-            recognition_views,
+            views_legacy,
             "_passes_liveness_check",
             lambda *args, **kwargs: True,
         )
@@ -144,19 +146,20 @@ class TestFaceRecognitionWorkflow:
             "username": "jane",
             "identity": "jane/reference.jpg",
         }
+        # Patch at the location where functions are used (views_legacy), not where exported
         monkeypatch.setattr(
-            recognition_views,
+            views_legacy,
             "_load_dataset_embeddings_for_matching",
             lambda *args, **kwargs: [dataset_entry],
         )
 
         monkeypatch.setattr(
-            recognition_views,
+            views_legacy,
             "find_closest_dataset_match",
             lambda *_args, **_kwargs: ("jane", 0.25, "jane/reference.jpg"),
         )
         monkeypatch.setattr(
-            recognition_views,
+            views_legacy,
             "_passes_liveness_check",
             lambda *args, **kwargs: True,
         )

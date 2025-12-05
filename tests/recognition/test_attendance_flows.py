@@ -128,11 +128,12 @@ def test_mark_attendance_records_successful_check_in(client, django_user_model, 
 
     dummy_frame = np.zeros((10, 10, 3), dtype=np.uint8)
 
-    monkeypatch.setattr(views, "get_webcam_manager", lambda: _StubWebcamManager(dummy_frame))
-    monkeypatch.setattr(views, "_is_headless_environment", lambda: True)
-    monkeypatch.setattr(views.imutils, "resize", lambda frame, width: frame)
+    # Patch at the location where functions are used (views_legacy), not where exported (views)
+    monkeypatch.setattr(views_legacy, "get_webcam_manager", lambda: _StubWebcamManager(dummy_frame))
+    monkeypatch.setattr(views_legacy, "_is_headless_environment", lambda: True)
+    monkeypatch.setattr(views_legacy.imutils, "resize", lambda frame, width: frame)
     monkeypatch.setattr(
-        views,
+        views_legacy,
         "_load_dataset_embeddings_for_matching",
         lambda *args, **kwargs: [
             {
@@ -143,7 +144,7 @@ def test_mark_attendance_records_successful_check_in(client, django_user_model, 
         ],
     )
     monkeypatch.setattr(
-        views,
+        views_legacy,
         "find_closest_dataset_match",
         lambda embedding, dataset, metric: (
             employee.username,
@@ -152,7 +153,7 @@ def test_mark_attendance_records_successful_check_in(client, django_user_model, 
         ),
     )
     monkeypatch.setattr(
-        views.DeepFace,
+        views_legacy.DeepFace,
         "represent",
         staticmethod(
             lambda **kwargs: [
@@ -163,9 +164,11 @@ def test_mark_attendance_records_successful_check_in(client, django_user_model, 
             ]
         ),
     )
-    monkeypatch.setattr(views, "_passes_liveness_check", lambda *args, **kwargs: True)
-    monkeypatch.setattr(views, "log_recognition_outcome", lambda **kwargs: None)
-    monkeypatch.setattr(views.monitoring, "observe_stage_duration", lambda *args, **kwargs: None)
+    monkeypatch.setattr(views_legacy, "_passes_liveness_check", lambda *args, **kwargs: True)
+    monkeypatch.setattr(views_legacy, "log_recognition_outcome", lambda **kwargs: None)
+    monkeypatch.setattr(
+        views_legacy.monitoring, "observe_stage_duration", lambda *args, **kwargs: None
+    )
 
     captured_batches: Dict[str, Iterable[Dict[str, Any]]] = {}
 
@@ -176,7 +179,7 @@ def test_mark_attendance_records_successful_check_in(client, django_user_model, 
         captured_batches["records"] = records
         return _Result()
 
-    monkeypatch.setattr(views, "_enqueue_attendance_records", _capture_records)
+    monkeypatch.setattr(views_legacy, "_enqueue_attendance_records", _capture_records)
 
     response = client.get(reverse("mark-your-attendance"))
 
@@ -316,11 +319,12 @@ def test_registration_training_and_attendance_flow(client, django_user_model, mo
 
     dummy_frame = np.zeros((10, 10, 3), dtype=np.uint8)
 
-    monkeypatch.setattr(views, "get_webcam_manager", lambda: _StubWebcamManager(dummy_frame))
-    monkeypatch.setattr(views, "_is_headless_environment", lambda: True)
-    monkeypatch.setattr(views.imutils, "resize", lambda frame, width: frame)
+    # Patch at the location where functions are used (views_legacy), not where exported (views)
+    monkeypatch.setattr(views_legacy, "get_webcam_manager", lambda: _StubWebcamManager(dummy_frame))
+    monkeypatch.setattr(views_legacy, "_is_headless_environment", lambda: True)
+    monkeypatch.setattr(views_legacy.imutils, "resize", lambda frame, width: frame)
     monkeypatch.setattr(
-        views,
+        views_legacy,
         "_load_dataset_embeddings_for_matching",
         lambda *args, **kwargs: [
             {
@@ -331,7 +335,7 @@ def test_registration_training_and_attendance_flow(client, django_user_model, mo
         ],
     )
     monkeypatch.setattr(
-        views,
+        views_legacy,
         "find_closest_dataset_match",
         lambda embedding, dataset, metric: (
             employee.username,
@@ -340,7 +344,7 @@ def test_registration_training_and_attendance_flow(client, django_user_model, mo
         ),
     )
     monkeypatch.setattr(
-        views.DeepFace,
+        views_legacy.DeepFace,
         "represent",
         staticmethod(
             lambda **kwargs: [
@@ -351,9 +355,11 @@ def test_registration_training_and_attendance_flow(client, django_user_model, mo
             ]
         ),
     )
-    monkeypatch.setattr(views, "_passes_liveness_check", lambda *args, **kwargs: True)
-    monkeypatch.setattr(views, "log_recognition_outcome", lambda **kwargs: None)
-    monkeypatch.setattr(views.monitoring, "observe_stage_duration", lambda *args, **kwargs: None)
+    monkeypatch.setattr(views_legacy, "_passes_liveness_check", lambda *args, **kwargs: True)
+    monkeypatch.setattr(views_legacy, "log_recognition_outcome", lambda **kwargs: None)
+    monkeypatch.setattr(
+        views_legacy.monitoring, "observe_stage_duration", lambda *args, **kwargs: None
+    )
 
     captured_batches: Dict[str, Iterable[Dict[str, Any]]] = {}
 
@@ -364,7 +370,7 @@ def test_registration_training_and_attendance_flow(client, django_user_model, mo
         captured_batches["records"] = records
         return _Result()
 
-    monkeypatch.setattr(views, "_enqueue_attendance_records", _capture_records)
+    monkeypatch.setattr(views_legacy, "_enqueue_attendance_records", _capture_records)
 
     attendance_response = client.get(reverse("mark-your-attendance"))
 
@@ -393,11 +399,12 @@ def test_liveness_failure_blocks_attendance(client, django_user_model, monkeypat
     client.force_login(employee)
 
     dummy_frame = np.zeros((10, 10, 3), dtype=np.uint8)
-    monkeypatch.setattr(views, "get_webcam_manager", lambda: _StubWebcamManager(dummy_frame))
-    monkeypatch.setattr(views, "_is_headless_environment", lambda: True)
-    monkeypatch.setattr(views.imutils, "resize", lambda frame, width: frame)
+    # Patch at the location where functions are used (views_legacy), not where exported (views)
+    monkeypatch.setattr(views_legacy, "get_webcam_manager", lambda: _StubWebcamManager(dummy_frame))
+    monkeypatch.setattr(views_legacy, "_is_headless_environment", lambda: True)
+    monkeypatch.setattr(views_legacy.imutils, "resize", lambda frame, width: frame)
     monkeypatch.setattr(
-        views,
+        views_legacy,
         "_load_dataset_embeddings_for_matching",
         lambda *args, **kwargs: [
             {
@@ -408,12 +415,12 @@ def test_liveness_failure_blocks_attendance(client, django_user_model, monkeypat
         ],
     )
     monkeypatch.setattr(
-        views,
+        views_legacy,
         "find_closest_dataset_match",
         lambda *_args, **_kwargs: (employee.username, 0.05, "liveness-user/sample.jpg"),
     )
     monkeypatch.setattr(
-        views.DeepFace,
+        views_legacy.DeepFace,
         "represent",
         staticmethod(
             lambda **kwargs: [
@@ -424,20 +431,22 @@ def test_liveness_failure_blocks_attendance(client, django_user_model, monkeypat
             ]
         ),
     )
-    monkeypatch.setattr(views, "_passes_liveness_check", lambda *args, **kwargs: False)
-    monkeypatch.setattr(views, "log_recognition_outcome", lambda **kwargs: None)
-    monkeypatch.setattr(views.monitoring, "observe_stage_duration", lambda *args, **kwargs: None)
+    monkeypatch.setattr(views_legacy, "_passes_liveness_check", lambda *args, **kwargs: False)
+    monkeypatch.setattr(views_legacy, "log_recognition_outcome", lambda **kwargs: None)
+    monkeypatch.setattr(
+        views_legacy.monitoring, "observe_stage_duration", lambda *args, **kwargs: None
+    )
 
     def _fail_on_enqueue(_records: List[Dict[str, Any]]):
         pytest.fail("Attendance should not be enqueued when liveness fails")
 
-    monkeypatch.setattr(views, "_enqueue_attendance_records", _fail_on_enqueue)
+    monkeypatch.setattr(views_legacy, "_enqueue_attendance_records", _fail_on_enqueue)
 
     response = client.get(reverse("mark-your-attendance"), follow=True)
 
     assert response.status_code == 200
     message_texts = [message.message for message in get_messages(response.wsgi_request)]
-    assert views.LIVENESS_FAILURE_MESSAGE in message_texts
+    assert views_legacy.LIVENESS_FAILURE_MESSAGE in message_texts
 
 
 @pytest.mark.slow
@@ -457,11 +466,12 @@ def test_unknown_face_does_not_create_attendance_records(client, django_user_mod
     client.force_login(employee)
 
     dummy_frame = np.zeros((10, 10, 3), dtype=np.uint8)
-    monkeypatch.setattr(views, "get_webcam_manager", lambda: _StubWebcamManager(dummy_frame))
-    monkeypatch.setattr(views, "_is_headless_environment", lambda: True)
-    monkeypatch.setattr(views.imutils, "resize", lambda frame, width: frame)
+    # Patch at the location where functions are used (views_legacy), not where exported (views)
+    monkeypatch.setattr(views_legacy, "get_webcam_manager", lambda: _StubWebcamManager(dummy_frame))
+    monkeypatch.setattr(views_legacy, "_is_headless_environment", lambda: True)
+    monkeypatch.setattr(views_legacy.imutils, "resize", lambda frame, width: frame)
     monkeypatch.setattr(
-        views,
+        views_legacy,
         "_load_dataset_embeddings_for_matching",
         lambda *args, **kwargs: [
             {
@@ -472,12 +482,12 @@ def test_unknown_face_does_not_create_attendance_records(client, django_user_mod
         ],
     )
     monkeypatch.setattr(
-        views,
+        views_legacy,
         "find_closest_dataset_match",
         lambda *_args, **_kwargs: ("different-user", 0.92, "different-user/sample.jpg"),
     )
     monkeypatch.setattr(
-        views.DeepFace,
+        views_legacy.DeepFace,
         "represent",
         staticmethod(
             lambda **kwargs: [
@@ -488,14 +498,16 @@ def test_unknown_face_does_not_create_attendance_records(client, django_user_mod
             ]
         ),
     )
-    monkeypatch.setattr(views, "_passes_liveness_check", lambda *args, **kwargs: True)
-    monkeypatch.setattr(views, "log_recognition_outcome", lambda **kwargs: None)
-    monkeypatch.setattr(views.monitoring, "observe_stage_duration", lambda *args, **kwargs: None)
+    monkeypatch.setattr(views_legacy, "_passes_liveness_check", lambda *args, **kwargs: True)
+    monkeypatch.setattr(views_legacy, "log_recognition_outcome", lambda **kwargs: None)
+    monkeypatch.setattr(
+        views_legacy.monitoring, "observe_stage_duration", lambda *args, **kwargs: None
+    )
 
     def _fail_on_enqueue(_records: List[Dict[str, Any]]):
         pytest.fail("High-distance matches must not enqueue attendance")
 
-    monkeypatch.setattr(views, "_enqueue_attendance_records", _fail_on_enqueue)
+    monkeypatch.setattr(views_legacy, "_enqueue_attendance_records", _fail_on_enqueue)
 
     response = client.get(reverse("mark-your-attendance"))
 
@@ -516,17 +528,20 @@ def test_missing_training_data_short_circuits_attendance(client, django_user_mod
     employee = django_user_model.objects.create_user(username="no-dataset", password="Password!234")
     client.force_login(employee)
 
+    # Patch at the location where functions are used (views_legacy), not where exported (views)
     monkeypatch.setattr(
-        views,
+        views_legacy,
         "get_webcam_manager",
         lambda: _StubWebcamManager(np.zeros((1, 1, 3), dtype=np.uint8)),
     )
-    monkeypatch.setattr(views, "_load_dataset_embeddings_for_matching", lambda *args, **kwargs: [])
+    monkeypatch.setattr(
+        views_legacy, "_load_dataset_embeddings_for_matching", lambda *args, **kwargs: []
+    )
 
     def _fail_on_enqueue(_records: List[Dict[str, Any]]):
         pytest.fail("No attendance should be enqueued when dataset is missing")
 
-    monkeypatch.setattr(views, "_enqueue_attendance_records", _fail_on_enqueue)
+    monkeypatch.setattr(views_legacy, "_enqueue_attendance_records", _fail_on_enqueue)
 
     response = client.get(reverse("mark-your-attendance"), follow=True)
 
