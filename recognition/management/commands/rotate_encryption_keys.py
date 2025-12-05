@@ -9,7 +9,7 @@ from typing import Callable, Iterable
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from src.common.crypto import _FernetWrapper, FaceDataEncryption, InvalidToken
+from src.common.crypto import FaceDataEncryption, InvalidToken, _FernetWrapper
 
 
 class Command(BaseCommand):
@@ -88,8 +88,7 @@ class Command(BaseCommand):
         model_files = [
             path
             for path in self._iter_files(data_root)
-            if not path.is_relative_to(encodings_root)
-            and not path.is_relative_to(dataset_root)
+            if not path.is_relative_to(encodings_root) and not path.is_relative_to(dataset_root)
         ]
 
         self.stdout.write(
@@ -102,11 +101,17 @@ class Command(BaseCommand):
 
         reencrypted = 0
         for path in dataset_files:
-            reencrypted += self._reencrypt_file(path, data_decryptor.decrypt, data_encryptor.encrypt, dry_run)
+            reencrypted += self._reencrypt_file(
+                path, data_decryptor.decrypt, data_encryptor.encrypt, dry_run
+            )
         for path in face_files:
-            reencrypted += self._reencrypt_file(path, face_decryptor.decrypt, face_encryptor.encrypt, dry_run)
+            reencrypted += self._reencrypt_file(
+                path, face_decryptor.decrypt, face_encryptor.encrypt, dry_run
+            )
         for path in model_files:
-            reencrypted += self._reencrypt_file(path, data_decryptor.decrypt, data_encryptor.encrypt, dry_run)
+            reencrypted += self._reencrypt_file(
+                path, data_decryptor.decrypt, data_encryptor.encrypt, dry_run
+            )
 
         if dry_run:
             self.stdout.write(self.style.SUCCESS("Dry-run complete; no files modified."))

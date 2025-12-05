@@ -930,7 +930,11 @@ class DatasetEmbeddingCache:
         except pickle.UnpicklingError as exc:  # pragma: no cover - corrupted cache data
             logger.warning("Failed to deserialize cached embeddings %s: %s", cache_file, exc)
             return None
-        except (EOFError, AttributeError, ImportError) as exc:  # pragma: no cover - pickle edge cases
+        except (
+            EOFError,
+            AttributeError,
+            ImportError,
+        ) as exc:  # pragma: no cover - pickle edge cases
             logger.warning("Cache deserialization error %s: %s", cache_file, exc)
             return None
 
@@ -1309,7 +1313,9 @@ def update_attendance_in_db_in(
 
         if is_present:
             # Record the check-in time
-            time_record = Time.objects.create(user=user, date=today, time=current_time, direction=Direction.IN)
+            time_record = Time.objects.create(
+                user=user, date=today, time=current_time, direction=Direction.IN
+            )
         else:
             time_record = None
 
@@ -1381,7 +1387,9 @@ def update_attendance_in_db_out(
                 )
             continue
         # Record the check-out time
-        time_record = Time.objects.create(user=user, date=today, time=current_time, direction=Direction.OUT)
+        time_record = Time.objects.create(
+            user=user, date=today, time=current_time, direction=Direction.OUT
+        )
 
         attempt_id = attempt_ids.get(person)
         if attempt_id:
@@ -1423,7 +1431,10 @@ def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
         return False, 0
 
     # The number of check-ins must equal the number of check-outs
-    if times_all.filter(direction=Direction.IN).count() != times_all.filter(direction=Direction.OUT).count():
+    if (
+        times_all.filter(direction=Direction.IN).count()
+        != times_all.filter(direction=Direction.OUT).count()
+    ):
         return False, 0
 
     break_hours = 0
@@ -2354,9 +2365,7 @@ def _mark_attendance(request, check_in: bool):
     frame_pause = float(getattr(settings, "RECOGNITION_HEADLESS_FRAME_SLEEP", 0.01))
     frames_processed = 0
 
-    direction_choice = (
-        Direction.IN if check_in else Direction.OUT
-    )
+    direction_choice = Direction.IN if check_in else Direction.OUT
     attempt_logger = _RecognitionAttemptLogger(
         direction_choice.value,
         _resolve_recognition_site(request),
@@ -2577,8 +2586,6 @@ def _mark_attendance(request, check_in: bool):
                                 (0, 255, 0),
                                 2,
                             )
-
-
 
                 except Exception:
                     logger.exception(
@@ -3090,11 +3097,7 @@ def mark_attendance_view(request, attendance_type):
         },
     )
 
-    direction_choice = (
-        Direction.IN
-        if attendance_type == "in"
-        else Direction.OUT
-    )
+    direction_choice = Direction.IN if attendance_type == "in" else Direction.OUT
     attempt_logger = _RecognitionAttemptLogger(
         direction_choice.value,
         _resolve_recognition_site(request),

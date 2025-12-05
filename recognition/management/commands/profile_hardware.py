@@ -58,9 +58,7 @@ class Command(BaseCommand):
             memory_info = ""
             if hardware_dict["gpu"]["memory_mb"]:
                 memory_info = f" ({hardware_dict['gpu']['memory_mb']} MB)"
-            self.stdout.write(
-                self.style.SUCCESS(f"✓ GPU Detected: {gpu_name}{memory_info}")
-            )
+            self.stdout.write(self.style.SUCCESS(f"✓ GPU Detected: {gpu_name}{memory_info}"))
         else:
             self.stdout.write(self.style.WARNING("✗ GPU: Not available"))
 
@@ -76,15 +74,11 @@ class Command(BaseCommand):
         self.stdout.write(f"Detector: {config['detector_backend']}")
 
         if config["backend"] == "openvino":
-            self.stdout.write(
-                f"OpenVINO Device: {config.get('openvino_device', 'N/A')}"
-            )
+            self.stdout.write(f"OpenVINO Device: {config.get('openvino_device', 'N/A')}")
 
         # Profile models if not skipped
         if not options["skip_profiling"]:
-            self.stdout.write(
-                self.style.SUCCESS("\n=== Model Performance Profiling ===\n")
-            )
+            self.stdout.write(self.style.SUCCESS("\n=== Model Performance Profiling ===\n"))
             self.stdout.write(
                 f"Profiling {len(options['models'])} models with {options['iterations']} iterations each..."
             )
@@ -99,9 +93,7 @@ class Command(BaseCommand):
 
                 if metrics:
                     results[model_name] = metrics
-                    self.stdout.write(
-                        self.style.SUCCESS(f"✓ {metrics['mean_ms']:.2f}ms avg")
-                    )
+                    self.stdout.write(self.style.SUCCESS(f"✓ {metrics['mean_ms']:.2f}ms avg"))
                 else:
                     self.stdout.write(self.style.ERROR("✗ Failed"))
 
@@ -113,9 +105,7 @@ class Command(BaseCommand):
                 )
                 self.stdout.write("-" * 65)
 
-                for model_name, metrics in sorted(
-                    results.items(), key=lambda x: x[1]["mean_ms"]
-                ):
+                for model_name, metrics in sorted(results.items(), key=lambda x: x[1]["mean_ms"]):
                     self.stdout.write(
                         f"{model_name:<15} "
                         f"{metrics['mean_ms']:<12.2f} "
@@ -127,11 +117,7 @@ class Command(BaseCommand):
                 # Fastest model
                 fastest = min(results.items(), key=lambda x: x[1]["mean_ms"])
                 self.stdout.write(
-                    self.style.SUCCESS(
-                        f"\nFastest: {fastest[0]} ({fastest[1]['mean_ms']:.2f}ms)"
-                    )
+                    self.style.SUCCESS(f"\nFastest: {fastest[0]} ({fastest[1]['mean_ms']:.2f}ms)")
                 )
 
-        self.stdout.write(
-            self.style.SUCCESS("\n✓ Hardware profiling complete!")
-        )
+        self.stdout.write(self.style.SUCCESS("\n✓ Hardware profiling complete!"))

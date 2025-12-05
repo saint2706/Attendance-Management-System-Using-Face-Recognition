@@ -10,8 +10,9 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-import numpy as np
 from django.conf import settings
+
+import numpy as np
 
 from .pipeline import (
     extract_all_embeddings,
@@ -123,23 +124,27 @@ def process_multi_face_recognition(
         }
 
         if match is None:
-            face_result.update({
-                "recognized": False,
-                "match": None,
-            })
+            face_result.update(
+                {
+                    "recognized": False,
+                    "match": None,
+                }
+            )
         else:
             username, distance_value, identity_path = match
             recognized = is_within_distance_threshold(distance_value, distance_threshold)
 
-            face_result.update({
-                "recognized": recognized,
-                "match": {
-                    "username": username,
-                    "distance": float(distance_value),
-                    "identity": identity_path,
-                    "threshold": float(distance_threshold),
-                },
-            })
+            face_result.update(
+                {
+                    "recognized": recognized,
+                    "match": {
+                        "username": username,
+                        "distance": float(distance_value),
+                        "identity": identity_path,
+                        "threshold": float(distance_threshold),
+                    },
+                }
+            )
 
         results.append(face_result)
 
@@ -201,10 +206,12 @@ def process_single_face_recognition(
         return response
 
     username, distance_value, identity_path = match
-    response.update({
-        "distance": float(distance_value),
-        "identity": identity_path,
-    })
+    response.update(
+        {
+            "distance": float(distance_value),
+            "identity": identity_path,
+        }
+    )
 
     if username:
         response["username"] = username

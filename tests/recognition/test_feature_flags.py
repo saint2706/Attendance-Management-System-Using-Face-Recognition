@@ -5,8 +5,6 @@ Tests for the feature flags system.
 import os
 from unittest import mock
 
-import pytest
-
 from recognition.features import FeatureFlags, FeatureProfile
 
 
@@ -26,7 +24,7 @@ class TestFeatureFlags:
         """Basic profile should disable all advanced features."""
         with mock.patch.dict(os.environ, {"FEATURE_PROFILE": "basic"}, clear=True):
             FeatureFlags._initialize()
-            assert FeatureFlags.get_profile() ==  FeatureProfile.BASIC
+            assert FeatureFlags.get_profile() == FeatureProfile.BASIC
             assert FeatureFlags.is_liveness_detection_enabled() is False
             assert FeatureFlags.is_deepface_antispoofing_enabled() is False
             assert FeatureFlags.is_scheduled_evaluations_enabled() is False

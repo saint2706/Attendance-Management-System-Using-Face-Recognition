@@ -47,6 +47,7 @@ class TestModelEvaluationResult:
         )
         # Ensure the older result is strictly older
         from django.utils import timezone
+
         older.created_at = timezone.now() - dt.timedelta(seconds=1)
         older.save()
 
@@ -129,6 +130,7 @@ class TestModelEvaluationResult:
         )
         # Ensure the older result is strictly older
         from django.utils import timezone
+
         older.created_at = timezone.now() - dt.timedelta(seconds=1)
         older.save()
 
@@ -161,6 +163,7 @@ class TestModelEvaluationResult:
         )
         # Ensure the older result is strictly older
         from django.utils import timezone
+
         older.created_at = timezone.now() - dt.timedelta(seconds=1)
         older.save()
 

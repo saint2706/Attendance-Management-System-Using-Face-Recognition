@@ -10,10 +10,8 @@ from django.conf import settings as django_settings
 from django.core.management import call_command
 from django.test import override_settings
 
-import numpy as np
 import pytest
 from cryptography.fernet import Fernet, InvalidToken
-
 
 pytestmark = [pytest.mark.django_db]
 

@@ -121,7 +121,6 @@ def extract_all_embeddings(
     return results
 
 
-
 def calculate_embedding_distance(
     candidate: np.ndarray, embedding_vector: np.ndarray, metric: str
 ) -> Optional[float]:
