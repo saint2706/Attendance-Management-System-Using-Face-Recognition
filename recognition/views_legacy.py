@@ -498,7 +498,7 @@ class FaceRecognitionAPI(View):
 
     def post(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         site_code = _resolve_recognition_site(request)
-        default_direction = RecognitionAttempt.Direction.IN.value
+        default_direction = Direction.IN.value
         request_user = getattr(request, "user", None)
         request_username = getattr(request_user, "username", None)
 
@@ -537,8 +537,8 @@ class FaceRecognitionAPI(View):
             direction = default_direction
 
         if direction not in {
-            RecognitionAttempt.Direction.IN.value,
-            RecognitionAttempt.Direction.OUT.value,
+            Direction.IN.value,
+            Direction.OUT.value,
         }:
             direction = default_direction
 
@@ -2355,7 +2355,7 @@ def _mark_attendance(request, check_in: bool):
     frames_processed = 0
 
     direction_choice = (
-        RecognitionAttempt.Direction.IN if check_in else RecognitionAttempt.Direction.OUT
+        Direction.IN if check_in else Direction.OUT
     )
     attempt_logger = _RecognitionAttemptLogger(
         direction_choice.value,
@@ -3091,9 +3091,9 @@ def mark_attendance_view(request, attendance_type):
     )
 
     direction_choice = (
-        RecognitionAttempt.Direction.IN
+        Direction.IN
         if attendance_type == "in"
-        else RecognitionAttempt.Direction.OUT
+        else Direction.OUT
     )
     attempt_logger = _RecognitionAttemptLogger(
         direction_choice.value,

@@ -19,7 +19,7 @@ sys.modules.setdefault("cv2", MagicMock())
 if not django.apps.apps.ready:
     django.setup()
 
-from recognition import views  # noqa: E402
+from recognition import views, views_legacy  # noqa: E402
 
 pytestmark = pytest.mark.django_db
 
@@ -38,7 +38,7 @@ def test_face_recognition_api_returns_match(client, monkeypatch):
     cache.clear()
 
     monkeypatch.setattr(
-        views,
+        views_legacy,
         "_load_dataset_embeddings_for_matching",
         lambda *args, **kwargs: [
             {
@@ -49,7 +49,7 @@ def test_face_recognition_api_returns_match(client, monkeypatch):
         ],
     )
     monkeypatch.setattr(
-        views,
+        views_legacy,
         "find_closest_dataset_match",
         lambda embedding, dataset, metric: ("alice", 0.05, "alice/sample.jpg"),
     )
@@ -81,7 +81,7 @@ def test_face_recognition_api_rate_limit(client, monkeypatch):
     cache.clear()
 
     monkeypatch.setattr(
-        views,
+        views_legacy,
         "_load_dataset_embeddings_for_matching",
         lambda *args, **kwargs: [
             {
@@ -92,7 +92,7 @@ def test_face_recognition_api_rate_limit(client, monkeypatch):
         ],
     )
     monkeypatch.setattr(
-        views,
+        views_legacy,
         "find_closest_dataset_match",
         lambda embedding, dataset, metric: ("alice", 0.05, "alice/sample.jpg"),
     )

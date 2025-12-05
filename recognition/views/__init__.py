@@ -64,6 +64,8 @@ from recognition.views_legacy import (
     _get_recognition_training_seed,
     _get_recognition_training_test_split_ratio,
     _build_dataset_embeddings_for_matching,
+    _load_dataset_embeddings_for_matching,
+    _passes_liveness_check,
     # Attendance update functions used by tasks
     update_attendance_in_db_in,
     update_attendance_in_db_out,
@@ -140,6 +142,8 @@ __all__ = [
     "_get_recognition_training_seed",
     "_get_recognition_training_test_split_ratio",
     "_build_dataset_embeddings_for_matching",
+    "_load_dataset_embeddings_for_matching",
+    "_passes_liveness_check",
     # Attendance update functions
     "update_attendance_in_db_in",
     "update_attendance_in_db_out",

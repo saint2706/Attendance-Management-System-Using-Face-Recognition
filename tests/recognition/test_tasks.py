@@ -13,7 +13,7 @@ if not django.apps.apps.ready:
     django.setup()
 
 from recognition.tasks import process_attendance_batch  # noqa: E402
-from users.models import Present, RecognitionAttempt, Time  # noqa: E402
+from users.models import Direction, Present, RecognitionAttempt, Time  # noqa: E402
 
 # Mark tests as slow since they use Celery eager mode with DB transactions
 pytestmark = [pytest.mark.slow, pytest.mark.integration]
@@ -27,14 +27,14 @@ def test_process_attendance_batch_creates_records(settings, django_user_model):
 
     attempt_in = RecognitionAttempt.objects.create(
         username=username,
-        direction=RecognitionAttempt.Direction.IN,
+        direction=Direction.IN,
         site="lab",
         source="celery-test",
         successful=True,
     )
     attempt_out = RecognitionAttempt.objects.create(
         username=username,
-        direction=RecognitionAttempt.Direction.OUT,
+        direction=Direction.OUT,
         site="lab",
         source="celery-test",
         successful=True,
