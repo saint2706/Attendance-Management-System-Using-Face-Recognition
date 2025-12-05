@@ -9,7 +9,7 @@ import pytest
 
 from recognition import health
 from recognition.models import RecognitionOutcome
-from users.models import RecognitionAttempt
+from users.models import Direction, RecognitionAttempt
 
 pytestmark = pytest.mark.django_db
 
@@ -72,7 +72,7 @@ def test_recognition_activity_captures_attempts(django_user_model):
 
     RecognitionAttempt.objects.create(
         username=user.username,
-        direction=RecognitionAttempt.Direction.IN,
+        direction=Direction.IN,
         site="hq",
         source="webcam",
         successful=False,

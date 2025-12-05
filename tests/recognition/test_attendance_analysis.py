@@ -47,38 +47,38 @@ def test_get_daily_trends_with_breaks_and_filters():
         user=user,
         date=day1,
         time=_aware(datetime.datetime(2024, 1, 2, 8, 45)),
-        out=False,
+        direction="in",
     )
     Time.objects.create(
         user=user,
         date=day1,
         time=_aware(datetime.datetime(2024, 1, 2, 12, 0)),
-        out=True,
+        direction="out",
     )
     Time.objects.create(
         user=user,
         date=day1,
         time=_aware(datetime.datetime(2024, 1, 2, 13, 0)),
-        out=False,
+        direction="in",
     )
     Time.objects.create(
         user=user,
         date=day1,
         time=_aware(datetime.datetime(2024, 1, 2, 17, 5)),
-        out=True,
+        direction="out",
     )
 
     Time.objects.create(
         user=user,
         date=day2,
         time=_aware(datetime.datetime(2024, 1, 3, 9, 25)),
-        out=False,
+        direction="in",
     )
     Time.objects.create(
         user=user,
         date=day2,
         time=_aware(datetime.datetime(2024, 1, 3, 17, 0)),
-        out=True,
+        direction="out",
     )
 
     result = analytics.get_daily_trends(start_date=day1, end_date=day2)

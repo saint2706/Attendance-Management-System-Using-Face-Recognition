@@ -22,7 +22,7 @@ sys.modules.setdefault("cv2", _fake_cv2)
 if not django.apps.apps.ready:
     django.setup()
 
-from recognition import views  # noqa: E402
+from recognition import views, views_legacy  # noqa: E402
 from src.common import FaceDataEncryption  # noqa: E402
 
 TEST_FACE_KEY = Fernet.generate_key()
@@ -56,7 +56,7 @@ class DatasetEmbeddingCacheTests(TestCase):
 
         fake_index = [{"identity": "alice/1.jpg", "embedding": np.array([0.1, 0.2])}]
         with patch.object(
-            views,
+            views_legacy,
             "_build_dataset_embeddings_for_matching",
             autospec=True,
             return_value=fake_index,
@@ -80,7 +80,7 @@ class DatasetEmbeddingCacheTests(TestCase):
         ]
 
         with patch.object(
-            views,
+            views_legacy,
             "_build_dataset_embeddings_for_matching",
             autospec=True,
             side_effect=[updated_index, refreshed_index],
@@ -106,7 +106,7 @@ class DatasetEmbeddingCacheTests(TestCase):
         ]
 
         with patch.object(
-            views,
+            views_legacy,
             "_build_dataset_embeddings_for_matching",
             autospec=True,
             return_value=dataset_index,
@@ -129,7 +129,7 @@ class DatasetEmbeddingCacheTests(TestCase):
         views._dataset_embedding_cache._memory_cache.clear()
 
         with patch.object(
-            views,
+            views_legacy,
             "_build_dataset_embeddings_for_matching",
             side_effect=AssertionError("should not rebuild"),
         ):

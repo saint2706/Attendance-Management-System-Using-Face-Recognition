@@ -17,7 +17,7 @@ import pytest
 from recognition import tasks
 from recognition import views as recognition_views
 from recognition import webcam_manager as webcam_module
-from users.models import RecognitionAttempt
+from users.models import Direction, RecognitionAttempt
 
 User = get_user_model()
 
@@ -122,7 +122,7 @@ class TestFaceRecognitionWorkflow:
         assert len(attempts) == 2
         assert attempts[0].successful is True
         assert attempts[1].successful is False
-        assert attempts[0].direction == RecognitionAttempt.Direction.IN
+        assert attempts[0].direction == Direction.IN
 
     @override_settings(
         RECOGNITION_DISTANCE_THRESHOLD=0.5,
@@ -173,7 +173,7 @@ class TestFaceRecognitionWorkflow:
         assert attempt.username == "jane"
         assert attempt.user == user
         assert attempt.site == "hq"
-        assert attempt.direction == RecognitionAttempt.Direction.IN
+        assert attempt.direction == Direction.IN
         assert attempt.source == "api"
 
     def test_concurrent_attendance_requests(self, monkeypatch):

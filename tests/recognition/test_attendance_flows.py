@@ -13,8 +13,8 @@ from django.utils import timezone
 import numpy as np
 import pytest
 
-from recognition import views
-from users.models import Present, Time
+from recognition import views, views_legacy
+from users.models import Direction, Present, Time
 
 # Fast unit tests: admin registration, add photos (mocked), admin views
 # Slow integration tests: mark attendance, full training flow (marked individually)
@@ -199,12 +199,12 @@ def test_admin_can_view_attendance_by_date(client, monkeypatch):
 
     attendance_date = timezone.localdate()
     Present.objects.create(user=employee, date=attendance_date, present=True)
-    Time.objects.create(user=employee, date=attendance_date, time=timezone.now(), out=False)
+    Time.objects.create(user=employee, date=attendance_date, time=timezone.now(), direction=Direction.IN)
 
     def _fake_hours_vs_employee(present_qs, time_qs):
         return present_qs, "chart-url"
 
-    monkeypatch.setattr(views, "hours_vs_employee_given_date", _fake_hours_vs_employee)
+    monkeypatch.setattr(views_legacy, "hours_vs_employee_given_date", _fake_hours_vs_employee)
 
     response = client.post(
         reverse("view-attendance-date"),
@@ -223,10 +223,10 @@ def test_attendance_dashboard_shows_summary_metrics(client, monkeypatch):
     admin = _create_admin_user()
     client.force_login(admin)
 
-    monkeypatch.setattr(views, "total_number_employees", lambda: 42)
-    monkeypatch.setattr(views, "employees_present_today", lambda: 7)
-    monkeypatch.setattr(views, "this_week_emp_count_vs_date", lambda: "this-week.png")
-    monkeypatch.setattr(views, "last_week_emp_count_vs_date", lambda: "last-week.png")
+    monkeypatch.setattr(views_legacy, "total_number_employees", lambda: 42)
+    monkeypatch.setattr(views_legacy, "employees_present_today", lambda: 7)
+    monkeypatch.setattr(views_legacy, "this_week_emp_count_vs_date", lambda: "this-week.png")
+    monkeypatch.setattr(views_legacy, "last_week_emp_count_vs_date", lambda: "last-week.png")
 
     response = client.get(reverse("view-attendance-home"))
 

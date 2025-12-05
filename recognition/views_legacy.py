@@ -58,7 +58,7 @@ from pandas.plotting import register_matplotlib_converters
 from sentry_sdk import Hub
 
 from src.common import FaceDataEncryption, InvalidToken, decrypt_bytes
-from users.models import Present, RecognitionAttempt, Time
+from users.models import Direction, Present, RecognitionAttempt, Time
 
 from . import health, monitoring
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
@@ -498,7 +498,7 @@ class FaceRecognitionAPI(View):
 
     def post(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         site_code = _resolve_recognition_site(request)
-        default_direction = RecognitionAttempt.Direction.IN.value
+        default_direction = Direction.IN.value
         request_user = getattr(request, "user", None)
         request_username = getattr(request_user, "username", None)
 
@@ -537,8 +537,8 @@ class FaceRecognitionAPI(View):
             direction = default_direction
 
         if direction not in {
-            RecognitionAttempt.Direction.IN.value,
-            RecognitionAttempt.Direction.OUT.value,
+            Direction.IN.value,
+            Direction.OUT.value,
         }:
             direction = default_direction
 
@@ -1309,7 +1309,7 @@ def update_attendance_in_db_in(
 
         if is_present:
             # Record the check-in time
-            time_record = Time.objects.create(user=user, date=today, time=current_time, out=False)
+            time_record = Time.objects.create(user=user, date=today, time=current_time, direction=Direction.IN)
         else:
             time_record = None
 
@@ -1381,7 +1381,7 @@ def update_attendance_in_db_out(
                 )
             continue
         # Record the check-out time
-        time_record = Time.objects.create(user=user, date=today, time=current_time, out=True)
+        time_record = Time.objects.create(user=user, date=today, time=current_time, direction=Direction.OUT)
 
         attempt_id = attempt_ids.get(person)
         if attempt_id:
@@ -1419,11 +1419,11 @@ def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
         return True, 0
 
     # The first entry must be a check-in
-    if first_entry.out:
+    if first_entry.direction == Direction.OUT:
         return False, 0
 
     # The number of check-ins must equal the number of check-outs
-    if times_all.filter(out=False).count() != times_all.filter(out=True).count():
+    if times_all.filter(direction=Direction.IN).count() != times_all.filter(direction=Direction.OUT).count():
         return False, 0
 
     break_hours = 0
@@ -1431,7 +1431,7 @@ def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
     is_break = False
 
     for entry in times_all:
-        if not entry.out:  # This is a check-in
+        if entry.direction == Direction.IN:  # This is a check-in
             if is_break and prev_time is not None and entry.time is not None:
                 # Calculate time since the last check-out
                 break_duration = (entry.time - prev_time).total_seconds() / 3600
@@ -1481,8 +1481,8 @@ def hours_vs_date_given_employee(
     for obj in present_qs:
         date = obj.date
         times_all = time_qs.filter(date=date).order_by("time")
-        times_in = times_all.filter(out=False)
-        times_out = times_all.filter(out=True)
+        times_in = times_all.filter(direction=Direction.IN)
+        times_out = times_all.filter(direction=Direction.OUT)
 
         # Use intermediate variables to avoid calling .time on None
         first_in = times_in.first()
@@ -1543,8 +1543,8 @@ def hours_vs_employee_given_date(
     for obj in present_qs:
         user = obj.user
         times_all = time_qs.filter(user=user).order_by("time")
-        times_in = times_all.filter(out=False)
-        times_out = times_all.filter(out=True)
+        times_in = times_all.filter(direction=Direction.IN)
+        times_out = times_all.filter(direction=Direction.OUT)
 
         # Use intermediate variables to avoid calling .time on None
         first_in = times_in.first()
@@ -2355,7 +2355,7 @@ def _mark_attendance(request, check_in: bool):
     frames_processed = 0
 
     direction_choice = (
-        RecognitionAttempt.Direction.IN if check_in else RecognitionAttempt.Direction.OUT
+        Direction.IN if check_in else Direction.OUT
     )
     attempt_logger = _RecognitionAttemptLogger(
         direction_choice.value,
@@ -3091,9 +3091,9 @@ def mark_attendance_view(request, attendance_type):
     )
 
     direction_choice = (
-        RecognitionAttempt.Direction.IN
+        Direction.IN
         if attendance_type == "in"
-        else RecognitionAttempt.Direction.OUT
+        else Direction.OUT
     )
     attempt_logger = _RecognitionAttemptLogger(
         direction_choice.value,

@@ -42,6 +42,33 @@ from recognition.views_legacy import (
     view_my_attendance_employee_login,
     # Utility views
     not_authorised,
+    # Helper functions used by analytics
+    check_validity_times,
+    # Chart generation functions
+    hours_vs_employee_given_date,
+    # Dashboard helper functions
+    total_number_employees,
+    employees_present_today,
+    this_week_emp_count_vs_date,
+    last_week_emp_count_vs_date,
+    # Constants and objects used by tasks
+    DATA_ROOT,
+    TRAINING_DATASET_ROOT,
+    _dataset_embedding_cache,
+    # Internal helper functions used by tasks
+    _get_or_compute_cached_embedding,
+    _is_headless_environment,
+    _get_face_detection_backend,
+    _get_face_recognition_model,
+    _should_enforce_detection,
+    _get_recognition_training_seed,
+    _get_recognition_training_test_split_ratio,
+    _build_dataset_embeddings_for_matching,
+    _load_dataset_embeddings_for_matching,
+    _passes_liveness_check,
+    # Attendance update functions used by tasks
+    update_attendance_in_db_in,
+    update_attendance_in_db_out,
 )
 
 # Re-export utilities and config from new modules
@@ -93,6 +120,33 @@ __all__ = [
     "view_my_attendance_employee_login",
     # Utility views
     "not_authorised",
+    # Helper functions
+    "check_validity_times",
+    # Chart generation functions
+    "hours_vs_employee_given_date",
+    # Dashboard helper functions
+    "total_number_employees",
+    "employees_present_today",
+    "this_week_emp_count_vs_date",
+    "last_week_emp_count_vs_date",
+    # Constants and objects
+    "DATA_ROOT",
+    "TRAINING_DATASET_ROOT",
+    "_dataset_embedding_cache",
+    # Internal helper functions
+    "_get_or_compute_cached_embedding",
+    "_is_headless_environment",
+    "_get_face_detection_backend",
+    "_get_face_recognition_model",
+    "_should_enforce_detection",
+    "_get_recognition_training_seed",
+    "_get_recognition_training_test_split_ratio",
+    "_build_dataset_embeddings_for_matching",
+    "_load_dataset_embeddings_for_matching",
+    "_passes_liveness_check",
+    # Attendance update functions
+    "update_attendance_in_db_in",
+    "update_attendance_in_db_out",
     # Utilities (now organized in separate modules)
     "_record_sentry_breadcrumb",
     "_bind_request_to_sentry_scope",
