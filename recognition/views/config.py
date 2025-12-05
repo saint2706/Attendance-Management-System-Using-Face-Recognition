@@ -7,7 +7,6 @@ This module contains configuration getter functions for various recognition sett
 from __future__ import annotations
 
 from django.conf import settings
-from typing import Optional
 
 
 def get_face_recognition_model() -> str:
@@ -35,7 +34,7 @@ def is_liveness_enabled() -> bool:
     return getattr(settings, "RECOGNITION_LIVENESS_ENABLED", False)
 
 
-def is_lightweight_liveness_enabled() ->bool:
+def is_lightweight_liveness_enabled() -> bool:
     """Return whether lightweight motion-based liveness is enabled."""
     return getattr(settings, "RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED", True)
 

@@ -19,7 +19,7 @@ sys.modules.setdefault("cv2", MagicMock())
 if not django.apps.apps.ready:
     django.setup()
 
-from recognition import views, views_legacy  # noqa: E402
+from recognition import views_legacy  # noqa: E402, F401
 
 pytestmark = pytest.mark.django_db
 

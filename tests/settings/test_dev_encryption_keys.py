@@ -56,10 +56,7 @@ def test_dev_keys_are_persisted_and_reusable(tmp_path, monkeypatch):
     assert settings_base.DATA_ENCRYPTION_KEY == first_data_key
     assert settings_base.FACE_DATA_ENCRYPTION_KEY == first_face_key
     assert Fernet(settings_base.DATA_ENCRYPTION_KEY).decrypt(payload_token) == b"payload"
-    assert (
-        Fernet(settings_base.FACE_DATA_ENCRYPTION_KEY).decrypt(face_payload)
-        == b"face-bytes"
-    )
+    assert Fernet(settings_base.FACE_DATA_ENCRYPTION_KEY).decrypt(face_payload) == b"face-bytes"
 
 
 def test_dotenv_values_are_respected(tmp_path, monkeypatch):

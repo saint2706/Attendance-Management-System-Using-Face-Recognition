@@ -14,14 +14,14 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-# Import feature flags (must be after Path is imported)
-# Note: This import happens early but FeatureFlags._initialize() is called during import
-from recognition.features import FeatureFlags
-
 from django.core.exceptions import ImproperlyConfigured
 
 import dj_database_url
 from cryptography.fernet import Fernet
+
+# Import feature flags (must be after Path is imported)
+# Note: This import happens early but FeatureFlags._initialize() is called during import
+from recognition.features import FeatureFlags
 
 # Define the project's base directory.
 # `BASE_DIR` points to the root of the Django project.
@@ -188,7 +188,7 @@ def _read_local_env_value(var_name: str) -> str | None:
             key, _, value = line.partition("=")
             if key.strip() != var_name:
                 continue
-            return value.strip().strip("\"").strip("'")
+            return value.strip().strip('"').strip("'")
     except OSError as exc:  # pragma: no cover - defensive programming
         warnings.warn(f"Unable to read {LOCAL_ENV_PATH}: {exc}")
 
@@ -235,11 +235,7 @@ def _persist_dev_key(var_name: str, key: bytes) -> None:
     """Persist generated development keys so they survive restarts."""
 
     try:
-        existing = (
-            json.loads(DEV_KEY_CACHE_PATH.read_text())
-            if DEV_KEY_CACHE_PATH.exists()
-            else {}
-        )
+        existing = json.loads(DEV_KEY_CACHE_PATH.read_text()) if DEV_KEY_CACHE_PATH.exists() else {}
     except (OSError, json.JSONDecodeError):  # pragma: no cover - defensive programming
         existing = {}
 
@@ -516,7 +512,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -698,9 +693,12 @@ RECOGNITION_DISTANCE_THRESHOLD = float(os.environ.get("RECOGNITION_DISTANCE_THRE
 
 # Liveness detection settings (respects feature flags)
 # If liveness is disabled via feature flags, these settings are still defined but won't be used
-RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED = FeatureFlags.is_liveness_detection_enabled() and _get_bool_env(
-    "RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED",
-    default=True,
+RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED = (
+    FeatureFlags.is_liveness_detection_enabled()
+    and _get_bool_env(
+        "RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED",
+        default=True,
+    )
 )
 RECOGNITION_LIVENESS_WINDOW = _parse_int_env(
     "RECOGNITION_LIVENESS_WINDOW",
@@ -754,7 +752,9 @@ def _build_deepface_optimizations() -> dict[str, object]:
         default=bool(defaults["enforce_detection"]),
     )
     # Anti-spoofing respects feature flags
-    env_overrides["anti_spoofing"] = FeatureFlags.is_deepface_antispoofing_enabled() and _get_bool_env(
+    env_overrides[
+        "anti_spoofing"
+    ] = FeatureFlags.is_deepface_antispoofing_enabled() and _get_bool_env(
         "RECOGNITION_DEEPFACE_ANTI_SPOOFING",
         default=bool(defaults["anti_spoofing"]),
     )
@@ -793,9 +793,7 @@ RECOGNITION_HARDWARE_PROFILING = _get_bool_env("RECOGNITION_HARDWARE_PROFILING",
 RECOGNITION_ENABLE_ASYNC_PROCESSING = _get_bool_env(
     "RECOGNITION_ENABLE_ASYNC_PROCESSING", default=False
 )
-RECOGNITION_ASYNC_THRESHOLD = _parse_int_env(
-    "RECOGNITION_ASYNC_THRESHOLD", default=10, minimum=1
-)
+RECOGNITION_ASYNC_THRESHOLD = _parse_int_env("RECOGNITION_ASYNC_THRESHOLD", default=10, minimum=1)
 
 # Multi-Face Detection (for group check-ins)
 # When enabled, system processes all detected faces in frame
@@ -832,9 +830,7 @@ RECOGNITION_FACE_API_RATE_LIMIT = os.environ.get(
 
 _raw_api_keys = os.environ.get("RECOGNITION_API_KEYS", "")
 if _raw_api_keys:
-    RECOGNITION_API_KEYS = tuple(
-        key.strip() for key in _raw_api_keys.split(",") if key.strip()
-    )
+    RECOGNITION_API_KEYS = tuple(key.strip() for key in _raw_api_keys.split(",") if key.strip())
 else:
     RECOGNITION_API_KEYS: tuple[str, ...] = ()
 

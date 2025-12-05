@@ -32,7 +32,9 @@ def _exercise_rate_limit(client, settings, url_name: str) -> tuple[int, int]:
     cache.clear()
     settings.RECOGNITION_ATTENDANCE_RATE_LIMIT = "2/m"
     url = reverse(url_name)
-    with patch("recognition.views_legacy._mark_attendance", return_value=HttpResponse("ok")) as mocked:
+    with patch(
+        "recognition.views_legacy._mark_attendance", return_value=HttpResponse("ok")
+    ) as mocked:
         for _ in range(2):
             ok_response = client.post(url)
             assert ok_response.status_code == 200

@@ -1,16 +1,16 @@
 """Tests for multi-face detection functionality."""
 
-import pytest
+from unittest.mock import patch
+
 import numpy as np
-from unittest.mock import Mock, patch
 
 from recognition.multi_face import (
-    is_multi_face_enabled,
-    get_max_faces_limit,
     filter_faces_by_size,
+    get_max_faces_limit,
+    is_multi_face_enabled,
+    process_face_recognition,
     process_multi_face_recognition,
     process_single_face_recognition,
-    process_face_recognition,
 )
 
 
@@ -115,9 +115,7 @@ class TestSingleFaceRecognition:
         # Mock match finding
         mock_find_match.return_value = ("john_doe", 0.25, "/path/to/identity")
 
-        dataset = [
-            {"embedding": np.array([0.1, 0.2, 0.3]), "username": "john_doe"}
-        ]
+        dataset = [{"embedding": np.array([0.1, 0.2, 0.3]), "username": "john_doe"}]
 
         result = process_single_face_recognition(
             representations=[{"embedding": [0.1, 0.2, 0.3]}],
@@ -202,9 +200,7 @@ class TestMultiFaceRecognition:
     @patch("recognition.multi_face.get_max_faces_limit")
     @patch("recognition.multi_face.filter_faces_by_size")
     @patch("recognition.multi_face.extract_all_embeddings")
-    def test_multi_face_respects_max_limit(
-        self, mock_extract_all, mock_filter, mock_max_faces
-    ):
+    def test_multi_face_respects_max_limit(self, mock_extract_all, mock_filter, mock_max_faces):
         """Test that max_faces limit is enforced."""
         mock_max_faces.return_value = 2  # Limit to 2 faces
 

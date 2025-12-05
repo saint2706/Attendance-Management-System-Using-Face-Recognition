@@ -91,9 +91,7 @@ class FeatureFlags:
         cls._scheduled_evaluations = cls._get_bool_env(
             "ENABLE_SCHEDULED_EVALUATIONS", cls._scheduled_evaluations
         )
-        cls._fairness_audits = cls._get_bool_env(
-            "ENABLE_FAIRNESS_AUDITS", cls._fairness_audits
-        )
+        cls._fairness_audits = cls._get_bool_env("ENABLE_FAIRNESS_AUDITS", cls._fairness_audits)
         cls._liveness_evaluations = cls._get_bool_env(
             "ENABLE_LIVENESS_EVALUATIONS", cls._liveness_evaluations
         )

@@ -199,7 +199,9 @@ def test_admin_can_view_attendance_by_date(client, monkeypatch):
 
     attendance_date = timezone.localdate()
     Present.objects.create(user=employee, date=attendance_date, present=True)
-    Time.objects.create(user=employee, date=attendance_date, time=timezone.now(), direction=Direction.IN)
+    Time.objects.create(
+        user=employee, date=attendance_date, time=timezone.now(), direction=Direction.IN
+    )
 
     def _fake_hours_vs_employee(present_qs, time_qs):
         return present_qs, "chart-url"

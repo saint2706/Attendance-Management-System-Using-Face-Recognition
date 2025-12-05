@@ -10,11 +10,11 @@ Hardware Detection Priority:
 
 Example usage:
     >>> from recognition.performance_utils import detect_hardware, get_recommended_config
-    >>> 
+    >>>
     >>> hardware = detect_hardware()
     >>> print(hardware)
     >>> # {'cpu': True, 'gpu': {...}, 'npu': {...}}
-    >>> 
+    >>>
     >>> config = get_recommended_config(hardware)
     >>> print(config['backend'])
     >>> # 'openvino' or 'tensorflow' or 'cpu'
@@ -246,9 +246,7 @@ def detect_hardware() -> HardwareInfo:
 
     # Log hardware summary
     if hardware.npu_available:
-        logger.info(
-            f"Hardware detected: NPU ({hardware.npu_type} via {hardware.npu_backend})"
-        )
+        logger.info(f"Hardware detected: NPU ({hardware.npu_type} via {hardware.npu_backend})")
     elif hardware.gpu_available:
         logger.info(f"Hardware detected: GPU ({hardware.gpu_name})")
     else:
@@ -356,9 +354,7 @@ def log_recognition_timing(func: F) -> F:
             result = func(*args, **kwargs)
             elapsed_ms = (time.perf_counter() - start_time) * 1000
 
-            logger.info(
-                f"Recognition operation '{func.__name__}' completed in {elapsed_ms:.2f}ms"
-            )
+            logger.info(f"Recognition operation '{func.__name__}' completed in {elapsed_ms:.2f}ms")
 
             return result
 

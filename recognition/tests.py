@@ -478,12 +478,16 @@ class DatabaseUpdateTest(TestCase):
         self.assertTrue(
             Present.objects.filter(user=self.user, date=self.today, present=True).exists()
         )
-        self.assertTrue(Time.objects.filter(user=self.user, date=self.today, direction=Direction.IN).exists())
+        self.assertTrue(
+            Time.objects.filter(user=self.user, date=self.today, direction=Direction.IN).exists()
+        )
 
     def test_update_attendance_in_db_out_creates_time_record(self):
         """Verify that a check-out creates a Time record with the 'direction' field."""
         views.update_attendance_in_db_out({"testuser": True})
-        self.assertTrue(Time.objects.filter(user=self.user, date=self.today, direction=Direction.OUT).exists())
+        self.assertTrue(
+            Time.objects.filter(user=self.user, date=self.today, direction=Direction.OUT).exists()
+        )
 
     def test_update_attendance_handles_missing_user(self):
         """Ensure the system doesn't crash when trying to update a non-existent user."""
