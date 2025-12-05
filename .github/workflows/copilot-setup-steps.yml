@@ -45,10 +45,13 @@ jobs:
       FACE_DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -63,7 +66,8 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1 libglib2.0-0 libsm6 libxrender1 libxext6
+          sudo apt-get install -y --no-install-recommends libgl1 libglib2.0-0 libsm6 libxrender1 libxext6
+          sudo apt-get clean
 
       - name: Install Python dependencies
         run: |
