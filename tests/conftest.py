@@ -38,4 +38,3 @@ def close_database_connections():
     except Exception:
         # If Django is not configured or connections can't be closed, ignore
         pass
-
