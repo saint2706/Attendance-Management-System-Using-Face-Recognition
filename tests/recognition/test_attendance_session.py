@@ -4,7 +4,7 @@ from django.urls import reverse
 import pytest
 
 from recognition.models import RecognitionOutcome
-from users.models import RecognitionAttempt
+from users.models import Direction, RecognitionAttempt
 
 
 @pytest.mark.django_db
@@ -25,7 +25,7 @@ def test_attendance_session_feed_surfaces_liveness_and_outcomes(client):
 
     RecognitionAttempt.objects.create(
         username="spoof-user",
-        direction=RecognitionAttempt.Direction.IN,
+        direction=Direction.IN,
         spoof_detected=True,
         successful=False,
         source="webcam",

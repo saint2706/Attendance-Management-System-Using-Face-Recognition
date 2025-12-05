@@ -10,7 +10,7 @@ from django.utils import timezone
 import pytest
 
 from recognition.models import RecognitionOutcome
-from users.models import RecognitionAttempt
+from users.models import Direction, RecognitionAttempt
 
 
 @pytest.mark.django_db
@@ -275,7 +275,7 @@ def test_export_csv_includes_attempts(client):
     # Create a recognition attempt with liveness failure
     RecognitionAttempt.objects.create(
         username="spoof-test",
-        direction=RecognitionAttempt.Direction.IN,
+        direction=Direction.IN,
         spoof_detected=True,
         successful=False,
         source="webcam",

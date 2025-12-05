@@ -14,7 +14,7 @@ import numpy as np
 import pytest
 
 from recognition import views
-from users.models import Present, Time
+from users.models import Direction, Present, Time
 
 # Fast unit tests: admin registration, add photos (mocked), admin views
 # Slow integration tests: mark attendance, full training flow (marked individually)
@@ -199,7 +199,7 @@ def test_admin_can_view_attendance_by_date(client, monkeypatch):
 
     attendance_date = timezone.localdate()
     Present.objects.create(user=employee, date=attendance_date, present=True)
-    Time.objects.create(user=employee, date=attendance_date, time=timezone.now(), out=False)
+    Time.objects.create(user=employee, date=attendance_date, time=timezone.now(), direction=Direction.IN)
 
     def _fake_hours_vs_employee(present_qs, time_qs):
         return present_qs, "chart-url"

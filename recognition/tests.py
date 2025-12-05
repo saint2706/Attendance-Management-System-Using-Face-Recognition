@@ -31,7 +31,7 @@ sys.modules.setdefault("cv2", MagicMock())
 
 from recognition import views  # noqa: E402
 from src.common import encrypt_bytes  # noqa: E402
-from users.models import Present, RecognitionAttempt, Time  # noqa: E402
+from users.models import Direction, Present, RecognitionAttempt, Time  # noqa: E402
 
 TEST_FERNET_KEY = Fernet.generate_key()
 
@@ -478,12 +478,12 @@ class DatabaseUpdateTest(TestCase):
         self.assertTrue(
             Present.objects.filter(user=self.user, date=self.today, present=True).exists()
         )
-        self.assertTrue(Time.objects.filter(user=self.user, date=self.today, out=False).exists())
+        self.assertTrue(Time.objects.filter(user=self.user, date=self.today, direction=Direction.IN).exists())
 
     def test_update_attendance_in_db_out_creates_time_record(self):
-        """Verify that a check-out creates a Time record with the 'out' flag."""
+        """Verify that a check-out creates a Time record with the 'direction' field."""
         views.update_attendance_in_db_out({"testuser": True})
-        self.assertTrue(Time.objects.filter(user=self.user, date=self.today, out=True).exists())
+        self.assertTrue(Time.objects.filter(user=self.user, date=self.today, direction=Direction.OUT).exists())
 
     def test_update_attendance_handles_missing_user(self):
         """Ensure the system doesn't crash when trying to update a non-existent user."""
