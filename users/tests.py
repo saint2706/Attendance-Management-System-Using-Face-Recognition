@@ -98,5 +98,5 @@ class TimeModelTests(TestCase):
 
         self.assertEqual(
             str(time_entry),
-            "time_user - No timestamp recorded - Time-In",
+            "time_user - No timestamp recorded - Check-in",
         )
