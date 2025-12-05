@@ -29,8 +29,13 @@ def close_database_connections():
     """
     yield
     # Close all database connections after tests complete
-    from django.db import connections
+    # Import inside the fixture to avoid issues if Django is not configured
+    try:
+        from django.db import connections
 
-    for conn in connections.all():
-        conn.close()
+        for conn in connections.all():
+            conn.close()
+    except Exception:
+        # If Django is not configured or connections can't be closed, ignore
+        pass
 
