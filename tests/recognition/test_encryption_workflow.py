@@ -28,7 +28,7 @@ from django.contrib.auth.models import User  # noqa: E402
 _fake_cv2 = MagicMock(name="cv2")
 sys.modules.setdefault("cv2", _fake_cv2)
 
-from recognition import tasks, views  # noqa: E402
+from recognition import tasks, views, views_legacy  # noqa: E402
 from src.common import FaceDataEncryption, decrypt_bytes, encrypt_bytes  # noqa: E402
 
 TEST_FERNET_KEY = Fernet.generate_key()
@@ -134,8 +134,8 @@ class EncryptionWorkflowTests(TestCase):
     )
     @patch.object(tasks, "train_test_split")
     @patch.object(tasks, "SVC")
-    @patch.object(views, "DeepFace")
-    @patch.object(views, "_get_or_compute_cached_embedding")
+    @patch.object(views_legacy, "DeepFace")
+    @patch.object(tasks, "_get_or_compute_cached_embedding")
     def test_training_and_mark_attendance_use_encrypted_artifacts(
         self,
         mock_get_embedding,
@@ -230,15 +230,24 @@ class EncryptionWorkflowTests(TestCase):
         setattr(request_mark, "_messages", messages_mark)
 
         captured_models: list[DummyModel] = []
+        captured_records: List[dict] = []
 
+        class MockAsyncResult:
+            id = "mock-async-id"
+
+        def _capture_enqueue(records):
+            captured_records.extend(records)
+            return MockAsyncResult()
+
+        # Patch at the location where functions are used (views_legacy), not where exported
         with (
-            patch.object(views, "_load_dataset_embeddings_for_matching") as mock_loader,
-            patch.object(views, "get_webcam_manager", return_value=manager),
-            patch.object(views, "cv2") as mock_cv2,
-            patch.object(views, "_is_headless_environment", return_value=True),
-            patch.object(views, "time") as mock_time,
-            patch.object(views, "update_attendance_in_db_in") as mock_update_db,
-            patch.object(views, "_predict_identity_from_embedding") as mock_predict,
+            patch.object(views_legacy, "_load_dataset_embeddings_for_matching") as mock_loader,
+            patch.object(views_legacy, "get_webcam_manager", return_value=manager),
+            patch.object(views_legacy, "cv2") as mock_cv2,
+            patch.object(views_legacy, "_is_headless_environment", return_value=True),
+            patch.object(views_legacy, "time") as mock_time,
+            patch.object(views_legacy, "_enqueue_attendance_records", _capture_enqueue),
+            patch.object(views_legacy, "_predict_identity_from_embedding") as mock_predict,
         ):
             mock_loader.return_value = [
                 {
@@ -256,12 +265,12 @@ class EncryptionWorkflowTests(TestCase):
 
             mock_predict.side_effect = _predict
 
-            views.mark_attendance_view(request_mark, "in")
+            views_legacy.mark_attendance_view(request_mark, "in")
 
         self.assertTrue(captured_models, "Encrypted model was not provided to predictor")
         self.assertIsInstance(captured_models[0], DummyModel)
-        mock_update_db.assert_called_once()
-        attendance_payload = mock_update_db.call_args.args[0]
+        self.assertTrue(captured_records, "Attendance records were not enqueued")
+        attendance_payload = captured_records[0].get("present", {})
         self.assertTrue(attendance_payload.get("alice"))
         self.assertEqual(mock_loader.call_count, 1)
         mock_deepface.represent.assert_called()
