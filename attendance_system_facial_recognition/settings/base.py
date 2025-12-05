@@ -14,6 +14,10 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
+# Import feature flags (must be after Path is imported)
+# Note: This import happens early but FeatureFlags._initialize() is called during import
+from recognition.features import FeatureFlags
+
 from django.core.exceptions import ImproperlyConfigured
 
 import dj_database_url
@@ -297,27 +301,35 @@ FACE_DATA_ENCRYPTION_KEY = _load_face_data_encryption_key()
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379/1")
 
-# Celery Beat scheduled tasks configuration
-CELERY_BEAT_SCHEDULE = {
-    "scheduled-nightly-evaluation": {
+# Celery Beat scheduled tasks configuration (conditionally enabled via feature flags)
+CELERY_BEAT_SCHEDULE = {}
+
+# Add scheduled evaluation task if enabled
+if FeatureFlags.is_scheduled_evaluations_enabled():
+    CELERY_BEAT_SCHEDULE["scheduled-nightly-evaluation"] = {
         "task": "recognition.scheduled_tasks.run_scheduled_evaluation",
         "schedule": 86400,  # Daily at midnight (configurable via env)
         "kwargs": {"evaluation_type": "nightly"},
         "options": {"queue": "evaluation"},
-    },
-    "scheduled-weekly-fairness-audit": {
+    }
+
+# Add fairness audit task if enabled
+if FeatureFlags.is_fairness_audits_enabled():
+    CELERY_BEAT_SCHEDULE["scheduled-weekly-fairness-audit"] = {
         "task": "recognition.scheduled_tasks.run_fairness_audit",
         "schedule": 604800,  # Weekly (7 days)
         "kwargs": {},
         "options": {"queue": "evaluation"},
-    },
-    "scheduled-liveness-evaluation": {
+    }
+
+# Add liveness evaluation task if enabled
+if FeatureFlags.is_liveness_evaluations_enabled():
+    CELERY_BEAT_SCHEDULE["scheduled-liveness-evaluation"] = {
         "task": "recognition.scheduled_tasks.run_liveness_evaluation",
         "schedule": 86400,  # Daily
         "kwargs": {},
         "options": {"queue": "evaluation"},
-    },
-}
+    }
 
 # Allow customization of evaluation schedules via environment variables
 _NIGHTLY_EVAL_SCHEDULE = os.environ.get("CELERY_NIGHTLY_EVAL_SCHEDULE")
@@ -514,7 +526,8 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-if not TESTING:
+# Conditionally enable Silk profiling based on feature flags
+if not TESTING and FeatureFlags.is_performance_profiling_enabled():
     INSTALLED_APPS.append("silk")
     MIDDLEWARE.insert(0, "silk.middleware.SilkyMiddleware")
 
@@ -682,7 +695,9 @@ SILENCED_SYSTEM_CHECKS = [
 # are more permissive. This can be overridden via an environment variable.
 RECOGNITION_DISTANCE_THRESHOLD = float(os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4"))
 
-RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED = _get_bool_env(
+# Liveness detection settings (respects feature flags)
+# If liveness is disabled via feature flags, these settings are still defined but won't be used
+RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED = FeatureFlags.is_liveness_detection_enabled() and _get_bool_env(
     "RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED",
     default=True,
 )
@@ -737,7 +752,8 @@ def _build_deepface_optimizations() -> dict[str, object]:
         "RECOGNITION_DEEPFACE_ENFORCE_DETECTION",
         default=bool(defaults["enforce_detection"]),
     )
-    env_overrides["anti_spoofing"] = _get_bool_env(
+    # Anti-spoofing respects feature flags
+    env_overrides["anti_spoofing"] = FeatureFlags.is_deepface_antispoofing_enabled() and _get_bool_env(
         "RECOGNITION_DEEPFACE_ANTI_SPOOFING",
         default=bool(defaults["anti_spoofing"]),
     )

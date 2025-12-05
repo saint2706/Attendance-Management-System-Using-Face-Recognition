@@ -6,7 +6,7 @@ from django.utils import timezone
 
 import pytest
 
-from users.models import Present, Time
+from users.models import Direction, Present, Time
 
 
 def _collect_index_names(model) -> set[str]:
@@ -39,7 +39,7 @@ def test_time_lookups_by_user_and_date_succeed():
     now = timezone.now()
     event_date = now.date()
 
-    Time.objects.create(user=user, date=event_date, time=now, out=False)
+    Time.objects.create(user=user, date=event_date, time=now, direction=Direction.IN)
 
     assert Time.objects.filter(user=user, date=event_date).exists()
     assert Time.objects.filter(date=event_date, user=user).exists()

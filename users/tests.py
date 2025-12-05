@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Time
+from .models import Direction, Time
 
 
 class RegisterViewTests(TestCase):
@@ -94,7 +94,7 @@ class TimeModelTests(TestCase):
         """The string representation should handle a missing timestamp gracefully."""
 
         user = get_user_model().objects.create_user(username="time_user", password="Testpass123")
-        time_entry = Time(user=user, time=None, out=False)
+        time_entry = Time(user=user, time=None, direction=Direction.IN)
 
         self.assertEqual(
             str(time_entry),

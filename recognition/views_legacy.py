@@ -56,10 +56,9 @@ from django_ratelimit.decorators import ratelimit
 from matplotlib import rcParams
 from pandas.plotting import register_matplotlib_converters
 from sentry_sdk import Hub
-import jwt
 
 from src.common import FaceDataEncryption, InvalidToken, decrypt_bytes
-from users.models import Direction, Present, RecognitionAttempt, Time
+from users.models import Present, RecognitionAttempt, Time
 
 from . import health, monitoring
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
@@ -322,26 +321,6 @@ def attendance_rate_limited(view_func):
     return _wrapped
 
 
-def _face_api_rate_limit_key(group, request):  # pragma: no cover - wrapper delegates logic
-    """Return a stable rate-limit key for the face recognition API."""
-
-    user = getattr(request, "user", None)
-    if getattr(user, "is_authenticated", False):
-        return f"user:{getattr(user, 'pk', '') or getattr(user, 'username', '')}"
-
-    api_key = request.META.get("HTTP_X_API_KEY")
-    if api_key:
-        return f"api-key:{hashlib.sha256(api_key.encode()).hexdigest()}"
-
-    auth_header = request.META.get("HTTP_AUTHORIZATION", "")
-    if auth_header.startswith("Bearer "):
-        token = auth_header.partition(" ")[2].strip()
-        if token:
-            return f"bearer:{hashlib.sha256(token.encode()).hexdigest()}"
-
-    return request.META.get("REMOTE_ADDR")
-
-
 def _enqueue_attendance_records(records: Sequence[Dict[str, Any]]) -> AsyncResult:
     """Submit attendance records for asynchronous processing via Celery."""
 
@@ -381,77 +360,11 @@ def _describe_async_result(task_id: str) -> Dict[str, Any]:
     return payload
 
 
-@method_decorator(
-    ratelimit(
-        key=_face_api_rate_limit_key,
-        rate=getattr(settings, "RECOGNITION_FACE_API_RATE_LIMIT", "5/m"),
-        method="POST",
-        block=False,
-    ),
-    name="post",
-)
+@method_decorator(ratelimit(key="ip", rate="5/m", method="POST", block=False), name="post")
 class FaceRecognitionAPI(View):
     """Handle face recognition requests submitted via HTTP POST."""
 
     http_method_names = ["post", "options"]
-
-    def _authenticate_request(self, request) -> tuple[bool, Optional[str], Optional[str]]:
-        """Validate session, API key, or JWT credentials for API access."""
-
-        user = getattr(request, "user", None)
-        if getattr(user, "is_authenticated", False):
-            request.face_api_principal = getattr(user, "username", None) or str(
-                getattr(user, "pk", "")
-            )
-            return True, request.face_api_principal, None
-
-        api_keys: tuple[str, ...] = tuple(
-            key.strip()
-            for key in getattr(settings, "RECOGNITION_API_KEYS", ())
-            if key.strip()
-        )
-        api_key = request.META.get("HTTP_X_API_KEY")
-        if api_key:
-            if api_keys and api_key in api_keys:
-                masked_key = hashlib.sha256(api_key.encode()).hexdigest()
-                request.face_api_principal = f"api-key:{masked_key}"
-                return True, request.face_api_principal, None
-            return False, None, "Invalid API key provided."
-
-        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
-        if auth_header.startswith("Bearer "):
-            token = auth_header.partition(" ")[2].strip()
-            if not token:
-                return False, None, "Authorization header is malformed."
-
-            secret = getattr(settings, "RECOGNITION_JWT_SECRET", "")
-            if not secret:
-                return False, None, "JWT authentication is not configured."
-
-            audience = getattr(settings, "RECOGNITION_JWT_AUDIENCE", None) or None
-            issuer = getattr(settings, "RECOGNITION_JWT_ISSUER", None) or None
-            options = {"verify_aud": audience is not None}
-
-            try:
-                claims = jwt.decode(
-                    token,
-                    secret,
-                    algorithms=["HS256"],
-                    audience=audience,
-                    issuer=issuer,
-                    options=options,
-                )
-            except jwt.ExpiredSignatureError:
-                return False, None, "Authentication token has expired."
-            except jwt.InvalidTokenError:
-                return False, None, "Invalid authentication token supplied."
-
-            subject = claims.get("sub") or claims.get("username")
-            request.face_api_principal = subject or "jwt-client"
-            request.face_api_claims = claims
-            return True, request.face_api_principal, None
-
-        return False, None, "Authentication is required for this endpoint."
 
     def _parse_payload(self, request) -> Dict[str, Any]:
         """Return the JSON or form payload supplied with the request."""
@@ -589,25 +502,6 @@ class FaceRecognitionAPI(View):
         request_user = getattr(request, "user", None)
         request_username = getattr(request_user, "username", None)
 
-        auth_ok, principal, auth_error = self._authenticate_request(request)
-        if principal and not request_username:
-            request_username = principal
-
-        if not auth_ok:
-            attempt_logger = _RecognitionAttemptLogger(
-                default_direction,
-                site_code,
-                source="api",
-            )
-            attempt_logger.log_failure(
-                request_username,
-                spoofed=False,
-                error=auth_error or "Authentication failed.",
-            )
-            return JsonResponse(
-                {"error": auth_error or "Authentication failed."}, status=401
-            )
-
         if getattr(request, "limited", False):
             attempt_logger = _RecognitionAttemptLogger(
                 default_direction,
@@ -655,9 +549,7 @@ class FaceRecognitionAPI(View):
         enforce_detection = _should_enforce_detection()
 
         raw_username = payload.get("username")
-        submitted_username = (
-            raw_username.strip() if isinstance(raw_username, str) else request_username
-        )
+        submitted_username = raw_username.strip() if isinstance(raw_username, str) else None
 
         embedding_vector = None
         frame = None
@@ -1417,7 +1309,7 @@ def update_attendance_in_db_in(
 
         if is_present:
             # Record the check-in time
-            time_record = Time.objects.create(user=user, date=today, time=current_time, direction=Direction.IN)
+            time_record = Time.objects.create(user=user, date=today, time=current_time, out=False)
         else:
             time_record = None
 
@@ -1489,7 +1381,7 @@ def update_attendance_in_db_out(
                 )
             continue
         # Record the check-out time
-        time_record = Time.objects.create(user=user, date=today, time=current_time, direction=Direction.OUT)
+        time_record = Time.objects.create(user=user, date=today, time=current_time, out=True)
 
         attempt_id = attempt_ids.get(person)
         if attempt_id:
@@ -1527,11 +1419,11 @@ def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
         return True, 0
 
     # The first entry must be a check-in
-    if first_entry.direction == Direction.OUT:
+    if first_entry.out:
         return False, 0
 
     # The number of check-ins must equal the number of check-outs
-    if times_all.filter(direction=Direction.IN).count() != times_all.filter(direction=Direction.OUT).count():
+    if times_all.filter(out=False).count() != times_all.filter(out=True).count():
         return False, 0
 
     break_hours = 0
@@ -1539,7 +1431,7 @@ def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
     is_break = False
 
     for entry in times_all:
-        if entry.direction == Direction.IN:  # This is a check-in
+        if not entry.out:  # This is a check-in
             if is_break and prev_time is not None and entry.time is not None:
                 # Calculate time since the last check-out
                 break_duration = (entry.time - prev_time).total_seconds() / 3600
@@ -1589,8 +1481,8 @@ def hours_vs_date_given_employee(
     for obj in present_qs:
         date = obj.date
         times_all = time_qs.filter(date=date).order_by("time")
-        times_in = times_all.filter(direction=Direction.IN)
-        times_out = times_all.filter(direction=Direction.OUT)
+        times_in = times_all.filter(out=False)
+        times_out = times_all.filter(out=True)
 
         # Use intermediate variables to avoid calling .time on None
         first_in = times_in.first()
@@ -1651,8 +1543,8 @@ def hours_vs_employee_given_date(
     for obj in present_qs:
         user = obj.user
         times_all = time_qs.filter(user=user).order_by("time")
-        times_in = times_all.filter(direction=Direction.IN)
-        times_out = times_all.filter(direction=Direction.OUT)
+        times_in = times_all.filter(out=False)
+        times_out = times_all.filter(out=True)
 
         # Use intermediate variables to avoid calling .time on None
         first_in = times_in.first()

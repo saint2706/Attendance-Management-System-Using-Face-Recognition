@@ -12,6 +12,13 @@ from django.db import models
 from django.utils import timezone
 
 
+class Direction(models.TextChoices):
+    """Supported attendance directions for recognition attempts and time entries."""
+
+    IN = "in", "Check-in"
+    OUT = "out", "Check-out"
+
+
 class Present(models.Model):
     """
     Represents the daily attendance status of a user.
@@ -79,8 +86,12 @@ class Time(models.Model):
         help_text="The exact time of the event.",
         db_index=True,
     )
-    out = models.BooleanField(
-        default=False, help_text="False for a time-in event, True for a time-out event."
+    direction = models.CharField(
+        max_length=3,
+        choices=Direction.choices,
+        null=True,
+        blank=True,
+        help_text="Whether this is a check-in or check-out event.",
     )
 
     class Meta:
@@ -91,7 +102,7 @@ class Time(models.Model):
 
     def __str__(self):
         """Return a string representation of the time entry."""
-        event_type = "Time-Out" if self.out else "Time-In"
+        event_type = self.get_direction_display()
         if self.time is not None:
             formatted_time = self.time.strftime("%Y-%m-%d %H:%M:%S")
         else:
@@ -218,12 +229,6 @@ class SetupWizardProgress(models.Model):
 
 class RecognitionAttempt(models.Model):
     """Persist metadata for each recognition attempt."""
-
-    class Direction(models.TextChoices):
-        """Supported attendance directions for recognition attempts."""
-
-        IN = "in", "Check-in"
-        OUT = "out", "Check-out"
 
     created_at = models.DateTimeField(
         auto_now_add=True,

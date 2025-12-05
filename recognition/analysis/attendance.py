@@ -112,8 +112,8 @@ class AttendanceAnalytics:
                 Time.objects.filter(**time_filters)
                 .values("user_id", "date")
                 .annotate(
-                    first_in=Min("time", filter=Q(out=False)),
-                    last_out=Max("time", filter=Q(out=True)),
+                    first_in=Min("time", filter=Q(direction="in")),
+                    last_out=Max("time", filter=Q(direction="out")),
                 )
             )
         }

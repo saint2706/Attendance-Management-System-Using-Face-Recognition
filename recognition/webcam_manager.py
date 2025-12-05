@@ -79,11 +79,21 @@ class WebcamManager:
             self._running = True
             self._thread = threading.Thread(target=self._capture_loop, daemon=True)
             self._thread.start()
-        except Exception as exc:
+        except (OSError, RuntimeError) as exc:
+            # OSError: Camera device not available; RuntimeError: Camera initialization/usage issues
             latency = time.perf_counter() - start_time
             monitoring.record_camera_start(False, latency, error=str(exc))
             logger.exception(
                 "Webcam manager start failed",
+                extra={"event": "webcam_start", "status": "failure"},
+            )
+            raise
+        except Exception as exc:  # pragma: no cover - catch unexpected errors
+            # Fallback for truly unexpected exceptions from imutils.video
+            latency = time.perf_counter() - start_time
+            monitoring.record_camera_start(False, latency, error=str(exc))
+            logger.exception(
+                "Unexpected webcam manager error",
                 extra={"event": "webcam_start", "status": "failure"},
             )
             raise
@@ -113,12 +123,22 @@ class WebcamManager:
         if self._stream:
             try:
                 self._stream.stop()
-            except Exception as exc:
+            except (OSError, RuntimeError) as exc:
+                # OSError/RuntimeError: Issues stopping camera stream
                 shutdown_success = False
                 shutdown_error = str(exc)
                 shutdown_exception = exc
                 logger.exception(
                     "Webcam manager stop failed",
+                    extra={"event": "webcam_stop", "status": "failure"},
+                )
+            except Exception as exc:  # pragma: no cover - catch unexpected errors
+                # Fallback for truly unexpected exceptions from imutils.video
+                shutdown_success = False
+                shutdown_error = str(exc)
+                shutdown_exception = exc
+                logger.exception(
+                    "Unexpected error stopping webcam",
                     extra={"event": "webcam_stop", "status": "failure"},
                 )
             finally:
