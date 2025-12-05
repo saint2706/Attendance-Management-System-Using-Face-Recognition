@@ -1,7 +1,5 @@
 # Attendance Management System Using Face Recognition
 
-[![codecov](https://codecov.io/gh/saint2706/Attendance-Management-System-Using-Face-Recognition/graph/badge.svg)](https://codecov.io/gh/saint2706/Attendance-Management-System-Using-Face-Recognition)
-
 > **A production-ready, privacy-first attendance solution that just works.**
 
 **Attendance-Management-System-Using-Face-Recognition** is a modern, full-stack solution for automated time-tracking. It combines state-of-the-art deep learning (FaceNet) with a robust Django backend to deliver a seamless experience for employees and admins alike.
