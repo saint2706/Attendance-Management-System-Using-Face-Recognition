@@ -223,8 +223,16 @@ class TestFaceRecognitionWorkflow:
 
         assert results, "Consumers should have recorded frame ids."
         for sequence in results:
-            assert sequence == sorted(sequence)
-            assert len(sequence) == len(set(sequence))
+            # Each consumer's frames should be unique and monotonically increasing
+            # within that consumer's thread, but across threads they may interleave
+            assert len(sequence) == 3, "Each consumer should have read 3 frames"
+            assert len(sequence) == len(set(sequence)), "Frame IDs should be unique per consumer"
+            # Verify frames are monotonically increasing (each frame > previous)
+            for i in range(1, len(sequence)):
+                assert sequence[i] > sequence[i - 1], (
+                    f"Frames should be monotonically increasing within a consumer: "
+                    f"got {sequence}"
+                )
         assert manager._consumer_count == 0
 
     def test_camera_initialization(self, monkeypatch):
