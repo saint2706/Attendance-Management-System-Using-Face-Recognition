@@ -29,28 +29,23 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         return 'system';
     });
 
-    const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() => {
-        if (theme === 'system') return getSystemTheme();
-        return theme;
-    });
+    // Calculate resolved theme directly from theme state to avoid synchronous setState in effect
+    const resolvedTheme = theme === 'system' ? getSystemTheme() : theme;
 
-    // Update resolved theme when theme changes
+    // Update DOM and localStorage when theme changes
     useEffect(() => {
-        const resolved = theme === 'system' ? getSystemTheme() : theme;
-        setResolvedTheme(resolved);
-        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.setAttribute('data-theme', resolvedTheme);
         localStorage.setItem(THEME_KEY, theme);
-    }, [theme]);
+    }, [theme, resolvedTheme]);
 
     // Listen for system theme changes
     useEffect(() => {
+        if (theme !== 'system') return;
+
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         const handleChange = () => {
-            if (theme === 'system') {
-                const newTheme = getSystemTheme();
-                setResolvedTheme(newTheme);
-                document.documentElement.setAttribute('data-theme', newTheme);
-            }
+            const newTheme = getSystemTheme();
+            document.documentElement.setAttribute('data-theme', newTheme);
         };
 
         mediaQuery.addEventListener('change', handleChange);
@@ -72,10 +67,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-export const useTheme = () => {
+// Export the hook separately to fix react-refresh/only-export-components
+export function useTheme() {
     const context = useContext(ThemeContext);
     if (context === undefined) {
         throw new Error('useTheme must be used within a ThemeProvider');
     }
     return context;
-};
+}

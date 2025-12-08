@@ -102,7 +102,7 @@ export const MarkAttendance = () => {
     useEffect(() => {
         startCamera();
         return () => stopCamera();
-    }, []);
+    }, [startCamera, stopCamera]);
 
     // Reset for another attempt
     const resetAttempt = () => {
