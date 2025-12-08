@@ -92,7 +92,7 @@ export const MarkAttendance = () => {
         }
     };
 
-    // Auto-start camera on mount
+    // Auto-start camera on mount (only once)
     useEffect(() => {
         startCamera();
         return () => {
@@ -102,6 +102,8 @@ export const MarkAttendance = () => {
                 streamRef.current = null;
             }
         };
+        // startCamera is intentionally omitted from dependencies as we only want to start the camera once on mount
+        // Adding it would cause the effect to re-run whenever startCamera is redefined (never in this case)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
