@@ -20,6 +20,14 @@ This changelog was reconstructed from the git history on 2025-11-29. Since the p
 - Attendance dashboard with date filters, CSV export, and interactive charts (`5c06da8`)
 - Smoke test suite for CI health verification (`3c90647`)
 - First-run checklist with inline help and tooltips for recognition errors (`7002e72`)
+- Fairness audit threshold recommendations with `--recommend-thresholds` flag for per-group tuning
+- `ThresholdProfile` model supporting per-group (site, lighting, camera, role) threshold configurations
+- Hardware profiling command (`profile_hardware`) for NPU/GPU/CPU detection and benchmarking
+- Encryption key rotation command (`rotate_encryption_keys`) for secure key management
+- Camera calibration command (`calibrate_camera`) for multi-camera domain adaptation
+- Threshold profile management command (`threshold_profile`) with CRUD and bulk-apply support
+- `LivenessResult` model for persistent liveness check audit trail
+- Camera bucket grouping in fairness audit reports
 
 ### Fixed (Unreleased)
 

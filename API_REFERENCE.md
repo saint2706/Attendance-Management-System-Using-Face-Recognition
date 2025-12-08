@@ -51,6 +51,44 @@ A successful request returns a JSON object with the recognition result.
 - **`identity` (string):** The path to the matched image in the dataset. Only present if a match is found.
 - **`username` (string):** The username of the matched employee. Only present if a match is found.
 - **`spoofed` (boolean):** `true` if a liveness check was performed and failed, indicating a potential spoofing attempt.
+- **`mode` (string):** `"single"` for single-face mode (default) or `"multi"` when multi-face detection is enabled.
+
+#### Multi-Face Mode Response
+
+When `RECOGNITION_MULTI_FACE_ENABLED=true`, the API returns a different response structure that includes all detected faces:
+
+```json
+{
+    "faces": [
+        {
+            "recognized": true,
+            "match": {
+                "username": "john_doe",
+                "distance": 0.25,
+                "identity": "/path/to/identity",
+                "threshold": 0.4
+            },
+            "facial_area": {"x": 100, "y": 50, "w": 150, "h": 150}
+        },
+        {
+            "recognized": true,
+            "match": {
+                "username": "jane_smith",
+                "distance": 0.30,
+                "identity": "/path/to/identity",
+                "threshold": 0.4
+            },
+            "facial_area": {"x": 300, "y": 60, "w": 140, "h": 140}
+        }
+    ],
+    "count": 2,
+    "mode": "multi",
+    "threshold": 0.4,
+    "distance_metric": "cosine"
+}
+```
+
+For detailed configuration and usage, see the [Multi-Face Detection Guide](docs/MULTI_FACE_GUIDE.md).
 
 Cosine similarity drives the `distance` value reported above:
 

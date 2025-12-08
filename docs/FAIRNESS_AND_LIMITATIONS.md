@@ -57,7 +57,13 @@ python manage.py threshold_profile create \
   --threshold 0.45 \
   --group-type lighting \
   --group-value low_light
+
+# Bulk-apply recommendations from fairness audit output
+python manage.py threshold_profile apply-recommendations \
+  --recommendations-csv reports/fairness/threshold_recommendations.csv
 ```
+
+For complete threshold profile management options (list, update, delete), see [DEVELOPER_GUIDE.md](../DEVELOPER_GUIDE.md#threshold-profile-management).
 
 ## Domain Adaptation for Multiple Cameras
 
