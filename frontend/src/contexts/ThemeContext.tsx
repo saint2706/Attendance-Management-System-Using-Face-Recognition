@@ -47,7 +47,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         const handleChange = () => {
-            setSystemTheme(getSystemTheme());
+            // Inline getSystemTheme logic to avoid stale closure
+            const newSystemTheme = mediaQuery.matches ? 'dark' : 'light';
+            setSystemTheme(newSystemTheme);
         };
 
         mediaQuery.addEventListener('change', handleChange);

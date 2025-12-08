@@ -52,14 +52,6 @@ export const MarkAttendance = () => {
         }
     }, []);
 
-    // Stop camera
-    const stopCamera = useCallback(() => {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            setStream(null);
-        }
-    }, [stream]);
-
     // Capture and process
     const captureAndRecognize = async () => {
         if (!videoRef.current || !canvasRef.current) return;
@@ -101,8 +93,13 @@ export const MarkAttendance = () => {
     // Auto-start camera on mount
     useEffect(() => {
         startCamera();
-        return () => stopCamera();
-    }, [startCamera, stopCamera]);
+        return () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Reset for another attempt
     const resetAttempt = () => {
