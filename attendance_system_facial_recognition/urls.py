@@ -235,4 +235,10 @@ if "silk" in settings.INSTALLED_APPS and (
     urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]
 
 # Catch-all for SPA (must be last)
-urlpatterns += [re_path(r"^.*$", TemplateView.as_view(template_name="index.html"))]
+# Exclude static and media URLs from the catch-all to let Django's static file serving handle them
+urlpatterns += [
+    re_path(
+        r"^(?!static/)(?!media/).*$",
+        TemplateView.as_view(template_name="index.html"),
+    )
+]
