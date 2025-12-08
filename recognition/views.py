@@ -2182,8 +2182,9 @@ def _passes_liveness_check(
 
     lightweight_enabled = _is_lightweight_liveness_enabled()
     deepface_enabled = _is_liveness_enabled()
+    enhanced_enabled = _is_enhanced_liveness_enabled()
 
-    if not lightweight_enabled and not deepface_enabled:
+    if not lightweight_enabled and not deepface_enabled and not enhanced_enabled:
         return True
 
     if lightweight_enabled:
@@ -2213,6 +2214,36 @@ def _passes_liveness_check(
                 return False
         else:
             logger.debug("Insufficient data for lightweight liveness evaluation.")
+
+    # Enhanced liveness verification (CNN + depth + frame consistency)
+    if enhanced_enabled and frame_history and len(frame_history) >= 5:
+        try:
+            from recognition.liveness import run_enhanced_liveness_verification
+            from recognition.views.config import (
+                get_cnn_antispoof_threshold,
+                get_depth_variance_threshold,
+            )
+
+            enhanced_result = run_enhanced_liveness_verification(
+                list(frame_history),
+                face_region=face_region,
+                cnn_threshold=get_cnn_antispoof_threshold(),
+                depth_variance_threshold=get_depth_variance_threshold(),
+            )
+            if not enhanced_result.passed:
+                logger.info(
+                    "Enhanced liveness rejected: %s",
+                    enhanced_result.failure_reasons,
+                )
+                return False
+            logger.debug(
+                "Enhanced liveness passed with confidence %.4f",
+                enhanced_result.confidence,
+            )
+        except ImportError:
+            logger.debug("Enhanced liveness modules not available, skipping.")
+        except Exception as exc:
+            logger.warning("Enhanced liveness check failed: %s", exc)
 
     if not deepface_enabled:
         return True
@@ -3132,6 +3163,12 @@ def _is_liveness_enabled() -> bool:
     """Return whether anti-spoofing checks are enabled."""
 
     return bool(_get_deepface_options().get("anti_spoofing", True))
+
+
+def _is_enhanced_liveness_enabled() -> bool:
+    """Return whether enhanced liveness (CNN + depth + consistency) is enabled."""
+
+    return bool(getattr(settings, "RECOGNITION_ENHANCED_LIVENESS_ENABLED", False))
 
 
 def _get_recognition_training_test_split_ratio() -> float:

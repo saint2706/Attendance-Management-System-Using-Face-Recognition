@@ -33,6 +33,7 @@ class FeatureFlags:
     # Individual feature flags
     _liveness_detection: bool = True
     _deepface_antispoofing: bool = True
+    _enhanced_liveness: bool = True
     _scheduled_evaluations: bool = True
     _fairness_audits: bool = True
     _liveness_evaluations: bool = True
@@ -56,6 +57,7 @@ class FeatureFlags:
         if cls._profile == FeatureProfile.BASIC:
             cls._liveness_detection = False
             cls._deepface_antispoofing = False
+            cls._enhanced_liveness = False
             cls._scheduled_evaluations = False
             cls._fairness_audits = False
             cls._liveness_evaluations = False
@@ -65,6 +67,7 @@ class FeatureFlags:
         elif cls._profile == FeatureProfile.STANDARD:
             cls._liveness_detection = True
             cls._deepface_antispoofing = False  # Motion-based liveness is sufficient
+            cls._enhanced_liveness = False  # Off by default for performance
             cls._scheduled_evaluations = False  # Manual evaluations as needed
             cls._fairness_audits = False  # Manual audits
             cls._liveness_evaluations = False
@@ -74,6 +77,7 @@ class FeatureFlags:
         else:  # ADVANCED (default)
             cls._liveness_detection = True
             cls._deepface_antispoofing = True
+            cls._enhanced_liveness = False  # Off by default even in advanced
             cls._scheduled_evaluations = True
             cls._fairness_audits = True
             cls._liveness_evaluations = True
@@ -87,6 +91,9 @@ class FeatureFlags:
         )
         cls._deepface_antispoofing = cls._get_bool_env(
             "ENABLE_DEEPFACE_ANTISPOOFING", cls._deepface_antispoofing
+        )
+        cls._enhanced_liveness = cls._get_bool_env(
+            "ENABLE_ENHANCED_LIVENESS", cls._enhanced_liveness
         )
         cls._scheduled_evaluations = cls._get_bool_env(
             "ENABLE_SCHEDULED_EVALUATIONS", cls._scheduled_evaluations
@@ -125,6 +132,11 @@ class FeatureFlags:
         return cls._deepface_antispoofing
 
     @classmethod
+    def is_enhanced_liveness_enabled(cls) -> bool:
+        """Check if enhanced liveness detection (CNN + depth + consistency) is enabled."""
+        return cls._enhanced_liveness
+
+    @classmethod
     def is_scheduled_evaluations_enabled(cls) -> bool:
         """Check if automated nightly model evaluations are enabled."""
         return cls._scheduled_evaluations
@@ -160,6 +172,7 @@ class FeatureFlags:
         return {
             "liveness_detection": cls._liveness_detection,
             "deepface_antispoofing": cls._deepface_antispoofing,
+            "enhanced_liveness": cls._enhanced_liveness,
             "scheduled_evaluations": cls._scheduled_evaluations,
             "fairness_audits": cls._fairness_audits,
             "liveness_evaluations": cls._liveness_evaluations,
