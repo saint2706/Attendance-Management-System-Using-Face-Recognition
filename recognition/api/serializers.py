@@ -32,7 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class EmployeeSerializer(UserSerializer):
     """Extended serializer for employees.
-    
+
     Currently provides the same fields as UserSerializer.
     Kept as a separate class for future extensibility (e.g., adding profile fields).
     """
