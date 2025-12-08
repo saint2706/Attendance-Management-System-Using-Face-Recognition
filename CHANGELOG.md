@@ -2,7 +2,7 @@
 
 All notable changes to the **Attendance Management System Using Face Recognition** project are documented in this file.
 
-This changelog was reconstructed from the git history on 2025-11-29. Since the project had no version tags, virtual version numbers have been assigned based on major milestones and the nature of changes. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) principles, and versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html) conventions.
+This changelog was initially reconstructed from the git history on 2025-11-29, and has been updated with actual GitHub releases starting from v1.0.0 (2025-11-30). For versions before v1.0.0, virtual version numbers were assigned based on major milestones and the nature of changes. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) principles, and versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html) conventions.
 
 ---
 
@@ -10,37 +10,123 @@ This changelog was reconstructed from the git history on 2025-11-29. Since the p
 
 ### Added (Unreleased)
 
-- Scheduled evaluation tasks with Celery Beat for automated model health monitoring (`51cd8aa`)
-- Model health widget displaying accuracy trends on admin dashboard (`51cd8aa`)
-- Single-node production deployment guide with architecture diagram (`2c82c8e`)
-- Threshold profiles for recognition sensitivity tuning with UI and CLI support (`303cf56`)
-- Enhanced liveness detection with motion-based validation (`e7384a9`)
-- Guided Setup Wizard for streamlined admin onboarding (`216264c`)
-- Model Fairness & Limitations admin page with privacy/consent UI hints (`bb454c5`)
-- Attendance dashboard with date filters, CSV export, and interactive charts (`5c06da8`)
-- Smoke test suite for CI health verification (`3c90647`)
-- First-run checklist with inline help and tooltips for recognition errors (`7002e72`)
+- Advanced admin commands and documentation updates (`9d1f2fb`)
+- Domain adaptation, sample quality, and group threshold support (`ad9e8bf`)
+- Enhanced liveness detection modules (`7bc47c3`)
+
+### Fixed (Unreleased)
+
+- Django CI and PostgreSQL test suite linting failures (`7dd47bf`)
+- Flaky concurrent test due to uint8 overflow (`1c518e0`)
+
+### Changed (Unreleased)
+
+- Optimized GitHub workflow efficiency (`15022a1`)
+- Removed Codecov badge and unused face recognition test workflow (`bbc1a1d`, `285365f`)
+
+### Security (Unreleased)
+
+- Bump urllib3 from 2.5.0 to 2.6.0 in the pip group (`6b55304`)
+
+---
+
+## [1.6.0] - 2025-12-08
+
+This release focuses on bug fixes, workflow optimizations, and dependency updates.
+
+### Fixed in 1.6.0
+
+- Fix flaky concurrent test due to uint8 overflow ([#138](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/138))
+- Fix Django CI and PostgreSQL test suite linting failures ([#141](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/141))
+
+### Changed in 1.6.0
+
+- Optimize GitHub workflow efficiency ([#139](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/139))
+
+### Security in 1.6.0
+
+- Bump urllib3 from 2.5.0 to 2.6.0 in the pip group ([#140](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/140))
+
+---
+
+## [1.5.0] - 2025-12-05
+
+This major release adds advanced features including encryption key rotation, hardware profiling, multi-face detection, and significant CI/CD improvements.
+
+### Added in 1.5.0
+
+- Encryption key rotation command and guidance ([#130](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/130))
+- Hardware profiling and performance utilities (`5713047`)
+- Multi-face detection support for group check-ins (`0473992`)
+- Feature flag system and modular frontend JavaScript (`74bed54`)
+- Deterministic dev encryption key handling ([#132](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/132))
+- Tests for multi-face recognition logic (`abff156`)
+- Authentication and rate limiting updates for face API ([#128](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/128))
+
+### Fixed in 1.5.0
+
+- Fix malformed migration and update Time model to use direction field ([#133](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/133))
+- Fix flake8 linting errors and test failures in CI workflows ([#134](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/134))
+- Fix Django CI and PostgreSQL test suite workflow failures ([#135](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/135))
+- Fix flaky concurrent test, add coverage config, and ensure proper database shutdown ([#136](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/136))
+- Fix test flakiness by ensuring older evaluation timestamps (`767ac7c`)
+- Fix exception handling loop in Silk integration (`f3cc6c9`)
+
+### Changed in 1.5.0
+
+- Optimize CI test workflow: split fast/slow jobs, add markers, reduce timeout from 45min to 15min ([#126](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/126))
+- Update dependencies and fix version mismatches (`6fcad81`)
+- Update docs and screenshots for improved onboarding (`276ee34`)
+- Refactor Silk integration (`f3cc6c9`)
+- Validate liveness evaluation input ([#131](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/131))
+
+### Security in 1.5.0
+
+- Bump werkzeug from 3.1.3 to 3.1.4 in the pip group ([#129](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/129))
+- Bump the pip group with 2 updates ([#127](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/127))
+
+---
+
+## [1.4.0] - 2025-11-29
+
+This version represents the state of the codebase when the original CHANGELOG.md was reconstructed from git history. All changes listed below were part of the unreleased section in the previous changelog.
+
+### Added in 1.4.0
+
+- Scheduled evaluation tasks with Celery Beat for automated model health monitoring
+- Model health widget displaying accuracy trends on admin dashboard
+- Single-node production deployment guide with architecture diagram
+- Threshold profiles for recognition sensitivity tuning with UI and CLI support
+- Enhanced liveness detection with motion-based validation
+- Guided Setup Wizard for streamlined admin onboarding
+- Model Fairness & Limitations admin page with privacy/consent UI hints
+- Attendance dashboard with date filters, CSV export, and interactive charts
+- Smoke test suite for CI health verification
+- First-run checklist with inline help and tooltips for recognition errors
 - Fairness audit threshold recommendations with `--recommend-thresholds` flag for per-group tuning
 - `ThresholdProfile` model supporting per-group (site, lighting, camera, role) threshold configurations
 - Hardware profiling command (`profile_hardware`) for NPU/GPU/CPU detection and benchmarking
-- Encryption key rotation command (`rotate_encryption_keys`) for secure key management
 - Camera calibration command (`calibrate_camera`) for multi-camera domain adaptation
 - Threshold profile management command (`threshold_profile`) with CRUD and bulk-apply support
 - `LivenessResult` model for persistent liveness check audit trail
 - Camera bucket grouping in fairness audit reports
+- Community scaffolding for open-source contributors (CODE_OF_CONDUCT, CONTRIBUTING, SUPPORT)
+- Production-ready Docker setup with GHCR publishing workflow
 
-### Fixed (Unreleased)
+### Fixed in 1.4.0
 
-- Flaky test in `test_attendance_flows.py` with correct monkeypatch lambda return values (`0757d0f`)
-- Docstring order in `_build_onboarding_state` function (`a8d658f`)
-- Code review issues in liveness and template files (`e7384a9`)
-- Linting errors and epsilon for trend comparison in model health (`8213b44`)
+- Flaky test in `test_attendance_flows.py` with correct monkeypatch lambda return values
+- Docstring order in `_build_onboarding_state` function
+- Code review issues in liveness and template files
+- Linting errors and epsilon for trend comparison in model health
+- Docker workflow: add DJANGO_ALLOWED_HOSTS and remove DockerHub steps
 
-### Changed (Unreleased)
+### Changed in 1.4.0
 
-- Improved demo experience and SQLite migration workflow (`8d9215b`)
-- Enhanced system health reporting and liveness logging (`95e3d7a`)
-- Added attendance safeguards and coverage enforcement (`e6e39c7`)
+- Improved demo experience and SQLite migration workflow
+- Enhanced system health reporting and liveness logging
+- Added attendance safeguards and coverage enforcement
+- Updated documentation with UI screenshots and beginner setup
 
 ---
 
@@ -315,6 +401,11 @@ This changelog was reconstructed from the git history on 2025-11-29. Since the p
 
 ## Breaking Changes Summary
 
+### v1.5.0 (2025-12-05)
+
+- **Time model direction field**: The Time model now uses a `direction` field for attendance tracking. Database migration required for PostgreSQL users. Run migrations before upgrading.
+- **Face API authentication**: The face recognition API now requires authentication and has rate limiting enabled. Update API clients to include authentication credentials.
+
 ### v1.0.0 (2025-11-08)
 
 - **Settings module restructured**: The settings are now organized as a package (`attendance_system_facial_recognition/settings/`). Update any direct imports from the old `settings.py` location.
@@ -332,11 +423,14 @@ This changelog was reconstructed from the git history on 2025-11-29. Since the p
 
 ---
 
-[Unreleased]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/compare/main...HEAD
+[Unreleased]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/compare/v1.5.0...v1.6.0
+[1.5.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/compare/v1.0.0...v1.5.0
+[1.4.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2025-11-18&until=2025-11-29
 [1.3.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2025-11-12&until=2025-11-18
 [1.2.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2025-11-09&until=2025-11-11
 [1.1.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2025-11-08&until=2025-11-09
-[1.0.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2025-10-29&until=2025-11-08
+[1.0.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/compare/v0.3.0...v1.0.0
 [0.3.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2025-10-03&until=2025-10-29
 [0.2.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2025-09-28&until=2025-10-03
 [0.1.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2023-11-19&until=2025-09-28
