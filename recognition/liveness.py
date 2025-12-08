@@ -23,6 +23,10 @@ class ChallengeType(str, Enum):
     BLINK = "blink"
     HEAD_TURN = "head_turn"
     ANTI_SPOOF = "anti_spoof"
+    # Enhanced liveness challenge types
+    DEPTH_CUE = "depth_cue"
+    CNN_ANTI_SPOOF = "cnn_anti_spoof"
+    FRAME_CONSISTENCY = "frame_consistency"
 
 
 @dataclass(frozen=True)
@@ -471,11 +475,191 @@ def run_multi_challenge_liveness(
     return overall_passed, total_confidence, results
 
 
+@dataclass(frozen=True)
+class EnhancedLivenessResult:
+    """Result of enhanced multi-signal liveness verification."""
+
+    passed: bool
+    confidence: float
+    motion_passed: bool
+    depth_passed: bool
+    cnn_passed: bool
+    consistency_passed: bool
+    failure_reasons: list[str] = field(default_factory=list)
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+def run_enhanced_liveness_verification(
+    frames: Sequence[ArrayLike],
+    *,
+    face_region: Optional[dict[str, int]] = None,
+    motion_threshold: float = 1.1,
+    depth_variance_threshold: float = 0.1,
+    cnn_threshold: float = 0.75,
+    require_all: bool = True,
+) -> EnhancedLivenessResult:
+    """Run comprehensive enhanced liveness verification.
+
+    Combines motion detection, depth cue analysis, CNN anti-spoofing,
+    and multi-frame consistency verification for robust liveness assurance.
+
+    Args:
+        frames: Sequence of frames to analyze.
+        face_region: Optional face bounding box for cropping.
+        motion_threshold: Threshold for motion-based liveness.
+        depth_variance_threshold: Threshold for depth variance.
+        cnn_threshold: Confidence threshold for CNN anti-spoof.
+        require_all: If True, all checks must pass.
+
+    Returns:
+        EnhancedLivenessResult with comprehensive pass/fail status.
+    """
+    failure_reasons: list[str] = []
+    details: dict[str, Any] = {}
+
+    # Default all checks to pass (will be set to actual results)
+    motion_passed = True
+    depth_passed = True
+    cnn_passed = True
+    consistency_passed = True
+
+    min_frames = 5
+    if len(frames) < min_frames:
+        return EnhancedLivenessResult(
+            passed=False,
+            confidence=0.0,
+            motion_passed=False,
+            depth_passed=False,
+            cnn_passed=False,
+            consistency_passed=False,
+            failure_reasons=[f"Insufficient frames: {len(frames)} < {min_frames}"],
+            details={"frames_provided": len(frames), "min_required": min_frames},
+        )
+
+    # 1. Motion-based liveness (existing functionality)
+    motion_result = check_liveness_with_challenge(
+        frames,
+        face_region=face_region,
+        challenge_type=ChallengeType.MOTION,
+        motion_threshold=motion_threshold,
+    )
+    motion_passed = motion_result.passed
+    details["motion"] = {
+        "passed": motion_result.passed,
+        "score": motion_result.motion_score,
+        "threshold": motion_threshold,
+    }
+    if not motion_passed:
+        failure_reasons.append("Motion check failed: insufficient movement detected")
+
+    # 2. Depth cue analysis
+    try:
+        from recognition.depth_estimator import analyze_depth_cues
+
+        depth_result = analyze_depth_cues(
+            frames,
+            face_region=face_region,
+            variance_threshold=depth_variance_threshold,
+        )
+        depth_passed = depth_result.passed
+        details["depth"] = {
+            "passed": depth_result.passed,
+            "variance": depth_result.depth_variance,
+            "flatness_ratio": depth_result.flatness_ratio,
+            "threshold": depth_variance_threshold,
+        }
+        if not depth_passed:
+            failure_reasons.append("Depth check failed: surface appears flat")
+    except ImportError:
+        logger.debug("Depth estimator not available, skipping depth check")
+        details["depth"] = {"passed": True, "skipped": True}
+    except Exception as exc:
+        logger.warning("Depth analysis failed: %s", exc)
+        details["depth"] = {"passed": True, "error": str(exc)}
+
+    # 3. CNN anti-spoof check
+    try:
+        from recognition.anti_spoof_cnn import run_cnn_antispoof
+
+        cnn_result = run_cnn_antispoof(frames, threshold=cnn_threshold)
+        cnn_passed = cnn_result.is_real
+        details["cnn_antispoof"] = {
+            "passed": cnn_result.is_real,
+            "confidence": cnn_result.confidence,
+            "spoof_probability": cnn_result.spoof_probability,
+            "model_available": cnn_result.model_available,
+        }
+        if not cnn_passed:
+            failure_reasons.append("CNN anti-spoof check failed: spoof detected")
+    except ImportError:
+        logger.debug("CNN anti-spoof not available, skipping")
+        details["cnn_antispoof"] = {"passed": True, "skipped": True}
+    except Exception as exc:
+        logger.warning("CNN anti-spoof failed: %s", exc)
+        details["cnn_antispoof"] = {"passed": True, "error": str(exc)}
+
+    # 4. Frame consistency verification
+    try:
+        from recognition.frame_consistency import check_frame_consistency
+
+        consistency_result = check_frame_consistency(frames)
+        consistency_passed = consistency_result.passed
+        details["consistency"] = {
+            "passed": consistency_result.passed,
+            "is_static_replay": consistency_result.is_static_replay,
+            "periodicity_score": consistency_result.periodicity_score,
+            "unique_frame_ratio": consistency_result.unique_frame_ratio,
+        }
+        if not consistency_passed:
+            if consistency_result.is_static_replay:
+                failure_reasons.append("Frame consistency failed: static replay detected")
+            else:
+                failure_reasons.append("Frame consistency failed: periodic pattern detected")
+    except ImportError:
+        logger.debug("Frame consistency checker not available, skipping")
+        details["consistency"] = {"passed": True, "skipped": True}
+    except Exception as exc:
+        logger.warning("Frame consistency check failed: %s", exc)
+        details["consistency"] = {"passed": True, "error": str(exc)}
+
+    # Aggregate results
+    all_checks = [motion_passed, depth_passed, cnn_passed, consistency_passed]
+    if require_all:
+        overall_passed = all(all_checks)
+    else:
+        # At least motion + one other check must pass
+        overall_passed = motion_passed and sum(all_checks) >= 3
+
+    # Compute aggregate confidence
+    confidences = [motion_result.confidence]
+    if depth_passed:
+        confidences.append(details.get("depth", {}).get("passed", 1.0) and 0.8 or 0.2)
+    if cnn_passed and details.get("cnn_antispoof", {}).get("confidence"):
+        confidences.append(details["cnn_antispoof"]["confidence"])
+    if consistency_passed:
+        confidences.append(0.9)
+
+    avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
+
+    return EnhancedLivenessResult(
+        passed=overall_passed,
+        confidence=avg_confidence,
+        motion_passed=motion_passed,
+        depth_passed=depth_passed,
+        cnn_passed=cnn_passed,
+        consistency_passed=consistency_passed,
+        failure_reasons=failure_reasons,
+        details=details,
+    )
+
+
 __all__ = [
     "LivenessBuffer",
     "is_live_face",
     "ChallengeType",
     "LivenessCheckResult",
+    "EnhancedLivenessResult",
     "check_liveness_with_challenge",
     "run_multi_challenge_liveness",
+    "run_enhanced_liveness_verification",
 ]

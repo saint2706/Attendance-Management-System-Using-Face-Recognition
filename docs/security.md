@@ -44,8 +44,19 @@ This document consolidates the security-critical configuration that must be in p
 
 1. Generate a replacement Fernet key and stage it in your secrets manager.
 2. Update the deployment environment (Kubernetes Secret, `.env`, etc.) with the new value.
-3. Restart web and worker processes to load the new key.
-4. Re-encrypt or rotate any persisted data that relies on the old key if applicable.
+3. Use the `rotate_encryption_keys` command to re-encrypt existing datasets:
+
+   ```bash
+   python manage.py rotate_encryption_keys \
+     --new-data-key "new-base64-fernet-key" \
+     --new-face-key "new-base64-fernet-key" \
+     --backup-dir /path/to/backup
+   ```
+
+4. Restart web and worker processes to load the new key.
+5. Verify the application can read existing data before removing backups.
+
+See [DEVELOPER_GUIDE.md](../DEVELOPER_GUIDE.md#encryption-key-rotation) for detailed command options.
 
 ### Enable database SSL
 
@@ -72,4 +83,3 @@ This document consolidates the security-critical configuration that must be in p
 * Review Django's [deployment checklist](https://docs.djangoproject.com/en/stable/howto/deployment/checklist/) before promoting builds.
 * Apply security patches promptly and track upstream Django security advisories.
 * Keep dependency lockfiles up to date and run `pip install --require-hashes` or similar controls in CI/CD.
-

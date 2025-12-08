@@ -255,6 +255,86 @@ Key options:
 - `--threshold`: Override `RECOGNITION_LIVENESS_MOTION_THRESHOLD` for the evaluation run only.
 - `--min-frames`: Override `RECOGNITION_LIVENESS_MIN_FRAMES` so you can gauge how sensitive the detector is to longer/shorter bursts.
 
+### Hardware Profiling
+
+Detect available hardware accelerators and benchmark model performance:
+
+```bash
+python manage.py profile_hardware --models Facenet VGG-Face --iterations 5
+```
+
+Key options:
+
+- `--models`: Models to profile (default: `Facenet VGG-Face OpenFace`).
+- `--iterations`: Number of profiling iterations per model.
+- `--skip-profiling`: Only detect hardware without running benchmarks.
+
+The command outputs NPU/GPU/CPU availability and recommended configuration for your environment.
+
+### Encryption Key Rotation
+
+Rotate encrypted datasets to new Fernet keys without downtime:
+
+```bash
+python manage.py rotate_encryption_keys \
+  --new-data-key "base64-fernet-key" \
+  --new-face-key "base64-fernet-key" \
+  --backup-dir /path/to/backup
+```
+
+Key options:
+
+- `--new-data-key`: New Fernet key for general data encryption.
+- `--new-face-key`: New Fernet key for facial encoding encryption.
+- `--data-root`: Path to encrypted model artifacts (defaults to `face_recognition_data/`).
+- `--dataset-root`: Path to encrypted dataset captures.
+- `--backup-dir`: Directory to store backups before re-encryption.
+- `--dry-run`: List files that would be re-encrypted without modifying them.
+
+See [docs/security.md](docs/security.md) for key rotation best practices.
+
+### Camera Calibration
+
+Calibrate cameras for domain adaptation across different devices:
+
+```bash
+python manage.py calibrate_camera lobby_kiosk \
+  --images-dir /path/to/calibration/images \
+  --compare-to reception_webcam
+```
+
+The calibration analyzes reference images to estimate camera characteristics (brightness, contrast, color temperature) and compares them to existing profiles. See [docs/FAIRNESS_AND_LIMITATIONS.md](docs/FAIRNESS_AND_LIMITATIONS.md) for domain adaptation details.
+
+### Threshold Profile Management
+
+Manage per-group threshold profiles for fine-tuned recognition:
+
+```bash
+# List all threshold profiles
+python manage.py threshold_profile list
+
+# Create a profile for low-light conditions
+python manage.py threshold_profile create \
+  --name "low_light_adjusted" \
+  --threshold 0.45 \
+  --group-type lighting \
+  --group-value low_light
+
+# Apply recommendations from fairness audit
+python manage.py threshold_profile apply-recommendations \
+  --recommendations-csv reports/fairness/threshold_recommendations.csv
+```
+
+Key subcommands:
+
+- `list`: Display all configured threshold profiles.
+- `create`: Create a new profile with specified group targeting.
+- `update`: Modify an existing profile's threshold or description.
+- `delete`: Remove a threshold profile.
+- `apply-recommendations`: Bulk-apply recommendations from fairness audit output.
+
+Group types include `site`, `lighting`, `camera`, and `role`. See [FEATURE_FLAGS.md](FEATURE_FLAGS.md) for profile-based deployment guidance.
+
 ## 5. Makefile Targets
 
 The project includes a comprehensive `Makefile` for common development tasks.

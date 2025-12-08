@@ -52,3 +52,24 @@ def get_lightweight_liveness_threshold() -> float:
 def get_lightweight_liveness_window() -> int:
     """Return the frame window size for liveness buffer."""
     return getattr(settings, "RECOGNITION_LIGHTWEIGHT_LIVENESS_WINDOW", 10)
+
+
+def is_enhanced_liveness_enabled() -> bool:
+    """Return whether enhanced liveness (CNN + depth + consistency) is enabled."""
+    return getattr(settings, "RECOGNITION_ENHANCED_LIVENESS_ENABLED", False)
+
+
+def get_cnn_antispoof_threshold() -> float:
+    """Return confidence threshold for CNN anti-spoof classification."""
+    return getattr(settings, "RECOGNITION_CNN_ANTISPOOF_THRESHOLD", 0.75)
+
+
+def get_depth_variance_threshold() -> float:
+    """Return threshold for depth variance check."""
+    return getattr(settings, "RECOGNITION_DEPTH_VARIANCE_THRESHOLD", 0.1)
+
+
+def get_frame_consistency_min_frames() -> int:
+    """Return minimum frames for consistency verification."""
+    return getattr(settings, "RECOGNITION_FRAME_CONSISTENCY_MIN_FRAMES", 5)
+

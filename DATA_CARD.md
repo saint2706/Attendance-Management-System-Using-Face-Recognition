@@ -83,6 +83,7 @@ Persists a snapshot of a recognition decision made during attendance flows.
 - A `sample_data/` directory now ships with the repository. It mirrors the `face_recognition_data/training_dataset/` layout and contains three procedurally generated, non-identifiable JPEG avatars per identity.
 - The helper script `scripts/reproduce_sample_results.py` temporarily points the evaluation harness at this directory so reviewers can regenerate metrics with `make reproduce` without handling encrypted production photos.
 - The sample dataset is strictly for demos and smoke tests. Replace it with the encrypted `face_recognition_data/` tree before operating in production so the evaluation pipeline reflects the real enrollment set.
+- For guidance on collecting diverse, high-quality training data, see the [Training Protocol](docs/TRAINING_PROTOCOL.md).
 
 ## Evaluation Pipeline & Metrics
 
