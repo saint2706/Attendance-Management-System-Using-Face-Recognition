@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
@@ -29,18 +29,20 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         return 'system';
     });
 
-    // Calculate resolved theme directly from theme state to avoid synchronous setState in effect
-    const resolvedTheme = theme === 'system' ? getSystemTheme() : theme;
+    // Calculate resolved theme from theme state (memoized to avoid recalculation on every render)
+    const resolvedTheme = useMemo(() => {
+        return theme === 'system' ? getSystemTheme() : theme;
+    }, [theme]);
 
-    // Update DOM and localStorage when theme changes
+    // Update DOM and localStorage when resolved theme changes
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', resolvedTheme);
         localStorage.setItem(THEME_KEY, theme);
-    }, [theme, resolvedTheme]);
+    }, [resolvedTheme, theme]);
 
     // Listen for system theme changes
     useEffect(() => {
-        if (theme !== 'system') return;
+        if (theme !== 'system') return undefined;
 
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         const handleChange = () => {
