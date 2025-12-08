@@ -115,7 +115,7 @@ scipy==1.16.3
 seaborn==0.13.2
 service-identity==24.1.0
 setuptools==78.1.1
-six==1.16.0
+six==1.17.0
 sos==4.8.2
 soupsieve==2.8
 sqlparse==0.5.3
