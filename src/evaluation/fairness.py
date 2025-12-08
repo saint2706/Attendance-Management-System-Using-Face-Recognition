@@ -481,9 +481,7 @@ def compute_threshold_recommendations(
                 # High False Accept Rate - recommend stricter threshold
                 adjustment = min(0.1, far * 0.5)  # Scale adjustment to FAR
                 recommended = max(0.1, current_threshold - adjustment)
-                adjustment_reason = (
-                    f"High FAR ({far:.1%}) - tightening threshold for security"
-                )
+                adjustment_reason = f"High FAR ({far:.1%}) - tightening threshold for security"
 
             if adjustment_reason:
                 recommendations.append(
@@ -524,16 +522,18 @@ def write_threshold_recommendations_csv(
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for rec in recommendations:
-            writer.writerow({
-                "group_type": rec.group_type,
-                "group_value": rec.group_value,
-                "current_threshold": rec.current_threshold,
-                "recommended_threshold": rec.recommended_threshold,
-                "adjustment_reason": rec.adjustment_reason,
-                "far": f"{rec.far:.4f}",
-                "frr": f"{rec.frr:.4f}",
-                "sample_count": rec.sample_count,
-            })
+            writer.writerow(
+                {
+                    "group_type": rec.group_type,
+                    "group_value": rec.group_value,
+                    "current_threshold": rec.current_threshold,
+                    "recommended_threshold": rec.recommended_threshold,
+                    "adjustment_reason": rec.adjustment_reason,
+                    "far": f"{rec.far:.4f}",
+                    "frr": f"{rec.frr:.4f}",
+                    "sample_count": rec.sample_count,
+                }
+            )
 
 
 __all__ = [

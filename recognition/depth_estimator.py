@@ -264,7 +264,7 @@ def analyze_depth_cues(
     # Confidence based on how far above/below thresholds
     variance_factor = min(1.0, avg_variance / variance_threshold) if variance_threshold > 0 else 0.5
     flatness_factor = 1.0 - avg_flatness
-    confidence = (variance_factor * 0.6 + flatness_factor * 0.4)
+    confidence = variance_factor * 0.6 + flatness_factor * 0.4
 
     return DepthAnalysisResult(
         passed=passed,

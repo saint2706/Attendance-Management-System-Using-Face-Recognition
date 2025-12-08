@@ -122,9 +122,7 @@ class ThresholdProfile(models.Model):
         return cls.objects.filter(is_default=True).first()
 
     @classmethod
-    def get_for_group(
-        cls, group_type: str, group_value: str
-    ) -> Optional["ThresholdProfile"]:
+    def get_for_group(cls, group_type: str, group_value: str) -> Optional["ThresholdProfile"]:
         """Return the threshold profile for a specific group.
 
         Args:

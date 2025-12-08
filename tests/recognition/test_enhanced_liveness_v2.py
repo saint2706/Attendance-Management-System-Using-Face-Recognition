@@ -7,9 +7,6 @@ Tests cover:
 - Enhanced liveness verification orchestrator
 """
 
-import sys
-from unittest.mock import MagicMock, patch
-
 import numpy as np
 import pytest
 
@@ -312,4 +309,3 @@ class TestConfigGetters:
         result = get_frame_consistency_min_frames()
         assert isinstance(result, int)
         assert result == 5  # Default value
-

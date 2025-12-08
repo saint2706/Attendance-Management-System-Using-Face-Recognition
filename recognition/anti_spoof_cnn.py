@@ -100,7 +100,6 @@ class AntiSpoofCNN:
         classification head for binary real/spoof detection.
         """
         try:
-            from tensorflow import keras
             from tensorflow.keras.applications import MobileNetV2
             from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D
             from tensorflow.keras.models import Model

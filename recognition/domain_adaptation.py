@@ -251,19 +251,18 @@ def assess_domain_gap(
     # Resolution difference
     src_pixels = source_profile.resolution[0] * source_profile.resolution[1]
     tgt_pixels = target_profile.resolution[0] * target_profile.resolution[1]
-    resolution_ratio = min(src_pixels, tgt_pixels) / max(src_pixels, tgt_pixels) if max(src_pixels, tgt_pixels) > 0 else 1.0
+    resolution_ratio = (
+        min(src_pixels, tgt_pixels) / max(src_pixels, tgt_pixels)
+        if max(src_pixels, tgt_pixels) > 0
+        else 1.0
+    )
     resolution_gap = 1.0 - resolution_ratio
 
     # Color temperature mismatch
     color_gap = 0.0 if source_profile.color_temperature == target_profile.color_temperature else 0.2
 
     # Compute overall gap score (weighted average)
-    overall_gap = (
-        brightness_gap * 0.4 +
-        contrast_gap * 0.3 +
-        resolution_gap * 0.2 +
-        color_gap * 0.1
-    )
+    overall_gap = brightness_gap * 0.4 + contrast_gap * 0.3 + resolution_gap * 0.2 + color_gap * 0.1
     overall_gap = min(overall_gap, 1.0)
 
     # Generate recommendations

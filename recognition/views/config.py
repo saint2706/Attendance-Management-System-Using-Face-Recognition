@@ -72,4 +72,3 @@ def get_depth_variance_threshold() -> float:
 def get_frame_consistency_min_frames() -> int:
     """Return minimum frames for consistency verification."""
     return getattr(settings, "RECOGNITION_FRAME_CONSISTENCY_MIN_FRAMES", 5)
-
