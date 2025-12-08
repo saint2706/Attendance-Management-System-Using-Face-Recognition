@@ -7,7 +7,6 @@ from rest_framework.response import Response
 
 from recognition.api.serializers import (
     AttendanceRecordSerializer,
-    EmployeeSerializer,
     RegisterEmployeeSerializer,
     StatsSerializer,
     UserSerializer,
@@ -29,8 +28,6 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "create":
             return RegisterEmployeeSerializer
-        if hasattr(self, "request") and self.request.user.is_staff:
-            return EmployeeSerializer
         return UserSerializer
 
     def get_queryset(self):
