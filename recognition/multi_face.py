@@ -43,7 +43,7 @@ def get_max_faces_limit() -> int:
 
 
 def filter_faces_by_size(
-    face_embeddings: List[Tuple[np.ndarray, Optional[Dict[str, int]]]]
+    face_embeddings: List[Tuple[np.ndarray, Optional[Dict[str, int]]]],
 ) -> List[Tuple[np.ndarray, Optional[Dict[str, int]]]]:
     """Filter out faces that are too small based on configured threshold.
 
