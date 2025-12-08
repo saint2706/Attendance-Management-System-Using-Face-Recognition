@@ -23,9 +23,9 @@
 
 ## Technical Stack
 
-- **Backend:** Django 5+ with Celery workers for async training/evaluation jobs
+- **Backend:** Django 5+ with Django Rest Framework (DRF) and Celery workers
 - **Face Recognition:** DeepFace (Facenet) + SSD detector with a motion-based liveness gate
-- **Frontend:** HTML5, CSS3, Bootstrap 5, Custom CSS Design System (installable PWA)
+- **Frontend:** React 18+ (Vite), TypeScript, Tailwind CSS, shadcn/ui (Installable PWA)
 - **JavaScript:** Vanilla JS (no framework dependencies)
 - **Database & cache:** Configurable via `DATABASE_URL` (PostgreSQL recommended; SQLite for local development) and Redis for Celery/async queues
 - **Observability:** Sentry integration plus Silk for request profiling

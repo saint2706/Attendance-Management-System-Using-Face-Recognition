@@ -1,0 +1,34 @@
+# PersistentVolumeClaims for shared application data
+---
+# Face recognition training data storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: face-recognition-data
+  namespace: attendance-system
+  labels:
+    app.kubernetes.io/name: attendance-system
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadWriteMany  # Required for multi-pod access
+  resources:
+    requests:
+      storage: 20Gi
+  # storageClassName: standard  # Uncomment and set for your cloud provider
+---
+# Media file storage (uploaded images, etc.)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-data
+  namespace: attendance-system
+  labels:
+    app.kubernetes.io/name: attendance-system
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi

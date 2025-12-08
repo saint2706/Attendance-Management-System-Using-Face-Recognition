@@ -11,7 +11,10 @@ from __future__ import annotations
 
 import logging
 import math
-from typing import Dict, Iterable, Mapping, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Dict, Iterable, Mapping, Optional, Sequence, Tuple
+
+if TYPE_CHECKING:
+    from recognition.faiss_index import FAISSIndex
 
 import numpy as np
 
@@ -216,3 +219,45 @@ def is_within_distance_threshold(distance: Optional[float], threshold: float) ->
         return False
 
     return bool(distance <= threshold)
+
+
+def find_closest_match_faiss(
+    embedding_vector: np.ndarray,
+    faiss_index: "FAISSIndex",
+    k: int = 1,
+) -> Optional[Tuple[str, float]]:
+    """Return nearest neighbour using FAISS index.
+
+    This function provides an optimised search path when the FAISS feature flag
+    is enabled. It uses the pre-built FAISS index for O(log n) approximate
+    nearest-neighbour search instead of O(n) linear scan.
+
+    Args:
+        embedding_vector: The embedding produced for the probe face.
+        faiss_index: Populated FAISSIndex instance containing all known faces.
+        k: Number of nearest neighbours to consider (default 1).
+
+    Returns:
+        Tuple of (username, distance) for the best match, or ``None`` if
+        the index is empty or search fails.
+
+    Note:
+        The distance returned is L2 (Euclidean) squared distance, which may
+        differ from the cosine/normalised metrics used in the legacy search.
+        Callers should adjust thresholds accordingly.
+    """
+    # Lazy import to avoid circular dependency
+    from recognition.faiss_index import FAISSIndex
+
+    if not isinstance(faiss_index, FAISSIndex):
+        logger.warning("Invalid FAISS index type: %s", type(faiss_index))
+        return None
+
+    if embedding_vector.size == 0:
+        return None
+
+    result = faiss_index.search_single(embedding_vector)
+    if result is None:
+        return None
+
+    return result

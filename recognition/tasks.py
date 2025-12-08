@@ -51,6 +51,7 @@ logger = logging.getLogger(__name__)
 ENCODINGS_DIR = DATA_ROOT / "encodings"
 MODEL_PATH = DATA_ROOT / "svc.sav"
 CLASSES_PATH = DATA_ROOT / "classes.npy"
+FAISS_INDEX_PATH = DATA_ROOT / "faiss_index.bin.enc"
 
 
 def _employee_encoding_path(employee_id: str) -> Path:
@@ -383,6 +384,22 @@ def train_model_sync(*, initiated_by: str | None = None) -> dict[str, Any]:
 
     logger.info("Successfully saved model, classes, and evaluation report.")
 
+    # Build and save FAISS index for optimised search
+    try:
+        from .faiss_index import FAISSIndex
+
+        embedding_array = np.array(embedding_vectors, dtype=np.float32)
+        faiss_index = FAISSIndex(dimension=embedding_array.shape[1])
+        faiss_index.add_embeddings(embedding_array, class_names)
+        faiss_index.save(FAISS_INDEX_PATH)
+        logger.info(
+            "FAISS index built with %d embeddings (%d classes).",
+            faiss_index.size,
+            len(unique_classes),
+        )
+    except Exception as exc:
+        logger.warning("Failed to build FAISS index (non-fatal): %s", exc)
+
     return {
         "accuracy": accuracy,
         "precision": precision,
@@ -516,6 +533,16 @@ def incremental_face_training(self, employee_id: str, new_images: Sequence[str])
             np.array(features, dtype=np.float64), np.array(labels), classes
         )
         _persist_model(classifier, classes)
+
+        # Rebuild FAISS index with updated embeddings
+        from .faiss_index import FAISSIndex
+
+        embedding_array = np.array(features, dtype=np.float32)
+        faiss_index = FAISSIndex(dimension=embedding_array.shape[1])
+        faiss_index.add_embeddings(embedding_array, labels)
+        faiss_index.save(FAISS_INDEX_PATH)
+        logger.debug("FAISS index updated with %d embeddings.", faiss_index.size)
+
     except Exception as exc:  # pragma: no cover - defensive programming
         logger.error("Incremental training failed for %s: %s", employee_id, exc)
         _dataset_embedding_cache.invalidate()

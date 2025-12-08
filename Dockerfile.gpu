@@ -1,0 +1,142 @@
+# syntax=docker/dockerfile:1
+
+# GPU-accelerated Dockerfile for DeepFace/TensorFlow
+# Requires: nvidia-container-toolkit and NVIDIA GPU driver on host
+
+ARG CUDA_VERSION=12.3.1
+ARG PYTHON_VERSION=3.12
+
+# =============================================================================
+# Stage 1: Build Frontend
+# =============================================================================
+FROM node:20-alpine AS frontend-build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ .
+# Ensure vite config base is correct (should be set in code, but we can enforce if needed)
+RUN npm run build
+
+# =============================================================================
+# Stage 2: Base runtime with CUDA
+# =============================================================================
+FROM nvidia/cuda:${CUDA_VERSION}-cudnn9-runtime-ubuntu22.04 AS cuda-base
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Install Python 3.12 and runtime dependencies
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install --no-install-recommends -y \
+    python3.12 \
+    python3.12-venv \
+    python3.12-dev \
+    python3-pip \
+    libgl1 \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+
+# =============================================================================
+# Stage 3: Build stage with GPU packages
+# =============================================================================
+FROM cuda-base AS build
+
+# Build tools for native extensions
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+    build-essential \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Create virtual environment
+RUN python -m venv /venv
+ENV PATH="/venv/bin:$PATH"
+
+# Install GPU-accelerated packages
+COPY requirements.txt ./
+
+# Create GPU-specific requirements and install
+# We use faiss-gpu instead of faiss-cpu
+RUN pip install --upgrade pip setuptools wheel \
+    && sed 's/faiss-cpu/faiss-gpu/g' requirements.txt > requirements-gpu.txt \
+    && echo "tensorflow[and-cuda]==2.18.0" >> requirements-gpu.txt \
+    && pip install -r requirements-gpu.txt
+
+# Copy full project
+COPY . /app
+
+# Copy built frontend from Stage 1
+COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
+
+# Collect static files
+# We set dummy keys because collectstatic requires settings to load
+RUN DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production \
+    DJANGO_DEBUG=0 \
+    DJANGO_SECRET_KEY=dummy-secret-key-for-build \
+    DJANGO_ALLOWED_HOSTS=localhost \
+    DATA_ENCRYPTION_KEY=ufkljjgdbIMsc4N4-cVeRTtBk8sM6rDl6q-FMpepe8g= \
+    FACE_DATA_ENCRYPTION_KEY=ufkljjgdbIMsc4N4-cVeRTtBk8sM6rDl6q-FMpepe8g= \
+    python manage.py collectstatic --noinput
+
+# =============================================================================
+# Stage 4: Production runtime
+# =============================================================================
+FROM cuda-base AS runtime
+
+# TensorFlow GPU memory configuration
+ENV PATH="/venv/bin:$PATH" \
+    DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production \
+    DJANGO_DEBUG=0 \
+    # GPU memory growth: allocate memory as needed instead of all at once
+    TF_FORCE_GPU_ALLOW_GROWTH=true \
+    # Set visible GPU devices (can be overridden at runtime)
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+WORKDIR /app
+
+# Create non-root user
+RUN groupadd --gid 1000 appgroup \
+    && useradd --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
+
+# Copy virtual environment and application
+COPY --from=build /venv /venv
+COPY --from=build /app /app
+
+# Ensure frontend/dist is present and has correct permissions
+# (It was copied to /app in build stage, so it should be there, provided it wasn't excluded)
+# But we must ensure it's there.
+# Build stage COPY . /app would copy source frontend, then overwrite with built dist.
+# Then COPY --from=build /app /app copies it all to runtime.
+
+# Create runtime directories
+RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
+    && chown -R appuser:appgroup /app
+
+USER appuser
+
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl --fail http://localhost:8000/ || exit 1
+
+# GPU inference uses more memory - reduce workers, increase threads
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "1", "--threads", "8", "--worker-class", "gthread", "--timeout", "120", "attendance_system_facial_recognition.wsgi:application"]

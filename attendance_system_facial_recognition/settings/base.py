@@ -11,6 +11,7 @@ import os
 import sys
 import warnings
 from collections.abc import Sequence
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
@@ -502,6 +503,9 @@ INSTALLED_APPS = [
     "django_ratelimit",
     "crispy_forms",
     "crispy_bootstrap5",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "corsheaders",
     # Core Django applications
     "django.contrib.admin",
     "django.contrib.auth",
@@ -512,6 +516,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -532,7 +537,7 @@ ROOT_URLCONF = "attendance_system_facial_recognition.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "frontend/dist"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -634,6 +639,9 @@ STATIC_URL = "/static/"
 STATIC_ROOT = Path(os.environ.get("DJANGO_STATIC_ROOT", BASE_DIR / "staticfiles"))
 # Django automatically collects static files from app-specific static directories
 # (e.g., recognition/static). Additional directories can be added here if needed.
+STATICFILES_DIRS = [
+    BASE_DIR / "frontend/dist",
+]
 
 MEDIA_URL = os.environ.get("DJANGO_MEDIA_URL", "/media/")
 MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT", BASE_DIR / "media"))
@@ -798,6 +806,39 @@ RECOGNITION_ASYNC_THRESHOLD = _parse_int_env("RECOGNITION_ASYNC_THRESHOLD", defa
 # Multi-Face Detection (for group check-ins)
 # When enabled, system processes all detected faces in frame
 # When disabled (default), only one face processed for accountability
+
+# --- Django Rest Framework Configuration ---
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+}
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+}
+
+# --- CORS Configuration ---
+# For development, we allow localhost:5173 (Vite default)
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+CORS_ALLOW_CREDENTIALS = True
+
+# Allow all in DEBUG mode if needed (be careful)
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+
 RECOGNITION_MULTI_FACE_ENABLED = _get_bool_env("RECOGNITION_MULTI_FACE_ENABLED", default=False)
 RECOGNITION_MAX_FACES_PER_FRAME = _parse_int_env(
     "RECOGNITION_MAX_FACES_PER_FRAME", default=5, minimum=1

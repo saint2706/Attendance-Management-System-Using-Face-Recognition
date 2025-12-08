@@ -40,6 +40,7 @@ class FeatureFlags:
     _performance_profiling: bool = True
     _encryption: bool = True
     _sentry: bool = True
+    _faiss_index: bool = False  # Opt-in: use FAISS vector database for face search
 
     @classmethod
     def _initialize(cls) -> None:
@@ -64,6 +65,7 @@ class FeatureFlags:
             cls._performance_profiling = False
             cls._encryption = False  # Will warn in production
             cls._sentry = False
+            cls._faiss_index = False
         elif cls._profile == FeatureProfile.STANDARD:
             cls._liveness_detection = True
             cls._deepface_antispoofing = False  # Motion-based liveness is sufficient
@@ -74,6 +76,7 @@ class FeatureFlags:
             cls._performance_profiling = False
             cls._encryption = True
             cls._sentry = True
+            cls._faiss_index = False  # Opt-in only
         else:  # ADVANCED (default)
             cls._liveness_detection = True
             cls._deepface_antispoofing = True
@@ -84,6 +87,7 @@ class FeatureFlags:
             cls._performance_profiling = True
             cls._encryption = True
             cls._sentry = True
+            cls._faiss_index = False  # Opt-in only
 
         # Override with individual environment variables
         cls._liveness_detection = cls._get_bool_env(
@@ -107,6 +111,7 @@ class FeatureFlags:
         )
         cls._encryption = cls._get_bool_env("ENABLE_ENCRYPTION", cls._encryption)
         cls._sentry = cls._get_bool_env("ENABLE_SENTRY", cls._sentry)
+        cls._faiss_index = cls._get_bool_env("ENABLE_FAISS_INDEX", cls._faiss_index)
 
     @staticmethod
     def _get_bool_env(var_name: str, default: bool) -> bool:
@@ -167,6 +172,11 @@ class FeatureFlags:
         return cls._sentry
 
     @classmethod
+    def is_faiss_index_enabled(cls) -> bool:
+        """Check if FAISS vector database is used for face recognition search."""
+        return cls._faiss_index
+
+    @classmethod
     def get_all_flags(cls) -> Dict[str, bool]:
         """Return a dictionary of all feature flags and their status."""
         return {
@@ -179,6 +189,7 @@ class FeatureFlags:
             "performance_profiling": cls._performance_profiling,
             "encryption": cls._encryption,
             "sentry": cls._sentry,
+            "faiss_index": cls._faiss_index,
         }
 
 

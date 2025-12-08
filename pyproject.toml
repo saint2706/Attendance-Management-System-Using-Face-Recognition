@@ -39,6 +39,7 @@ dependencies = [
     "prometheus-client==0.20.0",
     "PyYAML==6.0.2",
     "psycopg2-binary==2.9.9",
+    "faiss-cpu==1.9.0.post1",
 ]
 
 [project.optional-dependencies]

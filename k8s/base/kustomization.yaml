@@ -1,0 +1,27 @@
+# Kustomize base configuration
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: attendance-system
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secret.yaml
+  - pvc.yaml
+  - postgres-statefulset.yaml
+  - redis-statefulset.yaml
+  - web-deployment.yaml
+  - web-service.yaml
+  - celery-deployment.yaml
+  - celery-beat-deployment.yaml
+  - ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+  app.kubernetes.io/version: "1.0.0"
+
+images:
+  - name: attendance-system
+    newName: attendance-system
+    newTag: latest

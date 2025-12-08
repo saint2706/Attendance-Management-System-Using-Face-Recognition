@@ -30,7 +30,8 @@ This section provides a complete, portfolio-ready deployment on a single Ubuntu 
 │  │              Docker Compose Stack                    │   │
 │  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌────────┐ │   │
 │  │  │   Web   │  │ Celery  │  │ Postgres│  │ Redis  │ │   │
-│  │  │ (Gunicorn)│ │ Worker  │  │   16    │  │   7    │ │   │
+│  │  │(Django+ │  │ Worker  │  │   16    │  │   7    │ │   │
+│  │  │  SPA)   │  │         │  │         │  │        │ │   │
 │  │  └─────────┘  └─────────┘  └─────────┘  └────────┘ │   │
 │  └─────────────────────────────────────────────────────┘   │
 │                                                             │

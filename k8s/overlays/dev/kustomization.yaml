@@ -1,0 +1,71 @@
+# Development overlay - single replicas, debug mode
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: attendance-dev
+
+resources:
+  - ../../base
+
+nameSuffix: ""
+namePrefix: ""
+
+# Override namespace for all resources
+patches:
+  # Reduce replicas for development
+  - target:
+      kind: Deployment
+      name: web
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "1Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "500m"
+  
+  - target:
+      kind: Deployment
+      name: celery-worker
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  
+  # Enable debug mode
+  - target:
+      kind: ConfigMap
+      name: attendance-config
+    patch: |-
+      - op: replace
+        path: /data/DJANGO_DEBUG
+        value: "1"
+      - op: replace
+        path: /data/DJANGO_ALLOWED_HOSTS
+        value: "*"
+  
+  # Reduce storage for development
+  - target:
+      kind: PersistentVolumeClaim
+      name: face-recognition-data
+    patch: |-
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: "5Gi"
+  
+  - target:
+      kind: PersistentVolumeClaim
+      name: media-data
+    patch: |-
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: "2Gi"
+
+# Override images for development
+images:
+  - name: attendance-system
+    newName: attendance-system
+    newTag: dev

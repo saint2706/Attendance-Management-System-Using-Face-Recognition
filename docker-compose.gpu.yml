@@ -1,0 +1,55 @@
+# Docker Compose override for GPU-accelerated deployment
+# Usage: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+#
+# Prerequisites:
+# - NVIDIA GPU driver installed on host
+# - nvidia-container-toolkit installed
+# - Docker configured with nvidia runtime
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    image: ${IMAGE_NAME:-attendance-system}:${IMAGE_TAG:-gpu}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    environment:
+      # TensorFlow GPU configuration
+      TF_FORCE_GPU_ALLOW_GROWTH: "true"
+      TF_CPP_MIN_LOG_LEVEL: "2"
+      # Limit GPU memory (optional - set in MB)
+      # TF_GPU_MEMORY_LIMIT: "4096"
+      # CUDA configuration
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    # GPU inference needs more startup time
+    healthcheck:
+      start_period: 90s
+
+  celery:
+    image: ${IMAGE_NAME:-attendance-system}:${IMAGE_TAG:-gpu}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    environment:
+      TF_FORCE_GPU_ALLOW_GROWTH: "true"
+      TF_CPP_MIN_LOG_LEVEL: "2"
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    # Reduce concurrency for GPU - each worker uses GPU memory
+    command: >-
+      celery -A attendance_system_facial_recognition worker  --loglevel=info  --concurrency=2
+
+  # Celery beat doesn't need GPU
+  celery-beat:
+    image: ${IMAGE_NAME:-attendance-system}:${IMAGE_TAG:-gpu}

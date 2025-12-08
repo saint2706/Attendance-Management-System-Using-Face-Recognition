@@ -1,0 +1,8 @@
+# Kubernetes namespace for the Attendance System
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: attendance-system
+  labels:
+    app.kubernetes.io/name: attendance-system
+    app.kubernetes.io/part-of: attendance-management

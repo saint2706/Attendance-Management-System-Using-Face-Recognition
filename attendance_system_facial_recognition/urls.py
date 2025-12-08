@@ -13,7 +13,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.http import FileResponse, Http404, HttpRequest
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.generic import TemplateView
 
 from recognition import admin_views as recog_admin_views
 from recognition import views as recog_views
@@ -53,6 +54,8 @@ def progressive_web_app_service_worker(request: HttpRequest) -> FileResponse:
 urlpatterns = [
     path("manifest.json", progressive_web_app_manifest, name="pwa-manifest"),
     path("sw.js", progressive_web_app_service_worker, name="service-worker"),
+    # API V1
+    path("api/v1/", include("recognition.api.urls")),
     # Custom Admin Views
     path(
         "admin/evaluation/",
@@ -230,3 +233,6 @@ if "silk" in settings.INSTALLED_APPS and (
     settings.DEBUG or getattr(settings, "SILKY_AUTHORISATION", False)
 ):
     urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]
+
+# Catch-all for SPA (must be last)
+urlpatterns += [re_path(r"^.*$", TemplateView.as_view(template_name="index.html"))]

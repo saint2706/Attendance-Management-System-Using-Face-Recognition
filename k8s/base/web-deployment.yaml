@@ -1,0 +1,81 @@
+# Django web application deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: attendance-system
+  labels:
+    app.kubernetes.io/name: web
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: attendance-system
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: web
+        app.kubernetes.io/component: backend
+    spec:
+      serviceAccountName: default
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: web
+          image: attendance-system:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: attendance-config
+            - secretRef:
+                name: attendance-secrets
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: face-data
+              mountPath: /app/face_recognition_data
+            - name: media
+              mountPath: /app/media
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: face-data
+          persistentVolumeClaim:
+            claimName: face-recognition-data
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-data
