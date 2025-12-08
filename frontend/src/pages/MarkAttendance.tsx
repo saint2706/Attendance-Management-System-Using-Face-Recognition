@@ -25,6 +25,7 @@ export const MarkAttendance = () => {
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const streamRef = useRef<MediaStream | null>(null);
 
     // Start camera
     const startCamera = useCallback(async () => {
@@ -41,6 +42,7 @@ export const MarkAttendance = () => {
             });
 
             setStream(mediaStream);
+            streamRef.current = mediaStream;
 
             if (videoRef.current) {
                 videoRef.current.srcObject = mediaStream;
@@ -94,8 +96,10 @@ export const MarkAttendance = () => {
     useEffect(() => {
         startCamera();
         return () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
+            // Use ref to access current stream value for cleanup
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+                streamRef.current = null;
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
