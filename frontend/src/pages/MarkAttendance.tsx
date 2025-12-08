@@ -25,6 +25,7 @@ export const MarkAttendance = () => {
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const streamRef = useRef<MediaStream | null>(null);
 
     // Start camera
     const startCamera = useCallback(async () => {
@@ -41,6 +42,7 @@ export const MarkAttendance = () => {
             });
 
             setStream(mediaStream);
+            streamRef.current = mediaStream;
 
             if (videoRef.current) {
                 videoRef.current.srcObject = mediaStream;
@@ -51,14 +53,6 @@ export const MarkAttendance = () => {
             setError('Unable to access camera. Please ensure camera permissions are granted.');
         }
     }, []);
-
-    // Stop camera
-    const stopCamera = useCallback(() => {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            setStream(null);
-        }
-    }, [stream]);
 
     // Capture and process
     const captureAndRecognize = async () => {
@@ -98,10 +92,19 @@ export const MarkAttendance = () => {
         }
     };
 
-    // Auto-start camera on mount
+    // Auto-start camera on mount (only once)
     useEffect(() => {
         startCamera();
-        return () => stopCamera();
+        return () => {
+            // Use ref to access current stream value for cleanup
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+                streamRef.current = null;
+            }
+        };
+        // startCamera is intentionally omitted from dependencies as we only want to start the camera once on mount
+        // Adding it would cause the effect to re-run whenever startCamera is redefined (never in this case)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Reset for another attempt
