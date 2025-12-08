@@ -71,6 +71,9 @@ After logging in as an admin, you will see the Admin Dashboard with a first-run 
 2. Enter the username of the employee and click **Add Photos**.
 3. The system will automatically capture a set of images to create a face profile for the employee. Ensure the employee is in a well-lit area and facing the camera.
 
+> [!TIP]
+> For best recognition accuracy, capture **8-12 images** per employee under varied lighting and poses. See the [Training Protocol](docs/TRAINING_PROTOCOL.md) for detailed guidance on diverse data collection.
+
 #### Running an Attendance Session
 
 The Attendance Session view provides a live feed of recognition attempts with real-time results.

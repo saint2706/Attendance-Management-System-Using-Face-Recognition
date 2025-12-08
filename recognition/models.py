@@ -15,7 +15,16 @@ logger = logging.getLogger(__name__)
 
 
 class ThresholdProfile(models.Model):
-    """Named threshold profile for recognition distance settings per site."""
+    """Named threshold profile for recognition distance settings per site or group."""
+
+    class GroupType(models.TextChoices):
+        """Types of groups that can have custom thresholds."""
+
+        SITE = "site", "Site"
+        LIGHTING = "lighting", "Lighting Condition"
+        CAMERA = "camera", "Camera Source"
+        ROLE = "role", "User Role"
+        NONE = "", "None (Site-based only)"
 
     name = models.CharField(
         max_length=100,
@@ -52,6 +61,7 @@ class ThresholdProfile(models.Model):
             ("far", "Target False Accept Rate"),
             ("frr", "Target False Reject Rate"),
             ("manual", "Manually Specified"),
+            ("fairness_audit", "From Fairness Audit"),
         ],
         default="manual",
         help_text="Method used to select the threshold",
@@ -59,6 +69,19 @@ class ThresholdProfile(models.Model):
     sites = models.TextField(
         blank=True,
         help_text="Comma-separated list of site codes where this profile applies",
+    )
+    # New fields for group-based threshold configuration
+    group_type = models.CharField(
+        max_length=16,
+        choices=GroupType.choices,
+        default=GroupType.NONE,
+        blank=True,
+        help_text="Type of group this profile applies to (for fairness adjustments)",
+    )
+    group_value = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Specific group value (e.g., 'low_light', 'kiosk_camera')",
     )
     is_default = models.BooleanField(
         default=False,
@@ -71,10 +94,14 @@ class ThresholdProfile(models.Model):
         ordering = ["-is_default", "name"]
         verbose_name = "Threshold Profile"
         verbose_name_plural = "Threshold Profiles"
+        indexes = [
+            models.Index(fields=["group_type", "group_value"]),
+        ]
 
     def __str__(self) -> str:
         default_indicator = " (default)" if self.is_default else ""
-        return f"{self.name}{default_indicator} @ {self.distance_threshold:.4f}"
+        group_indicator = f" [{self.group_type}:{self.group_value}]" if self.group_type else ""
+        return f"{self.name}{default_indicator}{group_indicator} @ {self.distance_threshold:.4f}"
 
     def save(self, *args, **kwargs) -> None:
         """Ensure only one default profile exists."""
@@ -93,6 +120,57 @@ class ThresholdProfile(models.Model):
                 if site_code.lower() in site_list:
                     return profile
         return cls.objects.filter(is_default=True).first()
+
+    @classmethod
+    def get_for_group(
+        cls, group_type: str, group_value: str
+    ) -> Optional["ThresholdProfile"]:
+        """Return the threshold profile for a specific group.
+
+        Args:
+            group_type: Type of group (lighting, camera, role, site).
+            group_value: Specific group value to match.
+
+        Returns:
+            Matching ThresholdProfile or None if not found.
+        """
+        if not group_type or not group_value:
+            return None
+        return cls.objects.filter(
+            group_type=group_type,
+            group_value__iexact=group_value,
+        ).first()
+
+    @classmethod
+    def get_threshold_for_group(
+        cls, group_type: str, group_value: str, fallback_site: str = ""
+    ) -> float:
+        """Return the threshold for a group, with site and default fallbacks.
+
+        Args:
+            group_type: Type of group (lighting, camera, role).
+            group_value: Specific group value.
+            fallback_site: Site code to try if no group match found.
+
+        Returns:
+            Applicable distance threshold.
+        """
+        # First try group-specific profile
+        profile = cls.get_for_group(group_type, group_value)
+        if profile:
+            return profile.distance_threshold
+
+        # Fall back to site-based profile
+        if fallback_site:
+            profile = cls.get_for_site(fallback_site)
+            if profile:
+                return profile.distance_threshold
+
+        # Use default profile or system setting
+        default = cls.objects.filter(is_default=True).first()
+        if default:
+            return default.distance_threshold
+        return float(getattr(settings, "RECOGNITION_DISTANCE_THRESHOLD", 0.4))
 
     @classmethod
     def get_threshold_for_site(cls, site_code: str) -> float:

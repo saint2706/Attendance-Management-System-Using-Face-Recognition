@@ -21,9 +21,13 @@ python manage.py fairness_audit \
 ```
 
 Options:
+
 - `--dataset-root` points to an alternate dataset tree when you need to run the audit outside of the default encrypted directory.
 - `--threshold` lets you test sensitivity to different distance cutoffs.
 - `--max-samples` limits the run to a quick smoke test when hardware resources are constrained.
+- `--recommend-thresholds` generates per-group threshold recommendations based on FAR/FRR metrics.
+- `--frr-threshold` sets the FRR threshold above which a looser threshold is recommended (default: 0.15).
+- `--far-threshold` sets the FAR threshold above which a stricter threshold is recommended (default: 0.05).
 
 The command writes the following artifacts (relative to `reports/fairness/`):
 
@@ -34,7 +38,45 @@ The command writes the following artifacts (relative to `reports/fairness/`):
 | `metrics_by_site.csv` | Accuracy/FAR/FRR for each observed site label inferred from `users.RecognitionAttempt`. |
 | `metrics_by_source.csv` | Similar metrics for the capture source (browser webcam, API, kiosk, etc.). |
 | `metrics_by_lighting.csv` | Robustness slice highlighting performance deltas between low-, medium-, and bright-light captures. |
+| `threshold_recommendations.csv` | Per-group threshold adjustment recommendations (when `--recommend-thresholds` is used). |
 | `evaluation_snapshot/` | Full outputs from `manage.py eval`, stored so auditors can inspect raw predictions without rerunning the expensive inference step. |
+
+## Threshold Recommendations
+
+When groups show elevated error rates, the `--recommend-thresholds` flag generates actionable recommendations:
+
+- **High FRR groups** (>15% False Reject Rate) receive a recommendation to loosen the threshold, reducing frustration for legitimate users in challenging conditions (e.g., low lighting).
+- **High FAR groups** (>5% False Accept Rate) receive a recommendation to tighten the threshold, improving security.
+
+Recommendations can be applied using the `ThresholdProfile` model which supports per-group thresholds:
+
+```bash
+# Create a threshold profile for low-light conditions
+python manage.py threshold_profile create \
+  --name "low_light_adjusted" \
+  --threshold 0.45 \
+  --group-type lighting \
+  --group-value low_light
+```
+
+## Domain Adaptation for Multiple Cameras
+
+When deploying across different cameras (webcams, kiosks, mobile devices), use the domain adaptation tools to assess and mitigate camera-specific biases:
+
+```bash
+# Calibrate a new camera
+python manage.py calibrate_camera lobby_kiosk \
+  --images-dir /path/to/calibration/images \
+  --compare-to reception_webcam
+```
+
+The calibration process:
+
+1. Analyzes reference images to estimate camera characteristics (brightness, contrast, color temperature)
+2. Compares the new camera to existing profiles to identify domain gaps
+3. Provides recommendations for threshold adjustments or image normalization
+
+See [TRAINING_PROTOCOL.md](TRAINING_PROTOCOL.md) for guidance on collecting diverse training data across varied lighting and poses.
 
 ## Findings
 

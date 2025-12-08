@@ -55,6 +55,8 @@ def test_production_database_configuration(monkeypatch):
         "DJANGO_SETTINGS_MODULE",
         "attendance_system_facial_recognition.settings.production",
     )
+    monkeypatch.setenv("DJANGO_ALLOWED_HOSTS", "example.com,localhost")
+    monkeypatch.setenv("DJANGO_SECRET_KEY", "test-secret-key-for-tests-only-1234567890")
     monkeypatch.delenv("DATABASE_URL", raising=False)
     monkeypatch.setenv("DB_NAME", "ci_db")
     monkeypatch.setenv("DB_USER", "ci_user")
