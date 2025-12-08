@@ -31,7 +31,7 @@ dependencies = [
     "seaborn==0.13.2",
     "Pillow==10.3.0",
     "opencv-python==4.9.0.80",
-    "scikit-learn==1.5.0",
+    "scikit-learn==1.7.2",
     "tf-keras==2.20.1",
     "numpy==1.26.4",
     "pandas==2.2.3",
