@@ -29,10 +29,13 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         return 'system';
     });
 
+    // Track system theme changes to trigger re-calculation
+    const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(getSystemTheme);
+
     // Calculate resolved theme from theme state (memoized to avoid recalculation on every render)
     const resolvedTheme = useMemo(() => {
-        return theme === 'system' ? getSystemTheme() : theme;
-    }, [theme]);
+        return theme === 'system' ? systemTheme : theme;
+    }, [theme, systemTheme]);
 
     // Update DOM and localStorage when resolved theme changes
     useEffect(() => {
@@ -42,17 +45,14 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
     // Listen for system theme changes
     useEffect(() => {
-        if (theme !== 'system') return undefined;
-
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         const handleChange = () => {
-            const newTheme = getSystemTheme();
-            document.documentElement.setAttribute('data-theme', newTheme);
+            setSystemTheme(getSystemTheme());
         };
 
         mediaQuery.addEventListener('change', handleChange);
         return () => mediaQuery.removeEventListener('change', handleChange);
-    }, [theme]);
+    }, []);
 
     const setTheme = (newTheme: Theme) => {
         setThemeState(newTheme);
