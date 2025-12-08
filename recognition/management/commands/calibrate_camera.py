@@ -1,10 +1,16 @@
 """Management command to calibrate camera profiles for domain adaptation."""
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import List
+from typing import TYPE_CHECKING, List
+
+from django.core.management.base import BaseCommand, CommandError
 
 import numpy as np
-from django.core.management.base import BaseCommand, CommandError
+
+if TYPE_CHECKING:
+    from recognition.domain_adaptation import CameraProfile
 
 
 class Command(BaseCommand):
@@ -44,11 +50,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         from recognition.domain_adaptation import (
-            CameraProfile,
-            assess_domain_gap,
             estimate_camera_characteristics,
             get_camera_profiles_dir,
-            load_camera_profile,
             save_camera_profile,
         )
 
@@ -63,9 +66,7 @@ class Command(BaseCommand):
         # Load reference images
         images = self._load_images(images_dir)
         if not images:
-            raise CommandError(
-                "No valid images found. Provide --images-dir with reference images."
-            )
+            raise CommandError("No valid images found. Provide --images-dir with reference images.")
 
         self.stdout.write(f"Loaded {len(images)} reference images")
 
@@ -97,9 +98,7 @@ class Command(BaseCommand):
                 import cv2
             except ImportError:
                 self.stderr.write(
-                    self.style.WARNING(
-                        "cv2 not available, using PIL for image loading"
-                    )
+                    self.style.WARNING("cv2 not available, using PIL for image loading")
                 )
                 cv2 = None
 
@@ -139,10 +138,7 @@ class Command(BaseCommand):
         self, profile: "CameraProfile", compare_to: str, profiles_dir: Path
     ) -> None:
         """Compare the new profile to an existing one."""
-        from recognition.domain_adaptation import (
-            assess_domain_gap,
-            load_camera_profile,
-        )
+        from recognition.domain_adaptation import assess_domain_gap, load_camera_profile
 
         compare_path = Path(profiles_dir) / f"{compare_to}.json"
         if not compare_path.exists():
@@ -164,11 +160,15 @@ class Command(BaseCommand):
         self.stdout.write("-" * 50)
         self.stdout.write(f"Brightness Shift:  {gap_result.brightness_shift:.1f}")
         self.stdout.write(f"Contrast Ratio:    {gap_result.contrast_ratio:.2f}x")
-        self.stdout.write(f"Overall Gap Score: {gap_result.overall_gap_score:.2f} (0=identical, 1=very different)")
+        self.stdout.write(
+            f"Overall Gap Score: {gap_result.overall_gap_score:.2f} (0=identical, 1=very different)"
+        )
 
         if gap_result.recommendations:
             self.stdout.write("\nRecommendations:")
             for rec in gap_result.recommendations:
                 self.stdout.write(f"  • {rec}")
         else:
-            self.stdout.write(self.style.SUCCESS("\n✓ Camera profiles are similar, no adjustments needed"))
+            self.stdout.write(
+                self.style.SUCCESS("\n✓ Camera profiles are similar, no adjustments needed")
+            )

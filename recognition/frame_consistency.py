@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Sequence
 
 import cv2
 import numpy as np

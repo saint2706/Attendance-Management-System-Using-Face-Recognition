@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import numpy as np
 
@@ -169,7 +169,11 @@ def analyze_sample_quality(
 
     # Calculate overall quality score
     quality_components = [
-        1.0 if BRIGHTNESS_LOW_THRESHOLD <= metrics.brightness_score <= BRIGHTNESS_HIGH_THRESHOLD else 0.5,
+        (
+            1.0
+            if BRIGHTNESS_LOW_THRESHOLD <= metrics.brightness_score <= BRIGHTNESS_HIGH_THRESHOLD
+            else 0.5
+        ),
         1.0 if metrics.is_sharp else 0.3,
         1.0 if metrics.is_face_large_enough else 0.5,
     ]
@@ -231,8 +235,12 @@ def assess_dataset_diversity(
     for bucket, count in lighting_counts.items():
         if count < target_samples_per_lighting:
             bucket_display = bucket.replace("_", " ")
-            gaps.append(f"Insufficient {bucket_display} samples ({count}/{target_samples_per_lighting})")
-            recommendations.append(f"Capture {target_samples_per_lighting - count} more images in {bucket_display} conditions")
+            gaps.append(
+                f"Insufficient {bucket_display} samples ({count}/{target_samples_per_lighting})"
+            )
+            recommendations.append(
+                f"Capture {target_samples_per_lighting - count} more images in {bucket_display} conditions"
+            )
 
     # Check for quality issues
     if quality_tiers["poor"] > len(samples) * 0.3:
@@ -252,7 +260,9 @@ def assess_dataset_diversity(
         lighting_diversity = entropy / max_entropy if max_entropy > 0 else 0
 
         # Coverage-based diversity
-        covered_buckets = sum(1 for c in lighting_counts.values() if c >= target_samples_per_lighting)
+        covered_buckets = sum(
+            1 for c in lighting_counts.values() if c >= target_samples_per_lighting
+        )
         coverage_score = covered_buckets / len(lighting_counts)
 
         metrics.diversity_score = (lighting_diversity + coverage_score) / 2
@@ -292,14 +302,20 @@ def get_collection_recommendations(
     # Check total count
     if len(current_samples) < target_total:
         needed = target_total - len(current_samples)
-        recommendations.append(f"Capture {needed} more images to reach recommended total of {target_total}")
+        recommendations.append(
+            f"Capture {needed} more images to reach recommended total of {target_total}"
+        )
 
     # Suggest pose variations if we have enough samples
     if len(current_samples) >= 4 and not diversity.coverage_gaps:
-        recommendations.append("Consider adding slight head turns (left/right) for better profile coverage")
+        recommendations.append(
+            "Consider adding slight head turns (left/right) for better profile coverage"
+        )
 
     if not recommendations:
-        recommendations.append("Dataset meets diversity recommendations - no additional captures needed")
+        recommendations.append(
+            "Dataset meets diversity recommendations - no additional captures needed"
+        )
 
     return recommendations
 

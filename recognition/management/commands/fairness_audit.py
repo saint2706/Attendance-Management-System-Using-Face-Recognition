@@ -101,7 +101,9 @@ class Command(BaseCommand):
                 csv_path = config.reports_dir / "threshold_recommendations.csv"
                 write_threshold_recommendations_csv(recommendations, csv_path)
                 self.stdout.write(
-                    self.style.SUCCESS(f"\n✓ Generated {len(recommendations)} threshold recommendations")
+                    self.style.SUCCESS(
+                        f"\n✓ Generated {len(recommendations)} threshold recommendations"
+                    )
                 )
                 self.stdout.write(f"Recommendations: {csv_path}")
 
@@ -113,6 +115,7 @@ class Command(BaseCommand):
                     )
             else:
                 self.stdout.write(
-                    self.style.SUCCESS("\n✓ No threshold adjustments needed - all groups within acceptable ranges")
+                    self.style.SUCCESS(
+                        "\n✓ No threshold adjustments needed - all groups within acceptable ranges"
+                    )
                 )
-
