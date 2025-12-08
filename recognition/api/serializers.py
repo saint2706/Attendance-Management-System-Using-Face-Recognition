@@ -30,6 +30,17 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.get_full_name()
 
 
+class EmployeeSerializer(UserSerializer):
+    """Extended serializer for employees.
+    
+    Currently provides the same fields as UserSerializer.
+    Kept as a separate class for future extensibility (e.g., adding profile fields).
+    """
+
+    class Meta(UserSerializer.Meta):
+        pass
+
+
 class RegisterEmployeeSerializer(serializers.ModelSerializer):
     """Serializer for registering new employees."""
 

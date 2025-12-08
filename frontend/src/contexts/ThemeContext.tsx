@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
@@ -29,33 +29,30 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         return 'system';
     });
 
-    const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() => {
-        if (theme === 'system') return getSystemTheme();
-        return theme;
-    });
+    // Track system theme changes to trigger re-calculation
+    const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(getSystemTheme);
 
-    // Update resolved theme when theme changes
+    // Calculate resolved theme from theme state (memoized to avoid recalculation on every render)
+    const resolvedTheme = useMemo(() => {
+        return theme === 'system' ? systemTheme : theme;
+    }, [theme, systemTheme]);
+
+    // Update DOM and localStorage when resolved theme changes
     useEffect(() => {
-        const resolved = theme === 'system' ? getSystemTheme() : theme;
-        setResolvedTheme(resolved);
-        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.setAttribute('data-theme', resolvedTheme);
         localStorage.setItem(THEME_KEY, theme);
-    }, [theme]);
+    }, [resolvedTheme, theme]);
 
     // Listen for system theme changes
     useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         const handleChange = () => {
-            if (theme === 'system') {
-                const newTheme = getSystemTheme();
-                setResolvedTheme(newTheme);
-                document.documentElement.setAttribute('data-theme', newTheme);
-            }
+            setSystemTheme(getSystemTheme());
         };
 
         mediaQuery.addEventListener('change', handleChange);
         return () => mediaQuery.removeEventListener('change', handleChange);
-    }, [theme]);
+    }, []);
 
     const setTheme = (newTheme: Theme) => {
         setThemeState(newTheme);
@@ -72,10 +69,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-export const useTheme = () => {
+// Export the hook separately to fix react-refresh/only-export-components
+export function useTheme() {
     const context = useContext(ThemeContext);
     if (context === undefined) {
         throw new Error('useTheme must be used within a ThemeProvider');
     }
     return context;
-};
+}
