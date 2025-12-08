@@ -16,7 +16,7 @@ Pillow==10.3.0
 opencv-python==4.9.0.80
 scikit-learn==1.5.0
 tf-keras==2.20.1
-numpy==1.26.4
+numpy==2.3.5
 pandas==2.2.3
 scipy==1.14.1
 prometheus-client==0.20.0
