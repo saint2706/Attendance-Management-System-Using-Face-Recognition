@@ -67,7 +67,13 @@ jobs:
           flavor: |
             latest=false
 
+      - name: Prepare primary image tag
+        run: |
+          primary_tag="$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)"
+          echo "PRIMARY_IMAGE_TAG=${primary_tag}" >> "$GITHUB_ENV"
+
       - name: Build and push Docker image
+        id: build-and-push
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -78,12 +84,53 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64
           provenance: false
+          load: true
 
       - name: Generate artifact attestation
         if: github.event_name != 'pull_request'
         uses: actions/attest-build-provenance@v2
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          subject-digest: ${{ steps.meta.outputs.digest }}
+          subject-digest: ${{ steps.build-and-push.outputs.digest }}
           push-to-registry: true
         continue-on-error: true
+
+      - name: Scan image with Trivy
+        id: trivy-scan
+        uses: aquasecurity/trivy-action@0.22.0
+        continue-on-error: true
+        with:
+          image-ref: ${{ env.PRIMARY_IMAGE_TAG }}
+          format: sarif
+          output: trivy-report.sarif
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+
+      - name: Upload Trivy scan report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-image-scan
+          path: trivy-report.sarif
+
+      - name: Generate SBOM (CycloneDX)
+        id: trivy-sbom
+        uses: aquasecurity/trivy-action@0.22.0
+        with:
+          image-ref: ${{ env.PRIMARY_IMAGE_TAG }}
+          format: cyclonedx
+          output: trivy-sbom.cdx.json
+
+      - name: Upload SBOM artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-sbom
+          path: trivy-sbom.cdx.json
+
+      - name: Fail on Trivy vulnerabilities
+        if: steps.trivy-scan.outputs.exit-code != '0'
+        run: |
+          echo "Trivy reported HIGH or CRITICAL vulnerabilities. See trivy-report.sarif for details."
+          exit 1
