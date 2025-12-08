@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
 
-from users.models import RecognitionAttempt, UserProfile
+from users.models import RecognitionAttempt
 
 User = get_user_model()
 
@@ -30,21 +30,11 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.get_full_name()
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    """Serializer for extended user profile data."""
-
-    class Meta:
-        model = UserProfile
-        fields = ["department", "position", "phone_number"]
-
-
 class EmployeeSerializer(UserSerializer):
-    """Extended serializer for employees including profile data."""
-
-    profile = UserProfileSerializer(source="userprofile", read_only=True)
+    """Extended serializer for employees."""
 
     class Meta(UserSerializer.Meta):
-        fields = UserSerializer.Meta.fields + ["profile"]
+        pass
 
 
 class RegisterEmployeeSerializer(serializers.ModelSerializer):
@@ -74,7 +64,6 @@ class AttendanceRecordSerializer(serializers.ModelSerializer):
             "username",
             "direction",
             "direction_display",
-            "confidence",
             "successful",
             "spoof_detected",
             "created_at",
