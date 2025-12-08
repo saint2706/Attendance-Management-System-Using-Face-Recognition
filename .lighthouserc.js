@@ -3,8 +3,9 @@ module.exports = {
     collect: {
       // Start the Django server for testing
       // Note: This command inherits environment variables from the shell/CI
-      startServerCommand: 'python manage.py runserver 0.0.0.0:8000 --noreload --insecure',
-      startServerReadyPattern: 'Starting development server',
+      // TF_CPP_MIN_LOG_LEVEL=2 suppresses TensorFlow info/warning messages
+      startServerCommand: 'TF_CPP_MIN_LOG_LEVEL=2 python manage.py runserver 0.0.0.0:8000 --noreload --insecure',
+      startServerReadyPattern: 'Starting development server at',
       startServerReadyTimeout: 60000,
       // URLs to audit
       url: [
