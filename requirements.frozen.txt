@@ -65,7 +65,7 @@ lz4==4.4.5
 Markdown==3.10
 markdown-it-py==3.0.0
 MarkupSafe==2.1.5
-matplotlib==3.8.4
+matplotlib==3.10.7
 mdurl==0.1.2
 mercurial==6.7.2
 ml_dtypes==0.5.3
