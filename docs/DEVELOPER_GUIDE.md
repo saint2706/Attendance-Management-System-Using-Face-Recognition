@@ -255,6 +255,27 @@ Key options:
 - `--threshold`: Override `RECOGNITION_LIVENESS_MOTION_THRESHOLD` for the evaluation run only.
 - `--min-frames`: Override `RECOGNITION_LIVENESS_MIN_FRAMES` so you can gauge how sensitive the detector is to longer/shorter bursts.
 
+### Fairness Audit
+
+Run fairness and robustness metrics across the evaluation set to detect performance disparities across operational groups:
+
+```bash
+python manage.py fairness_audit --split-csv reports/splits.csv --reports-dir reports/fairness
+```
+
+Key options:
+
+- `--split-csv`: CSV produced by `prepare_splits` to lock the audit to the test split.
+- `--reports-dir`: Directory for fairness outputs (defaults to `reports/fairness`).
+- `--dataset-root`: Override for the encrypted dataset root.
+- `--threshold`: Distance threshold override for sensitivity testing.
+- `--max-samples`: Limit samples for quick smoke tests.
+- `--recommend-thresholds`: Generate per-group threshold recommendations based on FAR/FRR metrics.
+- `--frr-threshold`: FRR above this value triggers a looser threshold recommendation (default: 0.15).
+- `--far-threshold`: FAR above this value triggers a stricter threshold recommendation (default: 0.05).
+
+The command writes `summary.md`, per-group CSVs, and optional `threshold_recommendations.csv` to the reports directory. See [FAIRNESS_AND_LIMITATIONS.md](FAIRNESS_AND_LIMITATIONS.md) for detailed methodology and interpretation.
+
 ### Hardware Profiling
 
 Detect available hardware accelerators and benchmark model performance:
