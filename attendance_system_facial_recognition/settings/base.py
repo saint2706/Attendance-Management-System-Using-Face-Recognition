@@ -600,16 +600,38 @@ configure_environment(
 
 
 # --- Cache Configuration ---
-# For django-ratelimit, we use LocMemCache in development/testing.
-# While LocMemCache is not ideal for production (not shared across processes),
-# it works for single-process deployments and CI/testing.
-# For production multi-process deployments, configure Redis or Memcached.
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "unique-snowflake",
+# Use Redis for production (when REDIS_URL is set), with LocMemCache fallback.
+# Redis is required for multi-process deployments and embedding caching.
+REDIS_URL = os.environ.get("REDIS_URL")
+EMBEDDING_CACHE_TTL = _parse_int_env("EMBEDDING_CACHE_TTL", default=3600, minimum=60)
+
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+            "KEY_PREFIX": "attendance",
+            "TIMEOUT": 300,  # 5 minutes default
+        },
+        "embeddings": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+            "KEY_PREFIX": "embeddings",
+            "TIMEOUT": EMBEDDING_CACHE_TTL,
+        },
     }
-}
+else:
+    # Fallback for development/testing - not shared across processes
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-snowflake",
+        },
+        "embeddings": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "embeddings-cache",
+        },
+    }
 
 
 # --- Password Validation ---

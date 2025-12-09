@@ -101,6 +101,10 @@ POSTGRES_PASSWORD=your-secure-database-password
 DJANGO_SESSION_COOKIE_SECURE=True
 DJANGO_CSRF_COOKIE_SECURE=True
 SECURE_SSL_REDIRECT=True
+
+# Redis (used for caching and Celery)
+REDIS_URL=redis://redis:6379/2
+EMBEDDING_CACHE_TTL=3600
 EOF
 
 # Secure the environment file

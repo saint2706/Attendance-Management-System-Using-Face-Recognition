@@ -7,8 +7,8 @@ This document outlines the strategic development roadmap for the Attendance Mana
 - [x] **Infrastructure**: GPU Docker containers & Kubernetes manifests.
 - [x] **Frontend Upgrade**: Migration to React SPA (Vite + TypeScript).
 - [x] **API Layer**: Implementation of Django REST Framework (DRF) & JWT Auth.
-- [ ] **Performance**: Redis caching optimization for face embeddings.
-- [ ] **Testing**: Achieve 90% code coverage.
+- [x] **Performance**: Redis caching optimization for face embeddings.
+- [ ] **Testing**: Achieve 90% code coverage. *(Deferred to Q1 2026)*
 
 ---
 

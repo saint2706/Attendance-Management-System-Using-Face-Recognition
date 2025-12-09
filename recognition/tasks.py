@@ -45,6 +45,7 @@ from .views import (
     update_attendance_in_db_in,
     update_attendance_in_db_out,
 )
+from . import embedding_cache
 
 logger = logging.getLogger(__name__)
 
@@ -400,6 +401,11 @@ def train_model_sync(*, initiated_by: str | None = None) -> dict[str, Any]:
     except Exception as exc:
         logger.warning("Failed to build FAISS index (non-fatal): %s", exc)
 
+    # Invalidate embedding caches after training
+    _dataset_embedding_cache.invalidate()
+    embedding_cache.invalidate_all_embeddings()
+    logger.info("Embedding caches invalidated after training.")
+
     return {
         "accuracy": accuracy,
         "precision": precision,
@@ -550,6 +556,8 @@ def incremental_face_training(self, employee_id: str, new_images: Sequence[str])
 
     logger.info("Incremental training for %s complete.", employee_id)
     _dataset_embedding_cache.invalidate()
+    embedding_cache.invalidate_user_embeddings(employee_id)
+    embedding_cache.invalidate_all_embeddings()  # Clear dataset index cache
 
     return {
         "employee_id": employee_id,
