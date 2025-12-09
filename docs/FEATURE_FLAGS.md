@@ -305,4 +305,4 @@ For questions or issues with feature flags:
 1. Run `python manage.py show_features` to verify current configuration
 2. Check environment variables are set correctly
 3. Review logs for feature-related warnings
-4. Consult the main README.md and DEPLOYMENT.md for deployment guidance
+4. Consult the [Quick Start Guide](QUICKSTART.md) and [Deployment Guide](DEPLOYMENT.md) for deployment guidance

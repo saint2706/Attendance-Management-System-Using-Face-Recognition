@@ -1,6 +1,6 @@
 # Developer Guide
 
-This guide provides a comprehensive overview of the project's structure, architecture, and advanced usage. It is intended for developers who want to understand the project's inner workings. For information on how to contribute, please see the [Contributing Guide](CONTRIBUTING.md).
+This guide provides a comprehensive overview of the project's structure, architecture, and advanced usage. It is intended for developers who want to understand the project's inner workings. For information on how to contribute, please see the [Contributing Guide](../CONTRIBUTING.md).
 
 ## 1. Developer Quickstart
 
@@ -291,7 +291,7 @@ Key options:
 - `--backup-dir`: Directory to store backups before re-encryption.
 - `--dry-run`: List files that would be re-encrypted without modifying them.
 
-See [docs/security.md](docs/security.md) for key rotation best practices.
+See [security.md](security.md) for key rotation best practices.
 
 ### Camera Calibration
 
@@ -303,7 +303,7 @@ python manage.py calibrate_camera lobby_kiosk \
   --compare-to reception_webcam
 ```
 
-The calibration analyzes reference images to estimate camera characteristics (brightness, contrast, color temperature) and compares them to existing profiles. See [docs/FAIRNESS_AND_LIMITATIONS.md](docs/FAIRNESS_AND_LIMITATIONS.md) for domain adaptation details.
+The calibration analyzes reference images to estimate camera characteristics (brightness, contrast, color temperature) and compares them to existing profiles. See [FAIRNESS_AND_LIMITATIONS.md](FAIRNESS_AND_LIMITATIONS.md) for domain adaptation details.
 
 ### Threshold Profile Management
 
@@ -363,7 +363,7 @@ For a complete reference of all API endpoints and command-line tools, please see
 
 ## 7. Configuration
 
-The system can be configured using environment variables. For a detailed list of all configuration options, please see the [main README file](README.md#deployment-configuration). Operators planning production deployments should also review the [Deployment Guide](DEPLOYMENT.md) for Compose setup, migrations, and hardening recommendations.
+The system can be configured using environment variables. For a detailed list of all configuration options, please see the [Deployment Guide](DEPLOYMENT.md). Operators planning production deployments should also review the [Deployment Guide](DEPLOYMENT.md) for Compose setup, migrations, and hardening recommendations.
 
 New liveness-related toggles:
 
@@ -512,7 +512,7 @@ The script logs in with the demo admin credentials and captures:
 
 | Screenshot | Path | Description |
 |------------|------|-------------|
-| Home page | `docs/screenshots/home.png` | Landing page with primary actions |
+| Home page | `screenshots/home.png` | Landing page with primary actions |
 | Login page | `docs/screenshots/login.png` | User authentication screen |
 | Admin dashboard | `docs/screenshots/admin-dashboard.png` | Admin home with first-run checklist |
 | Employee registration | `docs/screenshots/employee-registration.png` | Form for registering new employees |
@@ -521,7 +521,7 @@ The script logs in with the demo admin credentials and captures:
 | Reports | `docs/screenshots/reports.png` | Attendance reports dashboard |
 | System health | `docs/screenshots/system-health.png` | Operational health dashboard |
 | Fairness dashboard | `docs/screenshots/fairness-dashboard.png` | Per-group fairness metrics |
-| Evaluation dashboard | `docs/screenshots/evaluation-dashboard.png` | Model performance metrics |
+| Evaluation dashboard | `screenshots/evaluation-dashboard.png` | Model performance metrics |
 
 ### Script Options
 
@@ -530,7 +530,7 @@ python scripts/capture_screenshots.py --help
 ```
 
 - `--base-url` – change the server URL (default: `http://127.0.0.1:8000`)
-- `--output-dir` – change the output directory (default: `docs/screenshots/`)
+- `--output-dir` – change the output directory (default: `screenshots/`)
 - `--admin-username` / `--admin-password` – use different credentials
 - `--headed` – show the browser window during capture (useful for debugging)
 
@@ -540,5 +540,5 @@ If you prefer to capture screenshots manually:
 
 1. Run the demo environment and log in with `demo_admin` / `demo_admin_pass`.
 2. Navigate to each screen and capture using your browser or OS screenshot tools.
-3. Save images to `docs/screenshots/` using the filenames listed above.
+3. Save images to `screenshots/` using the filenames listed above.
 4. Ensure images are reasonably sized (1280×800 or similar) for consistency.

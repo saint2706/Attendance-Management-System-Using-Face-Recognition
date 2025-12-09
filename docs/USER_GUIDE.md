@@ -4,7 +4,7 @@ This guide provides a comprehensive walkthrough of the Attendance Management Sys
 
 ## Quick Start
 
-If you are new to the system, start with the [Beginner Setup section in the README](README.md#beginner-setup-fast-demo-no-prior-experience-required) to get a demo running in minutes.
+If you are new to the system, start with the [Quick Start Guide](QUICKSTART.md) to get a demo running in minutes.
 
 ## 1. Core Concepts
 
@@ -18,14 +18,14 @@ If you are new to the system, start with the [Beginner Setup section in the READ
 
 1. Navigate to the system's home page.
 
-    ![Home page](docs/screenshots/home-light.png)
+    ![Home page](screenshots/home-light.png)
 
     *The home page shows the main actions: Mark Time-In, Mark Time-Out, and Dashboard Login.*
 
 2. Click on the **Dashboard Login** button.
 3. Enter your username and password.
 
-    ![Login page](docs/screenshots/login.png)
+    ![Login page](screenshots/login.png)
 
     *Enter your credentials on the login page.*
 
@@ -50,7 +50,7 @@ If you are new to the system, start with the [Beginner Setup section in the READ
 
 After logging in as an admin, you will see the Admin Dashboard with a first-run checklist (if setup is incomplete) and quick-action cards.
 
-![Admin dashboard](docs/screenshots/admin-dashboard-light.png)
+![Admin dashboard](screenshots/admin-dashboard-light.png)
 
 *The admin dashboard provides quick access to employee management, photo capture, and reports.*
 
@@ -59,7 +59,7 @@ After logging in as an admin, you will see the Admin Dashboard with a first-run 
 1. Log in to your admin dashboard.
 2. Click on **Register Employee**.
 
-    ![Register employee](docs/screenshots/register.png)
+    ![Register employee](screenshots/register.png)
 
     *The registration form for adding a new employee to the system.*
 
@@ -72,7 +72,7 @@ After logging in as an admin, you will see the Admin Dashboard with a first-run 
 3. The system will automatically capture a set of images to create a face profile for the employee. Ensure the employee is in a well-lit area and facing the camera.
 
 > [!TIP]
-> For best recognition accuracy, capture **8-12 images** per employee under varied lighting and poses. See the [Training Protocol](docs/TRAINING_PROTOCOL.md) for detailed guidance on diverse data collection.
+> For best recognition accuracy, capture **8-12 images** per employee under varied lighting and poses. See the [Training Protocol](TRAINING_PROTOCOL.md) for detailed guidance on diverse data collection.
 
 #### Running an Attendance Session
 
@@ -131,4 +131,4 @@ Use these reports to fine-tune thresholds before rolling changes into production
 ## 6. Responsible Use & Limitations
 
 - **Fairness audit:** Run `python manage.py fairness_audit --split-csv reports/splits.csv --reports-dir reports/fairness` after major enrollment batches or hardware changes. The command captures recognition accuracy, precision/recall, and FAR/FRR for different user-role buckets, commonly used sites, capture sources, and coarse lighting conditions. Review the generated `reports/fairness/summary.md` so you can identify groups that require additional training photos or new lighting guidance.
-- **Documentation:** The [Fairness & Limitations](docs/FAIRNESS_AND_LIMITATIONS.md) report explains the methodology, interprets the findings, and lists known blind spots such as the absence of demographic labels. Pair it with the [DATA_CARD.md](DATA_CARD.md) before deploying to new regions so operators understand how the system behaves today and what still needs manual review.
+- **Documentation:** The [Fairness & Limitations](FAIRNESS_AND_LIMITATIONS.md) report explains the methodology, interprets the findings, and lists known blind spots such as the absence of demographic labels. Pair it with the [DATA_CARD.md](DATA_CARD.md) before deploying to new regions so operators understand how the system behaves today and what still needs manual review.

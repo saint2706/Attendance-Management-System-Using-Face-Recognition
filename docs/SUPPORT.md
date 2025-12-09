@@ -8,12 +8,12 @@ Thank you for using the Attendance Management System Using Face Recognition! Thi
 
 Before opening an issue, please check the existing documentation:
 
-- **[README.md](README.md)**: Project overview, installation, and quick start guide
+- **[README.md](../README.md)**: Project overview, installation, and quick start guide
 - **[User Guide](USER_GUIDE.md)**: Comprehensive guide for end users
 - **[Developer Guide](DEVELOPER_GUIDE.md)**: Technical documentation for developers
 - **[API Reference](API_REFERENCE.md)**: API endpoints and CLI tools
 - **[Deployment Guide](DEPLOYMENT.md)**: Deployment procedures and configuration
-- **[Security Guide](docs/security.md)**: Security practices and compliance
+- **[Security Guide](security.md)**: Security practices and compliance
 
 ### Asking Questions
 
@@ -51,11 +51,11 @@ This is an open-source project maintained by volunteers. While we strive to resp
 
 - **Bug reports**: We aim to triage within 1-2 weeks
 - **Feature requests**: Reviewed periodically; implementation depends on complexity and maintainer availability
-- **Security issues**: Handled with priority; see [SECURITY.md](SECURITY.md) for reporting procedures
+- **Security issues**: Handled with priority; see [SECURITY.md](../SECURITY.md) for reporting procedures
 
 ## Contributing
 
-If you'd like to help improve the project, see our [Contributing Guide](CONTRIBUTING.md) for information on:
+If you'd like to help improve the project, see our [Contributing Guide](../CONTRIBUTING.md) for information on:
 
 - Setting up the development environment
 - Coding standards and testing requirements
@@ -63,4 +63,4 @@ If you'd like to help improve the project, see our [Contributing Guide](CONTRIBU
 
 ## Code of Conduct
 
-Please note that this project follows a [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+Please note that this project follows a [Code of Conduct](../CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.

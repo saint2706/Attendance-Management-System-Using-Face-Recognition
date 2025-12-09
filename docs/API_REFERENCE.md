@@ -88,7 +88,7 @@ When `RECOGNITION_MULTI_FACE_ENABLED=true`, the API returns a different response
 }
 ```
 
-For detailed configuration and usage, see the [Multi-Face Detection Guide](docs/MULTI_FACE_GUIDE.md).
+For detailed configuration and usage, see the [Multi-Face Detection Guide](MULTI_FACE_GUIDE.md).
 
 Cosine similarity drives the `distance` value reported above:
 

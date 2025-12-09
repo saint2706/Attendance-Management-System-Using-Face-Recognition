@@ -14,7 +14,7 @@ This project has a [Code of Conduct](CODE_OF_CONDUCT.md). By participating in th
 - A webcam for face recognition (optional for most development tasks)
 - Docker and Docker Compose (optional, for containerized development)
 
-For comprehensive setup instructions, see the [Developer Guide](DEVELOPER_GUIDE.md).
+For comprehensive setup instructions, see the [Developer Guide](docs/DEVELOPER_GUIDE.md).
 
 ### Development Setup
 
@@ -125,7 +125,7 @@ We aim for a minimum of 60% test coverage. Please ensure that your contributions
 ### Before Opening an Issue
 
 1. **Search existing issues** to ensure your issue hasn't already been reported.
-2. **Check the documentation** ([README](README.md), [User Guide](USER_GUIDE.md), [Developer Guide](DEVELOPER_GUIDE.md)) to see if your question is already answered.
+2. **Check the documentation** ([README](README.md), [User Guide](docs/USER_GUIDE.md), [Developer Guide](docs/DEVELOPER_GUIDE.md)) to see if your question is already answered.
 
 ### Bug Reports
 
@@ -199,7 +199,7 @@ When triaging issues:
 
 ## Questions and Support
 
-For questions about using the project, see [SUPPORT.md](SUPPORT.md).
+For questions about using the project, see [SUPPORT.md](docs/SUPPORT.md).
 
 ## Contributor Code of Conduct
 
