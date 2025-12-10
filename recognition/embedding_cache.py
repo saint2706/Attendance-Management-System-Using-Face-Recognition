@@ -16,9 +16,10 @@ import json
 import logging
 from typing import TYPE_CHECKING, Optional
 
-import numpy as np
 from django.conf import settings
 from django.core.cache import caches
+
+import numpy as np
 
 if TYPE_CHECKING:
     from django.core.cache.backends.base import BaseCache

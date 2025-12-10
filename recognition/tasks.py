@@ -31,6 +31,7 @@ from src.common import (
     encrypt_face_bytes,
 )
 
+from . import embedding_cache
 from .views import (
     DATA_ROOT,
     TRAINING_DATASET_ROOT,
@@ -45,7 +46,6 @@ from .views import (
     update_attendance_in_db_in,
     update_attendance_in_db_out,
 )
-from . import embedding_cache
 
 logger = logging.getLogger(__name__)
 
