@@ -33,7 +33,7 @@ on:
       run_slow_tests:
         description: 'Run slow/integration tests'
         required: false
-        default: 'false'
+        default: false
         type: boolean
 
 permissions:
@@ -136,11 +136,21 @@ jobs:
           black --check --line-length=100 .
           isort --check-only --profile=black --line-length=100 .
 
-      - name: Run fast tests (excludes slow, ui, e2e)
+      - name: Run fast tests with coverage (excludes slow, ui, e2e)
         env:
           DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
         run: |
-          pytest -m "not slow and not ui and not e2e" -n auto --maxfail=5 --durations=10 -v
+          pytest -m "not slow and not ui and not e2e" -n auto --maxfail=5 --durations=10 -v \
+            --cov=. --cov-report=xml:coverage.xml --cov-report=term-missing
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report-${{ matrix.python-version }}
+          path: coverage.xml
+          retention-days: 14
+
 
   # Slow tests job - runs on main push, schedule, or manual trigger
   tests_slow:

@@ -176,18 +176,35 @@ All pull requests will be reviewed by at least one other developer. Please ensur
 
 ## Labels
 
-We use labels to categorize issues and pull requests. Here's what each label means:
+We use labels to categorize issues and pull requests.
+
+### Type Labels
 
 | Label | Description |
 |-------|-------------|
 | `bug` | Something isn't working as expected |
 | `enhancement` | New feature or improvement request |
-| `good first issue` | Good for newcomers to the project |
-| `help wanted` | Extra attention is needed |
 | `documentation` | Improvements or additions to documentation |
 | `security` | Security-related issues |
 | `question` | Further information is requested |
 | `wontfix` | This will not be worked on |
+
+### Component Labels
+
+| Label | Description |
+|-------|-------------|
+| `backend` | Django backend, API endpoints, Celery tasks |
+| `frontend` | React SPA, TypeScript, Vite, UI components |
+| `recognition` | Face recognition pipeline, liveness detection |
+| `docs` | Documentation improvements |
+| `infra` | Docker, Kubernetes, CI/CD, deployment |
+
+### Difficulty Labels
+
+| Label | Description |
+|-------|-------------|
+| `good first issue` | Good for newcomers to the project |
+| `help wanted` | Extra attention is needed |
 
 ### For Maintainers
 
@@ -195,7 +212,7 @@ When triaging issues:
 
 - Add `good first issue` to issues that are well-scoped and beginner-friendly
 - Add `help wanted` to issues where community contributions are welcome
-- Add appropriate component labels (e.g., `recognition`, `ui`, `api`) when available
+- Add a component label (`backend`, `frontend`, `recognition`, `docs`, `infra`) to every issue
 
 ## Questions and Support
 

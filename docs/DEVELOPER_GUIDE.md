@@ -155,6 +155,26 @@ docker compose exec web pytest -m ""                       # All tests
 - **Main Branch Push**: Fast tests + slow/integration tests + UI tests
 - **Manual Trigger**: Can opt-in to run slow tests via `workflow_dispatch`
 
+#### Running Tests with Coverage
+
+To measure test coverage locally:
+
+```bash
+# Run fast tests with coverage (recommended for quick feedback)
+pytest --cov=. --cov-report=term-missing --cov-report=xml:coverage.xml -m "not slow and not ui and not e2e"
+
+# Run all tests with full coverage reporting
+make test-all
+# or: pytest --cov=. --cov-report=html --cov-report=term-missing --cov-fail-under=60
+
+# View HTML coverage report (after running with --cov-report=html)
+# Open htmlcov/index.html in your browser
+```
+
+The `.coveragerc` file excludes migrations, admin, management commands, and test files from coverage calculations. Current coverage threshold in CI is 60%.
+
+> **Tip:** Coverage artifacts are uploaded to GitHub Actions for each CI run. Check the "Artifacts" section of any workflow run to download the coverage report.
+
 ## 2. Project Structure
 
 The project is organized into the following directories:
