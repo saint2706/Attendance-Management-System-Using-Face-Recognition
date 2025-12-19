@@ -25,6 +25,7 @@ pytestmark = pytest.mark.django_db
 
 
 @override_settings(
+    RECOGNITION_API_KEYS=("test-api-key",),
     RECOGNITION_DISTANCE_THRESHOLD=0.5,
     DEEPFACE_OPTIMIZATIONS={
         "distance_metric": "euclidean_l2",
@@ -56,7 +57,12 @@ def test_face_recognition_api_returns_match(client, monkeypatch):
 
     url = reverse("face-recognition-api")
     payload = json.dumps({"embedding": [0.1, 0.2, 0.3]})
-    response = client.post(url, data=payload, content_type="application/json")
+    response = client.post(
+        url,
+        data=payload,
+        content_type="application/json",
+        HTTP_X_API_KEY="test-api-key",
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -68,6 +74,7 @@ def test_face_recognition_api_returns_match(client, monkeypatch):
 
 
 @override_settings(
+    RECOGNITION_API_KEYS=("test-api-key",),
     RECOGNITION_DISTANCE_THRESHOLD=0.5,
     DEEPFACE_OPTIMIZATIONS={
         "distance_metric": "euclidean_l2",
@@ -101,8 +108,18 @@ def test_face_recognition_api_rate_limit(client, monkeypatch):
     payload = json.dumps({"embedding": [0.1, 0.2, 0.3]})
 
     for _ in range(5):
-        ok_response = client.post(url, data=payload, content_type="application/json")
+        ok_response = client.post(
+            url,
+            data=payload,
+            content_type="application/json",
+            HTTP_X_API_KEY="test-api-key",
+        )
         assert ok_response.status_code == 200
 
-    limited = client.post(url, data=payload, content_type="application/json")
+    limited = client.post(
+        url,
+        data=payload,
+        content_type="application/json",
+        HTTP_X_API_KEY="test-api-key",
+    )
     assert limited.status_code == 429
