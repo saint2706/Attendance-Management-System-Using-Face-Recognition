@@ -57,9 +57,38 @@ export class FormEnhancer {
                 if (!form.checkValidity()) {
                     e.preventDefault();
                     e.stopPropagation();
+                } else {
+                    this._setLoadingState(form);
                 }
                 form.classList.add('was-validated');
             });
         });
+    }
+
+    /**
+     * Sets the submit button to a loading state.
+     *
+     * @param {HTMLFormElement} form
+     * @private
+     */
+    _setLoadingState(form) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (!submitBtn || submitBtn.disabled) return;
+
+        // Preserve width to prevent layout shift
+        submitBtn.style.width = `${submitBtn.offsetWidth}px`;
+
+        const icon = submitBtn.querySelector('i, svg');
+        if (icon) {
+            const hasText = submitBtn.textContent.trim().length > 0;
+            icon.className = `fas fa-spinner fa-spin ${hasText ? 'me-2' : ''}`;
+        } else {
+            const spinner = document.createElement('i');
+            spinner.className = 'fas fa-spinner fa-spin me-2';
+            spinner.setAttribute('aria-hidden', 'true');
+            submitBtn.prepend(spinner);
+        }
+
+        submitBtn.disabled = true;
     }
 }
