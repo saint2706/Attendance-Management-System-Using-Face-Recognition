@@ -13,14 +13,12 @@ import binascii
 import datetime
 import hashlib
 import io
-from PIL import Image
 import json
-import jwt
-import secrets
 import logging
 import math
 import os
 import pickle
+import secrets
 import sys
 import threading
 import time
@@ -46,6 +44,7 @@ from django.views import View
 
 import cv2
 import imutils
+import jwt
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -58,18 +57,19 @@ from django_ratelimit.core import is_ratelimited
 from django_ratelimit.decorators import ratelimit
 from matplotlib import rcParams
 from pandas.plotting import register_matplotlib_converters
+from PIL import Image
 from sentry_sdk import Hub
 
 from src.common import FaceDataEncryption, InvalidToken, decrypt_bytes
 from users.models import Direction, Present, RecognitionAttempt, Time
 
 from . import health, monitoring
+from .faiss_index import FAISSIndex, build_faiss_index_from_embeddings
 from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
 from .liveness import LivenessBuffer, is_live_face
 from .metrics_store import log_recognition_outcome
 from .models import RecognitionOutcome
 from .pipeline import extract_embedding, find_closest_dataset_match, is_within_distance_threshold
-from .faiss_index import build_faiss_index_from_embeddings, FAISSIndex
 from .webcam_manager import get_webcam_manager
 
 # Use 'Agg' backend for Matplotlib to avoid GUI-related issues in a web server environment
@@ -2518,10 +2518,11 @@ def _mark_attendance(request, check_in: bool):
 
             if embeddings_list:
                 faiss_index = build_faiss_index_from_embeddings(
-                    np.array(embeddings_list),
-                    labels_list
+                    np.array(embeddings_list), labels_list
                 )
-                logger.debug("Built FAISS index with %d embeddings for attendance session", faiss_index.size)
+                logger.debug(
+                    "Built FAISS index with %d embeddings for attendance session", faiss_index.size
+                )
         except Exception as exc:
             logger.warning("Failed to build FAISS index for attendance: %s", exc)
             faiss_index = None
