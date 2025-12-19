@@ -36,16 +36,20 @@ class TestFaceRecognitionWorkflow:
     def teardown_method(self) -> None:
         webcam_module.reset_webcam_manager()
 
-    def _make_request(self) -> Callable[[], object]:
+    def _make_request(self, user=None) -> Callable[[], object]:
         """Return a callable creating POST requests for the API view."""
 
         def _builder() -> object:
             payload = json.dumps({"embedding": [0.1, 0.2, 0.3]})
-            return self.factory.post(
+            request = self.factory.post(
                 "/api/face-recognition/",
                 data=payload,
                 content_type="application/json",
             )
+            # Attach authenticated user to request
+            if user is not None:
+                request.user = user
+            return request
 
         return _builder
 
@@ -78,6 +82,9 @@ class TestFaceRecognitionWorkflow:
     def test_attendance_marking_accuracy(self, monkeypatch) -> None:
         """The API should flip the recognition flag around the distance threshold."""
 
+        # Create a test user for authentication
+        user = User.objects.create_user(username="testuser", password="testpass")
+
         dataset_entry = {
             "embedding": np.array([0.1, 0.2, 0.3], dtype=float),
             "username": "jane",
@@ -106,7 +113,7 @@ class TestFaceRecognitionWorkflow:
         )
 
         view = recognition_views.FaceRecognitionAPI.as_view()
-        request_factory = self._make_request()
+        request_factory = self._make_request(user=user)
 
         first_response = view(request_factory())
         second_response = view(request_factory())
@@ -165,7 +172,7 @@ class TestFaceRecognitionWorkflow:
         )
 
         view = recognition_views.FaceRecognitionAPI.as_view()
-        request = self._make_request()()
+        request = self._make_request(user=user)()
         request.META["HTTP_X_RECOGNITION_SITE"] = "hq"
 
         response = view(request)
