@@ -11,11 +11,13 @@ import sys
 # Mock cv2 to avoid dependency issues in test environment if needed
 sys.modules.setdefault("cv2", MagicMock())
 
+
 def get_minimal_jpeg():
     img = Image.new('RGB', (1, 1))
     buf = io.BytesIO()
     img.save(buf, format='JPEG')
     return base64.b64encode(buf.getvalue()).decode('utf-8')
+
 
 @pytest.mark.django_db
 @override_settings(
@@ -42,7 +44,7 @@ def test_large_image_rejection(client):
     with patch("recognition.views_legacy.Image.open") as mock_open:
         # Simulate a huge image
         mock_img = MagicMock()
-        mock_img.size = (10000, 10000) # 100 MP
+        mock_img.size = (10000, 10000)  # 100 MP
         mock_img.format = "JPEG"
         mock_open.return_value.__enter__.return_value = mock_img
 
