@@ -14,6 +14,8 @@ import datetime
 import hashlib
 import io
 import json
+import jwt
+import secrets
 import logging
 import math
 import os
@@ -366,6 +368,67 @@ class FaceRecognitionAPI(View):
 
     http_method_names = ["post", "options"]
 
+    def _authenticate_request(self, request) -> tuple[bool, Optional[str], Optional[str]]:
+        """Validate session, API key, or JWT credentials for API access."""
+
+        user = getattr(request, "user", None)
+        if getattr(user, "is_authenticated", False):
+            request.face_api_principal = getattr(user, "username", None) or str(
+                getattr(user, "pk", "")
+            )
+            return True, request.face_api_principal, None
+
+        api_keys: tuple[str, ...] = tuple(
+            key.strip() for key in getattr(settings, "RECOGNITION_API_KEYS", ()) if key.strip()
+        )
+        api_key = request.META.get("HTTP_X_API_KEY")
+        if api_key:
+            valid_key = False
+            for allowed_key in api_keys:
+                if secrets.compare_digest(api_key, allowed_key):
+                    valid_key = True
+
+            if valid_key:
+                masked_key = hashlib.sha256(api_key.encode()).hexdigest()
+                request.face_api_principal = f"api-key:{masked_key}"
+                return True, request.face_api_principal, None
+            return False, None, "Invalid API key provided."
+
+        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.partition(" ")[2].strip()
+            if not token:
+                return False, None, "Authorization header is malformed."
+
+            secret = getattr(settings, "RECOGNITION_JWT_SECRET", "")
+            if not secret:
+                return False, None, "JWT authentication is not configured."
+
+            audience = getattr(settings, "RECOGNITION_JWT_AUDIENCE", None) or None
+            issuer = getattr(settings, "RECOGNITION_JWT_ISSUER", None) or None
+            options = {"verify_aud": audience is not None}
+
+            try:
+                claims = jwt.decode(
+                    token,
+                    secret,
+                    algorithms=["HS256"],
+                    audience=audience,
+                    issuer=issuer,
+                    options=options,
+                )
+            except jwt.ExpiredSignatureError:
+                return False, None, "Authentication token has expired."
+            except jwt.InvalidTokenError:
+                return False, None, "Invalid authentication token supplied."
+
+            subject = claims.get("sub") or claims.get("username")
+            request.face_api_principal = subject or "jwt-client"
+            request.face_api_claims = claims
+            return True, request.face_api_principal, None
+
+        return False, None, "Authentication is required for this endpoint."
+
     def _parse_payload(self, request) -> Dict[str, Any]:
         """Return the JSON or form payload supplied with the request."""
 
@@ -502,6 +565,23 @@ class FaceRecognitionAPI(View):
         request_user = getattr(request, "user", None)
         request_username = getattr(request_user, "username", None)
 
+        auth_ok, principal, auth_error = self._authenticate_request(request)
+        if principal and not request_username:
+            request_username = principal
+
+        if not auth_ok:
+            attempt_logger = _RecognitionAttemptLogger(
+                default_direction,
+                site_code,
+                source="api",
+            )
+            attempt_logger.log_failure(
+                request_username,
+                spoofed=False,
+                error=auth_error or "Authentication failed.",
+            )
+            return JsonResponse({"error": auth_error or "Authentication failed."}, status=401)
+
         if getattr(request, "limited", False):
             attempt_logger = _RecognitionAttemptLogger(
                 default_direction,
@@ -550,6 +630,10 @@ class FaceRecognitionAPI(View):
 
         raw_username = payload.get("username")
         submitted_username = raw_username.strip() if isinstance(raw_username, str) else None
+
+        # Enforce max length on username to prevent database errors or DoS
+        if submitted_username and len(submitted_username) > 150:
+            submitted_username = submitted_username[:150]
 
         embedding_vector = None
         frame = None
