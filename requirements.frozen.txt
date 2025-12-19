@@ -84,7 +84,7 @@ pexpect==4.9.0
 pillow==10.3.0
 pipx==1.8.0
 platformdirs==4.5.0
-prometheus-client==0.20.0
+prometheus-client==0.23.1
 protobuf==6.33.0
 ptyprocess==0.7.0
 pyasn1==0.4.8
@@ -140,5 +140,5 @@ WALinuxAgent==2.11.1.4
 Werkzeug==3.1.4
 wheel==0.42.0
 wrapt==2.0.1
-zope.interface==6.1
+zope.interface==8.1.1
 zstandard==0.22.0
