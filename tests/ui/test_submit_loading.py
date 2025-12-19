@@ -3,11 +3,13 @@ UI Tests for Form Loading State
 """
 
 import re
+
 import pytest
 from playwright.sync_api import Page, expect
 
 # Use the same markers as other UI tests
 pytestmark = [pytest.mark.ui, pytest.mark.django_db(transaction=True)]
+
 
 @pytest.fixture(scope="function")
 def page(browser):
@@ -15,6 +17,7 @@ def page(browser):
     page = browser.new_page()
     yield page
     page.close()
+
 
 def test_submit_loading_state(page: Page, server_url: str):
     """Test that submitting a form shows the loading spinner on the button."""
@@ -29,12 +32,14 @@ def test_submit_loading_state(page: Page, server_url: str):
     # Add a submit listener that prevents default to stop navigation
     # This runs after the application's listener (which sets loading state)
     # ensuring the UI updates but the page doesn't reload.
-    page.evaluate("""
+    page.evaluate(
+        """
         const form = document.querySelector('form');
         form.addEventListener('submit', (e) => {
             e.preventDefault();
         });
-    """)
+    """
+    )
 
     # Click submit
     submit_btn = page.locator("button[type='submit']")
