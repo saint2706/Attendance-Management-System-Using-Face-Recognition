@@ -18,7 +18,7 @@ If you are new to the system, start with the [Quick Start Guide](QUICKSTART.md) 
 
 1. Navigate to the system's home page.
 
-    ![Home page](screenshots/home-light.png)
+    ![Home page](screenshots/home-light-updated.png)
 
     *The home page shows the main actions: Mark Time-In, Mark Time-Out, and Dashboard Login.*
 

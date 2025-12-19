@@ -18,8 +18,8 @@
         <div class="col-12 col-md-6 col-lg-4 mb-4">
             <article class="card h-100 card-elevated">
                 <div class="card-body card-body-lg d-flex flex-column justify-content-center">
-                    <a href="{% url 'mark-your-attendance' %}" class="link-reset">
-                        <i class="fas fa-arrow-right-from-bracket card-icon icon-xxl mb-4" aria-hidden="true"></i>
+                    <a href="{% url 'mark-your-attendance' %}" class="link-reset" title="Clock in for the day">
+                        <i class="fas fa-sign-in-alt card-icon icon-xxl mb-4" aria-hidden="true"></i>
                         <h3 class="card-title mb-4">
                             Mark Time-In
                         </h3>
@@ -34,8 +34,8 @@
         <div class="col-12 col-md-6 col-lg-4 mb-4">
             <article class="card h-100 card-elevated">
                 <div class="card-body card-body-lg d-flex flex-column justify-content-center">
-                    <a href="{% url 'mark-your-attendance-out' %}" class="link-reset">
-                        <i class="fas fa-right-to-bracket card-icon icon-xxl mb-4" aria-hidden="true"></i>
+                    <a href="{% url 'mark-your-attendance-out' %}" class="link-reset" title="Clock out for the day">
+                        <i class="fas fa-sign-out-alt card-icon icon-xxl mb-4" aria-hidden="true"></i>
                         <h3 class="card-title mb-4">
                             Mark Time-Out
                         </h3>
@@ -50,7 +50,7 @@
         <div class="col-12 col-md-6 col-lg-4 mb-4">
             <article class="card h-100 card-elevated">
                 <div class="card-body card-body-lg d-flex flex-column justify-content-center">
-                    <a href="{% url 'login' %}" class="link-reset">
+                    <a href="{% url 'login' %}" class="link-reset" title="Log in to the dashboard">
                         <i class="fas fa-user-shield card-icon icon-xxl mb-4" aria-hidden="true"></i>
                         <h3 class="card-title mb-4">
                             Dashboard Login
