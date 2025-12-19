@@ -12,3 +12,8 @@
 **Vulnerability:** The API accepted usernames of arbitrary length, potentially causing database errors or Denial of Service.
 **Learning:** Always validate and sanitize input length at the boundary (view layer) before passing to the data layer.
 **Prevention:** Truncate or reject inputs exceeding expected length limits.
+
+## 2025-12-19 - [HIGH] Image Decompression Bomb Protection
+**Vulnerability:** The API processed user-uploaded images or base64 payloads using `cv2.imdecode` without checking dimensions first. A small malicious file could decode to a massive bitmap, causing Denial of Service (OOM).
+**Learning:** `cv2.imdecode` (and `numpy.frombuffer`) does not inherently limit image dimensions. We must inspect image headers (using `Pillow` or similar) before decoding pixel data into memory.
+**Prevention:** Added a `MAX_IMAGE_PIXELS` limit and a pre-check using `PIL.Image.open()` in `_decode_image_bytes`.

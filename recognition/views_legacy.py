@@ -13,6 +13,7 @@ import binascii
 import datetime
 import hashlib
 import io
+from PIL import Image
 import json
 import jwt
 import secrets
@@ -1191,10 +1192,31 @@ def _decrypt_image_bytes(image_path: Path) -> Optional[bytes]:
     return decrypted_bytes
 
 
+MAX_IMAGE_PIXELS = int(getattr(settings, "RECOGNITION_MAX_IMAGE_PIXELS", 25_000_000))
+
+
 def _decode_image_bytes(
     decrypted_bytes: bytes, *, source: Optional[Path] = None
 ) -> Optional[np.ndarray]:
     """Decode decrypted image bytes into a numpy array."""
+
+    # 🛡️ Sentinel: Check image dimensions to prevent Decompression Bomb DoS
+    try:
+        with io.BytesIO(decrypted_bytes) as bio:
+            with Image.open(bio) as img:
+                width, height = img.size
+                if width * height > MAX_IMAGE_PIXELS:
+                    logger.warning(
+                        "Image dimensions %dx%d exceed maximum allowed %d pixels.",
+                        width,
+                        height,
+                        MAX_IMAGE_PIXELS,
+                    )
+                    return None
+    except Exception as exc:
+        # If PIL fails to verify, log and return None for safety
+        logger.warning("Failed to verify image dimensions with PIL: %s", exc)
+        return None
 
     frame_array = np.frombuffer(decrypted_bytes, dtype=np.uint8)
     if frame_array.size == 0:
