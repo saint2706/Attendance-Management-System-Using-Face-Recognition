@@ -68,6 +68,7 @@ from .liveness import LivenessBuffer, is_live_face
 from .metrics_store import log_recognition_outcome
 from .models import RecognitionOutcome
 from .pipeline import extract_embedding, find_closest_dataset_match, is_within_distance_threshold
+from .faiss_index import build_faiss_index_from_embeddings, FAISSIndex
 from .webcam_manager import get_webcam_manager
 
 # Use 'Agg' backend for Matplotlib to avoid GUI-related issues in a web server environment
@@ -2476,6 +2477,33 @@ def _mark_attendance(request, check_in: bool):
         model_name, detector_backend, enforce_detection
     )
     dataset_load_duration = time.perf_counter() - dataset_load_start
+
+    # Optimization: Build FAISS index for faster matching if metric is compatible
+    faiss_index: Optional[FAISSIndex] = None
+    dataset_metadata: Dict[str, Dict[str, Any]] = {}
+
+    if dataset_index and distance_metric in ("euclidean", "euclidean_l2", "l2"):
+        try:
+            embeddings_list = []
+            labels_list = []
+            for entry in dataset_index:
+                embedding = entry.get("embedding")
+                identity = entry.get("identity")
+                if isinstance(embedding, np.ndarray) and identity:
+                    embeddings_list.append(embedding)
+                    labels_list.append(str(identity))
+                    dataset_metadata[str(identity)] = entry
+
+            if embeddings_list:
+                faiss_index = build_faiss_index_from_embeddings(
+                    np.array(embeddings_list),
+                    labels_list
+                )
+                logger.debug("Built FAISS index with %d embeddings for attendance session", faiss_index.size)
+        except Exception as exc:
+            logger.warning("Failed to build FAISS index for attendance: %s", exc)
+            faiss_index = None
+
     monitoring.observe_stage_duration(
         "dataset_index_load",
         dataset_load_duration,
@@ -2574,9 +2602,20 @@ def _mark_attendance(request, check_in: bool):
                         continue
 
                     frame_embedding = np.array(embedding_vector, dtype=float)
-                    match = find_closest_dataset_match(
-                        frame_embedding, dataset_index, distance_metric
-                    )
+
+                    match = None
+                    if faiss_index:
+                        result = faiss_index.search_single(frame_embedding)
+                        if result:
+                            identity_path, distance_value = result
+                            entry = dataset_metadata.get(identity_path, {})
+                            username = entry.get("username", "")
+                            match = (username, distance_value, identity_path)
+                    else:
+                        match = find_closest_dataset_match(
+                            frame_embedding, dataset_index, distance_metric
+                        )
+
                     if match is None:
                         continue
 
