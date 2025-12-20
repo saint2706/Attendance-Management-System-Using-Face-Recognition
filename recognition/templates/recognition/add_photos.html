@@ -105,6 +105,12 @@
                                 playsinline
                                 data-camera-preview
                             ></video>
+                            <div class="camera-loader position-absolute top-50 start-50 translate-middle text-center" data-camera-loader>
+                                <div class="spinner-border text-light mb-2" role="status" style="width: 3rem; height: 3rem;">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="text-light mb-0">Initializing camera...</p>
+                            </div>
                         </div>
                         <div class="alert alert-danger mt-3 d-none" role="alert" data-camera-error></div>
                         <p class="text-muted small mt-3 mb-0">
@@ -180,6 +186,7 @@
         const previewButton = document.querySelector("[data-camera-preview-trigger]");
         const errorAlert = modalElement?.querySelector("[data-camera-error]");
         const previewVideo = modalElement?.querySelector("[data-camera-preview]");
+        const loader = modalElement?.querySelector("[data-camera-loader]");
 
         if (!modalElement || !window.bootstrap) {
             return;
@@ -203,6 +210,16 @@
             errorAlert.classList.remove("d-none");
         };
 
+        const setLoader = (isLoading) => {
+            if (loader) {
+                if (isLoading) {
+                    loader.classList.remove("d-none");
+                } else {
+                    loader.classList.add("d-none");
+                }
+            }
+        };
+
         if (previewButton) {
             const cameraSupported = Boolean(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
             if (!cameraSupported) {
@@ -219,14 +236,24 @@
 
         modalElement.addEventListener("shown.bs.modal", async () => {
             hideError();
+            setLoader(true);
+
             if (!previewVideo) {
                 return;
             }
+
+            const onPlaying = () => {
+                setLoader(false);
+                previewVideo.removeEventListener("playing", onPlaying);
+            };
+            previewVideo.addEventListener("playing", onPlaying);
 
             try {
                 await cameraManager.start(previewVideo);
             } catch (error) {
                 cameraManager.stop();
+                setLoader(false);
+                previewVideo.removeEventListener("playing", onPlaying);
                 showError(error?.message || "Unable to access the camera. Please check your browser permissions.");
             }
         });
