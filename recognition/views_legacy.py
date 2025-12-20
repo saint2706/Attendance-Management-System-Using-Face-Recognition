@@ -1510,7 +1510,9 @@ def update_attendance_in_db_out(
             RecognitionAttempt.objects.filter(id=attempt_id).update(**attempt_updates)
 
 
-def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
+def check_validity_times(
+    times_all: Sequence[Time] | QuerySet[Time]
+) -> tuple[bool, float]:
     """
     Validate and calculate break hours from a sequence of time entries.
 
@@ -1518,7 +1520,7 @@ def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
     calculates the total break time in hours.
 
     Args:
-        times_all: A queryset of `Time` objects for a user on a given day,
+        times_all: A queryset or list of `Time` objects for a user on a given day,
                    ordered by time.
 
     Returns:
@@ -1529,7 +1531,11 @@ def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
     if not times_all:
         return True, 0  # No records, so no invalidity
 
-    first_entry = times_all.first()
+    if isinstance(times_all, list):
+        first_entry = times_all[0] if times_all else None
+    else:
+        first_entry = times_all.first()
+
     if first_entry is None or first_entry.time is None:
         return True, 0
 
@@ -1538,10 +1544,14 @@ def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
         return False, 0
 
     # The number of check-ins must equal the number of check-outs
-    if (
-        times_all.filter(direction=Direction.IN).count()
-        != times_all.filter(direction=Direction.OUT).count()
-    ):
+    if isinstance(times_all, list):
+        in_count = sum(1 for t in times_all if t.direction == Direction.IN)
+        out_count = sum(1 for t in times_all if t.direction == Direction.OUT)
+    else:
+        in_count = times_all.filter(direction=Direction.IN).count()
+        out_count = times_all.filter(direction=Direction.OUT).count()
+
+    if in_count != out_count:
         return False, 0
 
     break_hours = 0
@@ -1596,15 +1606,29 @@ def hours_vs_date_given_employee(
     df_hours = []
     df_break_hours = []
 
+    # ⚡ Performance: Fetch all time records once and group in memory to avoid N+1 queries
+    all_times = list(time_qs)
+    times_by_date = {}
+    for t in all_times:
+        if t.date not in times_by_date:
+            times_by_date[t.date] = []
+        times_by_date[t.date].append(t)
+
+    # Ensure times are sorted by time (as originally requested by .order_by("time"))
+    for d in times_by_date:
+        times_by_date[d].sort(key=lambda x: x.time)
+
+    date_list = []
     for obj in present_qs:
         date = obj.date
-        times_all = time_qs.filter(date=date).order_by("time")
-        times_in = times_all.filter(direction=Direction.IN)
-        times_out = times_all.filter(direction=Direction.OUT)
+        date_list.append(date)
+        times_all = times_by_date.get(date, [])
+        times_in = [t for t in times_all if t.direction == Direction.IN]
+        times_out = [t for t in times_all if t.direction == Direction.OUT]
 
         # Use intermediate variables to avoid calling .time on None
-        first_in = times_in.first()
-        last_out = times_out.last()
+        first_in = times_in[0] if times_in else None
+        last_out = times_out[-1] if times_out else None
         obj.time_in = first_in.time if first_in else None
         obj.time_out = last_out.time if last_out else None
 
@@ -1624,9 +1648,11 @@ def hours_vs_date_given_employee(
         obj.break_hours = convert_hours_to_hours_mins(break_hours_val)
 
     # Generate and save the plot
-    df = read_frame(present_qs, fieldnames=["date"])
-    df["hours"] = df_hours
-    df["break_hours"] = df_break_hours
+    df = pd.DataFrame({
+        "date": date_list,
+        "hours": df_hours,
+        "break_hours": df_break_hours,
+    })
     logger.debug("Attendance dataframe for employee: %s", df)
 
     sns.barplot(data=df, x="date", y="hours")
@@ -1658,15 +1684,32 @@ def hours_vs_employee_given_date(
     df_break_hours = []
     df_username = []
 
+    # ⚡ Performance: Fetch all time records once and group in memory to avoid N+1 queries
+    all_times = list(time_qs)
+    times_by_user = {}
+    for t in all_times:
+        if t.user_id not in times_by_user:
+            times_by_user[t.user_id] = []
+        times_by_user[t.user_id].append(t)
+
+    # Ensure times are sorted by time
+    for uid in times_by_user:
+        times_by_user[uid].sort(key=lambda x: x.time)
+
+    # ⚡ Performance: Optimize related object fetching
+    present_qs = present_qs.select_related("user")
+
+    user_pk_list = []
     for obj in present_qs:
         user = obj.user
-        times_all = time_qs.filter(user=user).order_by("time")
-        times_in = times_all.filter(direction=Direction.IN)
-        times_out = times_all.filter(direction=Direction.OUT)
+        user_pk_list.append(user.pk)
+        times_all = times_by_user.get(user.id, [])
+        times_in = [t for t in times_all if t.direction == Direction.IN]
+        times_out = [t for t in times_all if t.direction == Direction.OUT]
 
         # Use intermediate variables to avoid calling .time on None
-        first_in = times_in.first()
-        last_out = times_out.last()
+        first_in = times_in[0] if times_in else None
+        last_out = times_out[-1] if times_out else None
         obj.time_in = first_in.time if first_in else None
         obj.time_out = last_out.time if last_out else None
 
@@ -1687,10 +1730,12 @@ def hours_vs_employee_given_date(
         obj.break_hours = convert_hours_to_hours_mins(break_hours_val)
 
     # Generate and save the plot
-    df = read_frame(present_qs, fieldnames=["user"])
-    df["hours"] = df_hours
-    df["username"] = df_username
-    df["break_hours"] = df_break_hours
+    df = pd.DataFrame({
+        "user": user_pk_list,
+        "hours": df_hours,
+        "username": df_username,
+        "break_hours": df_break_hours,
+    })
 
     sns.barplot(data=df, x="username", y="hours")
     plt.xticks(rotation="vertical")
