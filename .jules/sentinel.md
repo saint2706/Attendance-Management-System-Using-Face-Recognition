@@ -17,3 +17,8 @@
 **Vulnerability:** The API processed user-uploaded images or base64 payloads using `cv2.imdecode` without checking dimensions first. A small malicious file could decode to a massive bitmap, causing Denial of Service (OOM).
 **Learning:** `cv2.imdecode` (and `numpy.frombuffer`) does not inherently limit image dimensions. We must inspect image headers (using `Pillow` or similar) before decoding pixel data into memory.
 **Prevention:** Added a `MAX_IMAGE_PIXELS` limit and a pre-check using `PIL.Image.open()` in `_decode_image_bytes`.
+
+## 2025-12-20 - [HIGH] Missing Rate Limiting on Login Endpoint
+**Vulnerability:** The default Django `LoginView` does not implement rate limiting, allowing brute-force password guessing attacks.
+**Learning:** Standard library or framework views (like `auth_views.LoginView`) often prioritize functionality over security hardening. Do not assume default views are secure against active attacks.
+**Prevention:** Subclassed `LoginView` to create `CustomLoginView` and applied `django-ratelimit` to enforce a strict attempt limit (5/m).

@@ -145,7 +145,7 @@ urlpatterns = [
     # Authentication views
     path(
         "login/",
-        auth_views.LoginView.as_view(template_name="users/login.html"),
+        users_views.CustomLoginView.as_view(),
         name="login",
     ),
     path(
