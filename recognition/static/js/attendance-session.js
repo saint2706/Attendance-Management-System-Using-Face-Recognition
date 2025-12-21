@@ -102,7 +102,7 @@ export class AttendanceSessionMonitor {
 
             console.error('[AttendanceSession] Fetch error:', error);
 
-            this.tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Unable to load live log (${error.message}).</td></tr>`;
+            this.tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Unable to load live log (${this._escapeHtml(error.message)}).</td></tr>`;
 
             // Stop polling after too many errors
             if (this.errorCount >= POLLING_CONFIG.MAX_POLLING_ERRORS) {
@@ -137,8 +137,9 @@ export class AttendanceSessionMonitor {
      */
     _renderEvent(event) {
         const timestamp = new Date(event.timestamp).toLocaleString();
-        const username = event.username || 'Unknown';
-        const direction = event.direction || '—';
+        // 🛡️ Sentinel: Escape user input to prevent XSS
+        const username = this._escapeHtml(event.username || 'Unknown');
+        const direction = this._escapeHtml(event.direction || '—');
 
         let status = 'Pending';
         let statusStyle = 'bg-secondary';
@@ -170,7 +171,8 @@ export class AttendanceSessionMonitor {
             if (event.error) {
                 status = 'Error';
                 statusStyle = 'bg-danger';
-                confidence = event.error;
+                // 🛡️ Sentinel: Escape error message too
+                confidence = this._escapeHtml(event.error);
             }
         }
 
@@ -196,5 +198,22 @@ export class AttendanceSessionMonitor {
      */
     _statusBadge(label, style) {
         return `<span class="badge ${style}">${label}</span>`;
+    }
+
+    /**
+     * Escape HTML characters to prevent XSS.
+     *
+     * @private
+     * @param {string} text - Text to escape
+     * @returns {string} Escaped text
+     */
+    _escapeHtml(text) {
+        if (!text) return text;
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 }
