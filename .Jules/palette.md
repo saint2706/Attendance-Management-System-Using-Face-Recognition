@@ -5,3 +5,7 @@
 ## 2025-12-19 - [Icon Consistency]
 **Learning:** Inconsistent icon usage (e.g., exit icon for entry) causes significant user confusion. Standardizing icons across the application (matching `base.html` and standard metaphors) improves intuitiveness.
 **Action:** Audit icon usage when touching templates to ensure semantic consistency.
+
+## 2025-12-21 - [Camera Initialization Feedback]
+**Learning:** Browser camera initialization (`getUserMedia`) is asynchronous and can be slow. Without a visual loader, users see a blank screen, leading to confusion about app state.
+**Action:** Implement an explicit loading state that persists until the video stream is active and playing.

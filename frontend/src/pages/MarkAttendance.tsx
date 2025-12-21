@@ -21,6 +21,7 @@ export const MarkAttendance = () => {
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isInitializing, setIsInitializing] = useState(true);
     const [result, setResult] = useState<RecognitionResult | null>(null);
 
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -31,6 +32,7 @@ export const MarkAttendance = () => {
     const startCamera = useCallback(async () => {
         setError(null);
         setResult(null);
+        setIsInitializing(true);
 
         try {
             const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -51,6 +53,8 @@ export const MarkAttendance = () => {
         } catch (err) {
             console.error('Camera error:', err);
             setError('Unable to access camera. Please ensure camera permissions are granted.');
+        } finally {
+            setIsInitializing(false);
         }
     }, []);
 
@@ -140,12 +144,19 @@ export const MarkAttendance = () => {
                         </div>
                     ) : (
                         <>
+                            {isInitializing && (
+                                <div className="flex flex-col items-center justify-center text-muted" style={{ position: 'absolute', inset: 0, zIndex: 10, backgroundColor: '#000' }}>
+                                    <Loader2 size={48} className="animate-spin mb-md" style={{ color: 'var(--color-primary)' }} />
+                                    <p>Starting camera...</p>
+                                </div>
+                            )}
                             <video
                                 ref={videoRef}
                                 autoPlay
                                 playsInline
                                 muted
                                 className="camera-video"
+                                aria-label="Camera preview"
                             />
                             <canvas ref={canvasRef} className="hidden-canvas" />
 
