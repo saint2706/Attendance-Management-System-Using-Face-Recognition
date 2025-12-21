@@ -1,24 +1,4 @@
-## 2025-12-19 - [CRITICAL] Missing Authentication on Face Recognition API
-**Vulnerability:** The `FaceRecognitionAPI` endpoint was accessible without any authentication (API key or session checks were missing in `views_legacy.py` which is the active module).
-**Learning:** Duplicate code files (`views.py` vs `views_legacy.py`) caused confusion. The newer secure code in `views.py` was not being used. Always verify which module is actually imported and used by the application.
-**Prevention:** Remove unused duplicate code. Ensure tests target the actual code used in production. Verify `__init__.py` exports.
-
-## 2025-12-19 - [MEDIUM] Timing Attack on API Key Verification
-**Vulnerability:** API key verification used `key in api_keys` and early return, allowing for timing attacks to enumerate valid API keys.
-**Learning:** List membership checks are not constant time.
-**Prevention:** Iterate through all allowed keys and use `secrets.compare_digest` for each comparison, maintaining constant time flow.
-
-## 2025-12-19 - [MEDIUM] Unbounded Username Length
-**Vulnerability:** The API accepted usernames of arbitrary length, potentially causing database errors or Denial of Service.
-**Learning:** Always validate and sanitize input length at the boundary (view layer) before passing to the data layer.
-**Prevention:** Truncate or reject inputs exceeding expected length limits.
-
-## 2025-12-19 - [HIGH] Image Decompression Bomb Protection
-**Vulnerability:** The API processed user-uploaded images or base64 payloads using `cv2.imdecode` without checking dimensions first. A small malicious file could decode to a massive bitmap, causing Denial of Service (OOM).
-**Learning:** `cv2.imdecode` (and `numpy.frombuffer`) does not inherently limit image dimensions. We must inspect image headers (using `Pillow` or similar) before decoding pixel data into memory.
-**Prevention:** Added a `MAX_IMAGE_PIXELS` limit and a pre-check using `PIL.Image.open()` in `_decode_image_bytes`.
-
-## 2025-12-20 - [HIGH] Missing Rate Limiting on Login Endpoint
-**Vulnerability:** The default Django `LoginView` does not implement rate limiting, allowing brute-force password guessing attacks.
-**Learning:** Standard library or framework views (like `auth_views.LoginView`) often prioritize functionality over security hardening. Do not assume default views are secure against active attacks.
-**Prevention:** Subclassed `LoginView` to create `CustomLoginView` and applied `django-ratelimit` to enforce a strict attempt limit (5/m).
+## 2025-05-23 - Stored XSS in Attendance Session Monitor
+**Vulnerability:** The attendance session monitor (`recognition/static/js/attendance-session.js`) inserted unescaped API data (username, direction, error messages) directly into the DOM using `innerHTML`. This allowed Stored XSS if a malicious username was registered or spoofed in a recognition attempt.
+**Learning:** Frontend code using `innerHTML` to render API responses bypasses Django's automatic template escaping. Even "internal" APIs should be treated as untrusted sources for frontend rendering.
+**Prevention:** Use `textContent` for text updates, or explicitly escape HTML entities when building HTML strings in JavaScript. Added `_escapeHtml` helper to sanitise all user-controlled inputs before rendering.
