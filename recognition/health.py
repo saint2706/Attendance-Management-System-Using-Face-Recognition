@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from django.conf import settings
+from django.core.cache import cache
 from django.utils import timezone
 
 from attendance_system_facial_recognition.celery import app as celery_app
@@ -48,19 +49,35 @@ def _isoformat_or_none(value: Optional[dt.datetime]) -> Optional[str]:
 
 
 def dataset_health() -> Dict[str, Any]:
-    """Summarize the encrypted training dataset on disk."""
+    """Summarize the encrypted training dataset on disk.
+
+    The result of this function is cached for up to 1 hour and subsequent
+    calls may return the cached snapshot instead of recomputing it from
+    the filesystem. The cache is explicitly invalidated when new images
+    are added by :func:`recognition.tasks.capture_dataset_sync`, at which
+    point a fresh snapshot is generated on the next call.
+    """
+
+    cache_key = "recognition:health:dataset_snapshot"
+    cached_snapshot = cache.get(cache_key)
+    if cached_snapshot is not None:
+        return cached_snapshot
 
     dataset_files = [path for path in TRAINING_DATASET_ROOT.glob("*/*.jpg") if path.is_file()]
     identities = {path.parent.name for path in dataset_files}
     last_updated = max((_safe_mtime(path) for path in dataset_files), default=None)
 
-    return {
+    snapshot = {
         "exists": TRAINING_DATASET_ROOT.exists(),
         "image_count": len(dataset_files),
         "identity_count": len(identities),
         "last_updated": last_updated,
         "last_updated_display": _isoformat_or_none(last_updated),
     }
+
+    # Cache for 1 hour; invalidated by recognition.tasks.capture_dataset_sync
+    cache.set(cache_key, snapshot, timeout=3600)
+    return snapshot
 
 
 def model_health(*, dataset_last_updated: Optional[dt.datetime]) -> Dict[str, Any]:

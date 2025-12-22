@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 from django.conf import settings
+from django.core.cache import cache
 
 import cv2
 import imutils
@@ -287,6 +288,10 @@ def capture_dataset_sync(
         video_stream.stop()
         if not headless:
             cv2.destroyAllWindows()
+
+        # Invalidate dataset health cache as new images were added
+        if saved_paths:
+            cache.delete("recognition:health:dataset_snapshot")
 
     if enqueue_training and saved_paths:
         try:
