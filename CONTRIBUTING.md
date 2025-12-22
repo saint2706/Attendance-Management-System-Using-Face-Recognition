@@ -1,53 +1,405 @@
-# Contributing to the Attendance Management System
+# Contributing to Attendance Management System
 
-Thank you for your interest in contributing to the Attendance Management System Using Face Recognition! This document provides a comprehensive guide for developers who want to contribute to the project.
+Thank you for your interest in contributing! This document provides comprehensive guidelines for contributing code, documentation, and other improvements to the project.
+
+## Table of Contents
+
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [Making Changes](#making-changes)
+- [Code Standards](#code-standards)
+- [Testing Requirements](#testing-requirements)
+- [Submitting Changes](#submitting-changes)
+- [Review Process](#review-process)
+- [Community](#community)
+
+---
 
 ## Code of Conduct
 
-This project has a [Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project, you agree to abide by its terms.
+This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior by opening a GitHub issue or contacting the maintainers.
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-- Python 3.12 or higher
-- A webcam for face recognition (optional for most development tasks)
-- Docker and Docker Compose (optional, for containerized development)
+Before contributing, ensure you have:
 
-For comprehensive setup instructions, see the [Developer Guide](docs/DEVELOPER_GUIDE.md).
+- **Python 3.12+** installed
+- **Git** for version control
+- **A GitHub account**
+- **Basic knowledge** of Django, Python, or React (depending on your contribution area)
 
-### Development Setup
+### Finding Work
 
-1. **Clone the repository:**
+1. **Browse [Good First Issues](docs/GOOD_FIRST_ISSUES.md)** for beginner-friendly tasks
+2. **Check [open issues](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues)** for bugs and feature requests
+3. **Review the [Roadmap](docs/ROADMAP.md)** for planned features
+4. **Propose new features** by opening a discussion issue first
 
-    ```bash
-    git clone https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition.git
-    cd Attendance-Management-System-Using-Face-Recognition
-    ```
+> **Tip**: Comment on an issue to indicate you're working on it. This prevents duplicate effort.
 
-2. **Create and activate a virtual environment:**
+---
 
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-    ```
+## Development Setup
 
-3. **Install the dependencies:**
+### 1. Fork and Clone
 
-    ```bash
-    pip install -r requirements.txt
-    ```
+```bash
+# Fork the repository on GitHub, then clone your fork
+git clone https://github.com/YOUR_USERNAME/Attendance-Management-System-Using-Face-Recognition.git
+cd Attendance-Management-System-Using-Face-Recognition
 
-4. **Run database migrations:**
+# Add upstream remote
+git remote add upstream https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition.git
+```
 
-    ```bash
-    python manage.py migrate
-    ```
+### 2. Create a Virtual Environment
 
-5. **Create a superuser (admin account):**
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-    ```bash
-    python manage.py createsuperuser
+### 3. Install Dependencies
+
+```bash
+# Production dependencies
+pip install -r requirements.txt
+
+# Development dependencies (includes testing, linting, etc.)
+pip install -r requirements-dev.txt
+```
+
+### 4. Set Up Pre-Commit Hooks
+
+Pre-commit hooks automatically check code formatting before each commit:
+
+```bash
+pre-commit install
+```
+
+This installs hooks that run:
+- **Black** (code formatting)
+- **isort** (import sorting)
+- **flake8** (linting)
+
+### 5. Configure Environment
+
+```bash
+cp .env.example .env
+# Edit .env with your local settings if needed
+```
+
+### 6. Initialize Database
+
+```bash
+python manage.py migrate
+python manage.py createsuperuser
+```
+
+### 7. Verify Setup
+
+```bash
+# Run fast tests to ensure everything works
+make test-fast
+
+# Start the development server
+python manage.py runserver
+```
+
+Visit `http://localhost:8000` to confirm the setup is working.
+
+---
+
+## Making Changes
+
+### Branching Strategy
+
+We use a **feature branch workflow**:
+
+```bash
+# Create a new branch for your changes
+git checkout -b feature/your-feature-name
+
+# Or for bug fixes
+git checkout -b fix/bug-description
+```
+
+**Branch Naming Conventions:**
+- `feature/` - New features
+- `fix/` - Bug fixes
+- `docs/` - Documentation updates
+- `refactor/` - Code refactoring
+- `test/` - Adding or updating tests
+- `chore/` - Maintenance tasks
+
+### Making Commits
+
+Write clear, descriptive commit messages following [Conventional Commits](https://www.conventionalcommits.org/):
+
+```bash
+# Format: <type>(<scope>): <subject>
+
+feat(recognition): add multi-face detection support
+fix(auth): resolve session timeout issue
+docs(api): update endpoint documentation
+test(users): add test for password reset flow
+refactor(pipeline): optimize embedding generation
+chore(deps): update Django to 6.0
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation
+- `style`: Formatting, no code change
+- `refactor`: Code refactoring
+- `test`: Adding tests
+- `chore`: Maintenance tasks
+- `perf`: Performance improvements
+
+---
+
+## Code Standards
+
+### Python Code
+
+We follow **PEP 8** with some customizations:
+
+**Style Requirements:**
+- **Line length**: 100 characters (not 79)
+- **Formatter**: Black (automatically applied by pre-commit)
+- **Import sorting**: isort (automatically applied)
+- **Type hints**: Required for all function signatures
+- **Docstrings**: Required for public functions and classes
+
+**Example:**
+
+```python
+from typing import Optional
+
+def calculate_distance(embedding1: np.ndarray, embedding2: np.ndarray) -> float:
+    """
+    Calculate cosine distance between two face embeddings.
+    
+    Args:
+        embedding1: First face embedding vector
+        embedding2: Second face embedding vector
+        
+    Returns:
+        Cosine distance as a float between 0.0 and 2.0
+        
+    Raises:
+        ValueError: If embeddings have different dimensions
+    """
+    if embedding1.shape != embedding2.shape:
+        raise ValueError("Embeddings must have the same dimension")
+    
+    similarity = np.dot(embedding1, embedding2) / (
+        np.linalg.norm(embedding1) * np.linalg.norm(embedding2)
+    )
+    return 1.0 - similarity
+```
+
+### TypeScript/React Code
+
+**Style Requirements:**
+- **Formatter**: ESLint (configured in `frontend/eslint.config.js`)
+- **Type annotations**: Required for function parameters and returns
+- **Component style**: Functional components with hooks
+- **File naming**: PascalCase for components, camelCase for utilities
+
+### Django Code
+
+**Conventions:**
+- Use **class-based views** where appropriate
+- Keep views thin, logic in models/services
+- Use Django ORM (avoid raw SQL unless necessary)
+- Follow Django's security best practices
+- Use Django's built-in validators
+
+---
+
+## Testing Requirements
+
+**All code changes must include tests.** We maintain 60%+ test coverage.
+
+### Running Tests
+
+```bash
+# Fast tests (unit + integration, ~2 minutes)
+make test-fast
+
+# Slow tests (model loading, ~10 minutes)
+make test-slow
+
+# UI tests (Playwright, ~5 minutes)
+make test-ui
+
+# Full suite with coverage report
+make test-all
+```
+
+### Writing Tests
+
+**Use pytest** with appropriate markers:
+
+```python
+import pytest
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+@pytest.mark.django_db
+def test_user_creation():
+    """Test creating a new user."""
+    user = User.objects.create_user(
+        username="testuser",
+        email="test@example.com",
+        password="testpass123"
+    )
+    assert user.username == "testuser"
+    assert user.check_password("testpass123")
+
+@pytest.mark.slow
+def test_face_recognition_pipeline():
+    """Test the complete face recognition pipeline."""
+    # Slow test that loads ML models
+    pass
+
+@pytest.mark.ui
+def test_login_flow(page):
+    """Test the login user interface."""
+    # Playwright UI test
+    pass
+```
+
+### Test Coverage Requirements
+
+- **New features**: Must have 80%+ coverage
+- **Bug fixes**: Must include regression test
+- **Refactoring**: Existing tests must pass
+
+---
+
+## Submitting Changes
+
+### Before Submitting
+
+**Checklist:**
+- [ ] Code follows project style guidelines (Black, isort, flake8)
+- [ ] All tests pass locally (`make test-fast` at minimum)
+- [ ] New tests added for new functionality
+- [ ] Documentation updated (README, docs/, docstrings)
+- [ ] Commit messages follow Conventional Commits
+- [ ] No merge conflicts with `main` branch
+- [ ] `.env` and secrets not committed
+
+### Creating a Pull Request
+
+1. **Push your branch:**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+2. **Open a Pull Request** on GitHub
+
+3. **Fill out the PR template** completely:
+   - Description of changes
+   - Related issue number (if applicable)
+   - Testing performed
+   - Screenshots (for UI changes)
+
+4. **Request review** from maintainers
+
+### Pull Request Title Format
+
+Use Conventional Commits format:
+
+```
+feat(recognition): Add multi-face detection support
+fix(auth): Resolve session timeout on mobile devices
+docs(deployment): Update Kubernetes configuration guide
+```
+
+---
+
+## Review Process
+
+### What to Expect
+
+1. **Automated Checks** run via GitHub Actions:
+   - Code formatting (Black, isort)
+   - Linting (flake8)
+   - Fast tests
+   - Security scanning (CodeQL)
+
+2. **Manual Review** by maintainers:
+   - Code quality and style
+   - Test coverage
+   - Documentation accuracy
+   - Security considerations
+
+3. **Feedback Cycle**:
+   - Reviewers may request changes
+   - Address feedback by pushing new commits
+   - Reviewers re-review updated code
+
+4. **Merge**:
+   - Once approved, maintainers will merge
+   - Your contribution will be included in the next release!
+
+### Review Timeline
+
+- **Simple changes** (docs, small fixes): 1-2 days
+- **Medium changes** (new features): 3-7 days
+- **Large changes** (architecture): 1-2 weeks
+
+> **Note**: These are estimates. Complex changes may take longer to review thoroughly.
+
+---
+
+## Community
+
+### Getting Help
+
+- **Documentation**: Start with [docs/README.md](docs/README.md)
+- **Discussions**: Ask questions in [GitHub Discussions](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/discussions)
+- **Issues**: Report bugs via [GitHub Issues](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues)
+- **Chat**: (Coming soon - Discord/Slack link)
+
+### Recognition
+
+Contributors are recognized in:
+- **CHANGELOG.md**: Each release credits contributors
+- **GitHub Contributors**: Automatically tracked
+- **Special thanks**: Major contributors listed in README
+
+---
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the project's [MIT License](LICENSE).
+
+---
+
+## Questions?
+
+If you have questions about contributing, please:
+1. Check the [Developer Guide](docs/DEVELOPER_GUIDE.md)
+2. Search [existing issues](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues)
+3. Ask in [GitHub Discussions](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/discussions)
+4. Open a new issue with the "question" label
+
+**Thank you for contributing to make this project better!** 🎉
+
+---
+
+*Last Updated: December 2025*
     ```
 
     Follow the prompts to create your admin username, email, and password.
