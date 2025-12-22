@@ -89,8 +89,10 @@ export class AlertManager {
             alert.setAttribute('data-auto-dismiss', 'false');
         }
 
-        // 🛡️ Sentinel: Prevent XSS by setting textContent safely
-        alert.textContent = message;
+        // 🛡️ Sentinel: Prevent XSS by wrapping message in a separate element
+        const messageSpan = document.createElement('span');
+        messageSpan.textContent = message;
+        alert.appendChild(messageSpan);
 
         const closeBtn = document.createElement('button');
         closeBtn.type = 'button';

@@ -2,7 +2,7 @@ import pytest
 from playwright.sync_api import Page, expect
 
 # Ensure we use sync playwright and transaction db
-pytestmark = [pytest.mark.e2e, pytest.mark.django_db(transaction=True)]
+pytestmark = [pytest.mark.ui, pytest.mark.django_db(transaction=True)]
 
 
 @pytest.fixture(scope="function")
