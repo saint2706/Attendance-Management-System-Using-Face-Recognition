@@ -20,7 +20,7 @@ dependencies = [
     "crispy-bootstrap5==2024.2",
     "django-ratelimit==4.1.0",
     "cryptography==46.0.3",
-    "django-silk==5.1.0",
+    "django-silk==5.4.3",
     "django-pandas==0.6.7",
     "deepface==0.0.93",
     "imutils==0.5.4",
