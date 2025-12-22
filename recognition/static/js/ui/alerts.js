@@ -89,10 +89,16 @@ export class AlertManager {
             alert.setAttribute('data-auto-dismiss', 'false');
         }
 
-        alert.innerHTML = `
-      ${message}
-      <button type="button" class="btn-close" aria-label="Close"></button>
-    `;
+        // 🛡️ Sentinel: Prevent XSS by wrapping message in a separate element
+        const messageSpan = document.createElement('span');
+        messageSpan.textContent = message;
+        alert.appendChild(messageSpan);
+
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'btn-close';
+        closeBtn.setAttribute('aria-label', 'Close');
+        alert.appendChild(closeBtn);
 
         // Find or create alerts container
         let container = document.querySelector('.alerts-container');
