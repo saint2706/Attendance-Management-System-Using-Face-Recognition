@@ -49,7 +49,14 @@ def _isoformat_or_none(value: Optional[dt.datetime]) -> Optional[str]:
 
 
 def dataset_health() -> Dict[str, Any]:
-    """Summarize the encrypted training dataset on disk."""
+    """Summarize the encrypted training dataset on disk.
+
+    The result of this function is cached for up to 1 hour and subsequent
+    calls may return the cached snapshot instead of recomputing it from
+    the filesystem. The cache is explicitly invalidated when new images
+    are added by :func:`recognition.tasks.capture_dataset_sync`, at which
+    point a fresh snapshot is generated on the next call.
+    """
 
     cache_key = "recognition:health:dataset_snapshot"
     cached_snapshot = cache.get(cache_key)
