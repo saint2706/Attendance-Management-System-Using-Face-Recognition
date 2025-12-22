@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import os
 
+from django.core.cache import cache
 from django.urls import reverse
 
 import pytest
@@ -55,7 +56,6 @@ def test_health_helpers_report_dataset_and_model(tmp_path, monkeypatch):
     os.utime(image_path, (future_time, future_time))
 
     # Re-capture dataset health after modifying timestamps to get updated last_updated
-    from django.core.cache import cache
     cache.clear()
     updated_dataset_snapshot = health.dataset_health()
 
@@ -163,7 +163,6 @@ def test_dataset_health_caching_behavior(tmp_path, monkeypatch):
     monkeypatch.setattr(health, "DATA_ROOT", data_root)
     monkeypatch.setattr(health, "TRAINING_DATASET_ROOT", training_root)
 
-    from django.core.cache import cache
     cache.clear()
 
     # First call should perform filesystem operations and cache the result
