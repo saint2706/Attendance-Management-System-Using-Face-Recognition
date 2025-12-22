@@ -31,7 +31,8 @@ def test_alert_manager_xss_protection(page: Page, server_url: str):
 
     # Trigger alert via the exposed global app instance
     # We pass the payload as an argument to avoid syntax errors
-    page.evaluate("""
+    page.evaluate(
+        """
         (payload) => {
             if (window.AttendanceApp && window.AttendanceApp.modules.alerts) {
                 window.AttendanceApp.modules.alerts.show(
@@ -41,7 +42,9 @@ def test_alert_manager_xss_protection(page: Page, server_url: str):
                 throw new Error("AttendanceApp or alerts module not found");
             }
         }
-    """, xss_payload)
+    """,
+        xss_payload,
+    )
 
     # Locate the alert
     alert = page.locator(".alert.alert-danger")
