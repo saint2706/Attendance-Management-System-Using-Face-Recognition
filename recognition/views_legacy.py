@@ -52,7 +52,6 @@ import pandas as pd
 import seaborn as sns
 from celery.result import AsyncResult
 from deepface import DeepFace
-from django_pandas.io import read_frame
 from django_ratelimit.core import is_ratelimited
 from django_ratelimit.decorators import ratelimit
 from matplotlib import rcParams
@@ -1510,9 +1509,7 @@ def update_attendance_in_db_out(
             RecognitionAttempt.objects.filter(id=attempt_id).update(**attempt_updates)
 
 
-def check_validity_times(
-    times_all: Sequence[Time] | QuerySet[Time]
-) -> tuple[bool, float]:
+def check_validity_times(times_all: Sequence[Time] | QuerySet[Time]) -> tuple[bool, float]:
     """
     Validate and calculate break hours from a sequence of time entries.
 
@@ -1648,11 +1645,13 @@ def hours_vs_date_given_employee(
         obj.break_hours = convert_hours_to_hours_mins(break_hours_val)
 
     # Generate and save the plot
-    df = pd.DataFrame({
-        "date": date_list,
-        "hours": df_hours,
-        "break_hours": df_break_hours,
-    })
+    df = pd.DataFrame(
+        {
+            "date": date_list,
+            "hours": df_hours,
+            "break_hours": df_break_hours,
+        }
+    )
     logger.debug("Attendance dataframe for employee: %s", df)
 
     sns.barplot(data=df, x="date", y="hours")
@@ -1730,12 +1729,14 @@ def hours_vs_employee_given_date(
         obj.break_hours = convert_hours_to_hours_mins(break_hours_val)
 
     # Generate and save the plot
-    df = pd.DataFrame({
-        "user": user_pk_list,
-        "hours": df_hours,
-        "username": df_username,
-        "break_hours": df_break_hours,
-    })
+    df = pd.DataFrame(
+        {
+            "user": user_pk_list,
+            "hours": df_hours,
+            "username": df_username,
+            "break_hours": df_break_hours,
+        }
+    )
 
     sns.barplot(data=df, x="username", y="hours")
     plt.xticks(rotation="vertical")

@@ -1,7 +1,8 @@
-from django.test import TestCase
-from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from django.test import TestCase
+from django.urls import reverse
+
 
 class LoginSecurityTests(TestCase):
     def setUp(self):
@@ -19,20 +20,22 @@ class LoginSecurityTests(TestCase):
 
         responses = []
         for _ in range(6):
-            response = self.client.post(self.login_url, {
-                "username": "testuser",
-                "password": "wrongpassword"
-            })
+            response = self.client.post(
+                self.login_url, {"username": "testuser", "password": "wrongpassword"}
+            )
             responses.append(response.status_code)
 
         # The last one should be 429
-        self.assertEqual(responses[-1], 429, f"Expected 429 rate limit, got {responses[-1]}. Responses: {responses}")
+        self.assertEqual(
+            responses[-1],
+            429,
+            f"Expected 429 rate limit, got {responses[-1]}. Responses: {responses}",
+        )
 
     def test_login_success_under_limit(self):
         """Verify login works if under limit."""
         cache.clear()
-        response = self.client.post(self.login_url, {
-            "username": "testuser",
-            "password": "password"
-        })
-        self.assertEqual(response.status_code, 302) # Redirects on success
+        response = self.client.post(
+            self.login_url, {"username": "testuser", "password": "password"}
+        )
+        self.assertEqual(response.status_code, 302)  # Redirects on success
