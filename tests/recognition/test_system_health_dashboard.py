@@ -55,6 +55,8 @@ def test_health_helpers_report_dataset_and_model(tmp_path, monkeypatch):
     os.utime(image_path, (future_time, future_time))
 
     # Re-capture dataset health after modifying timestamps to get updated last_updated
+    from django.core.cache import cache
+    cache.clear()
     updated_dataset_snapshot = health.dataset_health()
 
     model_snapshot = health.model_health(
