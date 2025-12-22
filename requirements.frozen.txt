@@ -128,7 +128,7 @@ termcolor==3.2.0
 tf_keras==2.20.1
 threadpoolctl==3.6.0
 tqdm==4.67.1
-Twisted==24.7.0rc1
+Twisted==25.5.0
 typing_extensions==4.15.0
 tzdata==2025.2
 ubuntu-pro-client==8001
