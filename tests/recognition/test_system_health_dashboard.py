@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import os
 
+from django.core.cache import cache
 from django.urls import reverse
 
 import pytest
@@ -55,7 +56,6 @@ def test_health_helpers_report_dataset_and_model(tmp_path, monkeypatch):
     os.utime(image_path, (future_time, future_time))
 
     # Re-capture dataset health after modifying timestamps to get updated last_updated
-    from django.core.cache import cache
     cache.clear()
     updated_dataset_snapshot = health.dataset_health()
 
@@ -147,3 +147,45 @@ def test_system_health_dashboard_context(client, django_user_model, monkeypatch)
     assert response.context["dataset"]["image_count"] == 2
     assert response.context["model"]["model_present"] is True
     assert response.context["worker_state"]["status"] == "online"
+
+
+def test_dataset_health_caching_behavior(tmp_path, monkeypatch):
+    """Dataset health should cache results and return cached values on subsequent calls."""
+
+    data_root = tmp_path / "face_recognition_data"
+    training_root = data_root / "training_dataset"
+    user_dir = training_root / "user-1"
+    user_dir.mkdir(parents=True, exist_ok=True)
+
+    image_path = user_dir / "img.jpg"
+    image_path.write_bytes(b"data")
+
+    monkeypatch.setattr(health, "DATA_ROOT", data_root)
+    monkeypatch.setattr(health, "TRAINING_DATASET_ROOT", training_root)
+
+    cache.clear()
+
+    # First call should perform filesystem operations and cache the result
+    first_result = health.dataset_health()
+    assert first_result["image_count"] == 1
+    assert first_result["identity_count"] == 1
+
+    # Verify the result is cached
+    cached_value = cache.get("recognition:health:dataset_snapshot")
+    assert cached_value is not None
+    assert cached_value == first_result
+
+    # Add a new file to the filesystem
+    new_image_path = user_dir / "img2.jpg"
+    new_image_path.write_bytes(b"more data")
+
+    # Second call should return cached value (not reflect the new file)
+    second_result = health.dataset_health()
+    assert second_result["image_count"] == 1  # Still shows 1 due to cache
+    assert second_result == first_result
+
+    # After cache invalidation, filesystem should be scanned again
+    cache.delete("recognition:health:dataset_snapshot")
+    third_result = health.dataset_health()
+    assert third_result["image_count"] == 2  # Now shows updated count
+    assert third_result["identity_count"] == 1
