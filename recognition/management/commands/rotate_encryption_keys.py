@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.management.base import BaseCommand, CommandError
 
 from src.common.crypto import FaceDataEncryption, InvalidToken, _FernetWrapper
@@ -118,6 +119,10 @@ class Command(BaseCommand):
             return
 
         self.stdout.write(self.style.SUCCESS(f"Re-encrypted {reencrypted} files."))
+
+        # Invalidate dataset health cache as file metadata has changed
+        cache.delete("recognition:health:dataset_snapshot")
+        self.stdout.write(self.style.NOTICE("Invalidated dataset health cache."))
 
     def _backup_tree(self, source: Path, destination: Path) -> None:
         if destination.exists():
