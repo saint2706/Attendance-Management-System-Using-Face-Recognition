@@ -240,6 +240,18 @@ def setup_wizard_step3(request):
 
     if getattr(request, "limited", False):
         messages.error(request, "Too many attempts. Please try again later.")
+        progress = _get_or_create_wizard_progress(request.user)
+        # Return early with current form state to avoid confusion
+        context = _build_wizard_context(progress)
+        context["form"] = AddEmployeeForm()
+        context["employee_created"] = bool(progress.first_employee_username)
+        context["first_employee_username"] = progress.first_employee_username
+        context["photos_captured"] = progress.first_employee_photos_captured
+        context["step_title"] = "Add First Employee"
+        context["step_description"] = (
+            "Create your first employee account and capture their photos for face recognition."
+        )
+        return render(request, "users/setup_wizard/step3_add_employee.html", context)
 
     progress = _get_or_create_wizard_progress(request.user)
 
@@ -252,6 +264,9 @@ def setup_wizard_step3(request):
 
     # Check if employee already created but photos not captured
     employee_created = bool(progress.first_employee_username)
+
+    # Initialize form
+    form = AddEmployeeForm()
 
     if request.method == "POST" and not getattr(request, "limited", False):
         if "create_employee" in request.POST:
@@ -270,8 +285,6 @@ def setup_wizard_step3(request):
                 progress.save()
                 messages.success(request, "Photos captured and saved!")
                 return redirect("setup-wizard-step4")
-    else:
-        form = AddEmployeeForm()
 
     context = _build_wizard_context(progress)
     context["form"] = form
@@ -300,6 +313,15 @@ def setup_wizard_step4(request):
 
     if getattr(request, "limited", False):
         messages.error(request, "Too many attempts. Please try again later.")
+        progress = _get_or_create_wizard_progress(request.user)
+        # Return early with current state for consistency
+        context = _build_wizard_context(progress)
+        context["step_title"] = "Train Recognition Model"
+        context["step_description"] = "Train the AI model to recognize faces from the captured photos."
+        context["task"] = None
+        context["model_trained"] = progress.model_trained
+        context["form"] = TrainingConfirmForm()
+        return render(request, "users/setup_wizard/step4_train_model.html", context)
 
     progress = _get_or_create_wizard_progress(request.user)
 
