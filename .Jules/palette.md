@@ -9,3 +9,7 @@
 ## 2025-12-21 - [Camera Initialization Feedback]
 **Learning:** Browser camera initialization (`getUserMedia`) is asynchronous and can be slow. Without a visual loader, users see a blank screen, leading to confusion about app state.
 **Action:** Implement an explicit loading state that persists until the video stream is active and playing.
+
+## 2025-12-21 - [Password Visibility & Error Accessibility]
+**Learning:** Hidden password fields often cause user errors, and error messages without ARIA roles are missed by screen readers.
+**Action:** Always include a password visibility toggle and ensure error containers use `role="alert"` for immediate feedback.
