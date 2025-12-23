@@ -1,6 +1,7 @@
 import time
 import pytest
 from unittest.mock import MagicMock, patch
+from pathlib import Path
 import numpy as np
 from recognition.views_legacy import _build_dataset_embeddings_for_matching
 
@@ -22,11 +23,13 @@ class PathMock:
     def __le__(self, other):
         return str(self) <= str(other)
 
+    def __gt__(self, other):
+        return str(self) > str(other)
+
     def __ge__(self, other):
         return str(self) >= str(other)
 
     def resolve(self):
-        from pathlib import Path
         return Path(f"/abs/{self.path_str}")
 
     def stat(self):
