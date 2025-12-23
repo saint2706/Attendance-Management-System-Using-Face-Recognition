@@ -7,3 +7,8 @@
 **Vulnerability:** The `AlertManager` utility (`recognition/static/js/ui/alerts.js`) used `innerHTML` to render alert messages, allowing DOM-based XSS if user-controlled input was passed to the `show()` method.
 **Learning:** Generic UI utilities must be secure by default. Using `innerHTML` for convenience creates a "sink" that can be exploited by any caller passing unsanitized data.
 **Prevention:** Replaced `innerHTML` with `textContent` for rendering the message body, and used `createElement`/`appendChild` for the close button. This ensures all message content is treated as text.
+
+## 2025-05-24 - Unprotected Admin Actions
+**Vulnerability:** Sensitive administrative actions like employee registration and setup wizard steps were missing rate limiting, relying solely on authentication.
+**Learning:** Even authenticated admin endpoints are vulnerable to compromised account abuse (DoS, data spamming). "Internal" does not mean "Safe".
+**Prevention:** Applied `django-ratelimit` to `register` and `setup_wizard` views to limit request frequency per user.
