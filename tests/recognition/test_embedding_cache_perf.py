@@ -22,7 +22,7 @@ class PathMock:
         return str(self) < str(other)
 
     def resolve(self):
-        return f"/abs/{self.path_str}"
+        return Path(f"/abs/{self.path_str}")
 
     def stat(self):
         return self.stat_mock
