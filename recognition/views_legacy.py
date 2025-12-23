@@ -1255,19 +1255,37 @@ def _get_or_compute_cached_embedding(
 ) -> Optional[np.ndarray]:
     """Return the embedding for an encrypted image using Django's cache."""
 
+    # ⚡ Performance: Use file metadata for cache key to avoid expensive read/decrypt
+    # operations when checking for existing embeddings during index rebuilds.
+    cache_key = None
+    try:
+        stat_result = image_path.stat()
+        # Mix mtime_ns and size to detect file changes without reading content
+        meta_hash = (
+            f"{image_path.resolve()}:{stat_result.st_mtime_ns}:"
+            f"{stat_result.st_size}"
+        )
+        key_hash = hashlib.sha256(meta_hash.encode()).hexdigest()
+        cache_key = (
+            f"recognition:embedding_v2:{model_name}:"
+            f"{detector_backend}:{key_hash}"
+        )
+
+        cached_embedding = cache.get(cache_key)
+        if cached_embedding is not None:
+            try:
+                return np.array(cached_embedding, dtype=float)
+            except Exception:  # pragma: no cover - defensive programming
+                logger.debug(
+                    "Failed to coerce cached embedding for %s into an array", image_path
+                )
+    except OSError:
+        # Fallback to full processing if stat fails
+        pass
+
     decrypted_bytes = _decrypt_image_bytes(image_path)
     if decrypted_bytes is None:
         return None
-
-    payload_hash = hashlib.sha256(decrypted_bytes).hexdigest()
-    cache_key = f"recognition:embedding:{model_name}:{detector_backend}:{payload_hash}"
-
-    cached_embedding = cache.get(cache_key)
-    if cached_embedding is not None:
-        try:
-            return np.array(cached_embedding, dtype=float)
-        except Exception:  # pragma: no cover - defensive programming
-            logger.debug("Failed to coerce cached embedding for %s into an array", image_path)
 
     image = _decode_image_bytes(decrypted_bytes, source=image_path)
     if image is None:
@@ -1291,10 +1309,11 @@ def _get_or_compute_cached_embedding(
 
     embedding_array = np.array(embedding_vector, dtype=float)
 
-    try:
-        cache.set(cache_key, embedding_array.tolist(), timeout=None)
-    except Exception:  # pragma: no cover - defensive programming
-        logger.debug("Failed to store embedding for %s in cache", image_path)
+    if cache_key:
+        try:
+            cache.set(cache_key, embedding_array.tolist(), timeout=None)
+        except Exception:  # pragma: no cover - defensive programming
+            logger.debug("Failed to store embedding for %s in cache", image_path)
 
     return embedding_array
 
