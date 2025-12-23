@@ -1,9 +1,7 @@
 import time
 import pytest
 from unittest.mock import MagicMock, patch
-from pathlib import Path
 import numpy as np
-from django.conf import settings
 from recognition.views_legacy import _build_dataset_embeddings_for_matching
 
 class PathMock:
@@ -21,7 +19,14 @@ class PathMock:
     def __lt__(self, other):
         return str(self) < str(other)
 
+    def __le__(self, other):
+        return str(self) <= str(other)
+
+    def __ge__(self, other):
+        return str(self) >= str(other)
+
     def resolve(self):
+        from pathlib import Path
         return Path(f"/abs/{self.path_str}")
 
     def stat(self):
@@ -30,7 +35,6 @@ class PathMock:
     def __repr__(self):
         return f"PathMock('{self.path_str}')"
 
-@pytest.mark.django_db
 def test_embedding_cache_performance():
     # Setup mocks
     num_images = 100
@@ -63,8 +67,41 @@ def test_embedding_cache_performance():
         _build_dataset_embeddings_for_matching("model", "backend", False)
         duration = time.time() - start_time
 
-        print(f"\nExecution time for {num_images} images: {duration:.4f}s")
-        print(f"Decrypt calls: {mock_decrypt.call_count}")
-
         # With optimization, this should be 0 because cache hit prevents decryption
-        assert mock_decrypt.call_count == 0
+        assert mock_decrypt.call_count == 0, f"Expected 0 decrypt calls, got {mock_decrypt.call_count}"
+
+
+def test_embedding_cache_stores_on_miss():
+    """Test that cache.set is called when embeddings are computed (cache miss)."""
+    num_images = 5
+    mock_paths = []
+
+    for i in range(num_images):
+        p = PathMock(f"fake/path/img_{i}.jpg")
+        mock_paths.append(p)
+
+    with patch("recognition.views_legacy.TRAINING_DATASET_ROOT") as mock_root, \
+         patch("recognition.views_legacy._decrypt_image_bytes") as mock_decrypt, \
+         patch("recognition.views_legacy._decode_image_bytes") as mock_decode, \
+         patch("recognition.views_legacy.DeepFace.represent") as mock_deepface, \
+         patch("recognition.views_legacy.extract_embedding") as mock_extract, \
+         patch("recognition.views_legacy.cache") as mock_cache:
+
+        mock_root.glob.return_value = mock_paths
+        mock_decrypt.return_value = b"fake_decrypted_bytes"
+        mock_decode.return_value = np.zeros((100, 100, 3), dtype=np.uint8)
+        mock_extract.return_value = ([0.1] * 128, None)
+
+        # Simulate cache MISS - get returns None
+        mock_cache.get.return_value = None
+
+        _build_dataset_embeddings_for_matching("model", "backend", False)
+
+        # Verify cache.set was called for each computed embedding
+        assert mock_cache.set.call_count == num_images, \
+            f"Expected {num_images} cache.set calls, got {mock_cache.set.call_count}"
+
+        # Verify decryption happened for all images (cache miss)
+        assert mock_decrypt.call_count == num_images, \
+            f"Expected {num_images} decrypt calls on cache miss, got {mock_decrypt.call_count}"
+
