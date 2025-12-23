@@ -2,12 +2,13 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, AlertCircle, Loader2 } from 'lucide-react';
+import { LogIn, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import './Login.css';
 
 export const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -44,7 +45,7 @@ export const Login = () => {
                 </div>
 
                 {error && (
-                    <div className="login-error">
+                    <div className="login-error" role="alert">
                         <AlertCircle size={18} />
                         <span>{error}</span>
                     </div>
@@ -67,16 +68,30 @@ export const Login = () => {
 
                     <div className="form-group">
                         <label htmlFor="password" className="input-label">Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            className="input"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Enter your password"
-                            required
-                            autoComplete="current-password"
-                        />
+                        <div className="input-with-icon">
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                id="password"
+                                className="input"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Enter your password"
+                                required
+                                autoComplete="current-password"
+                            />
+                            <button
+                                type="button"
+                                className="password-toggle"
+                                onClick={() => setShowPassword(!showPassword)}
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            >
+                                {showPassword ? (
+                                    <EyeOff size={20} />
+                                ) : (
+                                    <Eye size={20} />
+                                )}
+                            </button>
+                        </div>
                     </div>
 
                     <button
