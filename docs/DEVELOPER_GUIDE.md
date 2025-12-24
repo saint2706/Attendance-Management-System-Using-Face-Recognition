@@ -413,6 +413,10 @@ New liveness-related toggles:
 - `RECOGNITION_LIVENESS_MIN_FRAMES` – minimum frames required before motion can be scored.
 - `RECOGNITION_LIVENESS_MOTION_THRESHOLD` – minimum average motion magnitude required to accept the liveness probe.
 
+Security configuration:
+
+- `RECOGNITION_MAX_UPLOAD_SIZE` – maximum allowed size in bytes for a single image upload/payload for recognition requests. Guards against memory-exhaustion attacks and overly large submissions. Defaults to 5242880 bytes (5 MiB) when not defined. This limit is enforced for file uploads via `request.FILES["image"]`, raw bytes/bytearray payloads, and base64-encoded strings (checked both before and after decoding).
+
 ## 8. Database backends
 
 ### Local PostgreSQL with Docker Compose
