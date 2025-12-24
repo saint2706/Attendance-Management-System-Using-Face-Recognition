@@ -1,5 +1,4 @@
 from playwright.sync_api import sync_playwright
-import time
 
 def verify_accessibility_attributes():
     with sync_playwright() as p:
@@ -54,7 +53,7 @@ def verify_accessibility_attributes():
                     print("✅ Found loader with role='status'")
                 else:
                     print("ℹ️ Loader not visible (probably finished initializing).")
-            except:
+            except Exception:
                 print("ℹ️ Error checking loader.")
 
             # 2. Check video attributes
