@@ -495,9 +495,15 @@ class FaceRecognitionAPI(View):
 
     def _extract_image_bytes(self, request, payload: Dict[str, Any]) -> Optional[bytes]:
         """Return raw image bytes from either an upload or base64 string."""
+        # 🛡️ Sentinel: Enforce max upload size to prevent Memory Exhaustion DoS
+        max_size = int(getattr(settings, "RECOGNITION_MAX_UPLOAD_SIZE", 5 * 1024 * 1024))  # 5MB
 
         uploaded = request.FILES.get("image") if hasattr(request, "FILES") else None
         if uploaded is not None:
+            if uploaded.size > max_size:
+                raise ValueError(
+                    f"Image size {uploaded.size} bytes exceeds maximum allowed size of {max_size} bytes."
+                )
             return uploaded.read()
 
         raw_image = payload.get("image")
@@ -505,10 +511,17 @@ class FaceRecognitionAPI(View):
             return None
 
         if isinstance(raw_image, (bytes, bytearray)):
+            if len(raw_image) > max_size:
+                raise ValueError("Image payload exceeds maximum allowed size.")
             return bytes(raw_image)
 
         if not isinstance(raw_image, str):
             raise ValueError("Unsupported image payload supplied.")
+
+        # Check base64 string length approximation (base64 is ~4/3 larger)
+        # Using 1.4 multiplier for base64 overhead + headers
+        if len(raw_image) > max_size * 1.4:
+            raise ValueError("Image payload exceeds maximum allowed size.")
 
         image_data = raw_image.strip()
         if not image_data:
@@ -518,7 +531,12 @@ class FaceRecognitionAPI(View):
             _, _, image_data = image_data.partition(",")
 
         try:
-            return base64.b64decode(image_data, validate=True)
+            decoded = base64.b64decode(image_data, validate=True)
+            if len(decoded) > max_size:
+                raise ValueError(
+                    f"Decoded image size {len(decoded)} bytes exceeds maximum allowed size of {max_size} bytes."
+                )
+            return decoded
         except (binascii.Error, ValueError) as exc:
             raise ValueError("Invalid base64-encoded image payload supplied.") from exc
 
