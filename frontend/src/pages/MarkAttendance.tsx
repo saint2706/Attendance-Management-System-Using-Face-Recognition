@@ -145,7 +145,7 @@ export const MarkAttendance = () => {
                     ) : (
                         <>
                             {isInitializing && (
-                                <div className="flex flex-col items-center justify-center text-muted" style={{ position: 'absolute', inset: 0, zIndex: 10, backgroundColor: '#000' }}>
+                                <div className="flex flex-col items-center justify-center text-muted" role="status" style={{ position: 'absolute', inset: 0, zIndex: 10, backgroundColor: '#000' }}>
                                     <Loader2 size={48} className="animate-spin mb-md" style={{ color: 'var(--color-primary)' }} />
                                     <p>Starting camera...</p>
                                 </div>
@@ -157,11 +157,12 @@ export const MarkAttendance = () => {
                                 muted
                                 className="camera-video"
                                 aria-label="Camera preview"
+                                aria-describedby="attendance-instructions"
                             />
                             <canvas ref={canvasRef} className="hidden-canvas" />
 
                             {/* Face guide overlay */}
-                            <div className="face-guide">
+                            <div className="face-guide" aria-hidden="true">
                                 <div className="face-oval"></div>
                             </div>
                         </>
@@ -170,9 +171,13 @@ export const MarkAttendance = () => {
 
                 {/* Result Display */}
                 {result && (
-                    <div className={`result-card card ${result.recognized ? 'result-success' :
-                        result.spoofDetected ? 'result-warning' : 'result-error'
-                        }`}>
+                    <div
+                        className={`result-card card ${result.recognized ? 'result-success' :
+                            result.spoofDetected ? 'result-warning' : 'result-error'
+                        }`}
+                        role="alert"
+                        aria-live="assertive"
+                    >
                         <div className="result-content">
                             {result.recognized ? (
                                 <>
@@ -240,7 +245,7 @@ export const MarkAttendance = () => {
                 </div>
 
                 {/* Instructions */}
-                <div className="instructions card">
+                <div className="instructions card" id="attendance-instructions">
                     <div className="card-body">
                         <h4>Tips for best results:</h4>
                         <ul>
