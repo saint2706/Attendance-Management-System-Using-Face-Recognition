@@ -518,17 +518,17 @@ class FaceRecognitionAPI(View):
         if not isinstance(raw_image, str):
             raise ValueError("Unsupported image payload supplied.")
 
-        # Check base64 string length approximation (base64 is ~4/3 larger)
-        # Using 1.4 multiplier for base64 overhead + headers
-        if len(raw_image) > max_size * 1.4:
-            raise ValueError("Image payload exceeds maximum allowed size.")
-
         image_data = raw_image.strip()
         if not image_data:
             return None
 
         if image_data.startswith("data:"):
             _, _, image_data = image_data.partition(",")
+
+        # Check base64 string length approximation (base64 is ~4/3 larger)
+        # Using 1.4 multiplier for base64 overhead
+        if len(image_data) > max_size * 1.4:
+            raise ValueError("Image payload exceeds maximum allowed size.")
 
         try:
             decoded = base64.b64decode(image_data, validate=True)
