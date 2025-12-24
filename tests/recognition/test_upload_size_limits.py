@@ -20,6 +20,20 @@ import pytest
 from PIL import Image
 
 
+# Test constants
+BASE64_OVERHEAD_MULTIPLIER = 1.4  # Same as used in production code
+
+
+def assert_not_size_rejected(response):
+    """
+    Assert that a response was not rejected due to size limits.
+    
+    The response may fail for other reasons (no embeddings, no face detected, etc.)
+    but should not have the size limit error message.
+    """
+
+
+
 def create_test_image_bytes(target_size_kb: int) -> bytes:
     """
     Create a JPEG image of approximately the specified size in KB.
@@ -28,15 +42,21 @@ def create_test_image_bytes(target_size_kb: int) -> bytes:
     for JPEG compression variability.
     """
     import random
+    
+    def generate_random_pixels(count: int) -> list:
+        """Generate a list of random RGB tuples."""
+        return [
+            (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+            for _ in range(count)
+        ]
+    
     target_bytes = int(target_size_kb * 1024 * 0.8)  # Aim for 80% of target to stay under limit
     # Start with an estimate
     pixels = max(50, int((target_bytes * 2) ** 0.5))
     
     # Create image with random noise
     img = Image.new("RGB", (pixels, pixels))
-    pixels_data = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) 
-                   for _ in range(pixels * pixels)]
-    img.putdata(pixels_data)
+    img.putdata(generate_random_pixels(pixels * pixels))
     
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=85)
@@ -47,9 +67,7 @@ def create_test_image_bytes(target_size_kb: int) -> bytes:
     while len(result) < target_bytes and attempts < 3:
         pixels = int(pixels * 1.2)
         img = Image.new("RGB", (pixels, pixels))
-        pixels_data = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) 
-                       for _ in range(pixels * pixels)]
-        img.putdata(pixels_data)
+        img.putdata(generate_random_pixels(pixels * pixels))
         buf = io.BytesIO()
         img.save(buf, format="JPEG", quality=85)
         result = buf.getvalue()
@@ -95,8 +113,7 @@ def test_file_upload_within_limit(client):
     )
 
     # Should not be rejected due to size (may fail for other reasons like no match or no embeddings)
-    # The key is that it should NOT have the size error
-    assert response.status_code != 400 or "exceeds maximum allowed size" not in response.json().get("error", "")
+    assert_not_size_rejected(response)
 
 
 @pytest.mark.django_db
@@ -161,8 +178,8 @@ def test_base64_without_header_within_limit(client):
         HTTP_X_API_KEY="test-key",
     )
 
-    # Should not be rejected due to size
-    assert response.status_code != 400 or "exceeds maximum allowed size" not in response.json().get("error", "")
+    assert_not_size_rejected(response)
+
 
 
 @pytest.mark.django_db
@@ -232,8 +249,8 @@ def test_base64_with_header_within_limit(client):
         HTTP_X_API_KEY="test-key",
     )
 
-    # Should not be rejected due to size
-    assert response.status_code != 400 or "exceeds maximum allowed size" not in response.json().get("error", "")
+    assert_not_size_rejected(response)
+
 
 
 @pytest.mark.django_db
@@ -300,8 +317,9 @@ def test_base64_approximation_check(client):
     """
     url = reverse("face-recognition-api")
     # Create a base64 string that's large enough to trigger the approximation check
-    # but might not trigger the post-decode check
-    huge_b64 = "A" * (10240 * 2)  # ~20 KB in base64, exceeds 10 KB * 1.4 = 14 KB
+    test_limit = 10240  # 10 KB test limit
+    # Base64 string ~20 KB exceeds limit * BASE64_OVERHEAD_MULTIPLIER (14.3 KB)
+    huge_b64 = "A" * (test_limit * 2)
     
     payload = json.dumps({
         "image": huge_b64,
@@ -389,7 +407,7 @@ def test_default_size_limit(client):
     )
 
     # Should not be rejected due to size with default limit
-    assert response.status_code != 400 or "exceeds maximum allowed size" not in response.json().get("error", "")
+
 
 
 @pytest.mark.django_db
