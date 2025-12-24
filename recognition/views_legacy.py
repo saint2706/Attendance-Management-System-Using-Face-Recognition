@@ -1641,16 +1641,13 @@ def hours_vs_date_given_employee(
     df_break_hours = []
 
     # ⚡ Performance: Fetch all time records once and group in memory to avoid N+1 queries
-    all_times = list(time_qs)
+    # Sorting in the DB is more efficient than sorting each group in Python
+    all_times = list(time_qs.order_by("time"))
     times_by_date = {}
     for t in all_times:
         if t.date not in times_by_date:
             times_by_date[t.date] = []
         times_by_date[t.date].append(t)
-
-    # Ensure times are sorted by time (as originally requested by .order_by("time"))
-    for d in times_by_date:
-        times_by_date[d].sort(key=lambda x: x.time)
 
     date_list = []
     for obj in present_qs:
@@ -1721,16 +1718,13 @@ def hours_vs_employee_given_date(
     df_username = []
 
     # ⚡ Performance: Fetch all time records once and group in memory to avoid N+1 queries
-    all_times = list(time_qs)
+    # Sorting in the DB is more efficient than sorting each group in Python
+    all_times = list(time_qs.order_by("time"))
     times_by_user = {}
     for t in all_times:
         if t.user_id not in times_by_user:
             times_by_user[t.user_id] = []
         times_by_user[t.user_id].append(t)
-
-    # Ensure times are sorted by time
-    for uid in times_by_user:
-        times_by_user[uid].sort(key=lambda x: x.time)
 
     # ⚡ Performance: Optimize related object fetching
     present_qs = present_qs.select_related("user")

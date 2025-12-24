@@ -36,9 +36,9 @@ def test_n_plus_one_hours_vs_employee_given_date(django_assert_num_queries):
                 # Optimized implementation:
                 # 1 query for present_qs
                 # 1 query for time_qs (list(time_qs))
-                # 2 EXPLAIN queries (1 for each query above, added by PostgreSQL logging/monitoring)
-                # Total expected: 4
-                with django_assert_num_queries(4):
+                # Note: EXPLAIN queries are environment specific and not present in SQLite/Standard Django Test default.
+                # Total expected: 2
+                with django_assert_num_queries(2):
                     hours_vs_employee_given_date(present_qs, time_qs)
 
 
@@ -64,6 +64,6 @@ def test_n_plus_one_hours_vs_date_given_employee(django_assert_num_queries):
         mock_save.return_value = "/media/fake.png"
         with patch("recognition.views_legacy.plt"):
             with patch("recognition.views_legacy.sns"):
-                # Optimized: 2 queries + 2 EXPLAIN queries = 4
-                with django_assert_num_queries(4):
+                # Optimized: 2 queries
+                with django_assert_num_queries(2):
                     hours_vs_date_given_employee(present_qs, time_qs)
