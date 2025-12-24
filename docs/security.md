@@ -20,6 +20,7 @@ This document consolidates the security-critical configuration that must be in p
 | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Database | PostgreSQL connection settings. | Mandatory when using production settings; missing values raise `ImproperlyConfigured`. |
 | `DB_CONN_MAX_AGE` | Database | Persistent connection lifetime. | Must be integer ≥ 0; defaults to 600 seconds in production. |
 | `DB_SSL_REQUIRE` | Database | Enables `sslmode=require` on the default database connection. | When `true`, production settings inject the SSL flag. |
+| `RECOGNITION_MAX_UPLOAD_SIZE` | Application | Maximum allowed size in bytes for image uploads/payloads in recognition requests. Prevents memory exhaustion DoS attacks. | Defaults to 5242880 bytes (5 MiB). Enforced for file uploads, bytes/bytearray payloads, and base64-encoded strings before decoding. |
 
 ### Secret generation & storage guidance
 
