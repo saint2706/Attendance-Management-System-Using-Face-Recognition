@@ -37,8 +37,9 @@ If you are new to the system, start with the [Quick Start Guide](QUICKSTART.md) 
 
 1. From the home page, click **Mark Time-In** to clock in for the day.
 2. Position your face in front of the webcam. The system will automatically recognize you and record your check-in time.
-3. At the end of the day, click **Mark Time-Out** to clock out.
-4. If the banner "Liveness check failed. Please blink or move your head slightly and try again before marking attendance." appears, blink twice or gently move your head so the system can detect natural motion before retrying.
+3. When you click the **Capture & Recognize** button, you'll see a brief flash effect indicating that your photo has been captured.
+4. At the end of the day, click **Mark Time-Out** to clock out.
+5. If the banner "Liveness check failed. Please blink or move your head slightly and try again before marking attendance." appears, blink twice or gently move your head so the system can detect natural motion before retrying.
 
 #### Viewing Your Attendance
 

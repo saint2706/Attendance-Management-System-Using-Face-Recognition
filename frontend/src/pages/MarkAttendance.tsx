@@ -23,6 +23,7 @@ export const MarkAttendance = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isInitializing, setIsInitializing] = useState(true);
     const [result, setResult] = useState<RecognitionResult | null>(null);
+    const [showFlash, setShowFlash] = useState(false);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -58,6 +59,14 @@ export const MarkAttendance = () => {
         }
     }, []);
 
+    // Handle flash effect timer
+    useEffect(() => {
+        if (showFlash) {
+            const timer = setTimeout(() => setShowFlash(false), 150);
+            return () => clearTimeout(timer);
+        }
+    }, [showFlash]);
+
     // Capture and process
     const captureAndRecognize = async () => {
         if (!videoRef.current || !canvasRef.current) return;
@@ -77,6 +86,9 @@ export const MarkAttendance = () => {
 
         // Draw video frame to canvas
         ctx.drawImage(video, 0, 0);
+
+        // Trigger flash effect after capture
+        setShowFlash(true);
 
         // Get base64 image
         const imageBase64 = canvas.toDataURL('image/jpeg', 0.9);
@@ -160,6 +172,12 @@ export const MarkAttendance = () => {
                                 aria-describedby="attendance-instructions"
                             />
                             <canvas ref={canvasRef} className="hidden-canvas" />
+
+                            {/* Flash effect overlay */}
+                            <div
+                                className={`camera-flash ${showFlash ? 'active' : ''}`}
+                                aria-hidden="true"
+                            />
 
                             {/* Face guide overlay */}
                             <div className="face-guide" aria-hidden="true">
