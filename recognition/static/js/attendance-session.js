@@ -19,6 +19,8 @@ export class AttendanceSessionMonitor {
         this.feedUrl = logContainer?.dataset?.feedUrl;
         this.pollInterval = null;
         this.errorCount = 0;
+        // Use null so the first fetch always triggers a render, even if the initial HTML is empty.
+        // Subsequent updates rely on string comparison of this cached HTML to avoid unnecessary DOM updates.
         this.lastRenderedHtml = null;
     }
 
