@@ -19,6 +19,9 @@ export class AttendanceSessionMonitor {
         this.feedUrl = logContainer?.dataset?.feedUrl;
         this.pollInterval = null;
         this.errorCount = 0;
+        // Use null so the first fetch always triggers a render, even if the initial HTML is empty.
+        // Subsequent updates rely on string comparison of this cached HTML to avoid unnecessary DOM updates.
+        this.lastRenderedHtml = null;
     }
 
     /**
@@ -119,13 +122,22 @@ export class AttendanceSessionMonitor {
      * @param {Array} events - Array of attendance events
      */
     _renderRows(events) {
+        let newHtml = '';
         if (!events || events.length === 0) {
-            this.tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No recent recognition events.</td></tr>';
+            newHtml = '<tr><td colspan="6" class="text-center py-4 text-muted">No recent recognition events.</td></tr>';
+        } else {
+            const rows = events.map((event) => this._renderEvent(event));
+            newHtml = rows.join('');
+        }
+
+        // ⚡ Performance: Prevent unnecessary DOM updates if content hasn't changed.
+        // This avoids expensive layout thrashing and repaints.
+        if (this.lastRenderedHtml === newHtml) {
             return;
         }
 
-        const rows = events.map((event) => this._renderEvent(event));
-        this.tbody.innerHTML = rows.join('');
+        this.tbody.innerHTML = newHtml;
+        this.lastRenderedHtml = newHtml;
     }
 
     /**
