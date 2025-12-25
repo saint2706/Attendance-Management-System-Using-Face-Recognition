@@ -584,6 +584,20 @@ class FaceRecognitionAPI(View):
         request_user = getattr(request, "user", None)
         request_username = getattr(request_user, "username", None)
 
+        # 🛡️ Sentinel: Check rate limit check first to mitigate DoS (e.g. via expensive auth)
+        if getattr(request, "limited", False):
+            attempt_logger = _RecognitionAttemptLogger(
+                default_direction,
+                site_code,
+                source="api",
+            )
+            attempt_logger.log_failure(
+                request_username,
+                spoofed=False,
+                error="Too many requests.",
+            )
+            return JsonResponse({"error": "Too many requests."}, status=429)
+
         auth_ok, principal, auth_error = self._authenticate_request(request)
         if principal and not request_username:
             request_username = principal
@@ -600,19 +614,6 @@ class FaceRecognitionAPI(View):
                 error=auth_error or "Authentication failed.",
             )
             return JsonResponse({"error": auth_error or "Authentication failed."}, status=401)
-
-        if getattr(request, "limited", False):
-            attempt_logger = _RecognitionAttemptLogger(
-                default_direction,
-                site_code,
-                source="api",
-            )
-            attempt_logger.log_failure(
-                request_username,
-                spoofed=False,
-                error="Too many requests.",
-            )
-            return JsonResponse({"error": "Too many requests."}, status=429)
 
         try:
             payload = self._parse_payload(request)
