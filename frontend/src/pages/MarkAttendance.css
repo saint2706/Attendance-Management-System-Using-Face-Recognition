@@ -68,6 +68,7 @@
     align-items: center;
     justify-content: center;
     pointer-events: none;
+    z-index: 10;
 }
 
 .face-oval {
@@ -88,6 +89,28 @@
     50% {
         border-color: rgba(255, 255, 255, 0.7);
     }
+}
+
+/* Camera Flash Effect */
+.camera-flash {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.camera-flash.active {
+    animation: flash-animation 150ms ease-out forwards;
+}
+
+@keyframes flash-animation {
+    0% { opacity: 0.8; }
+    100% { opacity: 0; }
 }
 
 /* Result Cards */
