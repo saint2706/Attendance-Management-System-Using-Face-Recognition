@@ -113,6 +113,17 @@
     100% { opacity: 0; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .camera-flash.active {
+        animation: none;
+        opacity: 0.3;
+    }
+
+    .face-oval {
+        animation: none;
+    }
+}
+
 /* Result Cards */
 .result-card {
     margin-bottom: var(--spacing-lg);

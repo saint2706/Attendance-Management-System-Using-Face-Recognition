@@ -71,9 +71,6 @@ export const MarkAttendance = () => {
     const captureAndRecognize = async () => {
         if (!videoRef.current || !canvasRef.current) return;
 
-        // Trigger flash effect
-        setShowFlash(true);
-
         setIsProcessing(true);
         setResult(null);
 
@@ -89,6 +86,9 @@ export const MarkAttendance = () => {
 
         // Draw video frame to canvas
         ctx.drawImage(video, 0, 0);
+
+        // Trigger flash effect after capture
+        setShowFlash(true);
 
         // Get base64 image
         const imageBase64 = canvas.toDataURL('image/jpeg', 0.9);
