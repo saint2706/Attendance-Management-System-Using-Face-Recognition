@@ -584,7 +584,7 @@ class FaceRecognitionAPI(View):
         request_user = getattr(request, "user", None)
         request_username = getattr(request_user, "username", None)
 
-        # 🛡️ Sentinel: Check rate limit check first to mitigate DoS (e.g. via expensive auth)
+        # 🛡️ Sentinel: Check rate limit first to mitigate DoS (e.g. via expensive auth)
         if getattr(request, "limited", False):
             attempt_logger = _RecognitionAttemptLogger(
                 default_direction,
