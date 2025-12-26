@@ -117,27 +117,74 @@ def detect_npu_availability() -> Dict[str, Any]:
         import platform
 
         if platform.system() == "Windows":
-            # DirectML detection would require tensorflow-directml or ONNX Runtime with DirectML EP
-            # For now, we'll check if it's available in the environment
+            # Check Windows version - DirectML NPU requires Windows 11 build 22000+
+            win_version = platform.version()
+            try:
+                build_number = int(win_version.split(".")[-1])
+                if build_number < 22000:
+                    logger.debug(
+                        f"Windows build {build_number} may not support DirectML NPU"
+                    )
+            except (ValueError, IndexError):
+                pass  # Continue checking anyway
+
+            # Method 1: Try ONNX Runtime with DirectML Execution Provider (preferred)
+            try:
+                import onnxruntime as ort
+
+                available_providers = ort.get_available_providers()
+                if "DmlExecutionProvider" in available_providers:
+                    npu_info["available"] = True
+                    npu_info["type"] = "directml"
+                    npu_info["device"] = "DmlExecutionProvider"
+                    npu_info["backend"] = "onnxruntime-directml"
+                    logger.info("DirectML NPU detected via ONNX Runtime DmlExecutionProvider")
+                    return npu_info
+
+            except ImportError:
+                logger.debug("ONNX Runtime not installed, trying tensorflow-directml")
+            except Exception as ort_exc:
+                logger.debug(f"ONNX Runtime DirectML check failed: {ort_exc}")
+
+            # Method 2: Try tensorflow-directml package
             try:
                 import tensorflow as tf
 
-                # Check if DirectML plugin is available
-                # Note: This is a placeholder - actual DirectML NPU detection
-                # would require specific DirectML APIs
+                # tensorflow-directml exposes DirectML devices
                 available_devices = tf.config.list_physical_devices()
-                directml_devices = [d for d in available_devices if "DirectML" in str(d)]
+                directml_devices = [
+                    d for d in available_devices if "DML" in str(d) or "DirectML" in str(d)
+                ]
 
                 if directml_devices:
                     npu_info["available"] = True
                     npu_info["type"] = "directml"
                     npu_info["device"] = str(directml_devices[0])
-                    npu_info["backend"] = "directml"
-                    logger.info(f"DirectML NPU detected: {directml_devices[0]}")
+                    npu_info["backend"] = "tensorflow-directml"
+                    logger.info(f"DirectML NPU detected via TensorFlow: {directml_devices[0]}")
                     return npu_info
 
-            except (ImportError, AttributeError):
-                pass
+                # Also check for GPU devices that might be DirectML-backed
+                gpu_devices = tf.config.list_physical_devices("GPU")
+                for gpu in gpu_devices:
+                    try:
+                        details = tf.config.experimental.get_device_details(gpu)
+                        device_name = details.get("device_name", "")
+                        # Intel integrated GPUs on Windows often use DirectML
+                        if "Intel" in device_name and "Arc" not in device_name:
+                            npu_info["available"] = True
+                            npu_info["type"] = "directml"
+                            npu_info["device"] = device_name
+                            npu_info["backend"] = "tensorflow-directml"
+                            logger.info(f"DirectML NPU detected (Intel iGPU): {device_name}")
+                            return npu_info
+                    except Exception:
+                        continue
+
+            except ImportError:
+                logger.debug("TensorFlow not installed for DirectML detection")
+            except Exception as tf_exc:
+                logger.debug(f"TensorFlow DirectML check failed: {tf_exc}")
 
     except Exception as exc:  # pragma: no cover - defensive programming
         logger.debug(f"DirectML NPU detection failed: {exc}")
