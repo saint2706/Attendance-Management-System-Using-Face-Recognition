@@ -90,6 +90,9 @@ export const MarkAttendance = () => {
         // Trigger flash effect after capture
         setShowFlash(true);
 
+        // Freeze video to show captured frame
+        video.pause();
+
         // Get base64 image
         const imageBase64 = canvas.toDataURL('image/jpeg', 0.9);
 
@@ -129,6 +132,8 @@ export const MarkAttendance = () => {
         setError(null);
         if (!stream) {
             startCamera();
+        } else if (videoRef.current) {
+            videoRef.current.play().catch(console.error);
         }
     };
 
