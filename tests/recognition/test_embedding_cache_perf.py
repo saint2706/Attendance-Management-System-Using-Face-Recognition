@@ -1,9 +1,12 @@
 import time
-import pytest
-from unittest.mock import MagicMock, patch
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
 import numpy as np
+import pytest
+
 from recognition.views_legacy import _build_dataset_embeddings_for_matching
+
 
 class PathMock:
     def __init__(self, path_str):
@@ -38,6 +41,7 @@ class PathMock:
     def __repr__(self):
         return f"PathMock('{self.path_str}')"
 
+
 def test_embedding_cache_performance():
     # Setup mocks
     num_images = 100
@@ -49,15 +53,20 @@ def test_embedding_cache_performance():
 
     # Mock file read (decryption simulation) - SIMULATE SLOWNESS
     def side_effect_decrypt_image_bytes(path):
-        time.sleep(0.001) # Simulate 1ms decryption/read time
+        time.sleep(0.001)  # Simulate 1ms decryption/read time
         return b"fake_decrypted_bytes"
 
-    with patch("recognition.views_legacy.TRAINING_DATASET_ROOT") as mock_root, \
-         patch("recognition.views_legacy._decrypt_image_bytes", side_effect=side_effect_decrypt_image_bytes) as mock_decrypt, \
-         patch("recognition.views_legacy._decode_image_bytes") as mock_decode, \
-         patch("recognition.views_legacy.DeepFace.represent") as mock_deepface, \
-         patch("recognition.views_legacy.extract_embedding") as mock_extract, \
-         patch("recognition.views_legacy.cache") as mock_cache:
+    with (
+        patch("recognition.views_legacy.TRAINING_DATASET_ROOT") as mock_root,
+        patch(
+            "recognition.views_legacy._decrypt_image_bytes",
+            side_effect=side_effect_decrypt_image_bytes,
+        ) as mock_decrypt,
+        patch("recognition.views_legacy._decode_image_bytes") as mock_decode,
+        patch("recognition.views_legacy.DeepFace.represent") as mock_deepface,
+        patch("recognition.views_legacy.extract_embedding") as mock_extract,
+        patch("recognition.views_legacy.cache") as mock_cache,
+    ):
 
         mock_root.glob.return_value = mock_paths
         mock_decode.return_value = np.zeros((100, 100, 3), dtype=np.uint8)
@@ -71,7 +80,9 @@ def test_embedding_cache_performance():
         duration = time.time() - start_time
 
         # With optimization, this should be 0 because cache hit prevents decryption
-        assert mock_decrypt.call_count == 0, f"Expected 0 decrypt calls, got {mock_decrypt.call_count}"
+        assert (
+            mock_decrypt.call_count == 0
+        ), f"Expected 0 decrypt calls, got {mock_decrypt.call_count}"
 
 
 def test_embedding_cache_stores_on_miss():
@@ -83,12 +94,14 @@ def test_embedding_cache_stores_on_miss():
         p = PathMock(f"fake/path/img_{i}.jpg")
         mock_paths.append(p)
 
-    with patch("recognition.views_legacy.TRAINING_DATASET_ROOT") as mock_root, \
-         patch("recognition.views_legacy._decrypt_image_bytes") as mock_decrypt, \
-         patch("recognition.views_legacy._decode_image_bytes") as mock_decode, \
-         patch("recognition.views_legacy.DeepFace.represent") as mock_deepface, \
-         patch("recognition.views_legacy.extract_embedding") as mock_extract, \
-         patch("recognition.views_legacy.cache") as mock_cache:
+    with (
+        patch("recognition.views_legacy.TRAINING_DATASET_ROOT") as mock_root,
+        patch("recognition.views_legacy._decrypt_image_bytes") as mock_decrypt,
+        patch("recognition.views_legacy._decode_image_bytes") as mock_decode,
+        patch("recognition.views_legacy.DeepFace.represent") as mock_deepface,
+        patch("recognition.views_legacy.extract_embedding") as mock_extract,
+        patch("recognition.views_legacy.cache") as mock_cache,
+    ):
 
         mock_root.glob.return_value = mock_paths
         mock_decrypt.return_value = b"fake_decrypted_bytes"
@@ -101,10 +114,11 @@ def test_embedding_cache_stores_on_miss():
         _build_dataset_embeddings_for_matching("model", "backend", False)
 
         # Verify cache.set was called for each computed embedding
-        assert mock_cache.set.call_count == num_images, \
-            f"Expected {num_images} cache.set calls, got {mock_cache.set.call_count}"
+        assert (
+            mock_cache.set.call_count == num_images
+        ), f"Expected {num_images} cache.set calls, got {mock_cache.set.call_count}"
 
         # Verify decryption happened for all images (cache miss)
-        assert mock_decrypt.call_count == num_images, \
-            f"Expected {num_images} decrypt calls on cache miss, got {mock_decrypt.call_count}"
-
+        assert (
+            mock_decrypt.call_count == num_images
+        ), f"Expected {num_images} decrypt calls on cache miss, got {mock_decrypt.call_count}"

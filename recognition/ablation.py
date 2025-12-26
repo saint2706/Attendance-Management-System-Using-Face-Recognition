@@ -227,10 +227,12 @@ def _run_real_ablation(
             )
             embedding, _ = extract_embedding(representations)
             if embedding is not None:
-                reference_embeddings.append({
-                    "identity": label,
-                    "embedding": embedding,
-                })
+                reference_embeddings.append(
+                    {
+                        "identity": label,
+                        "embedding": embedding,
+                    }
+                )
         except Exception as e:
             logger.warning(f"Failed to extract embedding for {label}: {e}")
             continue
@@ -294,8 +296,6 @@ def _run_real_ablation(
     }
 
 
-
-
 def run_ablation_study(
     image_paths: List[Path],
     labels: List[str],
@@ -323,9 +323,7 @@ def run_ablation_study(
     results = []
 
     for config in configs:
-        result = run_single_ablation(
-            config, image_paths, labels, random_state, synthetic=synthetic
-        )
+        result = run_single_ablation(config, image_paths, labels, random_state, synthetic=synthetic)
         results.append(
             {
                 "detector": config.detector,

@@ -117,9 +117,7 @@ def detect_pose_issues(facial_area: Optional[Dict]) -> str:
         return "unknown"
 
 
-def detect_occlusion(
-    image_path: Optional[Path], facial_area: Optional[Dict] = None
-) -> str:
+def detect_occlusion(image_path: Optional[Path], facial_area: Optional[Dict] = None) -> str:
     """
     Heuristic to detect occlusion (glasses, masks, etc.) using image analysis.
 
@@ -198,9 +196,7 @@ def detect_occlusion(
                         max(0, face_x) : min(width, face_x + face_w),
                     ]
                 else:
-                    lower_hsv = hsv[
-                        int(height * 0.6) :, int(width * 0.25) : int(width * 0.75)
-                    ]
+                    lower_hsv = hsv[int(height * 0.6) :, int(width * 0.25) : int(width * 0.75)]
 
                 if lower_hsv.size > 0:
                     # Check saturation - masks often have low saturation (white/black)

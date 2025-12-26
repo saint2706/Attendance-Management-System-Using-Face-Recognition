@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Subquery, OuterRef
+from django.db.models import OuterRef, Subquery
 from django.utils import timezone
 
 from rest_framework import permissions, status, viewsets
@@ -13,7 +13,7 @@ from recognition.api.serializers import (
     StatsSerializer,
     UserSerializer,
 )
-from users.models import Direction, RecognitionAttempt, Present, Time
+from users.models import Direction, Present, RecognitionAttempt, Time
 
 User = get_user_model()
 
@@ -301,14 +301,14 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         if match_result is None:
             return Response(
                 {
-                    "status": "error",
-                    "message": "No matching face found",
+                    "status": "failure",
+                    "message": "Face recognized but no match found in database",
                     "recognition": {"detected": True, "matched": False},
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_200_OK,
             )
 
-        matched_username, distance = match_result
+        matched_username, distance, _ = match_result
 
         # Check if match is within threshold
         from recognition.pipeline import is_within_distance_threshold
@@ -359,9 +359,9 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Update attendance records using existing helper functions
         if direction == "in":
-            update_attendance_in_db_in(matched_username)
+            update_attendance_in_db_in({matched_username: True})
         else:
-            update_attendance_in_db_out(matched_username)
+            update_attendance_in_db_out({matched_username: True})
 
         return Response(
             {
@@ -379,4 +379,3 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
                 },
             }
         )
-
