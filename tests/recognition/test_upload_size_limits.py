@@ -11,7 +11,6 @@ through upload size limits works correctly for all payload types:
 import base64
 import io
 import json
-from unittest.mock import MagicMock
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
@@ -379,7 +378,7 @@ def test_default_size_limit(client):
     small_image = create_test_image_bytes(100)  # 100 KB
     uploaded_file = SimpleUploadedFile("test.jpg", small_image, content_type="image/jpeg")
 
-    response = client.post(
+    _ = client.post(
         url,
         data={"image": uploaded_file, "username": "testuser"},
         HTTP_X_API_KEY="test-key",

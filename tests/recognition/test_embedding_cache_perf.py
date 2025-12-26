@@ -3,7 +3,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-import pytest
 
 from recognition.views_legacy import _build_dataset_embeddings_for_matching
 
@@ -63,7 +62,7 @@ def test_embedding_cache_performance():
             side_effect=side_effect_decrypt_image_bytes,
         ) as mock_decrypt,
         patch("recognition.views_legacy._decode_image_bytes") as mock_decode,
-        patch("recognition.views_legacy.DeepFace.represent") as mock_deepface,
+        patch("recognition.views_legacy.DeepFace.represent"),
         patch("recognition.views_legacy.extract_embedding") as mock_extract,
         patch("recognition.views_legacy.cache") as mock_cache,
     ):
@@ -77,7 +76,7 @@ def test_embedding_cache_performance():
 
         start_time = time.time()
         _build_dataset_embeddings_for_matching("model", "backend", False)
-        duration = time.time() - start_time
+        _ = time.time() - start_time
 
         # With optimization, this should be 0 because cache hit prevents decryption
         assert (
@@ -98,7 +97,7 @@ def test_embedding_cache_stores_on_miss():
         patch("recognition.views_legacy.TRAINING_DATASET_ROOT") as mock_root,
         patch("recognition.views_legacy._decrypt_image_bytes") as mock_decrypt,
         patch("recognition.views_legacy._decode_image_bytes") as mock_decode,
-        patch("recognition.views_legacy.DeepFace.represent") as mock_deepface,
+        patch("recognition.views_legacy.DeepFace.represent"),
         patch("recognition.views_legacy.extract_embedding") as mock_extract,
         patch("recognition.views_legacy.cache") as mock_cache,
     ):

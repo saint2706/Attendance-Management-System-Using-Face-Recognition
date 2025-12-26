@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db.models import OuterRef, Subquery
 from django.utils import timezone
 
 from rest_framework import permissions, status, viewsets
@@ -13,7 +12,7 @@ from recognition.api.serializers import (
     StatsSerializer,
     UserSerializer,
 )
-from users.models import Direction, Present, RecognitionAttempt, Time
+from users.models import Direction, RecognitionAttempt
 
 User = get_user_model()
 
@@ -153,7 +152,6 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         Returns recognition result with matched user and confidence score.
         """
         import base64
-        import io
         import logging
 
         import cv2
@@ -345,7 +343,6 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Record attendance
         now = timezone.now()
-        today = now.date()
 
         # Create recognition attempt record
         attempt = RecognitionAttempt.objects.create(

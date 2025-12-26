@@ -99,8 +99,6 @@ class TestRealDataIntegration:
 
         from django.urls import reverse
 
-        from recognition.views import _dataset_embedding_cache
-
         images = get_dataset_images(limit=1)
         if not images:
             pytest.skip("No images found in dataset/")

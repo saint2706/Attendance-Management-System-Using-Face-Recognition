@@ -190,11 +190,7 @@ def _run_real_ablation(
     """
     import logging
 
-    from recognition.pipeline import (
-        calculate_embedding_distance,
-        extract_embedding,
-        find_closest_dataset_match,
-    )
+    from recognition.pipeline import extract_embedding, find_closest_dataset_match
 
     logger = logging.getLogger(__name__)
 

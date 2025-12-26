@@ -129,7 +129,7 @@ jobs:
 
       - name: Lint with flake8
         run: |
-          flake8 --max-line-length=100 --ignore=E203,W503,E501 --exclude=migrations,__pycache__,.venv,venv .
+          flake8 --max-line-length=100 --ignore=E203,W503,E501 --exclude=migrations,__pycache__,.venv,venv,frontend,node_modules,staticfiles,dataset .
 
       - name: Check code formatting
         run: |
