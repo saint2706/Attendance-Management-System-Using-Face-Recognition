@@ -46,38 +46,179 @@ def detect_lighting_issues(image_path: Optional[Path]) -> str:
 
 def detect_pose_issues(facial_area: Optional[Dict]) -> str:
     """
-    Heuristic to detect pose issues.
+    Heuristic to detect pose issues based on facial area geometry and landmarks.
+
+    Analyzes the face bounding box aspect ratio and landmark positions
+    to estimate head pose (yaw angle primarily).
 
     Args:
-        facial_area: Dictionary with face bounding box coordinates
+        facial_area: Dictionary with face bounding box coordinates.
+            Expected keys: 'x', 'y', 'w', 'h' for bounding box.
+            Optional keys: 'left_eye', 'right_eye' for landmark-based analysis.
 
     Returns:
-        String describing pose ('frontal', 'profile', 'unknown')
+        String describing pose:
+        - 'frontal': Face is roughly frontal (within ~15° yaw)
+        - 'profile': Face is turned significantly (>30° yaw)
+        - 'tilted': Face has significant roll/pitch
+        - 'unknown': Cannot determine pose
     """
     if facial_area is None:
         return "unknown"
 
-    # In a real implementation, this would analyze face landmarks
-    # For now, return a placeholder
-    return "frontal"
+    try:
+        # Extract bounding box dimensions
+        w = facial_area.get("w", 0)
+        h = facial_area.get("h", 0)
+
+        if w <= 0 or h <= 0:
+            return "unknown"
+
+        # Check for eye landmarks (more accurate pose estimation)
+        left_eye = facial_area.get("left_eye")
+        right_eye = facial_area.get("right_eye")
+
+        if left_eye and right_eye:
+            # Calculate eye-line angle for roll detection
+            eye_dx = right_eye[0] - left_eye[0]
+            eye_dy = right_eye[1] - left_eye[1]
+
+            if eye_dx != 0:
+                roll_angle = abs(np.arctan(eye_dy / eye_dx) * 180 / np.pi)
+                if roll_angle > 20:
+                    return "tilted"
+
+            # Calculate eye distance ratio relative to face width
+            eye_distance = np.sqrt(eye_dx**2 + eye_dy**2)
+            eye_ratio = eye_distance / w
+
+            # Frontal faces typically have eye distance ~35-45% of face width
+            # Profile faces have compressed eye distance
+            if eye_ratio < 0.25:
+                return "profile"
+            elif eye_ratio > 0.55:
+                # Very wide eye spacing might indicate extreme frontal or distortion
+                return "frontal"
+
+        # Fall back to aspect ratio heuristic
+        # Frontal faces typically have width/height ratio ~0.7-0.9
+        aspect_ratio = w / h
+
+        if aspect_ratio < 0.5:
+            # Very narrow face suggests profile view
+            return "profile"
+        elif aspect_ratio > 1.1:
+            # Very wide face suggests tilted or unusual angle
+            return "tilted"
+        else:
+            return "frontal"
+
+    except Exception:
+        return "unknown"
 
 
-def detect_occlusion(image_path: Optional[Path]) -> str:
+def detect_occlusion(image_path: Optional[Path], facial_area: Optional[Dict] = None) -> str:
     """
-    Heuristic to detect occlusion (glasses, masks, etc.).
+    Heuristic to detect occlusion (glasses, masks, etc.) using image analysis.
+
+    Analyzes the lower face region (mouth/nose area) for color uniformity
+    and landmark visibility to detect potential occlusions.
 
     Args:
         image_path: Path to the image
+        facial_area: Optional dictionary with face landmarks.
+            If provided with 'nose' and 'mouth_left'/'mouth_right' keys,
+            can provide more accurate occlusion detection.
 
     Returns:
-        String describing occlusion status ('none', 'partial', 'heavy', 'unknown')
+        String describing occlusion status:
+        - 'none': No significant occlusion detected
+        - 'partial': Glasses or minor occlusion detected
+        - 'heavy': Mask or major occlusion detected (mouth/nose covered)
+        - 'unknown': Cannot determine occlusion status
     """
     if image_path is None:
         return "unknown"
 
-    # In a real implementation, this would use object detection or segmentation
-    # For now, return a placeholder
-    return "none"
+    try:
+        import cv2
+
+        img = cv2.imread(str(image_path))
+        if img is None:
+            return "unknown"
+
+        # Convert to grayscale and HSV for analysis
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+        height, width = gray.shape[:2]
+
+        # If we have facial landmarks, use them for precise analysis
+        if facial_area:
+            face_x = facial_area.get("x", 0)
+            face_y = facial_area.get("y", 0)
+            face_w = facial_area.get("w", width)
+            face_h = facial_area.get("h", height)
+
+            # Define lower face region (bottom 40% of face - nose/mouth area)
+            lower_y = face_y + int(face_h * 0.6)
+            lower_h = int(face_h * 0.4)
+            lower_region = gray[
+                max(0, lower_y) : min(height, lower_y + lower_h),
+                max(0, face_x) : min(width, face_x + face_w),
+            ]
+
+            # Define eye region (top 30-50% of face)
+            eye_y = face_y + int(face_h * 0.25)
+            eye_h = int(face_h * 0.25)
+            eye_region = gray[
+                max(0, eye_y) : min(height, eye_y + eye_h),
+                max(0, face_x) : min(width, face_x + face_w),
+            ]
+        else:
+            # Fall back to center regions
+            lower_region = gray[int(height * 0.6) :, int(width * 0.25) : int(width * 0.75)]
+            eye_region = gray[
+                int(height * 0.25) : int(height * 0.45),
+                int(width * 0.2) : int(width * 0.8),
+            ]
+
+        # Check for heavy occlusion (mask detection)
+        if lower_region.size > 0:
+            lower_variance = np.var(lower_region)
+            # Masks typically have low texture variance (uniform color)
+            # Natural skin/mouth has higher variance
+            if lower_variance < 200:  # Low variance suggests uniform covering
+                # Additional check: look for common mask colors (blue, white, black)
+                if facial_area:
+                    lower_hsv = hsv[
+                        max(0, lower_y) : min(height, lower_y + lower_h),
+                        max(0, face_x) : min(width, face_x + face_w),
+                    ]
+                else:
+                    lower_hsv = hsv[int(height * 0.6) :, int(width * 0.25) : int(width * 0.75)]
+
+                if lower_hsv.size > 0:
+                    # Check saturation - masks often have low saturation (white/black)
+                    # or specific hue (blue surgical masks)
+                    mean_saturation = np.mean(lower_hsv[:, :, 1])
+                    if mean_saturation < 40:  # Low saturation = likely mask
+                        return "heavy"
+
+        # Check for partial occlusion (glasses detection)
+        if eye_region.size > 0:
+            # Glasses create distinct horizontal edges across eyes
+            eye_edges = cv2.Canny(eye_region, 50, 150)
+            edge_density = np.sum(eye_edges > 0) / eye_edges.size
+
+            # High edge density in eye region may indicate glasses frames
+            if edge_density > 0.15:
+                return "partial"
+
+        return "none"
+
+    except Exception:
+        return "unknown"
 
 
 def analyze_failures(

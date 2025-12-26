@@ -93,6 +93,7 @@ def run_single_ablation(
     image_paths: List[Path],
     labels: List[str],
     random_state: int = 42,
+    synthetic: bool = False,
 ) -> Dict:
     """
     Run a single ablation experiment.
@@ -102,18 +103,36 @@ def run_single_ablation(
         image_paths: List of image paths for evaluation
         labels: True labels for each image
         random_state: Random seed for reproducibility
+        synthetic: If True, use simulated results (fast, for CI).
+                   If False, use real DeepFace inference (slow, requires GPU).
 
     Returns:
         Dictionary containing ablation results
     """
     set_global_seed(random_state)
-
-    # Simulate ablation results
-    # In a real implementation, this would use DeepFace with the specified config
-    # For now, we'll generate synthetic results
-
     np.random.seed(random_state)
 
+    n_samples = len(labels)
+
+    if synthetic:
+        # Fast synthetic mode for CI/testing - simulates expected performance
+        return _run_synthetic_ablation(config, labels, n_samples, random_state)
+
+    # Real DeepFace inference mode
+    return _run_real_ablation(config, image_paths, labels, n_samples)
+
+
+def _run_synthetic_ablation(
+    config: AblationConfig,
+    labels: List[str],
+    n_samples: int,
+    random_state: int,
+) -> Dict:
+    """
+    Run synthetic ablation with simulated results (fast mode for CI).
+
+    Simulates expected performance variations based on configuration parameters.
+    """
     # Simulate performance variations based on config
     base_accuracy = 0.85
 
@@ -142,25 +161,147 @@ def run_single_ablation(
     base_accuracy = np.clip(base_accuracy, 0.0, 1.0)
 
     # Simulate predictions
-    n_samples = len(labels)
     y_true = np.array([1 if i % 2 == 0 else 0 for i in range(n_samples)])
     y_pred = (np.random.rand(n_samples) < base_accuracy).astype(int)
 
     accuracy = accuracy_score(y_true, y_pred)
     f1 = f1_score(y_true, y_pred, average="weighted", zero_division=0)
 
-    results = {
+    return {
         "config": config.to_dict(),
         "accuracy": float(accuracy),
         "f1_score": float(f1),
         "n_samples": n_samples,
+        "mode": "synthetic",
     }
 
-    return results
+
+def _run_real_ablation(
+    config: AblationConfig,
+    image_paths: List[Path],
+    labels: List[str],
+    n_samples: int,
+) -> Dict:
+    """
+    Run real ablation using DeepFace for face recognition.
+
+    Performs actual face detection, embedding extraction, and matching
+    using the specified configuration.
+    """
+    import logging
+
+    from recognition.pipeline import (
+        calculate_embedding_distance,
+        extract_embedding,
+        find_closest_dataset_match,
+    )
+
+    logger = logging.getLogger(__name__)
+
+    try:
+        from deepface import DeepFace
+    except ImportError:
+        logger.error("DeepFace not installed, falling back to synthetic mode")
+        return _run_synthetic_ablation(config, labels, n_samples, 42)
+
+    # Build embedding dataset from unique labels
+    unique_labels = list(set(labels))
+    label_to_paths: Dict[str, List[Path]] = {}
+    for path, label in zip(image_paths, labels):
+        label_to_paths.setdefault(label, []).append(path)
+
+    # Use first image of each label as reference embedding
+    reference_embeddings = []
+    for label in unique_labels:
+        ref_paths = label_to_paths.get(label, [])
+        if not ref_paths:
+            continue
+
+        try:
+            representations = DeepFace.represent(
+                img_path=str(ref_paths[0]),
+                model_name="Facenet",  # Use Facenet as baseline model
+                detector_backend=config.detector,
+                enforce_detection=False,
+                align=config.alignment,
+            )
+            embedding, _ = extract_embedding(representations)
+            if embedding is not None:
+                reference_embeddings.append(
+                    {
+                        "identity": label,
+                        "embedding": embedding,
+                    }
+                )
+        except Exception as e:
+            logger.warning(f"Failed to extract embedding for {label}: {e}")
+            continue
+
+    if not reference_embeddings:
+        logger.error("No reference embeddings could be extracted")
+        return _run_synthetic_ablation(config, labels, n_samples, 42)
+
+    # Run predictions on test images
+    y_true = []
+    y_pred = []
+
+    for path, true_label in zip(image_paths, labels):
+        y_true.append(true_label)
+
+        try:
+            representations = DeepFace.represent(
+                img_path=str(path),
+                model_name="Facenet",
+                detector_backend=config.detector,
+                enforce_detection=False,
+                align=config.alignment,
+            )
+            embedding, _ = extract_embedding(representations)
+
+            if embedding is None:
+                y_pred.append("__unknown__")
+                continue
+
+            # Find closest match
+            match = find_closest_dataset_match(
+                embedding, reference_embeddings, config.distance_metric
+            )
+
+            if match is None:
+                y_pred.append("__unknown__")
+            else:
+                matched_label, _ = match
+                y_pred.append(matched_label)
+
+        except Exception as e:
+            logger.warning(f"Recognition failed for {path}: {e}")
+            y_pred.append("__unknown__")
+
+    # Calculate metrics
+    correct = sum(1 for t, p in zip(y_true, y_pred) if t == p)
+    accuracy = correct / len(y_true) if y_true else 0.0
+
+    # F1 score requires binary or multi-label format
+    # Convert to binary accuracy (correct vs incorrect)
+    y_true_binary = [1] * len(y_true)
+    y_pred_binary = [1 if t == p else 0 for t, p in zip(y_true, y_pred)]
+    f1 = f1_score(y_true_binary, y_pred_binary, average="weighted", zero_division=0)
+
+    return {
+        "config": config.to_dict(),
+        "accuracy": float(accuracy),
+        "f1_score": float(f1),
+        "n_samples": n_samples,
+        "mode": "real",
+    }
 
 
 def run_ablation_study(
-    image_paths: List[Path], labels: List[str], output_dir: Path, random_state: int = 42
+    image_paths: List[Path],
+    labels: List[str],
+    output_dir: Path,
+    random_state: int = 42,
+    synthetic: bool = False,
 ) -> pd.DataFrame:
     """
     Run complete ablation study.
@@ -170,6 +311,8 @@ def run_ablation_study(
         labels: True labels for each image
         output_dir: Directory to save results
         random_state: Random seed for reproducibility
+        synthetic: If True, use simulated results (fast, for CI).
+                   If False, use real DeepFace inference (slow, requires GPU).
 
     Returns:
         DataFrame containing all ablation results
@@ -180,7 +323,7 @@ def run_ablation_study(
     results = []
 
     for config in configs:
-        result = run_single_ablation(config, image_paths, labels, random_state)
+        result = run_single_ablation(config, image_paths, labels, random_state, synthetic=synthetic)
         results.append(
             {
                 "detector": config.detector,
@@ -190,6 +333,7 @@ def run_ablation_study(
                 "accuracy": result["accuracy"],
                 "f1_score": result["f1_score"],
                 "n_samples": result["n_samples"],
+                "mode": result.get("mode", "unknown"),
             }
         )
 

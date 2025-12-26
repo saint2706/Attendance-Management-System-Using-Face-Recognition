@@ -1280,24 +1280,16 @@ def _get_or_compute_cached_embedding(
     try:
         stat_result = image_path.stat()
         # Mix mtime_ns and size to detect file changes without reading content
-        meta_hash = (
-            f"{image_path.resolve()}:{stat_result.st_mtime_ns}:"
-            f"{stat_result.st_size}"
-        )
+        meta_hash = f"{image_path.resolve()}:{stat_result.st_mtime_ns}:" f"{stat_result.st_size}"
         key_hash = hashlib.sha256(meta_hash.encode()).hexdigest()
-        cache_key = (
-            f"recognition:embedding_v2:{model_name}:"
-            f"{detector_backend}:{key_hash}"
-        )
+        cache_key = f"recognition:embedding_v2:{model_name}:" f"{detector_backend}:{key_hash}"
 
         cached_embedding = cache.get(cache_key)
         if cached_embedding is not None:
             try:
                 return np.array(cached_embedding, dtype=float)
             except Exception:  # pragma: no cover - defensive programming
-                logger.debug(
-                    "Failed to coerce cached embedding for %s into an array", image_path
-                )
+                logger.debug("Failed to coerce cached embedding for %s into an array", image_path)
     except OSError:
         # Fallback to full processing if stat fails
         pass

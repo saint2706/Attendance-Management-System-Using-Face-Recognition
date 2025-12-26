@@ -317,7 +317,9 @@ def setup_wizard_step4(request):
         # Return early with current state for consistency
         context = _build_wizard_context(progress)
         context["step_title"] = "Train Recognition Model"
-        context["step_description"] = "Train the AI model to recognize faces from the captured photos."
+        context["step_description"] = (
+            "Train the AI model to recognize faces from the captured photos."
+        )
         context["task"] = None
         context["model_trained"] = progress.model_trained
         context["form"] = TrainingConfirmForm()
