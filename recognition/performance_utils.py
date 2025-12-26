@@ -122,9 +122,7 @@ def detect_npu_availability() -> Dict[str, Any]:
             try:
                 build_number = int(win_version.split(".")[-1])
                 if build_number < 22000:
-                    logger.debug(
-                        f"Windows build {build_number} may not support DirectML NPU"
-                    )
+                    logger.debug(f"Windows build {build_number} may not support DirectML NPU")
             except (ValueError, IndexError):
                 pass  # Continue checking anyway
 

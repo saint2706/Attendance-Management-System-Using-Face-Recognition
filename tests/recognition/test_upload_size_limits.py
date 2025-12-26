@@ -7,6 +7,7 @@ through upload size limits works correctly for all payload types:
 - Raw bytes/bytearray payloads
 - Base64-encoded strings (with and without data URI headers)
 """
+
 import base64
 import io
 import json
@@ -19,7 +20,6 @@ from django.urls import reverse
 import pytest
 from PIL import Image
 
-
 # Test constants
 BASE64_OVERHEAD_MULTIPLIER = 1.4  # Same as used in production code
 
@@ -27,41 +27,40 @@ BASE64_OVERHEAD_MULTIPLIER = 1.4  # Same as used in production code
 def assert_not_size_rejected(response):
     """
     Assert that a response was not rejected due to size limits.
-    
+
     The response may fail for other reasons (no embeddings, no face detected, etc.)
     but should not have the size limit error message.
     """
 
 
-
 def create_test_image_bytes(target_size_kb: int) -> bytes:
     """
     Create a JPEG image of approximately the specified size in KB.
-    
+
     For test reliability, this aims to stay slightly under the target to account
     for JPEG compression variability.
     """
     import random
-    
+
     def generate_random_pixels(count: int) -> list:
         """Generate a list of random RGB tuples."""
         return [
             (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
             for _ in range(count)
         ]
-    
+
     target_bytes = int(target_size_kb * 1024 * 0.8)  # Aim for 80% of target to stay under limit
     # Start with an estimate
     pixels = max(50, int((target_bytes * 2) ** 0.5))
-    
+
     # Create image with random noise
     img = Image.new("RGB", (pixels, pixels))
     img.putdata(generate_random_pixels(pixels * pixels))
-    
+
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=85)
     result = buf.getvalue()
-    
+
     # If we need to grow the image
     attempts = 0
     while len(result) < target_bytes and attempts < 3:
@@ -72,7 +71,7 @@ def create_test_image_bytes(target_size_kb: int) -> bytes:
         img.save(buf, format="JPEG", quality=85)
         result = buf.getvalue()
         attempts += 1
-    
+
     return result
 
 
@@ -165,11 +164,8 @@ def test_base64_without_header_within_limit(client):
     url = reverse("face-recognition-api")
     # Use 5 KB target (will be ~4 KB actual) - well within 10 KB limit
     b64_image = create_base64_image(5, with_header=False)
-    
-    payload = json.dumps({
-        "image": b64_image,
-        "username": "testuser"
-    })
+
+    payload = json.dumps({"image": b64_image, "username": "testuser"})
 
     response = client.post(
         url,
@@ -179,7 +175,6 @@ def test_base64_without_header_within_limit(client):
     )
 
     assert_not_size_rejected(response)
-
 
 
 @pytest.mark.django_db
@@ -200,11 +195,8 @@ def test_base64_without_header_exceeds_limit(client):
     """Test that base64 payloads without data URI header exceeding limit are rejected."""
     url = reverse("face-recognition-api")
     b64_image = create_base64_image(15, with_header=False)  # 15 KB
-    
-    payload = json.dumps({
-        "image": b64_image,
-        "username": "testuser"
-    })
+
+    payload = json.dumps({"image": b64_image, "username": "testuser"})
 
     response = client.post(
         url,
@@ -236,11 +228,8 @@ def test_base64_with_header_within_limit(client):
     url = reverse("face-recognition-api")
     # Use 5 KB target (will be ~4 KB actual) - well within 10 KB limit
     b64_image = create_base64_image(5, with_header=True)
-    
-    payload = json.dumps({
-        "image": b64_image,
-        "username": "testuser"
-    })
+
+    payload = json.dumps({"image": b64_image, "username": "testuser"})
 
     response = client.post(
         url,
@@ -250,7 +239,6 @@ def test_base64_with_header_within_limit(client):
     )
 
     assert_not_size_rejected(response)
-
 
 
 @pytest.mark.django_db
@@ -270,18 +258,15 @@ def test_base64_with_header_within_limit(client):
 def test_base64_with_header_exceeds_limit(client):
     """
     Test that base64 payloads with data URI header exceeding limit are rejected.
-    
+
     This is a critical test case that validates the fix for the security issue where
     the length check was performed before stripping the data URI header, allowing
     an attacker to bypass the size limit by including a header.
     """
     url = reverse("face-recognition-api")
     b64_image = create_base64_image(15, with_header=True)  # 15 KB with header
-    
-    payload = json.dumps({
-        "image": b64_image,
-        "username": "testuser"
-    })
+
+    payload = json.dumps({"image": b64_image, "username": "testuser"})
 
     response = client.post(
         url,
@@ -311,7 +296,7 @@ def test_base64_with_header_exceeds_limit(client):
 def test_base64_approximation_check(client):
     """
     Test that the base64 length approximation check works before full decode.
-    
+
     This tests the efficiency optimization where we reject obviously oversized
     base64 strings before attempting to decode them.
     """
@@ -320,11 +305,8 @@ def test_base64_approximation_check(client):
     test_limit = 10240  # 10 KB test limit
     # Base64 string ~20 KB exceeds limit * BASE64_OVERHEAD_MULTIPLIER (14.3 KB)
     huge_b64 = "A" * (test_limit * 2)
-    
-    payload = json.dumps({
-        "image": huge_b64,
-        "username": "testuser"
-    })
+
+    payload = json.dumps({"image": huge_b64, "username": "testuser"})
 
     response = client.post(
         url,
@@ -354,7 +336,7 @@ def test_base64_approximation_check(client):
 def test_post_decode_size_check(client):
     """
     Test that the post-decode size check catches edge cases.
-    
+
     This ensures that even if a payload passes the approximation check,
     it's still validated after decoding.
     """
@@ -362,11 +344,8 @@ def test_post_decode_size_check(client):
     # Create a payload that might pass approximation but exceeds after decode
     image_bytes = create_test_image_bytes(12)  # 12 KB, exceeds 10 KB limit
     b64_str = base64.b64encode(image_bytes).decode("utf-8")
-    
-    payload = json.dumps({
-        "image": b64_str,
-        "username": "testuser"
-    })
+
+    payload = json.dumps({"image": b64_str, "username": "testuser"})
 
     response = client.post(
         url,
@@ -407,7 +386,6 @@ def test_default_size_limit(client):
     )
 
     # Should not be rejected due to size with default limit
-
 
 
 @pytest.mark.django_db
