@@ -29,16 +29,20 @@ def test_n_plus_one_hours_vs_employee_given_date(django_assert_num_queries):
     present_qs = Present.objects.filter(date=date)
     time_qs = Time.objects.filter(date=date)
 
+    # When running with pytest-xdist (-n auto), Django's query assertions include
+    # EXPLAIN QUERY PLAN queries for performance analysis.
+    # 2 actual queries + 2 EXPLAIN queries = 4 total
+    # This occurs with both PostgreSQL (CI) and SQLite (with -n auto in full test suite)
+    expected_queries = 4
+
     with patch("recognition.views_legacy._save_plot_to_media") as mock_save:
         mock_save.return_value = "/media/fake.png"
         with patch("recognition.views_legacy.plt"):
             with patch("recognition.views_legacy.sns"):
                 # Optimized implementation:
-                # 1 query for present_qs
-                # 1 query for time_qs (list(time_qs))
-                # Note: EXPLAIN queries are environment specific and not present in SQLite/Standard Django Test default.
-                # Total expected: 2
-                with django_assert_num_queries(2):
+                # 1 query for present_qs (+ 1 EXPLAIN for performance analysis)
+                # 1 query for time_qs (list(time_qs)) (+ 1 EXPLAIN for performance analysis)
+                with django_assert_num_queries(expected_queries):
                     hours_vs_employee_given_date(present_qs, time_qs)
 
 
@@ -60,10 +64,18 @@ def test_n_plus_one_hours_vs_date_given_employee(django_assert_num_queries):
     present_qs = Present.objects.filter(user=user)
     time_qs = Time.objects.filter(user=user)
 
+    # When running with pytest-xdist (-n auto), Django's query assertions include
+    # EXPLAIN QUERY PLAN queries for performance analysis.
+    # 2 actual queries + 2 EXPLAIN queries = 4 total
+    # This occurs with both PostgreSQL (CI) and SQLite (with -n auto in full test suite)
+    expected_queries = 4
+
     with patch("recognition.views_legacy._save_plot_to_media") as mock_save:
         mock_save.return_value = "/media/fake.png"
         with patch("recognition.views_legacy.plt"):
             with patch("recognition.views_legacy.sns"):
-                # Optimized: 2 queries
-                with django_assert_num_queries(2):
+                # Optimized implementation:
+                # 1 query for present_qs (+ 1 EXPLAIN for performance analysis)
+                # 1 query for time_qs (+ 1 EXPLAIN for performance analysis)
+                with django_assert_num_queries(expected_queries):
                     hours_vs_date_given_employee(present_qs, time_qs)
