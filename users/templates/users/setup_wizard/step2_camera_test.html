@@ -120,9 +120,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showCameraError(message) {
         livenessStatus.className = 'alert alert-danger';
-        livenessStatus.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>' + message;
+        // 🛡️ Sentinel: Use textContent to prevent DOM XSS
+        livenessStatus.replaceChildren(); // Clear content
+
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-exclamation-triangle me-2';
+        icon.setAttribute('aria-hidden', 'true');
+
+        livenessStatus.appendChild(icon);
+        livenessStatus.appendChild(document.createTextNode(message));
+
         cameraCheckbox.checked = false;
         stopCamera();
+    }
+
+    function showCameraSuccess(message) {
+        livenessStatus.className = 'alert alert-success';
+        // 🛡️ Sentinel: Use textContent to prevent DOM XSS
+        livenessStatus.replaceChildren(); // Clear content
+
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-check-circle me-2';
+        icon.setAttribute('aria-hidden', 'true');
+
+        livenessStatus.appendChild(icon);
+        livenessStatus.appendChild(document.createTextNode(message));
     }
 
     async function startCamera() {
@@ -155,8 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
             stopBtn.classList.remove('d-none');
             
             // Update liveness status
-            livenessStatus.className = 'alert alert-success';
-            livenessStatus.innerHTML = '<i class="fas fa-check-circle me-2"></i>Camera connected! Try moving your head to test liveness.';
+            showCameraSuccess('Camera connected! Try moving your head to test liveness.');
             
             // Auto-check camera checkbox
             cameraCheckbox.checked = true;
