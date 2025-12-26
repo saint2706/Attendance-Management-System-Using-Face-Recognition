@@ -13,9 +13,7 @@ def _write_file(path: Path) -> None:
     path.write_text("test", encoding="utf-8")
 
 
-def test_export_reports_warns_when_directory_missing(
-    tmp_path: Path, monkeypatch, capsys
-) -> None:
+def test_export_reports_warns_when_directory_missing(tmp_path: Path, monkeypatch, capsys) -> None:
     """Should warn when the reports directory is missing."""
     monkeypatch.setattr(settings, "BASE_DIR", tmp_path)
 
@@ -25,9 +23,7 @@ def test_export_reports_warns_when_directory_missing(
     assert "Reports directory not found" in captured.out
 
 
-def test_export_reports_lists_reports_and_figures(
-    tmp_path: Path, monkeypatch, capsys
-) -> None:
+def test_export_reports_lists_reports_and_figures(tmp_path: Path, monkeypatch, capsys) -> None:
     """Should list present and missing report files plus figure counts."""
     monkeypatch.setattr(settings, "BASE_DIR", tmp_path)
     reports_dir = tmp_path / "reports"

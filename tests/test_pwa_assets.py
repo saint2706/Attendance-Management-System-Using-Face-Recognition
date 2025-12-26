@@ -29,7 +29,9 @@ def test_service_worker_served_with_expected_headers(client: Client) -> None:
     assert response.headers["Service-Worker-Allowed"] == "/"
 
 
-def test_manifest_returns_404_when_asset_missing(client: Client, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_manifest_returns_404_when_asset_missing(
+    client: Client, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Missing manifest assets should return a 404 response."""
 
     from attendance_system_facial_recognition import urls

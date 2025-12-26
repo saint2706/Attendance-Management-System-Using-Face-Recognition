@@ -13,11 +13,10 @@ sys.path.append(str(project_root))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
 django.setup()
 
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.utils import timezone
+from django.contrib.auth import get_user_model  # noqa: E402
+from django.utils import timezone  # noqa: E402
 
-from users.models import Direction, Present, RecognitionAttempt, Time, User
+from users.models import Direction, Present, RecognitionAttempt, Time  # noqa: E402
 
 # Setup paths
 FACES_DIR = project_root / "faces"
