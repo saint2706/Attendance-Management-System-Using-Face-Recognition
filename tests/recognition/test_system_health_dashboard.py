@@ -189,3 +189,46 @@ def test_dataset_health_caching_behavior(tmp_path, monkeypatch):
     third_result = health.dataset_health()
     assert third_result["image_count"] == 2  # Now shows updated count
     assert third_result["identity_count"] == 1
+
+
+def test_worker_health_not_configured(monkeypatch):
+    """Worker health should report not configured without a broker URL."""
+
+    monkeypatch.setattr(health.settings, "CELERY_BROKER_URL", None)
+
+    snapshot = health.worker_health()
+
+    assert snapshot == {"status": "not-configured", "workers": 0}
+
+
+def test_worker_health_unreachable(monkeypatch):
+    """Worker health should surface ping failures as unreachable."""
+
+    monkeypatch.setattr(health.settings, "CELERY_BROKER_URL", "redis://example")
+
+    def _raise_ping(*args, **kwargs):
+        raise RuntimeError("ping failed")
+
+    monkeypatch.setattr(health.celery_app.control, "ping", _raise_ping)
+
+    snapshot = health.worker_health()
+
+    assert snapshot["status"] == "unreachable"
+    assert snapshot["workers"] == 0
+    assert "error" in snapshot
+
+
+def test_worker_health_online(monkeypatch):
+    """Worker health should report online when ping returns workers."""
+
+    monkeypatch.setattr(health.settings, "CELERY_BROKER_URL", "redis://example")
+    monkeypatch.setattr(
+        health.celery_app.control,
+        "ping",
+        lambda timeout=0.5: [{"celery@worker1": "pong"}],
+    )
+
+    snapshot = health.worker_health()
+
+    assert snapshot["status"] == "online"
+    assert snapshot["workers"] == 1
