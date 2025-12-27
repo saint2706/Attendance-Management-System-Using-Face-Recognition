@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { markAttendance } from '../api/attendance';
 import type { RecognitionResult } from '../api/attendance';
 import {
@@ -10,11 +10,14 @@ import {
     XCircle,
     AlertTriangle,
     Loader2,
-    RefreshCw
+    RefreshCw,
+    Home,
+    UserCheck
 } from 'lucide-react';
 import './MarkAttendance.css';
 
 export const MarkAttendance = () => {
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const direction = (searchParams.get('direction') as 'in' | 'out') || 'in';
 
@@ -257,13 +260,36 @@ export const MarkAttendance = () => {
                             )}
                         </button>
                     ) : (
-                        <button
-                            onClick={resetAttempt}
-                            className="btn btn-secondary btn-lg"
-                        >
-                            <RefreshCw size={20} />
-                            Try Again
-                        </button>
+                        <div className="flex gap-md">
+                            {result.recognized ? (
+                                <>
+                                    <button
+                                        onClick={() => navigate('/')}
+                                        className="btn btn-secondary btn-lg"
+                                        aria-label="Return to Home Page"
+                                    >
+                                        <Home size={20} />
+                                        Return Home
+                                    </button>
+                                    <button
+                                        onClick={resetAttempt}
+                                        className="btn btn-primary btn-lg"
+                                        aria-label="Mark attendance for another person"
+                                    >
+                                        <UserCheck size={20} />
+                                        Mark Another
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    onClick={resetAttempt}
+                                    className="btn btn-secondary btn-lg"
+                                >
+                                    <RefreshCw size={20} />
+                                    Try Again
+                                </button>
+                            )}
+                        </div>
                     )}
                 </div>
 
