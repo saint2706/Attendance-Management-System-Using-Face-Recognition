@@ -372,7 +372,7 @@ def attendance_dashboard(request: HttpRequest) -> HttpResponse:
         "form": form,
         "outcomes": outcomes,
         "attempts": attempts,
-        "chart_data_json": json.dumps(chart_data),
+        "chart_data_json": chart_data,
         "summary_stats": summary_stats,
     }
     return render(request, "recognition/admin/attendance_dashboard.html", context)
