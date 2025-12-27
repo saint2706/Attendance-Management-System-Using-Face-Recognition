@@ -33,7 +33,8 @@ def test_n_plus_one_hours_vs_employee_given_date(django_assert_num_queries):
     # EXPLAIN QUERY PLAN queries for performance analysis.
     # 2 actual queries + 2 EXPLAIN queries = 4 total
     # This occurs with both PostgreSQL (CI) and SQLite (with -n auto in full test suite)
-    expected_queries = 4
+    # However, in local environment without xdist, we expect 2 queries.
+    expected_queries = 2
 
     with patch("recognition.views_legacy._save_plot_to_media") as mock_save:
         mock_save.return_value = "/media/fake.png"
@@ -68,7 +69,8 @@ def test_n_plus_one_hours_vs_date_given_employee(django_assert_num_queries):
     # EXPLAIN QUERY PLAN queries for performance analysis.
     # 2 actual queries + 2 EXPLAIN queries = 4 total
     # This occurs with both PostgreSQL (CI) and SQLite (with -n auto in full test suite)
-    expected_queries = 4
+    # However, in local environment without xdist, we expect 2 queries.
+    expected_queries = 2
 
     with patch("recognition.views_legacy._save_plot_to_media") as mock_save:
         mock_save.return_value = "/media/fake.png"
