@@ -1205,7 +1205,7 @@ def _decrypt_image_bytes(image_path: Path) -> Optional[bytes]:
         logger.error("Invalid encryption token encountered for %s", image_path)
         return None
     except Exception as exc:  # pragma: no cover - defensive programming
-        logger.error("Unexpected error decrypting %s: %s", image_path, exc)
+        logger.error("Unexpected error during decrypting %s: %s", image_path, exc)
         return None
 
     return decrypted_bytes
@@ -1539,12 +1539,16 @@ def update_attendance_in_db_out(
             RecognitionAttempt.objects.filter(id=attempt_id).update(**attempt_updates)
 
 
-def check_validity_times(times_all: Sequence[Time] | QuerySet[Time]) -> tuple[bool, float]:
+def check_validity_times(
+    times_all: Sequence[Time] | QuerySet[Time]
+) -> tuple[bool, float]:
     """
     Validate and calculate break hours from a sequence of time entries.
 
     This function checks if the time entries follow a valid in-out sequence and
     calculates the total break time in hours.
+
+    ⚡ Performance: Optimized to perform a single pass over the data.
 
     Args:
         times_all: A queryset or list of `Time` objects for a user on a given day,
@@ -1558,11 +1562,14 @@ def check_validity_times(times_all: Sequence[Time] | QuerySet[Time]) -> tuple[bo
     if not times_all:
         return True, 0  # No records, so no invalidity
 
-    if isinstance(times_all, list):
-        first_entry = times_all[0] if times_all else None
-    else:
-        first_entry = times_all.first()
+    # ⚡ Performance: Convert to list once if needed, to allow efficient iteration
+    # and indexing without repeated database queries or multiple iterations.
+    entries = list(times_all) if not isinstance(times_all, list) else times_all
 
+    if not entries:
+        return True, 0
+
+    first_entry = entries[0]
     if first_entry is None or first_entry.time is None:
         return True, 0
 
@@ -1570,31 +1577,29 @@ def check_validity_times(times_all: Sequence[Time] | QuerySet[Time]) -> tuple[bo
     if first_entry.direction == Direction.OUT:
         return False, 0
 
-    # The number of check-ins must equal the number of check-outs
-    if isinstance(times_all, list):
-        in_count = sum(1 for t in times_all if t.direction == Direction.IN)
-        out_count = sum(1 for t in times_all if t.direction == Direction.OUT)
-    else:
-        in_count = times_all.filter(direction=Direction.IN).count()
-        out_count = times_all.filter(direction=Direction.OUT).count()
-
-    if in_count != out_count:
-        return False, 0
-
-    break_hours = 0
+    in_count = 0
+    out_count = 0
+    break_hours = 0.0
     prev_time = None
     is_break = False
 
-    for entry in times_all:
-        if entry.direction == Direction.IN:  # This is a check-in
+    for entry in entries:
+        if entry.direction == Direction.IN:
+            in_count += 1
             if is_break and prev_time is not None and entry.time is not None:
                 # Calculate time since the last check-out
                 break_duration = (entry.time - prev_time).total_seconds() / 3600
                 break_hours += break_duration
             is_break = False
-        else:  # This is a check-out
+        elif entry.direction == Direction.OUT:
+            out_count += 1
             is_break = True
+
         prev_time = entry.time
+
+    # The number of check-ins must equal the number of check-outs
+    if in_count != out_count:
+        return False, 0
 
     return True, break_hours
 
@@ -1647,12 +1652,12 @@ def hours_vs_date_given_employee(
         date = obj.date
         date_list.append(date)
         times_all = times_by_date.get(date, [])
-        times_in = [t for t in times_all if t.direction == Direction.IN]
-        times_out = [t for t in times_all if t.direction == Direction.OUT]
 
-        # Use intermediate variables to avoid calling .time on None
-        first_in = times_in[0] if times_in else None
-        last_out = times_out[-1] if times_out else None
+        # ⚡ Performance: Optimized to find first IN and last OUT in single pass over already sorted list
+        # instead of creating full lists with list comprehensions.
+        first_in = next((t for t in times_all if t.direction == Direction.IN), None)
+        last_out = next((t for t in reversed(times_all) if t.direction == Direction.OUT), None)
+
         obj.time_in = first_in.time if first_in else None
         obj.time_out = last_out.time if last_out else None
 
@@ -1727,12 +1732,11 @@ def hours_vs_employee_given_date(
         user = obj.user
         user_pk_list.append(user.pk)
         times_all = times_by_user.get(user.id, [])
-        times_in = [t for t in times_all if t.direction == Direction.IN]
-        times_out = [t for t in times_all if t.direction == Direction.OUT]
 
-        # Use intermediate variables to avoid calling .time on None
-        first_in = times_in[0] if times_in else None
-        last_out = times_out[-1] if times_out else None
+        # ⚡ Performance: Optimized to find first IN and last OUT in single pass
+        first_in = next((t for t in times_all if t.direction == Direction.IN), None)
+        last_out = next((t for t in reversed(times_all) if t.direction == Direction.OUT), None)
+
         obj.time_in = first_in.time if first_in else None
         obj.time_out = last_out.time if last_out else None
 
