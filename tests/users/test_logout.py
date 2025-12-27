@@ -57,8 +57,8 @@ def test_logout_post_request_succeeds(client):
 
 
 @pytest.mark.django_db
-def test_logout_with_csrf_token(client):
-    """Test that logout works with CSRF token (as it would from a form)."""
+def test_logout_with_follow_redirect(client):
+    """Test that logout works and follows redirect properly."""
     # Create and login a user
     user = User.objects.create_user(
         username="testuser",
@@ -67,15 +67,10 @@ def test_logout_with_csrf_token(client):
     )
     client.force_login(user)
     
-    # Get a page to obtain CSRF token
-    response = client.get(reverse("dashboard"))
-    csrf_token = response.cookies.get('csrftoken')
+    # POST request to logout with follow=True to follow the redirect
+    response = client.post(reverse("logout"), follow=True)
     
-    # POST request to logout with CSRF token
-    response = client.post(
-        reverse("logout"),
-        HTTP_X_CSRFTOKEN=csrf_token.value if csrf_token else ""
-    )
-    
-    # Should succeed
-    assert response.status_code in [302, 303]
+    # Should successfully redirect and land on home page
+    assert response.status_code == 200
+    # Final URL should be the home page
+    assert response.redirect_chain[-1][0] == reverse("home")
