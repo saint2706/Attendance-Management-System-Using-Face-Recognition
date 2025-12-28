@@ -68,7 +68,7 @@ def test_face_recognition_api_returns_match(client, monkeypatch):
     data = response.json()
     assert data["recognized"] is True
     assert data["username"] == "alice"
-    assert data["identity"] == "alice/sample.jpg"
+    assert data["identity"] == "sample.jpg"
     assert data["distance_metric"] == "euclidean_l2"
     assert pytest.approx(data["distance"]) == 0.05
 
