@@ -1347,52 +1347,37 @@ def _build_dataset_embeddings_for_matching(
 
     dataset_index = []
 
+    # Prepare list of (image_path, optional_stats) tuples
     if dataset_state:
         # ⚡ Performance: Use precomputed state to avoid glob and stat
         # dataset_state contains (relative_path, mtime, size)
-        # We process in order provided by state (which is sorted)
-        iterator = dataset_state
-    else:
-        # Fallback to scanning filesystem
-        iterator = None
-
-    if iterator is not None:
-        for relative_path, mtime, size in iterator:
-            image_path = TRAINING_DATASET_ROOT / relative_path
-            embedding_array = _get_or_compute_cached_embedding(
-                image_path,
-                model_name,
-                detector_backend,
-                enforce_detection,
-                precomputed_stats=(mtime, size),
-            )
-            if embedding_array is None:
-                continue
-
-            dataset_index.append(
-                {
-                    "identity": str(image_path),
-                    "embedding": embedding_array,
-                    "username": image_path.parent.name,
-                }
-            )
+        image_data = [
+            (TRAINING_DATASET_ROOT / relative_path, (mtime, size))
+            for relative_path, mtime, size in dataset_state
+        ]
     else:
         # Fallback for when dataset_state is not provided (e.g. tests calling this directly)
-        image_paths = sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
-        for image_path in image_paths:
-            embedding_array = _get_or_compute_cached_embedding(
-                image_path, model_name, detector_backend, enforce_detection
-            )
-            if embedding_array is None:
-                continue
+        image_data = [(image_path, None) for image_path in sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))]
 
-            dataset_index.append(
-                {
-                    "identity": str(image_path),
-                    "embedding": embedding_array,
-                    "username": image_path.parent.name,
-                }
-            )
+    # Process all images with a single loop
+    for image_path, precomputed_stats in image_data:
+        embedding_array = _get_or_compute_cached_embedding(
+            image_path,
+            model_name,
+            detector_backend,
+            enforce_detection,
+            precomputed_stats=precomputed_stats,
+        )
+        if embedding_array is None:
+            continue
+
+        dataset_index.append(
+            {
+                "identity": str(image_path),
+                "embedding": embedding_array,
+                "username": image_path.parent.name,
+            }
+        )
 
     return dataset_index
 
