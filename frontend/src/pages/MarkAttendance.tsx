@@ -129,10 +129,22 @@ export const MarkAttendance = () => {
         }
     }, [countdown, captureAndRecognize]);
 
-    const startCaptureSequence = () => {
+    const startCaptureSequence = useCallback(() => {
         if (!stream || isProcessing || countdown !== null) return;
         setCountdown(3);
-    };
+    }, [stream, isProcessing, countdown]);
+
+    // Reset for another attempt
+    const resetAttempt = useCallback(() => {
+        setResult(null);
+        setError(null);
+        setCountdown(null);
+        if (!stream) {
+            startCamera();
+        } else if (videoRef.current) {
+            videoRef.current.play().catch(console.error);
+        }
+    }, [stream, startCamera]);
 
     // Keyboard shortcuts
     useEffect(() => {
@@ -152,7 +164,7 @@ export const MarkAttendance = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [result, isProcessing, countdown, stream]); // Added stream to dependencies to ensure we only capture when active
+    }, [result, isProcessing, countdown, startCaptureSequence, resetAttempt]);
 
     // Auto-start camera on mount (only once)
     useEffect(() => {
@@ -167,18 +179,6 @@ export const MarkAttendance = () => {
         // startCamera is intentionally omitted from dependencies
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    // Reset for another attempt
-    const resetAttempt = () => {
-        setResult(null);
-        setError(null);
-        setCountdown(null);
-        if (!stream) {
-            startCamera();
-        } else if (videoRef.current) {
-            videoRef.current.play().catch(console.error);
-        }
-    };
 
     return (
         <div className="mark-attendance animate-fade-in">
@@ -214,7 +214,7 @@ export const MarkAttendance = () => {
                             {/* Countdown Overlay */}
                             {countdown !== null && countdown > 0 && (
                                 <div className="countdown-overlay" aria-live="assertive">
-                                    <span className="countdown-number">{countdown}</span>
+                                    <span className="countdown-number" key={countdown}>{countdown}</span>
                                 </div>
                             )}
 
@@ -295,7 +295,13 @@ export const MarkAttendance = () => {
                                 onClick={startCaptureSequence}
                                 disabled={!stream || isProcessing || countdown !== null}
                                 className="btn btn-primary btn-lg capture-button"
-                                aria-label={countdown !== null ? `Capturing in ${countdown}...` : "Start capture sequence"}
+                                aria-label={
+                                    countdown !== null && countdown > 0
+                                        ? `Capturing in ${countdown}...`
+                                        : countdown === 0
+                                            ? "Capturing now..."
+                                            : "Start capture sequence"
+                                }
                             >
                                 {isProcessing ? (
                                     <>
@@ -320,35 +326,43 @@ export const MarkAttendance = () => {
                             </p>
                         </div>
                     ) : (
-                        <div className="flex gap-md">
-                            {result.recognized ? (
-                                <>
-                                    <button
-                                        onClick={() => navigate('/')}
-                                        className="btn btn-secondary btn-lg"
-                                        aria-label="Return to Home Page"
-                                    >
-                                        <Home size={20} />
-                                        Return Home
-                                    </button>
+                        <div className="flex flex-col items-center gap-sm">
+                            <div className="flex gap-md">
+                                {result.recognized ? (
+                                    <>
+                                        <button
+                                            onClick={() => navigate('/')}
+                                            className="btn btn-secondary btn-lg"
+                                            aria-label="Return to Home Page"
+                                        >
+                                            <Home size={20} />
+                                            Return Home
+                                        </button>
+                                        <button
+                                            onClick={resetAttempt}
+                                            className="btn btn-primary btn-lg"
+                                            aria-label="Mark attendance for another person"
+                                        >
+                                            <UserCheck size={20} />
+                                            Mark Another
+                                        </button>
+                                    </>
+                                ) : (
                                     <button
                                         onClick={resetAttempt}
-                                        className="btn btn-primary btn-lg"
-                                        aria-label="Mark attendance for another person"
+                                        className="btn btn-secondary btn-lg"
                                     >
-                                        <UserCheck size={20} />
-                                        Mark Another
+                                        <RefreshCw size={20} />
+                                        Try Again
                                     </button>
-                                </>
-                            ) : (
-                                <button
-                                    onClick={resetAttempt}
-                                    className="btn btn-secondary btn-lg"
-                                >
-                                    <RefreshCw size={20} />
-                                    Try Again
-                                </button>
-                            )}
+                                )}
+                            </div>
+                            <div role="status" aria-live="polite">
+                                <p className="text-muted text-xs flex items-center gap-xs">
+                                    <Keyboard size={14} />
+                                    Press <strong>Escape</strong> to {result.recognized ? 'mark another' : 'try again'}
+                                </p>
+                            </div>
                         </div>
                     )}
                 </div>
