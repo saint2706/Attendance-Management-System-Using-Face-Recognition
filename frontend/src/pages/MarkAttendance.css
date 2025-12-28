@@ -231,3 +231,28 @@
         height: 195px;
     }
 }
+
+/* Countdown Overlay */
+.countdown-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 15;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.countdown-number {
+    font-size: 8rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    animation: countdown-pop 0.9s ease-out forwards;
+}
+
+@keyframes countdown-pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 0; }
+}
