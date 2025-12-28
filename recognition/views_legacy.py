@@ -24,7 +24,7 @@ import threading
 import time
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -1102,7 +1102,7 @@ class DatasetEmbeddingCache:
         model_name: str,
         detector_backend: str,
         enforce_detection: bool,
-        builder: Callable[[], list[dict]],
+        builder: Callable[[Optional[List[Tuple[str, int, int]]]], list[dict]],
     ) -> list[dict]:
         """Return cached embeddings, building them if the dataset has changed."""
 
@@ -1119,7 +1119,8 @@ class DatasetEmbeddingCache:
                 self._memory_cache[key] = disk_entry
                 return disk_entry[1]
 
-        dataset_index = builder()
+        # ⚡ Performance: Pass current_state to builder to avoid redundant stat calls during rebuild
+        dataset_index = builder(list(current_state))
         refreshed_state = self._current_dataset_state()
 
         with self._lock:
@@ -1271,6 +1272,7 @@ def _get_or_compute_cached_embedding(
     model_name: str,
     detector_backend: str,
     enforce_detection: bool = False,
+    precomputed_stats: Optional[Tuple[int, int]] = None,
 ) -> Optional[np.ndarray]:
     """Return the embedding for an encrypted image using Django's cache."""
 
@@ -1278,9 +1280,15 @@ def _get_or_compute_cached_embedding(
     # operations when checking for existing embeddings during index rebuilds.
     cache_key = None
     try:
-        stat_result = image_path.stat()
+        if precomputed_stats:
+            mtime_ns, size = precomputed_stats
+        else:
+            stat_result = image_path.stat()
+            mtime_ns = stat_result.st_mtime_ns
+            size = stat_result.st_size
+
         # Mix mtime_ns and size to detect file changes without reading content
-        meta_hash = f"{image_path.resolve()}:{stat_result.st_mtime_ns}:" f"{stat_result.st_size}"
+        meta_hash = f"{image_path.resolve()}:{mtime_ns}:{size}"
         key_hash = hashlib.sha256(meta_hash.encode()).hexdigest()
         cache_key = f"recognition:embedding_v2:{model_name}:" f"{detector_backend}:{key_hash}"
 
@@ -1330,27 +1338,61 @@ def _get_or_compute_cached_embedding(
 
 
 def _build_dataset_embeddings_for_matching(
-    model_name: str, detector_backend: str, enforce_detection: bool = False
+    model_name: str,
+    detector_backend: str,
+    enforce_detection: bool = False,
+    dataset_state: Optional[List[Tuple[str, int, int]]] = None,
 ):
     """Build embeddings for the encrypted training dataset."""
 
     dataset_index = []
-    image_paths = sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
 
-    for image_path in image_paths:
-        embedding_array = _get_or_compute_cached_embedding(
-            image_path, model_name, detector_backend, enforce_detection
-        )
-        if embedding_array is None:
-            continue
+    if dataset_state:
+        # ⚡ Performance: Use precomputed state to avoid glob and stat
+        # dataset_state contains (relative_path, mtime, size)
+        # We process in order provided by state (which is sorted)
+        iterator = dataset_state
+    else:
+        # Fallback to scanning filesystem
+        iterator = None
 
-        dataset_index.append(
-            {
-                "identity": str(image_path),
-                "embedding": embedding_array,
-                "username": image_path.parent.name,
-            }
-        )
+    if iterator is not None:
+        for relative_path, mtime, size in iterator:
+            image_path = TRAINING_DATASET_ROOT / relative_path
+            embedding_array = _get_or_compute_cached_embedding(
+                image_path,
+                model_name,
+                detector_backend,
+                enforce_detection,
+                precomputed_stats=(mtime, size),
+            )
+            if embedding_array is None:
+                continue
+
+            dataset_index.append(
+                {
+                    "identity": str(image_path),
+                    "embedding": embedding_array,
+                    "username": image_path.parent.name,
+                }
+            )
+    else:
+        # Fallback for when dataset_state is not provided (e.g. tests calling this directly)
+        image_paths = sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
+        for image_path in image_paths:
+            embedding_array = _get_or_compute_cached_embedding(
+                image_path, model_name, detector_backend, enforce_detection
+            )
+            if embedding_array is None:
+                continue
+
+            dataset_index.append(
+                {
+                    "identity": str(image_path),
+                    "embedding": embedding_array,
+                    "username": image_path.parent.name,
+                }
+            )
 
     return dataset_index
 
@@ -1364,8 +1406,8 @@ def _load_dataset_embeddings_for_matching(
         model_name,
         detector_backend,
         enforce_detection,
-        lambda: _build_dataset_embeddings_for_matching(
-            model_name, detector_backend, enforce_detection
+        lambda dataset_state=None: _build_dataset_embeddings_for_matching(
+            model_name, detector_backend, enforce_detection, dataset_state
         ),
     )
 
