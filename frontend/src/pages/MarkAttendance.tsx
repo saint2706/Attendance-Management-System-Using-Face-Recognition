@@ -357,10 +357,12 @@ export const MarkAttendance = () => {
                                     </button>
                                 )}
                             </div>
-                            <p className="text-muted text-xs flex items-center gap-xs">
-                                <Keyboard size={14} />
-                                Press <strong>Escape</strong> to {result.recognized ? 'mark another' : 'try again'}
-                            </p>
+                            <div role="status" aria-live="polite">
+                                <p className="text-muted text-xs flex items-center gap-xs">
+                                    <Keyboard size={14} />
+                                    Press <strong>Escape</strong> to {result.recognized ? 'mark another' : 'try again'}
+                                </p>
+                            </div>
                         </div>
                     )}
                 </div>
