@@ -817,7 +817,7 @@ class FaceRecognitionAPI(View):
 
         normalized_region = _normalize_face_region(facial_area)
         spoofed = False
-        reference_frame = frame or (liveness_frames[-1] if liveness_frames else None)
+        reference_frame = frame if frame is not None else (liveness_frames[-1] if liveness_frames else None)
         if reference_frame is not None:
             history = list(liveness_frames)
             if frame is not None:
@@ -851,7 +851,7 @@ class FaceRecognitionAPI(View):
         response_payload.update(
             {
                 "distance": float(distance_value),
-                "identity": identity_path,
+                "identity": Path(identity_path).name if identity_path else None,
             }
         )
         if username:
