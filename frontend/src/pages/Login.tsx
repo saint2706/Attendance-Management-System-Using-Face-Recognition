@@ -88,6 +88,7 @@ export const Login = () => {
                                 onClick={() => setShowPassword(!showPassword)}
                                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                                 disabled={isLoading}
+                                style={isLoading ? { opacity: 0.65, cursor: 'not-allowed' } : undefined}
                             >
                                 {showPassword ? (
                                     <EyeOff size={20} />
