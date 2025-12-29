@@ -63,6 +63,7 @@ export const Login = () => {
                             placeholder="Enter your username"
                             required
                             autoComplete="username"
+                            disabled={isLoading}
                         />
                     </div>
 
@@ -78,12 +79,15 @@ export const Login = () => {
                                 placeholder="Enter your password"
                                 required
                                 autoComplete="current-password"
+                                disabled={isLoading}
                             />
                             <button
                                 type="button"
                                 className="password-toggle"
                                 onClick={() => setShowPassword(!showPassword)}
                                 aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                disabled={isLoading}
+                                style={isLoading ? { opacity: 0.65, cursor: 'not-allowed' } : undefined}
                             >
                                 {showPassword ? (
                                     <EyeOff size={20} />
