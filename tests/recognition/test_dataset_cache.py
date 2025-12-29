@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import django
+from django.core.cache import cache
 from django.test import TestCase, override_settings
 
 import numpy as np
@@ -89,6 +90,8 @@ class DatasetEmbeddingCacheTests(TestCase):
             (self.dataset_root / "bob").mkdir(parents=True, exist_ok=True)
             new_image = self.dataset_root / "bob" / "1.jpg"
             new_image.write_bytes(b"dummy2")
+            # Invalidate the cache manually to simulate the behavior of capture_dataset task
+            cache.delete("recognition:dataset_state")
             second = views._load_dataset_embeddings_for_matching("Facenet", "ssd", True)
 
         self.assertIs(first, updated_index)
