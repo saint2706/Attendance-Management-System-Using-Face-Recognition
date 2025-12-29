@@ -63,7 +63,6 @@ export const Login = () => {
                             placeholder="Enter your username"
                             required
                             autoComplete="username"
-                            autoFocus
                             disabled={isLoading}
                         />
                     </div>
