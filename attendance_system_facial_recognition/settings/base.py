@@ -721,6 +721,15 @@ SILENCED_SYSTEM_CHECKS = [
 # are more permissive. This can be overridden via an environment variable.
 RECOGNITION_DISTANCE_THRESHOLD = float(os.environ.get("RECOGNITION_DISTANCE_THRESHOLD", "0.4"))
 
+# Dataset state cache timeout (in seconds)
+# Controls how long the filesystem scan results are cached to reduce IO overhead
+# on high-traffic recognition endpoints. Default is 60 seconds.
+RECOGNITION_DATASET_STATE_CACHE_TIMEOUT = _parse_int_env(
+    "RECOGNITION_DATASET_STATE_CACHE_TIMEOUT",
+    default=60,
+    minimum=1,
+)
+
 # Liveness detection settings (respects feature flags)
 # If liveness is disabled via feature flags, these settings are still defined but won't be used
 RECOGNITION_LIGHTWEIGHT_LIVENESS_ENABLED = (

@@ -4,6 +4,7 @@ import os
 import pickle
 import shutil
 import sys
+import time
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -142,3 +143,31 @@ class DatasetEmbeddingCacheTests(TestCase):
         restored_embedding = round_tripped[0]["embedding"]
         self.assertIsInstance(restored_embedding, np.ndarray)
         np.testing.assert_allclose(restored_embedding, dataset_index[0]["embedding"])
+
+    @override_settings(RECOGNITION_DATASET_STATE_CACHE_TIMEOUT=1)
+    def test_cache_expires_after_timeout(self):
+        """Test that cached dataset state expires after the configured timeout and triggers a filesystem rescan."""
+        self._seed_dataset()
+
+        # Mock the filesystem state computation to verify it's called after timeout
+        original_compute = views._dataset_embedding_cache._compute_dataset_state
+
+        with patch.object(
+            views._dataset_embedding_cache,
+            "_compute_dataset_state",
+            wraps=original_compute,
+        ) as mock_compute:
+            # First call should compute dataset state
+            views._dataset_embedding_cache._current_dataset_state()
+            self.assertEqual(mock_compute.call_count, 1)
+
+            # Subsequent call within timeout should use cached state
+            views._dataset_embedding_cache._current_dataset_state()
+            self.assertEqual(mock_compute.call_count, 1)
+
+            # Wait for cache to expire (timeout is set to 1 second)
+            time.sleep(1.5)
+
+            # Call after timeout should recompute dataset state
+            views._dataset_embedding_cache._current_dataset_state()
+            self.assertEqual(mock_compute.call_count, 2)
