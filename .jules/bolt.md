@@ -4,4 +4,4 @@
 
 ## 2025-01-08 - [Filesystem State Caching]
 **Learning:** For high-traffic endpoints that depend on filesystem state (like dataset availability), caching the file scan results (`glob` + `stat`) significantly reduces IO overhead.
-**Action:** Implement a "Cache-Aside" pattern for expensive filesystem checks, with explicit invalidation in the write path (e.g., Celery tasks that modify the dataset).
+**Action:** Implement a "Cache-Aside" pattern for expensive filesystem checks, with explicit invalidation in the write path (e.g., Celery tasks that modify the dataset); ensure consistent cache key usage across modules, perform invalidation atomically when the dataset changes, and consider race conditions in concurrent modification scenarios.
