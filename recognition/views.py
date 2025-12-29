@@ -1008,6 +1008,19 @@ class DatasetEmbeddingCache:
         return self._cache_root / filename
 
     def _current_dataset_state(self) -> Tuple[Tuple[str, int, int], ...]:
+        """Return the current state of the dataset, cached for performance."""
+        cache_key = "recognition:dataset_state"
+        cached_state = cache.get(cache_key)
+        if cached_state is not None:
+            return cached_state
+
+        state = self._compute_dataset_state()
+        # Cache for configured timeout to reduce IO on high-traffic endpoints
+        cache.set(cache_key, state, timeout=settings.RECOGNITION_DATASET_STATE_CACHE_TIMEOUT)
+        return state
+
+    def _compute_dataset_state(self) -> Tuple[Tuple[str, int, int], ...]:
+        """Compute the dataset state by scanning the filesystem."""
         entries: list[Tuple[str, int, int]] = []
         if not self._dataset_root.exists():
             return tuple()
@@ -1154,6 +1167,8 @@ class DatasetEmbeddingCache:
 
         with self._lock:
             self._memory_cache.clear()
+
+        cache.delete("recognition:dataset_state")
 
         for cache_file in self._cache_root.glob("representations_*.pkl"):
             try:

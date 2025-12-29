@@ -122,6 +122,7 @@ class Command(BaseCommand):
 
         # Invalidate dataset health cache as file metadata has changed
         cache.delete("recognition:health:dataset_snapshot")
+        cache.delete("recognition:dataset_state")
         self.stdout.write(self.style.NOTICE("Invalidated dataset health cache."))
 
     def _backup_tree(self, source: Path, destination: Path) -> None:

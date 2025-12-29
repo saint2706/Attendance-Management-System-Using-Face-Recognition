@@ -292,6 +292,7 @@ def capture_dataset_sync(
         # Invalidate dataset health cache as new images were added
         if saved_paths:
             cache.delete("recognition:health:dataset_snapshot")
+            cache.delete("recognition:dataset_state")
 
     if enqueue_training and saved_paths:
         try:
