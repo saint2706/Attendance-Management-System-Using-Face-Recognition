@@ -4,6 +4,7 @@ import os
 import pickle
 import shutil
 import sys
+import time
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -146,8 +147,6 @@ class DatasetEmbeddingCacheTests(TestCase):
     @override_settings(RECOGNITION_DATASET_STATE_CACHE_TIMEOUT=1)
     def test_cache_expires_after_timeout(self):
         """Test that cached dataset state expires after the configured timeout and triggers a filesystem rescan."""
-        import time
-
         self._seed_dataset()
 
         # Mock the filesystem state computation to verify it's called after timeout
