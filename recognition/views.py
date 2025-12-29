@@ -1016,8 +1016,7 @@ class DatasetEmbeddingCache:
 
         state = self._compute_dataset_state()
         # Cache for configured timeout to reduce IO on high-traffic endpoints
-        timeout = getattr(settings, "RECOGNITION_DATASET_STATE_CACHE_TIMEOUT", 60)
-        cache.set(cache_key, state, timeout=timeout)
+        cache.set(cache_key, state, timeout=settings.RECOGNITION_DATASET_STATE_CACHE_TIMEOUT)
         return state
 
     def _compute_dataset_state(self) -> Tuple[Tuple[str, int, int], ...]:
