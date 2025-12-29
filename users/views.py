@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 @method_decorator(ratelimit(key="ip", rate="5/m", method="POST", block=False), name="post")
+@method_decorator(ratelimit(key="post:username", rate="5/m", method="POST", block=False), name="post")
 class CustomLoginView(LoginView):
     """
     Custom Login View with Rate Limiting.
