@@ -142,8 +142,9 @@ def test_login_ip_based_rate_limit(client, test_user):
 @pytest.mark.django_db
 def test_login_username_based_rate_limit(client, test_user):
     """
-    Test that login attempts for the same username are rate-limited,
-    even from the same IP.
+    Test that login attempts for the same username are rate-limited.
+    This verifies the username-based rate limiting decorator works correctly,
+    complementing the IP-based rate limiting.
     """
     url = reverse("login")
     
