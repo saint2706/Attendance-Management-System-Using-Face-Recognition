@@ -567,6 +567,14 @@ class FaceRecognitionAPI(View):
         if not isinstance(raw_frames, list):
             raise ValueError("'liveness_frames' must be provided as a list of images.")
 
+        # 🛡️ Sentinel: Enforce limit on liveness_frames to prevent DoS attacks
+        max_liveness_frames = int(getattr(settings, "RECOGNITION_MAX_LIVENESS_FRAMES", 20))
+        if len(raw_frames) > max_liveness_frames:
+            raise ValueError(
+                f"Too many liveness frames: {len(raw_frames)} frames provided, "
+                f"maximum allowed is {max_liveness_frames}."
+            )
+
         decoded_frames: list[np.ndarray] = []
         for index, raw_frame in enumerate(raw_frames):
             if raw_frame in (None, ""):
