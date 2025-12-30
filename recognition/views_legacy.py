@@ -825,7 +825,9 @@ class FaceRecognitionAPI(View):
 
         normalized_region = _normalize_face_region(facial_area)
         spoofed = False
-        reference_frame = frame if frame is not None else (liveness_frames[-1] if liveness_frames else None)
+        reference_frame = (
+            frame if frame is not None else (liveness_frames[-1] if liveness_frames else None)
+        )
         if reference_frame is not None:
             history = list(liveness_frames)
             if frame is not None:
@@ -1385,7 +1387,9 @@ def _build_dataset_embeddings_for_matching(
         ]
     else:
         # Fallback for when dataset_state is not provided (e.g. tests calling this directly)
-        image_data = [(image_path, None) for image_path in sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))]
+        image_data = [
+            (image_path, None) for image_path in sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
+        ]
 
     # Process all images with a single loop
     for image_path, precomputed_stats in image_data:
@@ -1594,9 +1598,7 @@ def update_attendance_in_db_out(
             RecognitionAttempt.objects.filter(id=attempt_id).update(**attempt_updates)
 
 
-def check_validity_times(
-    times_all: Sequence[Time] | QuerySet[Time]
-) -> tuple[bool, float]:
+def check_validity_times(times_all: Sequence[Time] | QuerySet[Time]) -> tuple[bool, float]:
     """
     Validate and calculate break hours from a sequence of time entries.
 
