@@ -6,6 +6,7 @@ import {
     Moon,
     Sun,
     LogOut,
+    LogIn,
     LayoutDashboard,
     Menu,
     X
@@ -57,6 +58,7 @@ export const Navbar = () => {
                         ) : (
                             <li>
                                 <Link to="/login" className="nav-link">
+                                        <LogIn size={18} />
                                     <span>Login</span>
                                 </Link>
                             </li>
@@ -66,7 +68,8 @@ export const Navbar = () => {
                     <button
                         onClick={toggleTheme}
                         className="btn btn-icon theme-toggle"
-                        aria-label="Toggle theme"
+                            aria-label={resolvedTheme === 'dark' ? "Switch to light mode" : "Switch to dark mode"}
+                            title={resolvedTheme === 'dark' ? "Switch to light mode" : "Switch to dark mode"}
                     >
                         {resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                     </button>
@@ -74,7 +77,8 @@ export const Navbar = () => {
                     <button
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         className="btn btn-icon mobile-menu-toggle"
-                        aria-label="Toggle menu"
+                            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                            aria-expanded={mobileMenuOpen}
                     >
                         {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
