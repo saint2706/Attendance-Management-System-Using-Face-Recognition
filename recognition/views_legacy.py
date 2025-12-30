@@ -1305,6 +1305,9 @@ def _get_or_compute_cached_embedding(
         # Mix mtime_ns and size to detect file changes without reading content
         # ⚡ Performance: Use str(image_path) instead of resolve() to avoid system calls
         # Since image_path is constructed from absolute roots, it's safe.
+        # ASSUMPTION: Dataset directory must not contain symbolic links. If symlinks are
+        # introduced, this optimization could lead to cache misses or duplicate embeddings
+        # for the same file accessed via different symlink paths.
         meta_hash = f"{str(image_path)}:{mtime_ns}:{size}"
         key_hash = hashlib.sha256(meta_hash.encode()).hexdigest()
         cache_key = f"recognition:embedding_v2:{model_name}:" f"{detector_backend}:{key_hash}"
