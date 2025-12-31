@@ -36,15 +36,13 @@ def test_n_plus_one_hours_vs_employee_given_date(django_assert_num_queries):
     # However, in local environment without xdist, we expect 2 queries.
     expected_queries = 2
 
-    with patch("recognition.views_legacy._save_plot_to_media") as mock_save:
-        mock_save.return_value = "/media/fake.png"
-        with patch("recognition.views_legacy.plt"):
-            with patch("recognition.views_legacy.sns"):
-                # Optimized implementation:
-                # 1 query for present_qs (+ 1 EXPLAIN for performance analysis)
-                # 1 query for time_qs (list(time_qs)) (+ 1 EXPLAIN for performance analysis)
-                with django_assert_num_queries(expected_queries):
-                    hours_vs_employee_given_date(present_qs, time_qs)
+    with patch("recognition.views_legacy.plt"):
+        with patch("recognition.views_legacy.sns"):
+            # Optimized implementation:
+            # 1 query for present_qs (+ 1 EXPLAIN for performance analysis)
+            # 1 query for time_qs (list(time_qs)) (+ 1 EXPLAIN for performance analysis)
+            with django_assert_num_queries(expected_queries):
+                hours_vs_employee_given_date(present_qs, time_qs)
 
 
 @pytest.mark.django_db
@@ -72,12 +70,10 @@ def test_n_plus_one_hours_vs_date_given_employee(django_assert_num_queries):
     # However, in local environment without xdist, we expect 2 queries.
     expected_queries = 2
 
-    with patch("recognition.views_legacy._save_plot_to_media") as mock_save:
-        mock_save.return_value = "/media/fake.png"
-        with patch("recognition.views_legacy.plt"):
-            with patch("recognition.views_legacy.sns"):
-                # Optimized implementation:
-                # 1 query for present_qs (+ 1 EXPLAIN for performance analysis)
-                # 1 query for time_qs (+ 1 EXPLAIN for performance analysis)
-                with django_assert_num_queries(expected_queries):
-                    hours_vs_date_given_employee(present_qs, time_qs)
+    with patch("recognition.views_legacy.plt"):
+        with patch("recognition.views_legacy.sns"):
+            # Optimized implementation:
+            # 1 query for present_qs (+ 1 EXPLAIN for performance analysis)
+            # 1 query for time_qs (+ 1 EXPLAIN for performance analysis)
+            with django_assert_num_queries(expected_queries):
+                hours_vs_date_given_employee(present_qs, time_qs)
