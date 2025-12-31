@@ -1304,6 +1304,13 @@ def _generate_embedding_cache_key(
 
     Mix mtime_ns and size to detect file changes without reading content.
     ⚡ Performance: Use str(image_path) instead of resolve() to avoid system calls
+
+    ASSUMPTION:
+        The dataset directory structure must not rely on symbolic links. Because this
+        cache key is derived from the string form of the path without resolving
+        symlinks, the same physical file reached via different symlinked paths will
+        produce different cache keys. Introducing symlinks in the dataset directory
+        can therefore lead to cache misses or duplicate embeddings for the same file.
     """
     meta_hash = f"{str(image_path)}:{mtime_ns}:{size}"
     key_hash = hashlib.sha256(meta_hash.encode()).hexdigest()
@@ -1404,7 +1411,7 @@ def _build_dataset_embeddings_for_matching(
         ]
 
     # ⚡ Performance: Batch cache retrieval to avoid N network/system calls
-    cache_keys = {}
+    cache_keys = []
     items_to_process = []
 
     for image_path, precomputed_stats in image_data:
@@ -1419,18 +1426,20 @@ def _build_dataset_embeddings_for_matching(
             key = _generate_embedding_cache_key(
                 image_path, model_name, detector_backend, mtime_ns, size
             )
-            cache_keys[key] = image_path
+            cache_keys.append(key)
             items_to_process.append((image_path, precomputed_stats, key))
         except OSError:
-            # If stat fails, we can't generate a key, so we'll just fall through
-            # to the single item processing which handles errors gracefully
+            # If stat fails here, we can't generate a batch cache key. We'll mark this
+            # item so that _get_or_compute_cached_embedding handles it individually,
+            # which will re-attempt stat once more and then handle any failure
+            # gracefully (e.g. by skipping the image).
             items_to_process.append((image_path, precomputed_stats, None))
 
     # Fetch all cached embeddings in one go
     cached_values = {}
     if cache_keys:
         try:
-            cached_values = cache.get_many(list(cache_keys.keys()))
+            cached_values = cache.get_many(cache_keys)
         except Exception as exc:
             logger.warning("Failed to batch fetch embeddings: %s", exc)
 
@@ -1442,9 +1451,13 @@ def _build_dataset_embeddings_for_matching(
             try:
                 # Cache hit!
                 embedding_array = np.array(cached_values[key], dtype=float)
-            except Exception:
+            except Exception as exc:
                 # Corrupted cache data, fall back to compute
-                pass
+                logger.debug(
+                    "Failed to coerce cached embedding for %s into an array (batch)",
+                    image_path,
+                    exc_info=exc,
+                )
 
         if embedding_array is None:
             # Cache miss or stat failure, compute individually
