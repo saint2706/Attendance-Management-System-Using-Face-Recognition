@@ -965,11 +965,6 @@ ATTENDANCE_GRAPHS_ROOT = Path(
         Path(settings.MEDIA_ROOT) / "attendance_graphs",
     )
 )
-HOURS_VS_DATE_PATH = ATTENDANCE_GRAPHS_ROOT / "hours_vs_date" / "1.png"
-EMPLOYEE_LOGIN_PATH = ATTENDANCE_GRAPHS_ROOT / "employee_login" / "1.png"
-HOURS_VS_EMPLOYEE_PATH = ATTENDANCE_GRAPHS_ROOT / "hours_vs_employee" / "1.png"
-THIS_WEEK_PATH = ATTENDANCE_GRAPHS_ROOT / "this_week" / "1.png"
-LAST_WEEK_PATH = ATTENDANCE_GRAPHS_ROOT / "last_week" / "1.png"
 
 
 class DatasetEmbeddingCache:
@@ -1179,39 +1174,25 @@ class DatasetEmbeddingCache:
 _dataset_embedding_cache = DatasetEmbeddingCache(TRAINING_DATASET_ROOT, DATA_ROOT)
 
 
-def _ensure_directory(path: Path) -> None:
+def _plot_to_base64() -> str:
     """
-    Ensure the parent directory for the given path exists.
+    Save the current Matplotlib plot to a base64-encoded PNG string.
 
-    If the directory does not exist, it is created. This is useful for
-    ensuring that file paths for saving graphs are valid.
-
-    Args:
-        path: The file path whose parent directory needs to exist.
+    This avoids filesystem persistence for transient reports, eliminating
+    race conditions and potential insecure direct object reference (IDOR) issues.
     """
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-
-def _media_url_for(path: Path) -> str:
-    """Return the MEDIA_URL-relative URL for the provided file path."""
-
-    media_root = Path(settings.MEDIA_ROOT)
+    buffer = io.BytesIO()
     try:
-        relative_path = path.resolve().relative_to(media_root.resolve())
-    except ValueError:
-        relative_path = path
-    return urljoin(settings.MEDIA_URL, relative_path.as_posix())
-
-
-def _save_plot_to_media(path: Path) -> str:
-    """Persist the current Matplotlib plot and return its media URL."""
-
-    _ensure_directory(path)
-    try:
-        plt.savefig(path)
+        plt.savefig(buffer, format="png", bbox_inches="tight")
     finally:
         plt.close()
-    return _media_url_for(path)
+
+    buffer.seek(0)
+    image_png = buffer.getvalue()
+    buffer.close()
+
+    graphic = base64.b64encode(image_png).decode("utf-8")
+    return f"data:image/png;base64,{graphic}"
 
 
 def _decrypt_image_bytes(image_path: Path) -> Optional[bytes]:
@@ -1678,7 +1659,7 @@ def convert_hours_to_hours_mins(hours: float) -> str:
 
 
 def hours_vs_date_given_employee(
-    present_qs: QuerySet[Present], time_qs: QuerySet[Time], admin: bool = True
+    present_qs: QuerySet[Present], time_qs: QuerySet[Time]
 ) -> Tuple[QuerySet[Present], str]:
     """
     Calculate work and break hours for an employee over a date range and generate a plot.
@@ -1686,7 +1667,6 @@ def hours_vs_date_given_employee(
     Args:
         present_qs: A queryset of `Present` objects for the employee.
         time_qs: A queryset of `Time` objects for the employee.
-        admin: A boolean indicating if the view is for an admin (affects save path).
 
     Returns:
         A tuple containing the annotated queryset and the media URL of the generated plot.
@@ -1748,8 +1728,7 @@ def hours_vs_date_given_employee(
     rcParams.update({"figure.autolayout": True})
     plt.tight_layout()
 
-    target_path = HOURS_VS_DATE_PATH if admin else EMPLOYEE_LOGIN_PATH
-    chart_url = _save_plot_to_media(target_path)
+    chart_url = _plot_to_base64()
 
     return present_qs, chart_url
 
@@ -1827,7 +1806,7 @@ def hours_vs_employee_given_date(
     plt.xticks(rotation="vertical")
     rcParams.update({"figure.autolayout": True})
     plt.tight_layout()
-    chart_url = _save_plot_to_media(HOURS_VS_EMPLOYEE_PATH)
+    chart_url = _plot_to_base64()
 
     return present_qs, chart_url
 
@@ -1884,7 +1863,7 @@ def this_week_emp_count_vs_date() -> Optional[str]:
     df = pd.DataFrame({"date": str_dates_all, "Number of employees": emp_cnt_all})
 
     sns.lineplot(data=df, x="date", y="Number of employees")
-    return _save_plot_to_media(THIS_WEEK_PATH)
+    return _plot_to_base64()
 
 
 def last_week_emp_count_vs_date() -> Optional[str]:
@@ -1921,7 +1900,7 @@ def last_week_emp_count_vs_date() -> Optional[str]:
     df = pd.DataFrame({"date": str_dates_all, "emp_count": emp_cnt_all})
 
     sns.lineplot(data=df, x="date", y="emp_count")
-    return _save_plot_to_media(LAST_WEEK_PATH)
+    return _plot_to_base64()
 
 
 # ========== Main Views ==========
@@ -3135,7 +3114,7 @@ def view_attendance_employee(request):
                 ).order_by("-date")
 
                 if present_qs.exists():
-                    qs, chart_url = hours_vs_date_given_employee(present_qs, time_qs, admin=True)
+                    qs, chart_url = hours_vs_date_given_employee(present_qs, time_qs)
                 else:
                     messages.warning(request, "No records for the selected duration.")
             else:
@@ -3180,7 +3159,7 @@ def view_my_attendance_employee_login(request):
             ).order_by("-date")
 
             if present_qs.exists():
-                qs, chart_url = hours_vs_date_given_employee(present_qs, time_qs, admin=False)
+                qs, chart_url = hours_vs_date_given_employee(present_qs, time_qs)
             else:
                 messages.warning(request, "No records for the selected duration.")
 
