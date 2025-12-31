@@ -1669,7 +1669,7 @@ def hours_vs_date_given_employee(
         time_qs: A queryset of `Time` objects for the employee.
 
     Returns:
-        A tuple containing the annotated queryset and the media URL of the generated plot.
+        A tuple containing the annotated queryset and the Base64-encoded data URI of the generated plot.
     """
     register_matplotlib_converters()
     df_hours = []
@@ -1713,7 +1713,7 @@ def hours_vs_date_given_employee(
         obj.hours = convert_hours_to_hours_mins(hours_val)
         obj.break_hours = convert_hours_to_hours_mins(break_hours_val)
 
-    # Generate and save the plot
+    # Generate and encode the plot
     df = pd.DataFrame(
         {
             "date": date_list,
@@ -1792,7 +1792,7 @@ def hours_vs_employee_given_date(
         obj.hours = convert_hours_to_hours_mins(hours_val)
         obj.break_hours = convert_hours_to_hours_mins(break_hours_val)
 
-    # Generate and save the plot
+    # Generate and encode the plot
     df = pd.DataFrame(
         {
             "user": user_pk_list,
