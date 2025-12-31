@@ -45,7 +45,7 @@ export const Login = () => {
                 </div>
 
                 {error && (
-                    <div className="login-error" role="alert">
+                    <div className="login-error" role="alert" id="login-error">
                         <AlertCircle size={18} />
                         <span>{error}</span>
                     </div>
@@ -62,8 +62,11 @@ export const Login = () => {
                             onChange={(e) => setUsername(e.target.value)}
                             placeholder="Enter your username"
                             required
+                            autoFocus
                             autoComplete="username"
                             disabled={isLoading}
+                            aria-invalid={!!error}
+                            aria-describedby={error ? "login-error" : undefined}
                         />
                     </div>
 
@@ -80,6 +83,8 @@ export const Login = () => {
                                 required
                                 autoComplete="current-password"
                                 disabled={isLoading}
+                                aria-invalid={!!error}
+                                aria-describedby={error ? "login-error" : undefined}
                             />
                             <button
                                 type="button"
