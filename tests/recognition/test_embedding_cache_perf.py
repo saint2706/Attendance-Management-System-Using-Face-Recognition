@@ -72,6 +72,11 @@ def test_embedding_cache_performance():
         mock_extract.return_value = ([0.1] * 128, None)
 
         # Simulate cache HIT for all items
+        # Need to return a dict mapping cache keys to embeddings for get_many
+        def get_many_side_effect(keys):
+            return {key: [0.1] * 128 for key in keys}
+        
+        mock_cache.get_many.side_effect = get_many_side_effect
         mock_cache.get.return_value = [0.1] * 128
 
         start_time = time.time()
@@ -107,7 +112,8 @@ def test_embedding_cache_stores_on_miss():
         mock_decode.return_value = np.zeros((100, 100, 3), dtype=np.uint8)
         mock_extract.return_value = ([0.1] * 128, None)
 
-        # Simulate cache MISS - get returns None
+        # Simulate cache MISS - get_many returns empty dict, get returns None
+        mock_cache.get_many.return_value = {}
         mock_cache.get.return_value = None
 
         _build_dataset_embeddings_for_matching("model", "backend", False)

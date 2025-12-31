@@ -1273,6 +1273,31 @@ def _load_encrypted_image(image_path: Path) -> Optional[np.ndarray]:
     return _decode_image_bytes(decrypted_bytes, source=image_path)
 
 
+def _generate_embedding_cache_key(
+    image_path: Path,
+    model_name: str,
+    detector_backend: str,
+    mtime_ns: int,
+    size: int,
+) -> str:
+    """
+    Generate a consistent cache key for image embeddings.
+
+    Mix mtime_ns and size to detect file changes without reading content.
+    ⚡ Performance: Use str(image_path) instead of resolve() to avoid system calls
+
+    ASSUMPTION:
+        The dataset directory structure must not rely on symbolic links. Because this
+        cache key is derived from the string form of the path without resolving
+        symlinks, the same physical file reached via different symlinked paths will
+        produce different cache keys. Introducing symlinks in the dataset directory
+        can therefore lead to cache misses or duplicate embeddings for the same file.
+    """
+    meta_hash = f"{str(image_path)}:{mtime_ns}:{size}"
+    key_hash = hashlib.sha256(meta_hash.encode()).hexdigest()
+    return f"recognition:embedding_v2:{model_name}:{detector_backend}:{key_hash}"
+
+
 def _get_or_compute_cached_embedding(
     image_path: Path,
     model_name: str,
@@ -1293,15 +1318,9 @@ def _get_or_compute_cached_embedding(
             mtime_ns = stat_result.st_mtime_ns
             size = stat_result.st_size
 
-        # Mix mtime_ns and size to detect file changes without reading content
-        # ⚡ Performance: Use str(image_path) instead of resolve() to avoid system calls
-        # Since image_path is constructed from absolute roots, it's safe.
-        # ASSUMPTION: Dataset directory must not contain symbolic links. If symlinks are
-        # introduced, this optimization could lead to cache misses or duplicate embeddings
-        # for the same file accessed via different symlink paths.
-        meta_hash = f"{str(image_path)}:{mtime_ns}:{size}"
-        key_hash = hashlib.sha256(meta_hash.encode()).hexdigest()
-        cache_key = f"recognition:embedding_v2:{model_name}:" f"{detector_backend}:{key_hash}"
+        cache_key = _generate_embedding_cache_key(
+            image_path, model_name, detector_backend, mtime_ns, size
+        )
 
         cached_embedding = cache.get(cache_key)
         if cached_embedding is not None:
@@ -1372,15 +1391,65 @@ def _build_dataset_embeddings_for_matching(
             (image_path, None) for image_path in sorted(TRAINING_DATASET_ROOT.glob("*/*.jpg"))
         ]
 
-    # Process all images with a single loop
+    # ⚡ Performance: Batch cache retrieval to avoid N network/system calls
+    cache_keys = []
+    items_to_process = []
+
     for image_path, precomputed_stats in image_data:
-        embedding_array = _get_or_compute_cached_embedding(
-            image_path,
-            model_name,
-            detector_backend,
-            enforce_detection,
-            precomputed_stats=precomputed_stats,
-        )
+        try:
+            if precomputed_stats:
+                mtime_ns, size = precomputed_stats
+            else:
+                stat_result = image_path.stat()
+                mtime_ns = stat_result.st_mtime_ns
+                size = stat_result.st_size
+
+            key = _generate_embedding_cache_key(
+                image_path, model_name, detector_backend, mtime_ns, size
+            )
+            cache_keys.append(key)
+            items_to_process.append((image_path, precomputed_stats, key))
+        except OSError:
+            # If stat fails here, we can't generate a batch cache key. We'll mark this
+            # item so that _get_or_compute_cached_embedding handles it individually,
+            # which will re-attempt stat once more and then handle any failure
+            # gracefully (e.g. by skipping the image).
+            items_to_process.append((image_path, precomputed_stats, None))
+
+    # Fetch all cached embeddings in one go
+    cached_values = {}
+    if cache_keys:
+        try:
+            cached_values = cache.get_many(cache_keys)
+        except Exception as exc:
+            logger.warning("Failed to batch fetch embeddings: %s", exc)
+
+    # Process all images
+    for image_path, precomputed_stats, key in items_to_process:
+        embedding_array = None
+
+        if key and key in cached_values:
+            try:
+                # Cache hit!
+                embedding_array = np.array(cached_values[key], dtype=float)
+            except Exception as exc:
+                # Corrupted cache data, fall back to compute
+                logger.debug(
+                    "Failed to coerce cached embedding for %s into an array (batch)",
+                    image_path,
+                    exc_info=exc,
+                )
+
+        if embedding_array is None:
+            # Cache miss or stat failure, compute individually
+            embedding_array = _get_or_compute_cached_embedding(
+                image_path,
+                model_name,
+                detector_backend,
+                enforce_detection,
+                precomputed_stats=precomputed_stats,
+            )
+
         if embedding_array is None:
             continue
 
