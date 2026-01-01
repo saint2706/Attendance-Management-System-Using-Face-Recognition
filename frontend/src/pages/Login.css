@@ -88,6 +88,12 @@
     color: var(--color-text);
 }
 
+.password-toggle:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    color: var(--color-text-muted);
+}
+
 .login-button {
     width: 100%;
     margin-top: var(--spacing-sm);
