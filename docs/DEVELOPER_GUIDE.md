@@ -115,14 +115,14 @@ The test suite is organized into fast and slow tests to optimize CI/CD pipelines
 
 The project uses pytest markers to categorize tests:
 
-| Marker | Description |
-|--------|-------------|
-| `slow` | Tests that take >1s per test (model loading, heavy file I/O, training) |
-| `integration` | Tests that cross Django app boundaries or hit Celery/Redis |
-| `ui` | UI/browser tests using Playwright |
-| `e2e` | End-to-end UI workflows (full stack, live server) |
-| `django_db` | Tests that need database access |
-| `attendance_flows` | Tests covering core attendance workflows |
+| Marker             | Description                                                            |
+| ------------------ | ---------------------------------------------------------------------- |
+| `slow`             | Tests that take >1s per test (model loading, heavy file I/O, training) |
+| `integration`      | Tests that cross Django app boundaries or hit Celery/Redis             |
+| `ui`               | UI/browser tests using Playwright                                      |
+| `e2e`              | End-to-end UI workflows (full stack, live server)                      |
+| `django_db`        | Tests that need database access                                        |
+| `attendance_flows` | Tests covering core attendance workflows                               |
 
 #### Running Tests Locally
 
@@ -454,31 +454,82 @@ CI pipelines must export `DATABASE_URL` before running `pytest` so Django connec
 
 Running tests against Postgres ensures migrations stay compatible with the production backend and catches issues that do not appear with SQLite.
 
-## 9. Frontend utilities
+## 9. Frontend Development (React SPA)
 
-### CameraManager helper
+The project includes a modern React frontend in the `frontend/` directory, built with Vite, TypeScript, and Tailwind CSS.
 
-Use the `CameraManager` utility (`recognition/static/js/camera.js`) to initialise and tear down shared camera streams in templates. The helper reuses a single `MediaStream` and automatically releases tracks when you call `stop()`.
+### Frontend Prerequisites
 
-```html
-{% load static %}
-<script type="module">
-  import { CameraManager } from "{% static 'js/camera.js' %}";
+- Node.js 18+ (LTS recommended)
+- npm or pnpm
 
-  const cameraManager = new CameraManager();
-  const preview = document.querySelector("video");
+### Frontend Setup
 
-  async function openPreview() {
-    await cameraManager.start(preview);
-  }
+1. **Navigate to the frontend directory:**
 
-  function closePreview() {
-    cameraManager.stop();
-  }
-</script>
+    ```bash
+    cd frontend
+    ```
+
+2. **Install dependencies:**
+
+    ```bash
+    npm install
+    # or: pnpm install
+    ```
+
+3. **Start the development server:**
+
+    ```bash
+    npm run dev
+    ```
+
+    The frontend will be available at `http://localhost:5173/` with hot module replacement.
+
+### Frontend Build
+
+```bash
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-Always pair preview components with lifecycle events (`hidden.bs.modal`, `beforeunload`, etc.) that call `stop()` so the browser can release the webcam promptly.
+### Frontend Project Structure
+
+```text
+frontend/
+├── src/
+│   ├── components/     # Reusable UI components (shadcn/ui)
+│   ├── hooks/          # Custom React hooks
+│   ├── lib/            # Utility functions
+│   ├── pages/          # Route components
+│   ├── services/       # API client functions
+│   ├── types/          # TypeScript type definitions
+│   ├── App.tsx         # Root component
+│   └── main.tsx        # Entry point
+├── public/             # Static assets
+├── index.html          # HTML template
+├── vite.config.ts      # Vite configuration
+└── tsconfig.json       # TypeScript configuration
+```
+
+### Frontend Development Guidelines
+
+- **TypeScript**: Use strict mode; avoid `any` types
+- **Components**: Keep components small and focused; use shadcn/ui patterns
+- **State**: Use React hooks for state management
+- **API Calls**: Use the services layer with proper error handling
+- **Styling**: Use Tailwind CSS utility classes; avoid inline styles
+
+### Connecting to Backend
+
+The frontend connects to the Django backend API. In development:
+
+1. Start the Django backend on port 8000
+2. Start the frontend dev server on port 5173
+3. Vite proxies API requests to the backend (configured in `vite.config.ts`)
 
 ## 10. UI & Diagnostics
 
@@ -555,18 +606,18 @@ python scripts/capture_screenshots.py
 
 The script logs in with the demo admin credentials and captures:
 
-| Screenshot | Path | Description |
-|------------|------|-------------|
-| Home page | `screenshots/home.png` | Landing page with primary actions |
-| Login page | `docs/screenshots/login.png` | User authentication screen |
-| Admin dashboard | `docs/screenshots/admin-dashboard.png` | Admin home with first-run checklist |
-| Employee registration | `docs/screenshots/employee-registration.png` | Form for registering new employees |
-| Employee enrollment | `docs/screenshots/employee-enrollment.png` | Photo capture for face recognition |
-| Attendance session | `docs/screenshots/attendance-session.png` | Live recognition feed and logs |
-| Reports | `docs/screenshots/reports.png` | Attendance reports dashboard |
-| System health | `docs/screenshots/system-health.png` | Operational health dashboard |
-| Fairness dashboard | `docs/screenshots/fairness-dashboard.png` | Per-group fairness metrics |
-| Evaluation dashboard | `screenshots/evaluation-dashboard.png` | Model performance metrics |
+| Screenshot            | Path                                         | Description                         |
+| --------------------- | -------------------------------------------- | ----------------------------------- |
+| Home page             | `screenshots/home.png`                       | Landing page with primary actions   |
+| Login page            | `docs/screenshots/login.png`                 | User authentication screen          |
+| Admin dashboard       | `docs/screenshots/admin-dashboard.png`       | Admin home with first-run checklist |
+| Employee registration | `docs/screenshots/employee-registration.png` | Form for registering new employees  |
+| Employee enrollment   | `docs/screenshots/employee-enrollment.png`   | Photo capture for face recognition  |
+| Attendance session    | `docs/screenshots/attendance-session.png`    | Live recognition feed and logs      |
+| Reports               | `docs/screenshots/reports.png`               | Attendance reports dashboard        |
+| System health         | `docs/screenshots/system-health.png`         | Operational health dashboard        |
+| Fairness dashboard    | `docs/screenshots/fairness-dashboard.png`    | Per-group fairness metrics          |
+| Evaluation dashboard  | `screenshots/evaluation-dashboard.png`       | Model performance metrics           |
 
 ### Script Options
 

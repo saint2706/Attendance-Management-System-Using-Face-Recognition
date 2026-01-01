@@ -40,4 +40,6 @@ When reporting a vulnerability, please include:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| main    | :white_check_mark: |
+| 1.6.x   | :white_check_mark: |
+| 1.5.x   | :white_check_mark: |
+| < 1.5   | :x:                |

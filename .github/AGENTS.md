@@ -40,10 +40,12 @@ You must consider the following subsystems during any change:
 - Encrypted fields using `DATA_ENCRYPTION_KEY` and `FACE_DATA_ENCRYPTION_KEY`
 - Admin panel and its workflows
 
-### Frontend (PWA)
+### Frontend (React SPA)
 
-- Django templates with Bootstrap 5
-- Manifest + Service Worker
+- `frontend/` directory (React 18+ with TypeScript)
+- Vite build system
+- Tailwind CSS and shadcn/ui components
+- PWA with service workers for offline support
 - Dashboard UI, employee views, attendance flows
 
 ### Infrastructure
@@ -62,6 +64,9 @@ You must consider the following subsystems during any change:
 - DEPLOYMENT.md
 - SECURITY.md
 - DATA_CARD.md
+- ARCHITECTURE.md
+- FEATURE_FLAGS.md
+- TRAINING_PROTOCOL.md
 
 Changes to behaviour must be reflected in docs.
 
@@ -88,13 +93,15 @@ Never introduce untested core-logic changes.
 
 ## 🎨 4. FRONTEND & UX PRINCIPLES
 
-When modifying templates, JS, or PWA components:
+When modifying React components, TypeScript code, or PWA features:
 
-- Maintain Bootstrap 5 UI consistency.
-- Follow the existing design system (cards, shadows, spacing).
+- Follow React 18+ best practices (hooks, functional components).
+- Use shadcn/ui components and Tailwind CSS consistently.
+- Maintain TypeScript strict mode compliance.
 - Improve accessibility (labels, ARIA, headings).
 - Keep PWA behaviour stable: offline caching, service worker routes.
 - Avoid layout shifts; maintain responsive design.
+- Keep components small and reusable.
 
 ──────────────────────────────────────────────────────────
 

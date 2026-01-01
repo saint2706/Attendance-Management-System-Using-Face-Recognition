@@ -4,13 +4,13 @@ This document provides a map of all documentation in this project, organized by 
 
 ## Quick Navigation
 
-| Document | Audience | Description |
-|----------|----------|-------------|
-| [README](../README.md) | Everyone | Project overview, quick start, key features |
-| [Quick Start](QUICKSTART.md) | New users | Get running with synthetic data in 5 minutes |
-| [User Guide](USER_GUIDE.md) | Non-programmers | Step-by-step usage instructions |
-| [Developer Guide](DEVELOPER_GUIDE.md) | Contributors | Setup, architecture, testing, commands |
-| [Deployment Guide](DEPLOYMENT.md) | DevOps/Admins | Production deployment with Docker/K8s |
+| Document                              | Audience        | Description                                  |
+| ------------------------------------- | --------------- | -------------------------------------------- |
+| [README](../README.md)                | Everyone        | Project overview, quick start, key features  |
+| [Quick Start](QUICKSTART.md)          | New users       | Get running with synthetic data in 5 minutes |
+| [User Guide](USER_GUIDE.md)           | Non-programmers | Step-by-step usage instructions              |
+| [Developer Guide](DEVELOPER_GUIDE.md) | Contributors    | Setup, architecture, testing, commands       |
+| [Deployment Guide](DEPLOYMENT.md)     | DevOps/Admins   | Production deployment with Docker/K8s        |
 
 ---
 
@@ -42,7 +42,7 @@ This document provides a map of all documentation in this project, organized by 
 
 - **[Contributing Guide](../CONTRIBUTING.md)** – How to contribute, coding standards
 - **[Code of Conduct](../CODE_OF_CONDUCT.md)** – Community guidelines
-- **[AGENTS.md](../AGENTS.md)** – Instructions for AI coding assistants
+- **[AGENTS.md](../.github/AGENTS.md)** – Instructions for AI coding assistants
 
 ### For Compliance / Security Reviewers
 

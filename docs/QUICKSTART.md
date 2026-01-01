@@ -114,12 +114,12 @@ Navigate to <http://127.0.0.1:8000/> in your web browser.
 
 ## Demo login credentials
 
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | `demo_admin` | `demo_admin_pass` |
-| Employee 1 | `user_001` | `demo_user_pass` |
-| Employee 2 | `user_002` | `demo_user_pass` |
-| Employee 3 | `user_003` | `demo_user_pass` |
+| Role       | Username     | Password          |
+| ---------- | ------------ | ----------------- |
+| Admin      | `demo_admin` | `demo_admin_pass` |
+| Employee 1 | `user_001`   | `demo_user_pass`  |
+| Employee 2 | `user_002`   | `demo_user_pass`  |
+| Employee 3 | `user_003`   | `demo_user_pass`  |
 
 ## What you should see
 
@@ -138,4 +138,14 @@ Navigate to <http://127.0.0.1:8000/> in your web browser.
 
 - **Explore further:** Try registering a new employee and adding photos via the webcam.
 - **Read the User Guide:** See [USER_GUIDE.md](USER_GUIDE.md) for detailed instructions on all features.
+- **Run the React frontend:** Optionally start the modern React SPA frontend:
+
+  ```bash
+  cd frontend
+  npm install
+  npm run dev
+  ```
+
+  Then visit <http://localhost:5173/> for the React-based interface.
+
 - **Production deployment:** When ready to deploy for real use, follow the [Deployment Guide](DEPLOYMENT.md) and [Security & Compliance Guide](security.md).

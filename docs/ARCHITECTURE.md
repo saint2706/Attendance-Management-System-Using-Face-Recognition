@@ -466,8 +466,11 @@ The complete technology stack now includes:
 ### Database & Frontend
 
 - **PostgreSQL**: Recommended production database (falls back to SQLite when `DATABASE_URL` is unset)
-- **Bootstrap 5**: Frontend framework
-- **HTML5/CSS3**: Web technologies
+- **React 18+**: Frontend framework (SPA)
+- **TypeScript**: Type-safe frontend development
+- **Vite**: Build tool and dev server
+- **Tailwind CSS**: Utility-first styling
+- **shadcn/ui**: Component library
 
 ## 10. Security and Privacy Architecture
 

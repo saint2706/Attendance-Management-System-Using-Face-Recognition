@@ -6,11 +6,11 @@ This file provides custom instructions for GitHub Copilot when working in this r
 
 This is a Django 5 + Celery + Docker + PWA application implementing a smart attendance management system using face recognition. The system includes:
 
-- **Backend**: Django 5 with face recognition pipeline using DeepFace (Facenet model)
-- **Frontend**: Progressive Web App with Bootstrap 5, offline-ready with service workers
+- **Backend**: Django 5 with Django REST Framework (DRF), JWT authentication, and face recognition pipeline using DeepFace (Facenet model)
+- **Frontend**: React 18+ SPA with TypeScript, Vite, Tailwind CSS, and shadcn/ui components (Installable PWA with service workers)
 - **Infrastructure**: Docker + docker-compose, Celery workers, Redis, PostgreSQL
-- **Security**: Encrypted data fields, Sentry integration for error tracking
-- **Testing**: pytest, Django test framework, Playwright (planned)
+- **Security**: Encrypted data fields (Fernet), Sentry integration for error tracking
+- **Testing**: pytest, Django test framework, Playwright for E2E testing
 
 ## Core Principles
 
@@ -48,12 +48,13 @@ When contributing to this codebase, always follow these principles:
 - Use logging instead of print statements
 - Follow Django best practices (CBVs, proper serializers)
 
-### HTML/CSS/JS
+### React/TypeScript Frontend
 
-- Use semantic HTML
-- Maintain Bootstrap 5 UI consistency
-- Minimal JavaScript; avoid inline scripts
-- Group reusable UI patterns into partials
+- Use TypeScript with strict mode enabled
+- Follow React 18+ best practices (hooks, functional components)
+- Use shadcn/ui components consistently
+- Maintain Tailwind CSS utility patterns
+- Keep components small and reusable
 
 ### Docker
 
@@ -97,12 +98,12 @@ When modifying `recognition/` code:
 
 When behavior changes, update relevant documentation:
 
-- **USER_GUIDE.md**: End-user instructions
-- **DEVELOPER_GUIDE.md**: Technical documentation for contributors
-- **API_REFERENCE.md**: API endpoints and CLI tools
-- **docs/deployment-guide.md**: Deployment procedures
-- **docs/security.md**: Security-related changes
-- **DATA_CARD.md**: Data model changes
+- **[USER_GUIDE.md](../docs/USER_GUIDE.md)**: End-user instructions
+- **[DEVELOPER_GUIDE.md](../docs/DEVELOPER_GUIDE.md)**: Technical documentation for contributors
+- **[API_REFERENCE.md](../docs/API_REFERENCE.md)**: API endpoints and CLI tools
+- **[DEPLOYMENT.md](../docs/DEPLOYMENT.md)**: Deployment procedures
+- **[security.md](../docs/security.md)**: Security-related changes
+- **[DATA_CARD.md](../docs/DATA_CARD.md)**: Data model changes
 
 Ensure instructions are:
 
@@ -157,10 +158,10 @@ Key environment variables used in this project:
 
 For comprehensive agent instructions and detailed guidelines, see:
 
-- **[AGENTS.md](docs\AGENTS.md)**: Detailed agent behavior and responsibilities
-- **[ARCHITECTURE.md](docs\ARCHITECTURE.md)**: System architecture overview
-- **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guidelines
-- **[README.md](README.md)**: Project overview and getting started
+- **[AGENTS.md](AGENTS.md)**: Detailed agent behavior and responsibilities
+- **[ARCHITECTURE.md](../docs/ARCHITECTURE.md)**: System architecture overview
+- **[CONTRIBUTING.md](../CONTRIBUTING.md)**: Contribution guidelines
+- **[README.md](../README.md)**: Project overview and getting started
 
 ## Communication Style
 
