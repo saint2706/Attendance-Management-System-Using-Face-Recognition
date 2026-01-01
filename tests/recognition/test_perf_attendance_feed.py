@@ -20,7 +20,7 @@ def test_attendance_session_feed_query_count(client):
         user = get_user_model().objects.create_user(username=f"user_{i}", password="password")
         RecognitionAttempt.objects.create(
             user=user,
-            username="", # Force fallback to user.username
+            username="",  # Force fallback to user.username
             direction=Direction.IN,
             successful=True,
             source="webcam",
@@ -40,4 +40,37 @@ def test_attendance_session_feed_query_count(client):
     # 4. RecognitionAttempt (with select_related)
     # Total ~4
 
+    assert len(ctx.captured_queries) <= 5, f"Expected optimized queries, got {len(ctx.captured_queries)}"
+
+@pytest.mark.django_db
+def test_attendance_session_feed_query_count_mixed_scenarios(client):
+    """Test query count with mixed scenarios: some with username, some without."""
+    admin = get_user_model().objects.create_user(
+        username="admin",
+        password="password",
+        is_staff=True,
+    )
+    client.force_login(admin)
+
+    # Create mixed scenarios
+    for i in range(10):
+        user = get_user_model().objects.create_user(username=f"user_{i}", password="password")
+        # Alternate between populated username and empty username
+        username = f"custom_username_{i}" if i % 2 == 0 else ""
+        RecognitionAttempt.objects.create(
+            user=user,
+            username=username,
+            direction=Direction.IN,
+            successful=True,
+            source="webcam",
+        )
+
+    url = reverse("attendance-session-feed")
+
+    with CaptureQueriesContext(connection) as ctx:
+        response = client.get(url)
+
+    assert response.status_code == 200
+
+    # Query count should remain constant regardless of mixed username scenarios
     assert len(ctx.captured_queries) <= 5, f"Expected optimized queries, got {len(ctx.captured_queries)}"
