@@ -40,6 +40,7 @@ When contributing to this codebase, always follow these principles:
 ## Code Style & Quality
 
 ### Python
+
 - Follow PEP8 standards
 - Use type hints everywhere
 - Add docstrings for all public functions/classes
@@ -48,12 +49,14 @@ When contributing to this codebase, always follow these principles:
 - Follow Django best practices (CBVs, proper serializers)
 
 ### HTML/CSS/JS
+
 - Use semantic HTML
 - Maintain Bootstrap 5 UI consistency
 - Minimal JavaScript; avoid inline scripts
 - Group reusable UI patterns into partials
 
 ### Docker
+
 - Multi-stage builds
 - Small runtime images
 - Proper build caching
@@ -61,6 +64,7 @@ When contributing to this codebase, always follow these principles:
 ## Security Requirements
 
 All code changes must:
+
 - Use environment variables for configuration (never hardcode secrets)
 - Use the project's Fernet encryption helpers for sensitive data
 - Validate all user inputs
@@ -82,6 +86,7 @@ All code changes must:
 ## Face Recognition Pipeline
 
 When modifying `recognition/` code:
+
 - Keep embeddings reproducible and deterministic
 - Never degrade accuracy without explicit approval
 - Validate threshold logic with synthetic tests
@@ -91,6 +96,7 @@ When modifying `recognition/` code:
 ## Documentation Requirements
 
 When behavior changes, update relevant documentation:
+
 - **USER_GUIDE.md**: End-user instructions
 - **DEVELOPER_GUIDE.md**: Technical documentation for contributors
 - **API_REFERENCE.md**: API endpoints and CLI tools
@@ -99,6 +105,7 @@ When behavior changes, update relevant documentation:
 - **DATA_CARD.md**: Data model changes
 
 Ensure instructions are:
+
 - Accurate and up-to-date
 - Step-by-step and beginner-friendly
 - Aligned with actual UI and behavior
@@ -106,6 +113,7 @@ Ensure instructions are:
 ## Deployment Considerations
 
 Changes must ensure:
+
 - Docker builds pass cleanly
 - Static files collect without errors (`python manage.py collectstatic`)
 - Celery workers boot successfully
@@ -136,6 +144,7 @@ python manage.py collectstatic --noinput
 ## Environment Variables
 
 Key environment variables used in this project:
+
 - `DJANGO_SECRET_KEY`: Django secret key
 - `DATA_ENCRYPTION_KEY`: Fernet key for general data encryption
 - `FACE_DATA_ENCRYPTION_KEY`: Fernet key for face data encryption
@@ -147,14 +156,16 @@ Key environment variables used in this project:
 ## Additional Resources
 
 For comprehensive agent instructions and detailed guidelines, see:
-- **[AGENTS.md](../AGENTS.md)**: Detailed agent behavior and responsibilities
-- **[ARCHITECTURE.md](../ARCHITECTURE.md)**: System architecture overview
-- **[CONTRIBUTING.md](../CONTRIBUTING.md)**: Contribution guidelines
-- **[README.md](../README.md)**: Project overview and getting started
+
+- **[AGENTS.md](docs\AGENTS.md)**: Detailed agent behavior and responsibilities
+- **[ARCHITECTURE.md](docs\ARCHITECTURE.md)**: System architecture overview
+- **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guidelines
+- **[README.md](README.md)**: Project overview and getting started
 
 ## Communication Style
 
 When providing assistance:
+
 - Be concise and accurate
 - Be direct, no fluff
 - No hallucinations or assumptions

@@ -75,7 +75,7 @@ def test_embedding_cache_performance():
         # Need to return a dict mapping cache keys to embeddings for get_many
         def get_many_side_effect(keys):
             return {key: [0.1] * 128 for key in keys}
-        
+
         mock_cache.get_many.side_effect = get_many_side_effect
         mock_cache.get.return_value = [0.1] * 128
 

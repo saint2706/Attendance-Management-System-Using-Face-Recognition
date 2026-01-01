@@ -1,10 +1,12 @@
-import pytest
 from django.contrib.auth import get_user_model
+from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
-from django.db import connection
+
+import pytest
 
 from users.models import Direction, RecognitionAttempt
+
 
 @pytest.mark.django_db
 def test_attendance_session_feed_query_count(client):
@@ -40,7 +42,10 @@ def test_attendance_session_feed_query_count(client):
     # 4. RecognitionAttempt (with select_related)
     # Total ~4
 
-    assert len(ctx.captured_queries) <= 5, f"Expected optimized queries, got {len(ctx.captured_queries)}"
+    assert (
+        len(ctx.captured_queries) <= 5
+    ), f"Expected optimized queries, got {len(ctx.captured_queries)}"
+
 
 @pytest.mark.django_db
 def test_attendance_session_feed_query_count_mixed_scenarios(client):
@@ -73,4 +78,6 @@ def test_attendance_session_feed_query_count_mixed_scenarios(client):
     assert response.status_code == 200
 
     # Query count should remain constant regardless of mixed username scenarios
-    assert len(ctx.captured_queries) <= 5, f"Expected optimized queries, got {len(ctx.captured_queries)}"
+    assert (
+        len(ctx.captured_queries) <= 5
+    ), f"Expected optimized queries, got {len(ctx.captured_queries)}"

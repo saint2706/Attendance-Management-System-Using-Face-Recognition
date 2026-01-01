@@ -8,9 +8,7 @@ This test suite verifies that plotting functions:
 """
 
 import datetime
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -31,11 +29,11 @@ class TestPlotSecurity:
 
     def test_plot_to_base64_returns_data_uri(self):
         """Verify that _plot_to_base64 returns a Base64-encoded data URI."""
-        
+
         def mock_savefig(buffer, format=None, bbox_inches=None):
             # Write some fake PNG data to the buffer
-            buffer.write(b'\x89PNG\r\n\x1a\n')  # PNG file signature
-        
+            buffer.write(b"\x89PNG\r\n\x1a\n")  # PNG file signature
+
         with patch("recognition.views_legacy.plt") as mock_plt:
             mock_plt.savefig = MagicMock(side_effect=mock_savefig)
             mock_plt.close = MagicMock()
@@ -58,7 +56,7 @@ class TestPlotSecurity:
             # Record files before
             files_before = set(tmp_path.glob("**/*"))
 
-            result = _plot_to_base64()
+            _plot_to_base64()
 
             # Verify no new files were created
             files_after = set(tmp_path.glob("**/*"))

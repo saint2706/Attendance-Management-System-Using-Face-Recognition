@@ -25,7 +25,6 @@ import time
 from functools import wraps
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
-from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib import messages
@@ -2569,7 +2568,9 @@ def attendance_session_feed(request) -> JsonResponse:
     since = timezone.now() - datetime.timedelta(minutes=max(minutes, 1))
     outcome_records = RecognitionOutcome.objects.filter(created_at__gte=since)[:50]
     # PERF: select_related('user') avoids N+1 queries when username is empty and falls back to user relation
-    attempt_records = RecognitionAttempt.objects.filter(created_at__gte=since).select_related("user")[:50]
+    attempt_records = RecognitionAttempt.objects.filter(created_at__gte=since).select_related(
+        "user"
+    )[:50]
 
     events: list[dict[str, Any]] = []
     for outcome in outcome_records:
