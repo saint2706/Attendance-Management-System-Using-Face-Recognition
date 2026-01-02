@@ -48,6 +48,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.figure import Figure
 import seaborn as sns
 from celery.result import AsyncResult
 from deepface import DeepFace
@@ -1173,18 +1174,24 @@ class DatasetEmbeddingCache:
 _dataset_embedding_cache = DatasetEmbeddingCache(TRAINING_DATASET_ROOT, DATA_ROOT)
 
 
-def _plot_to_base64() -> str:
+def _plot_to_base64(fig: Optional[Figure] = None) -> str:
     """
-    Save the current Matplotlib plot to a base64-encoded PNG string.
+    Save the provided Matplotlib Figure (or current plot) to a base64-encoded PNG string.
 
     This avoids filesystem persistence for transient reports, eliminating
     race conditions and potential insecure direct object reference (IDOR) issues.
     """
     buffer = io.BytesIO()
     try:
-        plt.savefig(buffer, format="png", bbox_inches="tight")
+        if fig:
+            fig.savefig(buffer, format="png", bbox_inches="tight")
+        else:
+            plt.savefig(buffer, format="png", bbox_inches="tight")
     finally:
-        plt.close()
+        if fig:
+            plt.close(fig)
+        else:
+            plt.close()
 
     buffer.seek(0)
     image_png = buffer.getvalue()
@@ -1791,12 +1798,15 @@ def hours_vs_date_given_employee(
     )
     logger.debug("Attendance dataframe for employee: %s", df)
 
-    sns.barplot(data=df, x="date", y="hours")
-    plt.xticks(rotation="vertical")
-    rcParams.update({"figure.autolayout": True})
-    plt.tight_layout()
+    # 🛡️ Sentinel: Use explicit Figure to prevent thread safety race conditions
+    fig = Figure(figsize=(10, 6))
+    ax = fig.add_subplot(111)
 
-    chart_url = _plot_to_base64()
+    sns.barplot(data=df, x="date", y="hours", ax=ax)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+    fig.tight_layout()
+
+    chart_url = _plot_to_base64(fig)
 
     return present_qs, chart_url
 
@@ -1870,11 +1880,15 @@ def hours_vs_employee_given_date(
         }
     )
 
-    sns.barplot(data=df, x="username", y="hours")
-    plt.xticks(rotation="vertical")
-    rcParams.update({"figure.autolayout": True})
-    plt.tight_layout()
-    chart_url = _plot_to_base64()
+    # 🛡️ Sentinel: Use explicit Figure to prevent thread safety race conditions
+    fig = Figure(figsize=(10, 6))
+    ax = fig.add_subplot(111)
+
+    sns.barplot(data=df, x="username", y="hours", ax=ax)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+    fig.tight_layout()
+
+    chart_url = _plot_to_base64(fig)
 
     return present_qs, chart_url
 
@@ -1930,8 +1944,14 @@ def this_week_emp_count_vs_date() -> Optional[str]:
 
     df = pd.DataFrame({"date": str_dates_all, "Number of employees": emp_cnt_all})
 
-    sns.lineplot(data=df, x="date", y="Number of employees")
-    return _plot_to_base64()
+    # 🛡️ Sentinel: Use explicit Figure to prevent thread safety race conditions
+    fig = Figure(figsize=(10, 6))
+    ax = fig.add_subplot(111)
+
+    sns.lineplot(data=df, x="date", y="Number of employees", ax=ax)
+    fig.tight_layout()
+
+    return _plot_to_base64(fig)
 
 
 def last_week_emp_count_vs_date() -> Optional[str]:
@@ -1967,8 +1987,14 @@ def last_week_emp_count_vs_date() -> Optional[str]:
 
     df = pd.DataFrame({"date": str_dates_all, "emp_count": emp_cnt_all})
 
-    sns.lineplot(data=df, x="date", y="emp_count")
-    return _plot_to_base64()
+    # 🛡️ Sentinel: Use explicit Figure to prevent thread safety race conditions
+    fig = Figure(figsize=(10, 6))
+    ax = fig.add_subplot(111)
+
+    sns.lineplot(data=df, x="date", y="emp_count", ax=ax)
+    fig.tight_layout()
+
+    return _plot_to_base64(fig)
 
 
 # ========== Main Views ==========
