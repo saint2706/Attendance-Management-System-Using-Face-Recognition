@@ -34,36 +34,42 @@ class TestPlotSecurity:
             # Write some fake PNG data to the buffer
             buffer.write(b"\x89PNG\r\n\x1a\n")  # PNG file signature
 
+        # Create a mock Figure instance
+        mock_fig = MagicMock()
+        mock_fig.savefig = MagicMock(side_effect=mock_savefig)
+
         with patch("recognition.views_legacy.plt") as mock_plt:
-            mock_plt.savefig = MagicMock(side_effect=mock_savefig)
             mock_plt.close = MagicMock()
 
-            result = _plot_to_base64()
+            result = _plot_to_base64(mock_fig)
 
             # Verify it returns a data URI
             assert result.startswith("data:image/png;base64,")
             assert len(result) > len("data:image/png;base64,")
 
-            # Verify plot was closed
-            mock_plt.close.assert_called_once()
+            # Verify plot was closed with the figure instance
+            mock_plt.close.assert_called_once_with(mock_fig)
 
     def test_plot_to_base64_no_file_io(self, tmp_path):
         """Verify that _plot_to_base64 does not write files to disk."""
+        # Create a mock Figure instance
+        mock_fig = MagicMock()
+        mock_fig.savefig = MagicMock()
+
         with patch("recognition.views_legacy.plt") as mock_plt:
-            mock_plt.savefig = MagicMock()
             mock_plt.close = MagicMock()
 
             # Record files before
             files_before = set(tmp_path.glob("**/*"))
 
-            _plot_to_base64()
+            _plot_to_base64(mock_fig)
 
             # Verify no new files were created
             files_after = set(tmp_path.glob("**/*"))
             assert files_before == files_after
 
             # Verify savefig was called with a BytesIO buffer, not a file path
-            call_args = mock_plt.savefig.call_args
+            call_args = mock_fig.savefig.call_args
             assert call_args is not None
             buffer = call_args[0][0]
             assert hasattr(buffer, "getvalue")  # BytesIO has getvalue method
