@@ -126,6 +126,7 @@
 
 /* Result Cards */
 .result-card {
+    position: relative;
     margin-bottom: var(--spacing-lg);
     padding: var(--spacing-lg);
 }
@@ -271,4 +272,11 @@
 @keyframes shrink {
     from { width: 100%; }
     to { width: 0%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auto-reset-bar {
+        animation: none;
+        width: 100%;
+    }
 }
