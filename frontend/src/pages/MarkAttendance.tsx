@@ -166,6 +166,17 @@ export const MarkAttendance = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [result, isProcessing, countdown, startCaptureSequence, resetAttempt]);
 
+    // Auto-reset logic
+    useEffect(() => {
+        let timer: ReturnType<typeof setTimeout>;
+        if (result?.recognized) {
+            timer = setTimeout(() => {
+                resetAttempt();
+            }, 5000); // 5 seconds
+        }
+        return () => clearTimeout(timer);
+    }, [result, resetAttempt]);
+
     // Auto-start camera on mount (only once)
     useEffect(() => {
         startCamera();
@@ -284,6 +295,14 @@ export const MarkAttendance = () => {
                                 </>
                             )}
                         </div>
+                        {/* Auto-reset bar */}
+                        {result.recognized && (
+                            <div
+                                className="auto-reset-bar"
+                                role="timer"
+                                aria-label="Resetting automatically in 5 seconds"
+                            />
+                        )}
                     </div>
                 )}
 
