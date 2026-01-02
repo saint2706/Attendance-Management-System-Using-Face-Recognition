@@ -1174,11 +1174,21 @@ class DatasetEmbeddingCache:
             return None
 
         key = (model_name, detector_backend, enforce_detection)
-        current_state = self._current_dataset_state()
-
+        
+        # Retrieve the dataset state from the same cache entry that provided the dataset_index
+        # to ensure they're always in sync and avoid race conditions
         with self._lock:
+            memory_entry = self._memory_cache.get(key)
+            if not memory_entry:
+                # This shouldn't happen since get_dataset_index just populated it, but be defensive
+                logger.warning("Dataset index cache entry missing after get_dataset_index call")
+                return None
+            
+            dataset_state = memory_entry[0]
+            
+            # Check if we have a cached FAISS index for this exact dataset state
             cached_entry = self._faiss_cache.get(key)
-            if cached_entry and cached_entry[0] == current_state:
+            if cached_entry and cached_entry[0] == dataset_state:
                 return cached_entry[1]
 
         # ⚡ Performance: Build FAISS index only when cache misses or is stale
@@ -1203,7 +1213,7 @@ class DatasetEmbeddingCache:
             return None
 
         with self._lock:
-            self._faiss_cache[key] = (current_state, faiss_index)
+            self._faiss_cache[key] = (dataset_state, faiss_index)
 
         return faiss_index
 
