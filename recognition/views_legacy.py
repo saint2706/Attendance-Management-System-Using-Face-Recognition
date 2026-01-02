@@ -1174,24 +1174,26 @@ class DatasetEmbeddingCache:
 _dataset_embedding_cache = DatasetEmbeddingCache(TRAINING_DATASET_ROOT, DATA_ROOT)
 
 
-def _plot_to_base64(fig: Optional[Figure] = None) -> str:
+def _plot_to_base64(fig: Figure) -> str:
     """
-    Save the provided Matplotlib Figure (or current plot) to a base64-encoded PNG string.
+    Save the provided Matplotlib Figure to a base64-encoded PNG string.
+
+    Args:
+        fig: The Matplotlib Figure instance to encode. Required for thread safety.
+
+    Returns:
+        A data URI string with base64-encoded PNG image.
 
     This avoids filesystem persistence for transient reports, eliminating
     race conditions and potential insecure direct object reference (IDOR) issues.
+    Each Figure instance is isolated, ensuring thread-safe operation in
+    multi-threaded web server environments.
     """
     buffer = io.BytesIO()
     try:
-        if fig:
-            fig.savefig(buffer, format="png", bbox_inches="tight")
-        else:
-            plt.savefig(buffer, format="png", bbox_inches="tight")
+        fig.savefig(buffer, format="png", bbox_inches="tight")
     finally:
-        if fig:
-            plt.close(fig)
-        else:
-            plt.close()
+        plt.close(fig)
 
     buffer.seek(0)
     image_png = buffer.getvalue()
