@@ -983,6 +983,10 @@ class DatasetEmbeddingCache:
             Tuple[str, str, bool], Tuple[Tuple[Tuple[str, int, int], ...], list[dict]]
         ]
         self._memory_cache = {}
+        # ⚡ Performance: Cache FAISS index to avoid rebuilding it on every request
+        self._faiss_cache: Dict[
+            Tuple[str, str, bool], Tuple[Tuple[Tuple[str, int, int], ...], FAISSIndex]
+        ] = {}
         self._encryption = encryption or FaceDataEncryption()
 
     def _cache_file_path(
@@ -1153,11 +1157,62 @@ class DatasetEmbeddingCache:
 
         return dataset_index
 
+    def get_faiss_index(
+        self,
+        model_name: str,
+        detector_backend: str,
+        enforce_detection: bool,
+        builder: Callable[[Optional[List[Tuple[str, int, int]]]], list[dict]],
+    ) -> Optional[FAISSIndex]:
+        """Return cached FAISS index, building it if necessary."""
+        # Ensure dataset index is up to date
+        dataset_index = self.get_dataset_index(
+            model_name, detector_backend, enforce_detection, builder
+        )
+
+        if not dataset_index:
+            return None
+
+        key = (model_name, detector_backend, enforce_detection)
+        current_state = self._current_dataset_state()
+
+        with self._lock:
+            cached_entry = self._faiss_cache.get(key)
+            if cached_entry and cached_entry[0] == current_state:
+                return cached_entry[1]
+
+        # ⚡ Performance: Build FAISS index only when cache misses or is stale
+        embeddings_list = []
+        labels_list = []
+        for entry in dataset_index:
+            embedding = entry.get("embedding")
+            identity = entry.get("identity")
+            if isinstance(embedding, np.ndarray) and identity:
+                embeddings_list.append(embedding)
+                labels_list.append(str(identity))
+
+        if not embeddings_list:
+            return None
+
+        try:
+            faiss_index = build_faiss_index_from_embeddings(
+                np.array(embeddings_list), labels_list
+            )
+        except Exception as exc:
+            logger.warning("Failed to build FAISS index: %s", exc)
+            return None
+
+        with self._lock:
+            self._faiss_cache[key] = (current_state, faiss_index)
+
+        return faiss_index
+
     def invalidate(self) -> None:
         """Clear the in-memory cache and remove cached files from disk."""
 
         with self._lock:
             self._memory_cache.clear()
+            self._faiss_cache.clear()
 
         cache.delete("recognition:dataset_state")
 
@@ -2681,32 +2736,32 @@ def _mark_attendance(request, check_in: bool):
     )
     dataset_load_duration = time.perf_counter() - dataset_load_start
 
-    # Optimization: Build FAISS index for faster matching if metric is compatible
+    # Optimization: Retrieve cached FAISS index for faster matching if metric is compatible
     faiss_index: Optional[FAISSIndex] = None
     dataset_metadata: Dict[str, Dict[str, Any]] = {}
 
-    if dataset_index and distance_metric in ("euclidean", "euclidean_l2", "l2"):
-        try:
-            embeddings_list = []
-            labels_list = []
-            for entry in dataset_index:
-                embedding = entry.get("embedding")
-                identity = entry.get("identity")
-                if isinstance(embedding, np.ndarray) and identity:
-                    embeddings_list.append(embedding)
-                    labels_list.append(str(identity))
-                    dataset_metadata[str(identity)] = entry
+    # Populate metadata for quick lookup
+    if dataset_index:
+        for entry in dataset_index:
+            identity = entry.get("identity")
+            if identity:
+                dataset_metadata[str(identity)] = entry
 
-            if embeddings_list:
-                faiss_index = build_faiss_index_from_embeddings(
-                    np.array(embeddings_list), labels_list
-                )
-                logger.debug(
-                    "Built FAISS index with %d embeddings for attendance session", faiss_index.size
-                )
-        except Exception as exc:
-            logger.warning("Failed to build FAISS index for attendance: %s", exc)
-            faiss_index = None
+    if dataset_index and distance_metric in ("euclidean", "euclidean_l2", "l2"):
+        # ⚡ Performance: Use cached FAISS index to avoid rebuilding it on every frame loop start
+        faiss_index = _dataset_embedding_cache.get_faiss_index(
+            model_name,
+            detector_backend,
+            enforce_detection,
+            lambda dataset_state=None: _build_dataset_embeddings_for_matching(
+                model_name, detector_backend, enforce_detection, dataset_state
+            ),
+        )
+        if faiss_index:
+            logger.debug(
+                "Using cached FAISS index with %d embeddings for attendance session",
+                faiss_index.size,
+            )
 
     monitoring.observe_stage_duration(
         "dataset_index_load",
