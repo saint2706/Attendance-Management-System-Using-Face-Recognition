@@ -1,5 +1,11 @@
 # Palette's Journal
 
-## 2024-05-22 - Password Visibility Toggle
-**Learning:** Using inline styles for disabled states (e.g., `style={{ opacity: 0.65 }}`) overrides CSS classes and makes maintenance harder.
-**Action:** Always use CSS classes (e.g., `.disabled` or `[disabled]`) for styling disabled states to ensure consistency and easier theme updates.
+## 2024-05-22 - Accessibility in Dynamic UI
+
+**Learning:** When using conditional rendering for major UI states (like loading vs. content), standard focus management is often insufficient.
+**Action:** Ensure that when a major state change occurs, focus is programmatically managed to a logical starting point in the new state.
+
+## 2024-05-23 - Focus Management in Kiosk Mode
+
+**Learning:** In kiosk-style interfaces where the entire view context changes significantly (e.g., Camera -> Result), losing keyboard focus is a critical accessibility failure. Screen reader users can get lost when the element they triggered an action from is removed from the DOM.
+**Action:** When swapping major UI states, explicitly manage focus by moving it to the new container's heading or primary element using `useRef`, `useEffect`, and `tabIndex="-1"`. This provides immediate context to assistive technologies.
