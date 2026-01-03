@@ -33,6 +33,7 @@ export const MarkAttendance = () => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
+    const resultRef = useRef<HTMLDivElement>(null);
 
     // Start camera
     const startCamera = useCallback(async () => {
@@ -71,6 +72,13 @@ export const MarkAttendance = () => {
             return () => clearTimeout(timer);
         }
     }, [showFlash]);
+
+    // Focus management for result card
+    useEffect(() => {
+        if (result && resultRef.current) {
+            resultRef.current.focus();
+        }
+    }, [result]);
 
     // Capture and process
     const captureAndRecognize = useCallback(async () => {
@@ -257,6 +265,8 @@ export const MarkAttendance = () => {
                 {/* Result Display */}
                 {result && (
                     <div
+                        ref={resultRef}
+                        tabIndex={-1}
                         className={`result-card card ${result.recognized ? 'result-success' :
                             result.spoofDetected ? 'result-warning' : 'result-error'
                         }`}
@@ -321,6 +331,7 @@ export const MarkAttendance = () => {
                                             ? "Capturing now..."
                                             : "Start capture sequence"
                                 }
+                                aria-keyshortcuts="Space"
                             >
                                 {isProcessing ? (
                                     <>
@@ -361,6 +372,7 @@ export const MarkAttendance = () => {
                                             onClick={resetAttempt}
                                             className="btn btn-primary btn-lg"
                                             aria-label="Mark attendance for another person"
+                                            aria-keyshortcuts="Escape"
                                         >
                                             <UserCheck size={20} />
                                             Mark Another
@@ -370,6 +382,7 @@ export const MarkAttendance = () => {
                                     <button
                                         onClick={resetAttempt}
                                         className="btn btn-secondary btn-lg"
+                                        aria-keyshortcuts="Escape"
                                     >
                                         <RefreshCw size={20} />
                                         Try Again
