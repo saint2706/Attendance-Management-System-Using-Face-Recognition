@@ -792,7 +792,7 @@ class FaceRecognitionAPI(View):
 
         # ⚡ Performance: Optimistically use cached index if it appears valid (O(1))
         # instead of rebuilding it (O(N)). The cache guarantees numpy arrays.
-        # Downstream usage (find_closest_dataset_match) is read-only, so reference is safe.
+        # Create shallow copies to protect cache from accidental mutations downstream.
         is_normalized = (
             dataset_index
             and isinstance(dataset_index[0], dict)
@@ -800,7 +800,8 @@ class FaceRecognitionAPI(View):
         )
 
         if is_normalized:
-            normalized_index = dataset_index
+            # Fast path: data is valid, but create defensive copies to protect the cache
+            normalized_index = [dict(entry) for entry in dataset_index]
         else:
             normalized_index = []
             for entry in dataset_index:
