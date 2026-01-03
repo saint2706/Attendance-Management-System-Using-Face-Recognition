@@ -2262,6 +2262,7 @@ def _build_onboarding_state(
 
 
 @login_required
+@ratelimit(key="user", rate="10/m", method="POST", block=False)
 def add_photos(request):
     """
     Handle the 'Add Photos' functionality for admins to create face datasets for users.
@@ -2269,12 +2270,17 @@ def add_photos(request):
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
 
+    # 🛡️ Sentinel: Enforce rate limit to prevent capture job flooding
+    if getattr(request, "limited", False):
+        messages.error(request, "Too many capture requests. Please wait before retrying.")
+        # Fall through to render page with error message, skipping POST processing below
+
     task_context: Dict[str, Any] | None = None
     task_id = request.GET.get("task_id")
     if task_id:
         task_context = _describe_async_result(task_id)
 
-    if request.method == "POST":
+    if request.method == "POST" and not getattr(request, "limited", False):
         form = usernameForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data["username"]
@@ -3128,18 +3134,29 @@ def monitoring_metrics(request):
 
 
 @login_required
+@ratelimit(key="user", rate="3/m", method="POST", block=False)
 def train(request):
     """Allow administrators to trigger and monitor background model training."""
 
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
 
+    # 🛡️ Sentinel: Enforce rate limit to prevent training job flooding (DoS)
+    if getattr(request, "limited", False):
+        messages.error(request, "Too many training requests. Please wait before retrying.")
+        # Return to the same page but with the error message
+        # Use existing context logic to render the page instead of redirecting which might lose context
+        # But wait, existing logic is below. Let's just fall through to GET render?
+        # But we want to stop processing.
+        # If we just fall through, we need to make sure we don't process the POST logic below.
+        pass  # We will handle it by checking request.limited in the POST block
+
     task_context: Dict[str, Any] | None = None
     task_id = request.GET.get("task_id")
     if task_id:
         task_context = _describe_async_result(task_id)
 
-    if request.method == "POST":
+    if request.method == "POST" and not getattr(request, "limited", False):
         try:
             from .tasks import train_recognition_model
 
