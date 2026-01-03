@@ -789,21 +789,35 @@ class FaceRecognitionAPI(View):
         dataset_index = _load_dataset_embeddings_for_matching(
             model_name, detector_backend, enforce_detection
         )
-        normalized_index = []
-        for entry in dataset_index:
-            candidate = entry.get("embedding") if isinstance(entry, dict) else None
-            if candidate is None:
-                continue
-            if not isinstance(candidate, np.ndarray):
-                try:
-                    candidate_array = np.array(candidate, dtype=float)
-                except Exception:  # pragma: no cover - defensive conversion
+
+        # ⚡ Performance: Optimistically use cached index if it appears valid (O(1))
+        # instead of rebuilding it (O(N)). The cache guarantees numpy arrays.
+        # Create shallow copies to protect cache from accidental mutations downstream.
+        is_normalized = (
+            dataset_index
+            and isinstance(dataset_index[0], dict)
+            and isinstance(dataset_index[0].get("embedding"), np.ndarray)
+        )
+
+        if is_normalized:
+            # Fast path: data is valid, but create defensive copies to protect the cache
+            normalized_index = [dict(entry) for entry in dataset_index]
+        else:
+            normalized_index = []
+            for entry in dataset_index:
+                candidate = entry.get("embedding") if isinstance(entry, dict) else None
+                if candidate is None:
                     continue
-            else:
-                candidate_array = candidate
-            normalized_entry = dict(entry)
-            normalized_entry["embedding"] = candidate_array
-            normalized_index.append(normalized_entry)
+                if not isinstance(candidate, np.ndarray):
+                    try:
+                        candidate_array = np.array(candidate, dtype=float)
+                    except Exception:  # pragma: no cover - defensive conversion
+                        continue
+                else:
+                    candidate_array = candidate
+                normalized_entry = dict(entry)
+                normalized_entry["embedding"] = candidate_array
+                normalized_index.append(normalized_entry)
 
         if not normalized_index:
             attempt_logger.log_failure(
