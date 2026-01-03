@@ -3144,12 +3144,7 @@ def train(request):
     # 🛡️ Sentinel: Enforce rate limit to prevent training job flooding (DoS)
     if getattr(request, "limited", False):
         messages.error(request, "Too many training requests. Please wait before retrying.")
-        # Return to the same page but with the error message
-        # Use existing context logic to render the page instead of redirecting which might lose context
-        # But wait, existing logic is below. Let's just fall through to GET render?
-        # But we want to stop processing.
-        # If we just fall through, we need to make sure we don't process the POST logic below.
-        pass  # We will handle it by checking request.limited in the POST block
+        # Show error and skip starting a new training task; POST handler is guarded by request.limited.
 
     task_context: Dict[str, Any] | None = None
     task_id = request.GET.get("task_id")
