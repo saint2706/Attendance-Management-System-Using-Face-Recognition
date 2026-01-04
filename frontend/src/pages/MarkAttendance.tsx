@@ -12,9 +12,9 @@ import {
     Loader2,
     RefreshCw,
     Home,
-    UserCheck,
-    Keyboard
+    UserCheck
 } from 'lucide-react';
+import { Kbd } from '../components/ui/Kbd';
 import './MarkAttendance.css';
 
 export const MarkAttendance = () => {
@@ -351,8 +351,7 @@ export const MarkAttendance = () => {
                                 )}
                             </button>
                             <p className="text-muted text-xs flex items-center gap-xs">
-                                <Keyboard size={14} />
-                                Press <strong>Space</strong> to capture
+                                Press <Kbd>Space</Kbd> to capture
                             </p>
                         </div>
                     ) : (
@@ -391,8 +390,7 @@ export const MarkAttendance = () => {
                             </div>
                             <div role="status" aria-live="polite">
                                 <p className="text-muted text-xs flex items-center gap-xs">
-                                    <Keyboard size={14} />
-                                    Press <strong>Escape</strong> to {result.recognized ? 'mark another' : 'try again'}
+                                    Press <Kbd>Esc</Kbd> to {result.recognized ? 'mark another' : 'try again'}
                                 </p>
                             </div>
                         </div>
