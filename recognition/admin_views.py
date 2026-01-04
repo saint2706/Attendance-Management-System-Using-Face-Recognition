@@ -225,6 +225,16 @@ def _unknown_face_filter() -> Q:
 DASHBOARD_RECORD_LIMIT = 100
 
 
+def _sanitize_csv_value(value: str) -> str:
+    """Sanitize a value to prevent CSV injection (formula injection)."""
+    if not value:
+        return ""
+    value = str(value)
+    if value.startswith(("=", "+", "-", "@")):
+        return f"'{value}"
+    return value
+
+
 def _get_chart_data_for_period(days: int = 7) -> dict[str, Any]:
     """Aggregate recognition outcomes for the specified period for chart display."""
     since = timezone.now() - datetime.timedelta(days=days)
@@ -452,14 +462,14 @@ def export_attendance_csv(request: HttpRequest) -> HttpResponse:
         writer.writerow(
             [
                 outcome.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                outcome.username,
+                _sanitize_csv_value(outcome.username),
                 outcome.direction,
                 "Accepted" if outcome.accepted else "Rejected",
                 f"{outcome.confidence:.4f}" if outcome.confidence is not None else "",
                 f"{outcome.distance:.4f}" if outcome.distance is not None else "",
                 f"{outcome.threshold:.4f}" if outcome.threshold is not None else "",
                 "",
-                outcome.source,
+                _sanitize_csv_value(outcome.source),
                 "",
             ]
         )
@@ -470,15 +480,15 @@ def export_attendance_csv(request: HttpRequest) -> HttpResponse:
         writer.writerow(
             [
                 attempt.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                attempt.username or (attempt.user.username if attempt.user else ""),
+                _sanitize_csv_value(attempt.username or (attempt.user.username if attempt.user else "")),
                 attempt.direction,
                 "Success" if attempt.successful else "Failed",
                 "",
                 "",
                 "",
                 liveness_status,
-                attempt.source,
-                attempt.error_message,
+                _sanitize_csv_value(attempt.source),
+                _sanitize_csv_value(attempt.error_message),
             ]
         )
 
