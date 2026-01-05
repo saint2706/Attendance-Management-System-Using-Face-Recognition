@@ -344,10 +344,11 @@ def test_export_csv_sanitizes_formula_injection(client):
 
     # Check that dangerous usernames are sanitized
     usernames_in_csv = [row[1] for row in data_rows if len(row) > 1]  # Column 1 is username
+    dangerous_stripped = {u.strip() for u in dangerous_usernames}
     
     for username in usernames_in_csv:
         # All dangerous fields should start with a space (sanitized)
-        if username.strip() in [u.strip() for u in dangerous_usernames] or username.strip().startswith(("=", "+", "-", "@", "\t", "\r")):
+        if username.strip() in dangerous_stripped or username.strip().startswith(("=", "+", "-", "@", "\t", "\r")):
             assert username.startswith(" "), f"Username '{username}' should be sanitized with leading space"
 
     # Verify that original dangerous characters are preserved after the space
