@@ -290,6 +290,78 @@ def test_export_csv_includes_attempts(client):
 
 
 @pytest.mark.django_db
+def test_export_csv_sanitizes_formula_injection(client):
+    """CSV export should sanitize fields to prevent formula injection attacks."""
+    user = get_user_model().objects.create_user(
+        username="csv-security-admin",
+        password="StrongPass123!",
+        is_staff=True,
+    )
+    client.force_login(user)
+
+    # Test all dangerous prefixes
+    dangerous_usernames = [
+        "=1+1",  # Equals sign
+        "+1+1",  # Plus sign
+        "-1+1",  # Minus sign
+        "@SUM(A1:A10)",  # At sign
+        "\t1+1",  # Tab character
+        "\r1+1",  # Carriage return
+    ]
+
+    # Create outcomes with dangerous usernames
+    for username in dangerous_usernames:
+        RecognitionOutcome.objects.create(
+            username=username,
+            direction="in",
+            accepted=True,
+            confidence=0.9,
+            distance=0.25,
+            threshold=0.4,
+            source="webcam",
+        )
+
+    # Create an attempt with dangerous fields
+    RecognitionAttempt.objects.create(
+        username="=malicious",
+        direction=Direction.IN,
+        spoof_detected=False,
+        successful=False,
+        source="=cmd|'/c calc'!A1",
+        error_message="@ERROR",
+    )
+
+    response = client.get(reverse("admin_attendance_export"))
+    assert response.status_code == 200
+
+    content = response.content.decode("utf-8")
+    reader = csv.reader(io.StringIO(content))
+    rows = list(reader)
+
+    # Verify sanitization: each dangerous field should have a leading space
+    # Skip header row
+    data_rows = rows[1:]
+
+    # Check that dangerous usernames are sanitized
+    usernames_in_csv = [row[1] for row in data_rows if len(row) > 1]  # Column 1 is username
+    
+    for username in usernames_in_csv:
+        # All dangerous fields should start with a space (sanitized)
+        if username.strip() in [u.strip() for u in dangerous_usernames] or username.strip().startswith(("=", "+", "-", "@", "\t", "\r")):
+            assert username.startswith(" "), f"Username '{username}' should be sanitized with leading space"
+
+    # Verify that original dangerous characters are preserved after the space
+    assert " =1+1" in content
+    assert " +1+1" in content
+    assert " -1+1" in content
+    assert " @SUM(A1:A10)" in content
+
+    # Verify source and error_message are also sanitized
+    assert " =cmd|'/c calc'!A1" in content
+    assert " @ERROR" in content
+
+
+@pytest.mark.django_db
 def test_attendance_filter_form_validates_correctly(client):
     """The filter form should validate correctly with empty and valid data."""
     from recognition.forms import AttendanceSessionFilterForm

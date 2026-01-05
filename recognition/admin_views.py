@@ -450,8 +450,11 @@ def export_attendance_csv(request: HttpRequest) -> HttpResponse:
     # 🛡️ Sentinel: Sanitize fields for CSV Injection (Formula Injection)
     def _sanitize(value: Any) -> str:
         s = str(value) if value is not None else ""
-        if s.startswith(("=", "+", "-", "@")):
-            return f"'{s}"
+        # Treat leading characters that can trigger CSV/Excel formula evaluation as dangerous.
+        dangerous_prefixes = ("=", "+", "-", "@", "\t", "\r")
+        if s and s[0] in dangerous_prefixes:
+            # Prepend a space to prevent formula interpretation while preserving the visible content.
+            return f" {s}"
         return s
 
     # Write outcomes
