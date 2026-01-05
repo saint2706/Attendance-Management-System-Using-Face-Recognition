@@ -57,7 +57,7 @@ dev = [
     "psycopg2-binary==2.9.11",
     "pre-commit==4.0.1",
     "pytest-playwright==0.4.4",
-    "playwright==1.49.1",
+    "playwright==1.57.0",
 ]
 
 [tool.black]
