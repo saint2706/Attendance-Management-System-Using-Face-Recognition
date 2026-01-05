@@ -470,3 +470,20 @@ kbd {
   min-width: 1.5em;
   vertical-align: middle;
 }
+
+/* Keyboard Shortcut Key Size Variants */
+kbd.kbd-sm {
+  padding: 0.05em 0.3em;
+  font-size: 0.75em;
+  min-width: 1.25em;
+}
+
+kbd.kbd-md {
+  /* Default size, no additional styles needed */
+}
+
+kbd.kbd-lg {
+  padding: 0.15em 0.5em;
+  font-size: 1em;
+  min-width: 1.75em;
+}
