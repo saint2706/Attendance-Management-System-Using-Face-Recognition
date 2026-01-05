@@ -478,10 +478,6 @@ kbd.kbd-sm {
   min-width: 1.25em;
 }
 
-kbd.kbd-md {
-  /* Default size, no additional styles needed */
-}
-
 kbd.kbd-lg {
   padding: 0.15em 0.5em;
   font-size: 1em;
