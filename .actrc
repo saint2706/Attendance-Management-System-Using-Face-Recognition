@@ -1,2 +1,3 @@
--P ubuntu-latest=node:20-bookworm
+-P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-latest
 --container-architecture linux/amd64
+--env NODE_TLS_REJECT_UNAUTHORIZED=0

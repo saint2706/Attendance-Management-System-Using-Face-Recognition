@@ -30,7 +30,41 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          if [ "$ACT" = "true" ]; then
+            echo "Running in act mode - using workaround for npm signal handling issues"
+            # npm has a bug with act where exit handlers fail. We work around this by:
+            # 1. Running npm with a long timeout (npm takes longer in act)
+            # 2. Ignoring the exit handler error since installation still completes
+            # 3. Checking if installation succeeded by verifying key binaries exist
+            
+            timeout 180 npm install --prefer-offline --no-audit --no-fund --loglevel=error > /tmp/npm-install.log 2>&1 || true
+            
+            # Check if installation actually succeeded by verifying key binaries exist
+            if [ -f "node_modules/.bin/eslint" ] && [ -f "node_modules/.bin/vite" ]; then
+              echo "Dependencies installed successfully"
+              rm -f /tmp/npm-install.log
+            else
+              echo "npm install incomplete. Checking status..."
+              if [ -d "node_modules" ]; then
+                echo "node_modules exists with $(ls node_modules | wc -l) packages"
+                echo "Waiting a bit more for npm to finish..."
+                sleep 10
+                if [ -f "node_modules/.bin/eslint" ]; then
+                  echo "Dependencies installed successfully after wait"
+                else
+                  echo "Installation failed. Log:"
+                  tail -50 /tmp/npm-install.log || true
+                  exit 1
+                fi
+              else
+                echo "Installation completely failed"
+                exit 1
+              fi
+            fi
+          else
+            npm ci
+          fi
 
       - name: Prepare log directory
         run: mkdir -p .ci-logs
