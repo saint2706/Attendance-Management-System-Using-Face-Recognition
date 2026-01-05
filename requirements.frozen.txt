@@ -63,7 +63,7 @@ lazr.uri==1.0.6
 libclang==18.1.1
 lz4==4.4.5
 Markdown==3.10
-markdown-it-py==3.0.0
+markdown-it-py==4.0.0
 MarkupSafe==2.1.5
 matplotlib==3.10.7
 mdurl==0.1.2
