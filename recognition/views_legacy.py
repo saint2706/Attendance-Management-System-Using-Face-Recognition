@@ -790,8 +790,7 @@ class FaceRecognitionAPI(View):
             model_name, detector_backend, enforce_detection
         )
 
-        # ⚡ Performance: Optimistically use cached index if it appears valid (O(1))
-        # instead of rebuilding it (O(N)). The cache guarantees numpy arrays.
+        # Create shallow copies to protect cache from accidental mutations downstream.
         is_normalized = (
             dataset_index
             and isinstance(dataset_index[0], dict)
@@ -799,8 +798,8 @@ class FaceRecognitionAPI(View):
         )
 
         if is_normalized:
-            # Fast path: data is valid and safe to use directly (read-only access downstream)
-            normalized_index = dataset_index
+            # Fast path: data is valid, but create defensive copies to protect the cache
+            normalized_index = [dict(entry) for entry in dataset_index]
         else:
             normalized_index = []
             for entry in dataset_index:
