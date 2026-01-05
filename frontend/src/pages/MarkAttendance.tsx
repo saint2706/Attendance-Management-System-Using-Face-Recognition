@@ -34,6 +34,7 @@ export const MarkAttendance = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const resultRef = useRef<HTMLDivElement>(null);
+    const captureButtonRef = useRef<HTMLButtonElement>(null);
 
     // Start camera
     const startCamera = useCallback(async () => {
@@ -73,10 +74,13 @@ export const MarkAttendance = () => {
         }
     }, [showFlash]);
 
-    // Focus management for result card
+    // Focus management for result card and capture button
     useEffect(() => {
         if (result && resultRef.current) {
             resultRef.current.focus();
+        } else if (!result && captureButtonRef.current) {
+            // When returning to capture mode, focus the capture button
+            captureButtonRef.current.focus();
         }
     }, [result]);
 
@@ -321,6 +325,7 @@ export const MarkAttendance = () => {
                     {!result ? (
                         <div className="flex flex-col items-center gap-sm">
                             <button
+                                ref={captureButtonRef}
                                 onClick={startCaptureSequence}
                                 disabled={!stream || isProcessing || countdown !== null}
                                 className="btn btn-primary btn-lg capture-button"
