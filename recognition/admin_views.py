@@ -447,19 +447,29 @@ def export_attendance_csv(request: HttpRequest) -> HttpResponse:
         ]
     )
 
+    # 🛡️ Sentinel: Sanitize fields for CSV Injection (Formula Injection)
+    def _sanitize(value: Any) -> str:
+        s = str(value) if value is not None else ""
+        # Treat leading characters that can trigger CSV/Excel formula evaluation as dangerous.
+        dangerous_prefixes = ("=", "+", "-", "@", "\t", "\r")
+        if s and s.startswith(dangerous_prefixes):
+            # Prepend a space to prevent formula interpretation while preserving the visible content.
+            return f" {s}"
+        return s
+
     # Write outcomes
     for outcome in outcomes:
         writer.writerow(
             [
                 outcome.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                outcome.username,
-                outcome.direction,
+                _sanitize(outcome.username),
+                _sanitize(outcome.direction),
                 "Accepted" if outcome.accepted else "Rejected",
                 f"{outcome.confidence:.4f}" if outcome.confidence is not None else "",
                 f"{outcome.distance:.4f}" if outcome.distance is not None else "",
                 f"{outcome.threshold:.4f}" if outcome.threshold is not None else "",
                 "",
-                outcome.source,
+                _sanitize(outcome.source),
                 "",
             ]
         )
@@ -470,15 +480,15 @@ def export_attendance_csv(request: HttpRequest) -> HttpResponse:
         writer.writerow(
             [
                 attempt.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                attempt.username or (attempt.user.username if attempt.user else ""),
-                attempt.direction,
+                _sanitize(attempt.username or (attempt.user.username if attempt.user else "")),
+                _sanitize(attempt.direction),
                 "Success" if attempt.successful else "Failed",
                 "",
                 "",
                 "",
                 liveness_status,
-                attempt.source,
-                attempt.error_message,
+                _sanitize(attempt.source),
+                _sanitize(attempt.error_message),
             ]
         )
 
