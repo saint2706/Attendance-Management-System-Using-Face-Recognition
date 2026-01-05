@@ -152,14 +152,18 @@ def _prepare_gray_frame(
 
 def _compute_motion_score(frames: Sequence[ArrayLike]) -> Optional[float]:
     magnitudes: list[float] = []
-    for prev, curr in zip(frames, frames[1:]):
-        try:
-            prev_float = prev.astype(np.float32) / 255.0
-            curr_float = curr.astype(np.float32) / 255.0
-            if hasattr(cv2, "calcOpticalFlowFarneback") and hasattr(cv2, "cartToPolar"):
+
+    # ⚡ Performance: Convert all frames to float32 once to avoid redundant conversions in loop
+    float_frames = [f.astype(np.float32) / 255.0 for f in frames]
+    use_optical_flow = hasattr(cv2, "calcOpticalFlowFarneback") and hasattr(cv2, "cartToPolar")
+
+    for prev, curr in zip(float_frames, float_frames[1:]):
+        success = False
+        if use_optical_flow:
+            try:
                 flow = cv2.calcOpticalFlowFarneback(
-                    prev_float,
-                    curr_float,
+                    prev,
+                    curr,
                     None,
                     0.5,
                     1,
@@ -173,12 +177,13 @@ def _compute_motion_score(frames: Sequence[ArrayLike]) -> Optional[float]:
                     magnitude, _ = cv2.cartToPolar(flow[..., 0], flow[..., 1])
                     if isinstance(magnitude, np.ndarray):
                         magnitudes.append(float(np.mean(magnitude)))
-                        continue
-        except Exception:  # pragma: no cover - fall back to absolute differences
-            pass
+                        success = True
+            except Exception:  # pragma: no cover - fall back to absolute differences
+                pass
 
-        diff = np.abs(curr.astype(np.float32) - prev.astype(np.float32))
-        magnitudes.append(float(np.mean(diff) / 255.0))
+        if not success:
+            diff = np.abs(curr - prev)
+            magnitudes.append(float(np.mean(diff)))
 
     if not magnitudes:
         return None
@@ -195,14 +200,16 @@ def _compute_horizontal_motion(frames: Sequence[ArrayLike]) -> tuple[float, floa
     left_scores: list[float] = []
     right_scores: list[float] = []
 
-    for prev, curr in zip(frames, frames[1:]):
-        try:
-            prev_float = prev.astype(np.float32) / 255.0
-            curr_float = curr.astype(np.float32) / 255.0
-            if hasattr(cv2, "calcOpticalFlowFarneback"):
+    # ⚡ Performance: Convert all frames to float32 once
+    float_frames = [f.astype(np.float32) / 255.0 for f in frames]
+    use_optical_flow = hasattr(cv2, "calcOpticalFlowFarneback")
+
+    for prev, curr in zip(float_frames, float_frames[1:]):
+        if use_optical_flow:
+            try:
                 flow = cv2.calcOpticalFlowFarneback(
-                    prev_float,
-                    curr_float,
+                    prev,
+                    curr,
                     None,
                     0.5,
                     1,
@@ -219,8 +226,8 @@ def _compute_horizontal_motion(frames: Sequence[ArrayLike]) -> tuple[float, floa
                     right_motion = float(np.mean(np.maximum(horizontal, 0)))
                     left_scores.append(left_motion)
                     right_scores.append(right_motion)
-        except Exception:  # pragma: no cover
-            pass
+            except Exception:  # pragma: no cover
+                pass
 
     if not left_scores:
         return 0.0, 0.0
