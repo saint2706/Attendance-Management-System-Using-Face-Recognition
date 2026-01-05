@@ -78,11 +78,11 @@ export const MarkAttendance = () => {
     useEffect(() => {
         if (result && resultRef.current) {
             resultRef.current.focus();
-        } else if (!result && captureButtonRef.current) {
+        } else if (!result && stream && captureButtonRef.current) {
             // When returning to capture mode, focus the capture button
             captureButtonRef.current.focus();
         }
-    }, [result]);
+    }, [result, stream]);
 
     // Capture and process
     const captureAndRecognize = useCallback(async () => {
