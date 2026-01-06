@@ -982,6 +982,9 @@ ATTENDANCE_GRAPHS_ROOT = Path(
 class DatasetEmbeddingCache:
     """Cache DeepFace embeddings for the encrypted training dataset."""
 
+    # Number of entries to check when detecting cache format (optimization vs. robustness tradeoff)
+    _FORMAT_DETECTION_SAMPLE_SIZE = 10
+
     def __init__(
         self,
         dataset_root: Path,
@@ -1083,9 +1086,10 @@ class DatasetEmbeddingCache:
 
         # ⚡ Performance: Optimistically check entries to skip O(N) normalization
         # If the cache contains numpy arrays (new format), we can use it directly.
-        # Check up to the first 10 entries to determine format efficiently.
+        # Sample the first few entries to determine format efficiently.
+        # If all sampled entries have None embeddings, fall through to normalization loop.
         if dataset_index:
-            for entry in dataset_index[:10]:
+            for entry in dataset_index[:self._FORMAT_DETECTION_SAMPLE_SIZE]:
                 if not isinstance(entry, dict):
                     continue
                 embedding = entry.get("embedding")
