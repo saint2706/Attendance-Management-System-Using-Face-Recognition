@@ -1083,8 +1083,9 @@ class DatasetEmbeddingCache:
 
         # ⚡ Performance: Optimistically check entries to skip O(N) normalization
         # If the cache contains numpy arrays (new format), we can use it directly.
+        # Check up to the first 10 entries to determine format efficiently.
         if dataset_index:
-            for entry in dataset_index:
+            for entry in dataset_index[:10]:
                 if not isinstance(entry, dict):
                     continue
                 embedding = entry.get("embedding")
