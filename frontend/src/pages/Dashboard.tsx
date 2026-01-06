@@ -22,12 +22,19 @@ export const Dashboard = () => {
         status: 'Active'
     };
 
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Good morning';
+        if (hour < 18) return 'Good afternoon';
+        return 'Good evening';
+    };
+
     return (
         <div className="dashboard animate-fade-in">
             <header className="dashboard-header">
                 <div>
                     <h1 className="dashboard-title">Admin Dashboard</h1>
-                    <p className="text-muted">Welcome back, {user?.username}!</p>
+                    <p className="text-muted">{getGreeting()}, {user?.username}!</p>
                 </div>
                 <div className="header-actions">
                     <Link to="/setup-wizard" className="btn btn-primary">
@@ -46,7 +53,7 @@ export const Dashboard = () => {
                                 <p className="stat-label">Total Employees</p>
                                 <p className="stat-value">{stats.totalEmployees}</p>
                             </div>
-                            <Users size={32} className="stat-icon" />
+                            <Users size={32} className="stat-icon" aria-hidden="true" />
                         </div>
                     </div>
                     <div className="stat-card card card-elevated stat-success">
@@ -55,7 +62,7 @@ export const Dashboard = () => {
                                 <p className="stat-label">Present Today</p>
                                 <p className="stat-value">{stats.presentToday}</p>
                             </div>
-                            <UserCheck size={32} className="stat-icon" />
+                            <UserCheck size={32} className="stat-icon" aria-hidden="true" />
                         </div>
                     </div>
                     <div className="stat-card card card-elevated stat-info">
@@ -63,7 +70,7 @@ export const Dashboard = () => {
                             <div>
                                 <p className="stat-label">System Status</p>
                                 <p className="stat-value stat-status">
-                                    <Activity size={20} />
+                                    <Activity size={20} aria-hidden="true" />
                                     {stats.status}
                                 </p>
                             </div>
@@ -78,7 +85,7 @@ export const Dashboard = () => {
                 <div className="actions-grid">
                     <Link to="/employees/register" className="action-card card card-elevated">
                         <div className="card-body">
-                            <UserPlus size={32} className="action-icon" />
+                            <UserPlus size={32} className="action-icon" aria-hidden="true" />
                             <h3>Register Employee</h3>
                             <p className="text-muted text-sm">
                                 Add a new employee to the system
@@ -88,7 +95,7 @@ export const Dashboard = () => {
 
                     <Link to="/add-photos" className="action-card card card-elevated">
                         <div className="card-body">
-                            <Camera size={32} className="action-icon" />
+                            <Camera size={32} className="action-icon" aria-hidden="true" />
                             <h3>Add Photos</h3>
                             <p className="text-muted text-sm">
                                 Capture photos for face recognition
@@ -98,7 +105,7 @@ export const Dashboard = () => {
 
                     <Link to="/train" className="action-card card card-elevated">
                         <div className="card-body">
-                            <Brain size={32} className="action-icon" />
+                            <Brain size={32} className="action-icon" aria-hidden="true" />
                             <h3>Train Model</h3>
                             <p className="text-muted text-sm">
                                 Update the recognition model
@@ -108,7 +115,7 @@ export const Dashboard = () => {
 
                     <Link to="/attendance" className="action-card card card-elevated">
                         <div className="card-body">
-                            <ChartBar size={32} className="action-icon" />
+                            <ChartBar size={32} className="action-icon" aria-hidden="true" />
                             <h3>View Attendance</h3>
                             <p className="text-muted text-sm">
                                 Access attendance reports
@@ -118,7 +125,7 @@ export const Dashboard = () => {
 
                     <Link to="/session" className="action-card card card-elevated">
                         <div className="card-body">
-                            <Radio size={32} className="action-icon" />
+                            <Radio size={32} className="action-icon" aria-hidden="true" />
                             <h3>Attendance Session</h3>
                             <p className="text-muted text-sm">
                                 Monitor live recognition
