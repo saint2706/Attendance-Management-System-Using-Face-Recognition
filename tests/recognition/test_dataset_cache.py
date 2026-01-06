@@ -145,6 +145,54 @@ class DatasetEmbeddingCacheTests(TestCase):
         self.assertIsInstance(restored_embedding, np.ndarray)
         np.testing.assert_allclose(restored_embedding, dataset_index[0]["embedding"])
 
+    def test_backward_compatibility_with_legacy_list_embeddings(self):
+        """Test that legacy cache files with list-based embeddings can still be loaded."""
+        image_path = self._seed_dataset()
+
+        # Get the actual dataset state that will be computed by the cache system
+        current_dataset_state = views._dataset_embedding_cache._compute_dataset_state()
+
+        # Create a legacy cache file with embeddings stored as lists (old format)
+        legacy_embedding = [0.3, 0.4, 0.5]  # List instead of numpy array
+        dataset_index = [
+            {
+                "identity": str(image_path.relative_to(self.dataset_root)),
+                "embedding": legacy_embedding,  # Store as list (legacy format)
+            }
+        ]
+
+        # Manually create a legacy cache file with the correct dataset state
+        cache_file = views._dataset_embedding_cache._cache_file_path("Facenet", "ssd", True)
+        cache_file.parent.mkdir(parents=True, exist_ok=True)
+
+        payload = {
+            "dataset_state": current_dataset_state,
+            "dataset_index": dataset_index,
+        }
+        serialized = pickle.dumps(payload)
+        helper = FaceDataEncryption(TEST_FACE_KEY)
+        encrypted = helper.encrypt(serialized)
+        cache_file.write_bytes(encrypted)
+
+        # Clear memory cache to force loading from disk
+        views._dataset_embedding_cache._memory_cache.clear()
+
+        # Load the legacy cache - should convert lists to numpy arrays
+        with patch.object(
+            views_legacy,
+            "_build_dataset_embeddings_for_matching",
+            side_effect=AssertionError("should not rebuild - legacy cache should load"),
+        ):
+            loaded_index = views._load_dataset_embeddings_for_matching("Facenet", "ssd", True)
+
+        # Verify the cache was loaded successfully
+        self.assertEqual(len(loaded_index), 1)
+        restored_embedding = loaded_index[0]["embedding"]
+
+        # Verify the list was converted to numpy array
+        self.assertIsInstance(restored_embedding, np.ndarray)
+        np.testing.assert_allclose(restored_embedding, legacy_embedding)
+
     @override_settings(RECOGNITION_DATASET_STATE_CACHE_TIMEOUT=1)
     def test_cache_expires_after_timeout(self):
         """Test that cached dataset state expires after the configured timeout and triggers a filesystem rescan."""
