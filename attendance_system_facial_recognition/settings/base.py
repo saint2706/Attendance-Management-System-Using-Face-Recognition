@@ -412,6 +412,9 @@ def configure_environment(
     global SESSION_COOKIE_AGE
     global SESSION_EXPIRE_AT_BROWSER_CLOSE
     global CSRF_COOKIE_SECURE
+    global SECURE_CONTENT_TYPE_NOSNIFF
+    global X_FRAME_OPTIONS
+    global SECURE_REFERRER_POLICY
 
     ALLOWED_HOSTS = _resolve_allowed_hosts(
         default_allowed_hosts=default_allowed_hosts,
@@ -465,9 +468,6 @@ def configure_environment(
 
     # Security Headers
     # Explicitly set headers to ensure consistent security posture
-    global SECURE_CONTENT_TYPE_NOSNIFF
-    global X_FRAME_OPTIONS
-    global SECURE_REFERRER_POLICY
 
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = "DENY"
