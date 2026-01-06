@@ -9,14 +9,14 @@
     </h1>
     <div class="d-flex gap-3">
         <a href="{% url 'setup-wizard' %}" class="btn btn-primary btn-sm d-flex align-items-center">
-            <i class="fas fa-magic me-2"></i>Setup Wizard
+            <i class="fas fa-magic me-2" aria-hidden="true"></i>Setup Wizard
         </a>
         <a href="https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/blob/main/USER_GUIDE.md" target="_blank" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
-            <i class="fas fa-book me-2"></i>User Guide
+            <i class="fas fa-book me-2" aria-hidden="true"></i>User Guide
         </a>
         <div class="u-dashboard-badge">
             <i class="fas fa-user-circle icon-lg" aria-hidden="true"></i>
-            <span>Welcome, {{ user.username }}!</span>
+            <span id="greeting-text">Welcome, {{ user.username }}!</span>
         </div>
     </div>
 </header>
@@ -191,4 +191,29 @@
         </div>
     </div>
 </section>
+
+<script>
+(function() {
+    // Time-based greeting function
+    function getGreeting(testHour) {
+        const hour = testHour !== undefined ? testHour : new Date().getHours();
+        if (hour < 12) return 'Good morning';
+        if (hour < 18) return 'Good afternoon';
+        return 'Good evening';
+    }
+    
+    // Update the greeting text when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        const greetingElement = document.getElementById('greeting-text');
+        if (greetingElement) {
+            const username = greetingElement.textContent.match(/Welcome, (.+)!/);
+            if (username && username[1]) {
+                // Support test hour from window variable (for testing)
+                const testHour = window.testGreetingHour;
+                greetingElement.textContent = getGreeting(testHour) + ', ' + username[1] + '!';
+            }
+        }
+    });
+})();
+</script>
 {% endblock %}
