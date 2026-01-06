@@ -982,6 +982,9 @@ ATTENDANCE_GRAPHS_ROOT = Path(
 class DatasetEmbeddingCache:
     """Cache DeepFace embeddings for the encrypted training dataset."""
 
+    # Number of entries to check when detecting cache format (optimization vs. robustness tradeoff)
+    _FORMAT_DETECTION_SAMPLE_SIZE = 10
+
     def __init__(
         self,
         dataset_root: Path,
@@ -1081,6 +1084,24 @@ class DatasetEmbeddingCache:
         if not isinstance(dataset_state, tuple) or not isinstance(dataset_index, list):
             return None
 
+        # ⚡ Performance: Optimistically check entries to skip O(N) normalization
+        # If the cache contains numpy arrays (new format), we can use it directly.
+        # Sample the first few entries to determine format efficiently.
+        # If all sampled entries have None embeddings, fall through to normalization loop.
+        if dataset_index:
+            for entry in dataset_index[:self._FORMAT_DETECTION_SAMPLE_SIZE]:
+                if not isinstance(entry, dict):
+                    continue
+                embedding = entry.get("embedding")
+                # Ignore entries without an embedding; they don't tell us about the format.
+                if embedding is None:
+                    continue
+                # If we see a non-None numpy array embedding, assume new-format cache and fast-path return.
+                if isinstance(embedding, np.ndarray):
+                    return dataset_state, dataset_index
+                # Found a non-None, non-ndarray embedding: we must run the normalization logic below.
+                break
+
         normalized_index: list[dict] = []
         for entry in dataset_index:
             if not isinstance(entry, dict):
@@ -1111,19 +1132,11 @@ class DatasetEmbeddingCache:
         cache_file = self._cache_file_path(model_name, detector_backend, enforce_detection)
         try:
             cache_file.parent.mkdir(parents=True, exist_ok=True)
-            payload_index: list[dict] = []
-            for entry in dataset_index:
-                normalized = dict(entry)
-                embedding = normalized.get("embedding")
-                if isinstance(embedding, np.ndarray):
-                    normalized["embedding"] = embedding.astype(float).tolist()
-                elif isinstance(embedding, (list, tuple)):
-                    normalized["embedding"] = [float(value) for value in embedding]
-                payload_index.append(normalized)
-
+            # ⚡ Performance: Store numpy arrays directly to avoid O(N) conversion to list
+            # Pickle handles numpy arrays efficiently.
             payload = {
                 "dataset_state": dataset_state,
-                "dataset_index": payload_index,
+                "dataset_index": dataset_index,
             }
             serialized = pickle.dumps(payload)
             encrypted = self._encryption.encrypt(serialized)
