@@ -16,6 +16,7 @@ This document consolidates the security-critical configuration that must be in p
 | `DJANGO_SESSION_COOKIE_AGE` | Django | Limits session lifetime. | Must be a positive integer (defaults to 1800 seconds). |
 | `DJANGO_SESSION_EXPIRE_AT_BROWSER_CLOSE` | Django | Optional additional session restriction. | Parsed as boolean; defaults to `False`. |
 | `DJANGO_CSRF_COOKIE_SECURE` | Django | Forces the CSRF cookie to HTTPS-only. | Defaults to `True` in production (`not DEBUG`). |
+| `DJANGO_SECURE_PROXY_SSL_HEADER` | Django | Enables Django to trust the `X-Forwarded-Proto` header from a trusted proxy to determine if a request is secure (HTTPS). **CRITICAL**: Only enable when behind a trusted reverse proxy. | Defaults to `False` (disabled). See [Proxy SSL Configuration](#proxy-ssl-configuration) section below for detailed guidance. |
 | `CELERY_BROKER_URL`, `CELERY_RESULT_BACKEND` | Worker | Broker/result transport URIs. | Default to local Redis for development; override in production. |
 | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Database | PostgreSQL connection settings. | Mandatory when using production settings; missing values raise `ImproperlyConfigured`. |
 | `DB_CONN_MAX_AGE` | Database | Persistent connection lifetime. | Must be integer ≥ 0; defaults to 600 seconds in production. |
@@ -38,6 +39,77 @@ This document consolidates the security-critical configuration that must be in p
 * Set `DJANGO_SESSION_COOKIE_SECURE` and `DJANGO_CSRF_COOKIE_SECURE` to `true` in all non-local environments to ensure cookies are transmitted only over HTTPS.
 * Require HTTPS termination at the load balancer or ingress and forward requests to Django with `X-Forwarded-Proto` headers so `SecurityMiddleware` can redirect insecure requests. Consult Django's [SSL/HTTPS deployment checklist](https://docs.djangoproject.com/en/stable/topics/security/#ssl-https).
 * For managed PostgreSQL, enable `DB_SSL_REQUIRE=true` to append `sslmode=require`, aligning with Django's [database SSL guidance](https://docs.djangoproject.com/en/stable/ref/databases/#postgresql-notes).
+
+### Proxy SSL Configuration
+
+The `DJANGO_SECURE_PROXY_SSL_HEADER` environment variable controls whether Django trusts the `X-Forwarded-Proto` header from a reverse proxy to determine if a request is secure (HTTPS). This setting is **critical** for correct HTTPS detection when running behind a proxy in production environments.
+
+#### When to enable
+
+**Only** enable `DJANGO_SECURE_PROXY_SSL_HEADER=true` when **all** of the following conditions are met:
+
+1. The application is deployed behind a **trusted** reverse proxy or load balancer that correctly sets the `X-Forwarded-Proto` header
+2. The proxy is configured to **always** strip any `X-Forwarded-Proto` headers from incoming client requests before adding its own
+3. You control and trust the proxy layer completely
+
+**Examples of trusted proxy environments:**
+- Heroku Router
+- AWS Elastic Load Balancer (ELB) / Application Load Balancer (ALB)
+- Google Cloud Platform HTTP(S) Load Balancer
+- Kubernetes Ingress controllers (NGINX Ingress, Traefik, etc.) with proper configuration
+- Cloudflare with SSL/TLS settings configured
+
+#### What this setting does
+
+When `DJANGO_SECURE_PROXY_SSL_HEADER=true` is set:
+
+- Django configures `SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')`
+- Django treats a request as secure (`request.is_secure()` returns `True`) when the `X-Forwarded-Proto` header value is `https`
+- This affects security-sensitive behavior including:
+  - CSRF protection checks that depend on `request.is_secure()`
+  - Secure cookie enforcement (`SESSION_COOKIE_SECURE` / `CSRF_COOKIE_SECURE`)
+  - Generation of absolute URLs with the correct scheme in some contexts
+  - Security middleware redirect logic
+
+#### Security implications
+
+**⚠️ SECURITY WARNING**: Enabling this setting in an untrusted environment can lead to serious security vulnerabilities.
+
+**If you enable `DJANGO_SECURE_PROXY_SSL_HEADER` when your traffic is NOT always terminated by a trusted proxy:**
+- A malicious client could spoof the `X-Forwarded-Proto: https` header
+- Django would incorrectly treat a plain HTTP request as secure
+- This can weaken protections around cookies and other security checks
+- Session and CSRF cookies marked as `Secure` could be transmitted over unencrypted HTTP connections
+
+**DO NOT enable this setting:**
+- In local development environments (unless testing proxy behavior)
+- In any environment where you do not fully control and trust the proxy layer
+- When the application is directly exposed to the internet without a trusted proxy
+- When the proxy does not strip client-supplied `X-Forwarded-Proto` headers
+
+#### Relation to deployment documentation
+
+The [DEPLOYMENT.md](DEPLOYMENT.md) guide describes how to configure the `X-Forwarded-Proto` header at the proxy/load balancer level. The `DJANGO_SECURE_PROXY_SSL_HEADER` environment variable is the corresponding Django-side setting that enables trust in that header.
+
+**Configuration workflow:**
+1. Configure your proxy/load balancer to set the `X-Forwarded-Proto` header (see [DEPLOYMENT.md](DEPLOYMENT.md))
+2. Verify the proxy strips any client-supplied `X-Forwarded-Proto` headers
+3. Set `DJANGO_SECURE_PROXY_SSL_HEADER=true` in your Django environment
+4. Test that `request.is_secure()` correctly returns `True` for HTTPS requests
+
+#### Testing
+
+To verify correct configuration:
+
+```python
+# In Django shell or view
+from django.http import HttpRequest
+request = HttpRequest()
+request.META['HTTP_X_FORWARDED_PROTO'] = 'https'
+print(request.is_secure())  # Should print True if configured correctly
+```
+
+Or test via the browser by checking that secure cookies are being set correctly and HTTPS redirects work as expected.
 
 ## Operational Checklists
 
