@@ -128,7 +128,8 @@ class DatasetEmbeddingCacheTests(TestCase):
         payload = pickle.loads(decrypted_payload)
         stored_index = payload["dataset_index"]
         self.assertIsInstance(stored_index, list)
-        self.assertIsInstance(stored_index[0]["embedding"], list)
+        # ⚡ Optimization: We now store numpy arrays directly in the cache
+        self.assertIsInstance(stored_index[0]["embedding"], np.ndarray)
 
         views._dataset_embedding_cache._memory_cache.clear()
 

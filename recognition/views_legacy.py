@@ -1081,6 +1081,13 @@ class DatasetEmbeddingCache:
         if not isinstance(dataset_state, tuple) or not isinstance(dataset_index, list):
             return None
 
+        # ⚡ Performance: Optimistically check first entry to skip O(N) normalization
+        # If the cache contains numpy arrays (new format), we can use it directly.
+        if dataset_index and isinstance(dataset_index[0], dict):
+            first_embedding = dataset_index[0].get("embedding")
+            if isinstance(first_embedding, np.ndarray):
+                return dataset_state, dataset_index
+
         normalized_index: list[dict] = []
         for entry in dataset_index:
             if not isinstance(entry, dict):
@@ -1111,19 +1118,11 @@ class DatasetEmbeddingCache:
         cache_file = self._cache_file_path(model_name, detector_backend, enforce_detection)
         try:
             cache_file.parent.mkdir(parents=True, exist_ok=True)
-            payload_index: list[dict] = []
-            for entry in dataset_index:
-                normalized = dict(entry)
-                embedding = normalized.get("embedding")
-                if isinstance(embedding, np.ndarray):
-                    normalized["embedding"] = embedding.astype(float).tolist()
-                elif isinstance(embedding, (list, tuple)):
-                    normalized["embedding"] = [float(value) for value in embedding]
-                payload_index.append(normalized)
-
+            # ⚡ Performance: Store numpy arrays directly to avoid O(N) conversion to list
+            # Pickle handles numpy arrays efficiently.
             payload = {
                 "dataset_state": dataset_state,
-                "dataset_index": payload_index,
+                "dataset_index": dataset_index,
             }
             serialized = pickle.dumps(payload)
             encrypted = self._encryption.encrypt(serialized)
