@@ -164,7 +164,7 @@ class DatasetEmbeddingCacheTests(TestCase):
         # Manually create a legacy cache file with the correct dataset state
         cache_file = views._dataset_embedding_cache._cache_file_path("Facenet", "ssd", True)
         cache_file.parent.mkdir(parents=True, exist_ok=True)
-        
+
         payload = {
             "dataset_state": current_dataset_state,
             "dataset_index": dataset_index,
@@ -188,7 +188,7 @@ class DatasetEmbeddingCacheTests(TestCase):
         # Verify the cache was loaded successfully
         self.assertEqual(len(loaded_index), 1)
         restored_embedding = loaded_index[0]["embedding"]
-        
+
         # Verify the list was converted to numpy array
         self.assertIsInstance(restored_embedding, np.ndarray)
         np.testing.assert_allclose(restored_embedding, legacy_embedding)
