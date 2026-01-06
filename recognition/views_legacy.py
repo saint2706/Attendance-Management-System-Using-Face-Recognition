@@ -1081,12 +1081,21 @@ class DatasetEmbeddingCache:
         if not isinstance(dataset_state, tuple) or not isinstance(dataset_index, list):
             return None
 
-        # ⚡ Performance: Optimistically check first entry to skip O(N) normalization
+        # ⚡ Performance: Optimistically check entries to skip O(N) normalization
         # If the cache contains numpy arrays (new format), we can use it directly.
-        if dataset_index and isinstance(dataset_index[0], dict):
-            first_embedding = dataset_index[0].get("embedding")
-            if isinstance(first_embedding, np.ndarray):
-                return dataset_state, dataset_index
+        if dataset_index:
+            for entry in dataset_index:
+                if not isinstance(entry, dict):
+                    continue
+                embedding = entry.get("embedding")
+                # Ignore entries without an embedding; they don't tell us about the format.
+                if embedding is None:
+                    continue
+                # If we see a non-None numpy array embedding, assume new-format cache and fast-path return.
+                if isinstance(embedding, np.ndarray):
+                    return dataset_state, dataset_index
+                # Found a non-None, non-ndarray embedding: we must run the normalization logic below.
+                break
 
         normalized_index: list[dict] = []
         for entry in dataset_index:
