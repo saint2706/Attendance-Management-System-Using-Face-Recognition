@@ -456,6 +456,24 @@ def configure_environment(
         default=secure_defaults,
     )
 
+    # Trust X-Forwarded-Proto header from the proxy
+    # This is critical for Django to know it's secure behind a proxy
+    # Note: Use only if you trust the proxy (e.g. Heroku, AWS ELB, K8s Ingress)
+    if _get_bool_env("DJANGO_SECURE_PROXY_SSL_HEADER", default=False):
+        global SECURE_PROXY_SSL_HEADER
+        SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+    # Security Headers
+    # Explicitly set headers to ensure consistent security posture
+    global SECURE_CONTENT_TYPE_NOSNIFF
+    global X_FRAME_OPTIONS
+    global SECURE_REFERRER_POLICY
+
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
+    # Upgrade to stricter policy for better privacy/security
+    SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
     session_cookie_samesite_raw = os.environ.get("DJANGO_SESSION_COOKIE_SAMESITE")
     if session_cookie_samesite_raw is None:
         session_cookie_samesite_raw = os.environ.get("SESSION_COOKIE_SAMESITE")
