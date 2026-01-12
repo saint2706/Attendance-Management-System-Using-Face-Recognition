@@ -8,6 +8,7 @@ and the setup wizard for onboarding new administrators.
 import logging
 from typing import Any
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
@@ -17,6 +18,7 @@ from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_http_methods
 
+from django_ratelimit.core import is_ratelimited
 from django_ratelimit.decorators import ratelimit
 
 from .forms import (
@@ -30,6 +32,9 @@ from .forms import (
 from .models import SetupWizardProgress
 
 logger = logging.getLogger(__name__)
+
+
+REGISTER_RATE_LIMIT = getattr(settings, "REGISTER_RATE_LIMIT", "10/m")
 
 
 @method_decorator(ratelimit(key="ip", rate="5/m", method="POST", block=False), name="post")
@@ -52,7 +57,6 @@ class CustomLoginView(LoginView):
 
 
 @login_required
-@ratelimit(key="user", rate="10/m", method="POST", block=False)
 def register(request):
     """
     Handle the employee registration process.
@@ -70,12 +74,21 @@ def register(request):
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
 
-    if getattr(request, "limited", False):
-        messages.error(request, "Too many registration attempts. Please try again later.")
-        form = UserCreationForm(request.POST)
-        return render(request, "users/register.html", {"form": form}, status=429)
-
     if request.method == "POST":
+        rate_limited = is_ratelimited(
+            request=request,
+            group="register",
+            key="user",
+            rate=REGISTER_RATE_LIMIT,
+            method="POST",
+            increment=True,
+        )
+
+        if rate_limited:
+            messages.error(request, "Too many registration attempts. Please try again later.")
+            form = UserCreationForm(request.POST)
+            return render(request, "users/register.html", {"form": form}, status=429)
+
         # If the form has been submitted, process the data.
         form = UserCreationForm(request.POST)
         if form.is_valid():
