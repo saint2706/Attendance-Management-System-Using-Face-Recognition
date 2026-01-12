@@ -52,7 +52,7 @@ itsdangerous==2.2.0
 Jinja2==3.1.6
 jmespath==1.0.1
 joblib==1.5.2
-jsonpatch==1.32
+jsonpatch==1.33
 jsonpointer==2.0
 jsonschema==4.10.3
 keras==3.12.0
