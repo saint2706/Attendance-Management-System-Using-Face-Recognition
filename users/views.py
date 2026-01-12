@@ -17,6 +17,7 @@ from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_http_methods
 
+from django_ratelimit.core import is_ratelimited
 from django_ratelimit.decorators import ratelimit
 
 from .forms import (
@@ -52,7 +53,6 @@ class CustomLoginView(LoginView):
 
 
 @login_required
-@ratelimit(key="user", rate="10/m", method="POST", block=False)
 def register(request):
     """
     Handle the employee registration process.
@@ -70,7 +70,16 @@ def register(request):
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
 
-    if getattr(request, "limited", False):
+    rate_limited = is_ratelimited(
+        request,
+        group="register",
+        key="user",
+        rate="10/m",
+        method="POST",
+        increment=True,
+    )
+
+    if rate_limited:
         messages.error(request, "Too many registration attempts. Please try again later.")
         form = UserCreationForm(request.POST)
         return render(request, "users/register.html", {"form": form}, status=429)

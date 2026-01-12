@@ -2454,7 +2454,20 @@ def attendance_session_feed(request) -> JsonResponse:
 
     since = timezone.now() - datetime.timedelta(minutes=max(minutes, 1))
     outcome_records = RecognitionOutcome.objects.filter(created_at__gte=since)[:50]
-    attempt_records = RecognitionAttempt.objects.filter(created_at__gte=since)[:50]
+    attempt_records = (
+        RecognitionAttempt.objects.filter(created_at__gte=since)
+        .select_related("user")
+        .only(
+            "created_at",
+            "username",
+            "direction",
+            "successful",
+            "spoof_detected",
+            "error_message",
+            "source",
+            "user__username",
+        )[:50]
+    )
 
     events: list[dict[str, Any]] = []
     for outcome in outcome_records:

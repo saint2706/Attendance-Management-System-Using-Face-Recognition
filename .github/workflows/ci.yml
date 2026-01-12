@@ -77,6 +77,7 @@ jobs:
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      ENABLE_PERFORMANCE_PROFILING: "0"
 
     steps:
       - name: Check out repository
@@ -183,6 +184,7 @@ jobs:
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      ENABLE_PERFORMANCE_PROFILING: "0"
 
     steps:
       - name: Check out repository
