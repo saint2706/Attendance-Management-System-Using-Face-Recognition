@@ -70,7 +70,6 @@ def register(request):
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
 
-    rate_limited = False
     if request.method == "POST":
         rate_limited = is_ratelimited(
             request,
@@ -86,7 +85,6 @@ def register(request):
             form = UserCreationForm(request.POST)
             return render(request, "users/register.html", {"form": form}, status=429)
 
-    if request.method == "POST":
         # If the form has been submitted, process the data.
         form = UserCreationForm(request.POST)
         if form.is_valid():
