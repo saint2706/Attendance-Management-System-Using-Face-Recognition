@@ -8,6 +8,7 @@ and the setup wizard for onboarding new administrators.
 import logging
 from typing import Any
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
@@ -31,6 +32,9 @@ from .forms import (
 from .models import SetupWizardProgress
 
 logger = logging.getLogger(__name__)
+
+
+REGISTER_RATE_LIMIT = getattr(settings, "REGISTER_RATE_LIMIT", "10/m")
 
 
 @method_decorator(ratelimit(key="ip", rate="5/m", method="POST", block=False), name="post")
@@ -75,7 +79,7 @@ def register(request):
             request,
             group="register",
             key="user",
-            rate="10/m",
+            rate=REGISTER_RATE_LIMIT,
             method="POST",
             increment=True,
         )
