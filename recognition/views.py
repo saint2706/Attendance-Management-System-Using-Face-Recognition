@@ -2456,7 +2456,6 @@ def attendance_session_feed(request) -> JsonResponse:
     outcome_records = RecognitionOutcome.objects.filter(created_at__gte=since)[:50]
     attempt_records = (
         RecognitionAttempt.objects.filter(created_at__gte=since)
-        .select_related("user")
         .only(
             "created_at",
             "username",
@@ -2466,7 +2465,8 @@ def attendance_session_feed(request) -> JsonResponse:
             "error_message",
             "source",
             "user__username",
-        )[:50]
+        )
+        .select_related("user")[:50]
     )
 
     events: list[dict[str, Any]] = []
