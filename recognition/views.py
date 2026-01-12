@@ -2464,6 +2464,7 @@ def attendance_session_feed(request) -> JsonResponse:
             "spoof_detected",
             "error_message",
             "source",
+            "user__username",
         )
         .select_related("user")[:50]
     )
