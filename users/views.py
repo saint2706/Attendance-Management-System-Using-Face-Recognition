@@ -76,7 +76,7 @@ def register(request):
 
     if request.method == "POST":
         rate_limited = is_ratelimited(
-            request,
+            request=request,
             group="register",
             key="user",
             rate=REGISTER_RATE_LIMIT,
