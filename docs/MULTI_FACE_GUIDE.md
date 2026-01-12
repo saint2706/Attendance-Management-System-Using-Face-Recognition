@@ -41,7 +41,7 @@ def your_view(request):
         model_name="Facenet",
         detector_backend="ssd"
     )
-    
+
     # Process automatically (handles both single and multi mode)
     result = process_face_recognition(
         representations=representations,
@@ -49,7 +49,7 @@ def your_view(request):
         distance_metric="cosine",
         distance_threshold=0.4
     )
-    
+
     # Check mode from result
     if result.get("mode") == "multi":
         # Multi-face response
@@ -197,6 +197,6 @@ See `recognition/multi_face.py` for full API documentation:
 
 - `process_face_recognition()` - Main entry point (auto-selects mode)
 - `process_single_face_recognition()` - Single-face processing
-- `process_multi_face_recognition()` - Multi-face processing  
+- `process_multi_face_recognition()` - Multi-face processing
 - `is_multi_face_enabled()` - Check if multi-face mode active
 - `get_max_faces_limit()` - Get configured max faces

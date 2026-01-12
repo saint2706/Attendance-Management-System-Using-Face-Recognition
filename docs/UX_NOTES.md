@@ -162,13 +162,13 @@ Example:
 
 ### Examples
 
-❌ "Error 500: Internal Server Error"  
+❌ "Error 500: Internal Server Error"
 ✅ "Something went wrong on our end. Please try again in a moment."
 
-❌ "Invalid input"  
+❌ "Invalid input"
 ✅ "Please enter a valid email address (e.g., <name@example.com>)"
 
-❌ "Face not found"  
+❌ "Face not found"
 ✅ "No face detected. Please position yourself in front of the camera."
 
 ---

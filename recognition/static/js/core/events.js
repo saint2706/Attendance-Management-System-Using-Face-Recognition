@@ -1,22 +1,22 @@
 /**
  * Simple EventBus for cross-module communication.
- * 
+ *
  * Provides a decoupled way for modules to communicate without direct dependencies.
  * Modules can emit events and subscribe to events from other modules.
- * 
+ *
  * @module core/events
- * 
+ *
  * @example
  * import { globalBus } from './core/events.js';
- * 
+ *
  * // Subscribe to an event
  * globalBus.on('theme:changed', (data) => {
  *   console.log('Theme changed to:', data.theme);
  * });
- * 
+ *
  * // Emit an event
  * globalBus.emit('theme:changed', { theme: 'dark' });
- * 
+ *
  * // Unsubscribe
  * const handler = (data) => console.log(data);
  * globalBus.on('someEvent', handler);
@@ -43,11 +43,11 @@ export class EventBus {
 
     /**
      * Subscribe to an event.
-     * 
+     *
      * @param {string} event - Event name to subscribe to
      * @param {Function} callback - Function to call when event is emitted
      * @returns {EventBus} Returns this for chaining
-     * 
+     *
      * @example
      * bus.on('user:login', (user) => console.log('User logged in:', user));
      */
@@ -72,7 +72,7 @@ export class EventBus {
     /**
      * Subscribe to an event, but only fire once.
      * The listener is automatically removed after the first call.
-     * 
+     *
      * @param {string} event - Event name to subscribe to
      * @param {Function} callback - Function to call when event is emitted
      * @returns {EventBus} Returns this for chaining
@@ -88,11 +88,11 @@ export class EventBus {
 
     /**
      * Unsubscribe from an event.
-     * 
+     *
      * @param {string} event - Event name to unsubscribe from
      * @param {Function} callback - The callback function to remove
      * @returns {EventBus} Returns this for chaining
-     * 
+     *
      * @example
      * const handler = (data) => console.log(data);
      * bus.on('myEvent', handler);
@@ -124,7 +124,7 @@ export class EventBus {
 
     /**
      * Remove all listeners for a specific event, or all events if no event specified.
-     * 
+     *
      * @param {string} [event] - Optional event name. If not provided, clears all events.
      * @returns {EventBus} Returns this for chaining
      */
@@ -148,11 +148,11 @@ export class EventBus {
 
     /**
      * Emit an event, calling all subscribed callbacks.
-     * 
+     *
      * @param {string} event - Event name to emit
      * @param {*} data - Data to pass to callbacks
      * @returns {EventBus} Returns this for chaining
-     * 
+     *
      * @example
      * bus.emit('data:loaded', { items: [...] });
      */
@@ -184,7 +184,7 @@ export class EventBus {
 
     /**
      * Get the number of listeners for an event.
-     * 
+     *
      * @param {string} event - Event name
      * @returns {number} Number of listeners
      */
@@ -194,7 +194,7 @@ export class EventBus {
 
     /**
      * Get all event names that have listeners.
-     * 
+     *
      * @returns {string[]} Array of event names
      */
     eventNames() {
@@ -205,9 +205,9 @@ export class EventBus {
 /**
  * Global event bus instance for use across the application.
  * Import this to communicate between modules.
- * 
+ *
  * @type {EventBus}
- * 
+ *
  * @example
  * import { globalBus } from './core/events.js';
  * globalBus.on('myEvent', (data) => console.log(data));

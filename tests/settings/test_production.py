@@ -100,7 +100,9 @@ def test_security_headers_default_values(mock_dependencies, base_env_setup):
     assert settings.SECURE_REFERRER_POLICY == "strict-origin-when-cross-origin"
 
 
-def test_secure_proxy_ssl_header_disabled_by_default(monkeypatch, mock_dependencies, base_env_setup):
+def test_secure_proxy_ssl_header_disabled_by_default(
+    monkeypatch, mock_dependencies, base_env_setup
+):
     """Test that SECURE_PROXY_SSL_HEADER is not set when environment variable is not enabled."""
     # Explicitly ensure DJANGO_SECURE_PROXY_SSL_HEADER is not set
     monkeypatch.delenv("DJANGO_SECURE_PROXY_SSL_HEADER", raising=False)
@@ -111,7 +113,9 @@ def test_secure_proxy_ssl_header_disabled_by_default(monkeypatch, mock_dependenc
     assert not hasattr(settings, "SECURE_PROXY_SSL_HEADER")
 
 
-def test_secure_proxy_ssl_header_enabled_when_configured(monkeypatch, mock_dependencies, base_env_setup):
+def test_secure_proxy_ssl_header_enabled_when_configured(
+    monkeypatch, mock_dependencies, base_env_setup
+):
     """Test that SECURE_PROXY_SSL_HEADER is set correctly when environment variable is enabled."""
     # Enable SECURE_PROXY_SSL_HEADER
     monkeypatch.setenv("DJANGO_SECURE_PROXY_SSL_HEADER", "true")
@@ -123,7 +127,9 @@ def test_secure_proxy_ssl_header_enabled_when_configured(monkeypatch, mock_depen
     assert settings.SECURE_PROXY_SSL_HEADER == ("HTTP_X_FORWARDED_PROTO", "https")
 
 
-def test_secure_proxy_ssl_header_disabled_with_false_value(monkeypatch, mock_dependencies, base_env_setup):
+def test_secure_proxy_ssl_header_disabled_with_false_value(
+    monkeypatch, mock_dependencies, base_env_setup
+):
     """Test that SECURE_PROXY_SSL_HEADER is not set when environment variable is explicitly false."""
     # Explicitly disable SECURE_PROXY_SSL_HEADER
     monkeypatch.setenv("DJANGO_SECURE_PROXY_SSL_HEADER", "false")
@@ -132,5 +138,3 @@ def test_secure_proxy_ssl_header_disabled_with_false_value(monkeypatch, mock_dep
 
     # SECURE_PROXY_SSL_HEADER should not be defined when explicitly disabled
     assert not hasattr(settings, "SECURE_PROXY_SSL_HEADER")
-
-

@@ -7,66 +7,210 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recognition', '0001_initial'),
+        ("recognition", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ThresholdProfile',
+            name="ThresholdProfile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text="Unique profile name (e.g., 'strict_office', 'lenient_lab')", max_length=100, unique=True)),
-                ('description', models.TextField(blank=True, help_text='Description of when/where this profile should be used')),
-                ('distance_threshold', models.FloatField(default=0.4, help_text='Recognition distance threshold (lower = stricter matching)', validators=[django.core.validators.MinValueValidator(0.0), django.core.validators.MaxValueValidator(2.0)])),
-                ('target_far', models.FloatField(blank=True, help_text='Target False Accept Rate used when selecting this threshold', null=True, validators=[django.core.validators.MinValueValidator(0.0), django.core.validators.MaxValueValidator(1.0)])),
-                ('target_frr', models.FloatField(blank=True, help_text='Target False Reject Rate used when selecting this threshold', null=True, validators=[django.core.validators.MinValueValidator(0.0), django.core.validators.MaxValueValidator(1.0)])),
-                ('selection_method', models.CharField(blank=True, choices=[('eer', 'Equal Error Rate (EER)'), ('f1', 'Optimal F1 Score'), ('far', 'Target False Accept Rate'), ('frr', 'Target False Reject Rate'), ('manual', 'Manually Specified')], default='manual', help_text='Method used to select the threshold', max_length=32)),
-                ('sites', models.TextField(blank=True, help_text='Comma-separated list of site codes where this profile applies')),
-                ('is_default', models.BooleanField(default=False, help_text='Use this profile as the fallback when no site-specific profile matches')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Unique profile name (e.g., 'strict_office', 'lenient_lab')",
+                        max_length=100,
+                        unique=True,
+                    ),
+                ),
+                (
+                    "description",
+                    models.TextField(
+                        blank=True,
+                        help_text="Description of when/where this profile should be used",
+                    ),
+                ),
+                (
+                    "distance_threshold",
+                    models.FloatField(
+                        default=0.4,
+                        help_text="Recognition distance threshold (lower = stricter matching)",
+                        validators=[
+                            django.core.validators.MinValueValidator(0.0),
+                            django.core.validators.MaxValueValidator(2.0),
+                        ],
+                    ),
+                ),
+                (
+                    "target_far",
+                    models.FloatField(
+                        blank=True,
+                        help_text="Target False Accept Rate used when selecting this threshold",
+                        null=True,
+                        validators=[
+                            django.core.validators.MinValueValidator(0.0),
+                            django.core.validators.MaxValueValidator(1.0),
+                        ],
+                    ),
+                ),
+                (
+                    "target_frr",
+                    models.FloatField(
+                        blank=True,
+                        help_text="Target False Reject Rate used when selecting this threshold",
+                        null=True,
+                        validators=[
+                            django.core.validators.MinValueValidator(0.0),
+                            django.core.validators.MaxValueValidator(1.0),
+                        ],
+                    ),
+                ),
+                (
+                    "selection_method",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("eer", "Equal Error Rate (EER)"),
+                            ("f1", "Optimal F1 Score"),
+                            ("far", "Target False Accept Rate"),
+                            ("frr", "Target False Reject Rate"),
+                            ("manual", "Manually Specified"),
+                        ],
+                        default="manual",
+                        help_text="Method used to select the threshold",
+                        max_length=32,
+                    ),
+                ),
+                (
+                    "sites",
+                    models.TextField(
+                        blank=True,
+                        help_text="Comma-separated list of site codes where this profile applies",
+                    ),
+                ),
+                (
+                    "is_default",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Use this profile as the fallback when no site-specific profile matches",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Threshold Profile',
-                'verbose_name_plural': 'Threshold Profiles',
-                'ordering': ['-is_default', 'name'],
+                "verbose_name": "Threshold Profile",
+                "verbose_name_plural": "Threshold Profiles",
+                "ordering": ["-is_default", "name"],
             },
         ),
         migrations.AddField(
-            model_name='recognitionoutcome',
-            name='liveness_confidence',
-            field=models.FloatField(blank=True, help_text='Liveness confidence score (0.0 to 1.0)', null=True),
+            model_name="recognitionoutcome",
+            name="liveness_confidence",
+            field=models.FloatField(
+                blank=True, help_text="Liveness confidence score (0.0 to 1.0)", null=True
+            ),
         ),
         migrations.AddField(
-            model_name='recognitionoutcome',
-            name='liveness_passed',
-            field=models.BooleanField(blank=True, help_text='Whether the liveness check passed', null=True),
+            model_name="recognitionoutcome",
+            name="liveness_passed",
+            field=models.BooleanField(
+                blank=True, help_text="Whether the liveness check passed", null=True
+            ),
         ),
         migrations.AddField(
-            model_name='recognitionoutcome',
-            name='profile_name',
-            field=models.CharField(blank=True, help_text='Name of the threshold profile used', max_length=100),
+            model_name="recognitionoutcome",
+            name="profile_name",
+            field=models.CharField(
+                blank=True, help_text="Name of the threshold profile used", max_length=100
+            ),
         ),
         migrations.CreateModel(
-            name='LivenessResult',
+            name="LivenessResult",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('username', models.CharField(blank=True, max_length=150)),
-                ('site', models.CharField(blank=True, max_length=100)),
-                ('source', models.CharField(blank=True, max_length=32)),
-                ('challenge_type', models.CharField(choices=[('motion', 'Motion Detection'), ('blink', 'Blink Detection'), ('head_turn', 'Head Turn'), ('anti_spoof', 'Anti-Spoofing Model')], default='motion', max_length=32)),
-                ('challenge_status', models.CharField(choices=[('passed', 'Passed'), ('failed', 'Failed'), ('skipped', 'Skipped'), ('timeout', 'Timeout')], default='passed', max_length=16)),
-                ('liveness_confidence', models.FloatField(blank=True, help_text='Confidence score from liveness check (0.0 to 1.0)', null=True)),
-                ('motion_score', models.FloatField(blank=True, help_text='Motion-based liveness score', null=True)),
-                ('threshold_used', models.FloatField(blank=True, help_text='Threshold applied for the liveness decision', null=True)),
-                ('frames_analyzed', models.PositiveIntegerField(default=0, help_text='Number of frames analyzed for liveness')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("username", models.CharField(blank=True, max_length=150)),
+                ("site", models.CharField(blank=True, max_length=100)),
+                ("source", models.CharField(blank=True, max_length=32)),
+                (
+                    "challenge_type",
+                    models.CharField(
+                        choices=[
+                            ("motion", "Motion Detection"),
+                            ("blink", "Blink Detection"),
+                            ("head_turn", "Head Turn"),
+                            ("anti_spoof", "Anti-Spoofing Model"),
+                        ],
+                        default="motion",
+                        max_length=32,
+                    ),
+                ),
+                (
+                    "challenge_status",
+                    models.CharField(
+                        choices=[
+                            ("passed", "Passed"),
+                            ("failed", "Failed"),
+                            ("skipped", "Skipped"),
+                            ("timeout", "Timeout"),
+                        ],
+                        default="passed",
+                        max_length=16,
+                    ),
+                ),
+                (
+                    "liveness_confidence",
+                    models.FloatField(
+                        blank=True,
+                        help_text="Confidence score from liveness check (0.0 to 1.0)",
+                        null=True,
+                    ),
+                ),
+                (
+                    "motion_score",
+                    models.FloatField(
+                        blank=True, help_text="Motion-based liveness score", null=True
+                    ),
+                ),
+                (
+                    "threshold_used",
+                    models.FloatField(
+                        blank=True,
+                        help_text="Threshold applied for the liveness decision",
+                        null=True,
+                    ),
+                ),
+                (
+                    "frames_analyzed",
+                    models.PositiveIntegerField(
+                        default=0, help_text="Number of frames analyzed for liveness"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Liveness Result',
-                'verbose_name_plural': 'Liveness Results',
-                'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['created_at', 'challenge_status'], name='recognition_created_3d05a6_idx'), models.Index(fields=['username', 'created_at'], name='recognition_usernam_4383e5_idx')],
+                "verbose_name": "Liveness Result",
+                "verbose_name_plural": "Liveness Results",
+                "ordering": ["-created_at"],
+                "indexes": [
+                    models.Index(
+                        fields=["created_at", "challenge_status"],
+                        name="recognition_created_3d05a6_idx",
+                    ),
+                    models.Index(
+                        fields=["username", "created_at"], name="recognition_usernam_4383e5_idx"
+                    ),
+                ],
             },
         ),
     ]

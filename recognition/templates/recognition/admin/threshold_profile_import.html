@@ -60,10 +60,10 @@
 
     <section class="u-panel" aria-labelledby="import-heading">
         <h2 id="import-heading" class="u-panel-title">Import Settings</h2>
-        
+
         <form method="post" class="u-form">
             {% csrf_token %}
-            
+
             <div class="u-form-row">
                 <div class="u-form-group">
                     <label for="id_import_method" class="u-form-label">Import Method</label>
@@ -71,7 +71,7 @@
                     <small class="u-form-help">Select the threshold selection method used</small>
                 </div>
             </div>
-            
+
             <div class="u-form-row">
                 <div class="u-form-group">
                     <label for="id_profile_name" class="u-form-label">Profile Name</label>
@@ -82,7 +82,7 @@
                     {% endif %}
                 </div>
             </div>
-            
+
             <div class="u-form-row">
                 <div class="u-form-group">
                     <label for="id_sites" class="u-form-label">Sites (Optional)</label>
@@ -90,14 +90,14 @@
                     <small class="u-form-help">Comma-separated list of site codes</small>
                 </div>
             </div>
-            
+
             <div class="u-form-row">
                 <div class="u-form-group u-form-group--checkbox">
                     {{ form.set_as_default }}
                     <label for="id_set_as_default" class="u-form-label">Set as default profile</label>
                 </div>
             </div>
-            
+
             <div class="u-form-actions">
                 <button type="submit" class="u-btn u-btn--primary">Import Profile</button>
                 <a href="{% url 'admin_threshold_profiles' %}" class="u-btn u-btn--secondary">Cancel</a>

@@ -1,6 +1,6 @@
 /**
  * Form enhancement module for validation and floating labels.
- * 
+ *
  * @module ui/forms
  */
 
@@ -21,7 +21,7 @@ export class FormEnhancer {
 
     /**
      * Initialize floating labels for form inputs.
-     * 
+     *
      * @private
      */
     _initFloatingLabels() {
@@ -46,7 +46,7 @@ export class FormEnhancer {
 
     /**
      * Initialize HTML5 form validation.
-     * 
+     *
      * @private
      */
     _initValidation() {

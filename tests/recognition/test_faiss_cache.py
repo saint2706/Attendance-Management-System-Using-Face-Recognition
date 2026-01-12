@@ -32,7 +32,6 @@ if not django.apps.apps.ready:
 
 from recognition import views, views_legacy  # noqa: E402
 from recognition.faiss_index import FAISSIndex  # noqa: E402
-from src.common import FaceDataEncryption  # noqa: E402
 
 TEST_FACE_KEY = Fernet.generate_key()
 
@@ -81,16 +80,19 @@ class FAISSIndexCacheTests(TestCase):
         fake_index = [{"identity": "alice/1.jpg", "embedding": np.array([0.1, 0.2, 0.3, 0.4])}]
         fake_faiss = self._create_fake_faiss_index([[0.1, 0.2, 0.3, 0.4]], ["alice/1.jpg"])
 
-        with patch.object(
-            views_legacy,
-            "_build_dataset_embeddings_for_matching",
-            autospec=True,
-            return_value=fake_index,
-        ), patch(
-            "recognition.views_legacy.build_faiss_index_from_embeddings",
-            autospec=True,
-            return_value=fake_faiss,
-        ) as mock_build_faiss:
+        with (
+            patch.object(
+                views_legacy,
+                "_build_dataset_embeddings_for_matching",
+                autospec=True,
+                return_value=fake_index,
+            ),
+            patch(
+                "recognition.views_legacy.build_faiss_index_from_embeddings",
+                autospec=True,
+                return_value=fake_faiss,
+            ) as mock_build_faiss,
+        ):
             # First call should build the FAISS index
             first_index = views._dataset_embedding_cache.get_faiss_index(
                 "Facenet", "ssd", True, lambda ds=None: fake_index
@@ -121,16 +123,19 @@ class FAISSIndexCacheTests(TestCase):
             [[0.1, 0.2, 0.3, 0.4], [0.5, 0.6, 0.7, 0.8]], ["alice/1.jpg", "bob/1.jpg"]
         )
 
-        with patch.object(
-            views_legacy,
-            "_build_dataset_embeddings_for_matching",
-            autospec=True,
-            side_effect=[initial_index, updated_index],
-        ), patch(
-            "recognition.views_legacy.build_faiss_index_from_embeddings",
-            autospec=True,
-            side_effect=[fake_faiss_1, fake_faiss_2],
-        ) as mock_build_faiss:
+        with (
+            patch.object(
+                views_legacy,
+                "_build_dataset_embeddings_for_matching",
+                autospec=True,
+                side_effect=[initial_index, updated_index],
+            ),
+            patch(
+                "recognition.views_legacy.build_faiss_index_from_embeddings",
+                autospec=True,
+                side_effect=[fake_faiss_1, fake_faiss_2],
+            ) as mock_build_faiss,
+        ):
             # First call with initial dataset
             first_index = views._dataset_embedding_cache.get_faiss_index(
                 "Facenet", "ssd", True, lambda ds=None: initial_index
@@ -196,16 +201,19 @@ class FAISSIndexCacheTests(TestCase):
         fake_index = [{"identity": "alice/1.jpg", "embedding": np.array([0.1, 0.2, 0.3, 0.4])}]
         fake_faiss = self._create_fake_faiss_index([[0.1, 0.2, 0.3, 0.4]], ["alice/1.jpg"])
 
-        with patch.object(
-            views_legacy,
-            "_build_dataset_embeddings_for_matching",
-            autospec=True,
-            return_value=fake_index,
-        ), patch(
-            "recognition.views_legacy.build_faiss_index_from_embeddings",
-            autospec=True,
-            return_value=fake_faiss,
-        ) as mock_build_faiss:
+        with (
+            patch.object(
+                views_legacy,
+                "_build_dataset_embeddings_for_matching",
+                autospec=True,
+                return_value=fake_index,
+            ),
+            patch(
+                "recognition.views_legacy.build_faiss_index_from_embeddings",
+                autospec=True,
+                return_value=fake_faiss,
+            ) as mock_build_faiss,
+        ):
             # Build FAISS index
             first_index = views._dataset_embedding_cache.get_faiss_index(
                 "Facenet", "ssd", True, lambda ds=None: fake_index
@@ -230,15 +238,18 @@ class FAISSIndexCacheTests(TestCase):
 
         fake_index = [{"identity": "alice/1.jpg", "embedding": np.array([0.1, 0.2, 0.3, 0.4])}]
 
-        with patch.object(
-            views_legacy,
-            "_build_dataset_embeddings_for_matching",
-            autospec=True,
-            return_value=fake_index,
-        ), patch(
-            "recognition.views_legacy.build_faiss_index_from_embeddings",
-            autospec=True,
-            side_effect=Exception("FAISS build error"),
+        with (
+            patch.object(
+                views_legacy,
+                "_build_dataset_embeddings_for_matching",
+                autospec=True,
+                return_value=fake_index,
+            ),
+            patch(
+                "recognition.views_legacy.build_faiss_index_from_embeddings",
+                autospec=True,
+                side_effect=Exception("FAISS build error"),
+            ),
         ):
             faiss_index = views._dataset_embedding_cache.get_faiss_index(
                 "Facenet", "ssd", True, lambda ds=None: fake_index
@@ -254,15 +265,18 @@ class FAISSIndexCacheTests(TestCase):
         fake_index = [{"identity": "alice/1.jpg", "embedding": np.array([0.1, 0.2, 0.3, 0.4])}]
         fake_faiss = self._create_fake_faiss_index([[0.1, 0.2, 0.3, 0.4]], ["alice/1.jpg"])
 
-        with patch.object(
-            views_legacy,
-            "_build_dataset_embeddings_for_matching",
-            autospec=True,
-            return_value=fake_index,
-        ), patch(
-            "recognition.views_legacy.build_faiss_index_from_embeddings",
-            autospec=True,
-            return_value=fake_faiss,
+        with (
+            patch.object(
+                views_legacy,
+                "_build_dataset_embeddings_for_matching",
+                autospec=True,
+                return_value=fake_index,
+            ),
+            patch(
+                "recognition.views_legacy.build_faiss_index_from_embeddings",
+                autospec=True,
+                return_value=fake_faiss,
+            ),
         ):
             # Get FAISS index
             views._dataset_embedding_cache.get_faiss_index(
@@ -273,10 +287,10 @@ class FAISSIndexCacheTests(TestCase):
         key = ("Facenet", "ssd", True)
         memory_entry = views._dataset_embedding_cache._memory_cache.get(key)
         faiss_entry = views._dataset_embedding_cache._faiss_cache.get(key)
-        
+
         self.assertIsNotNone(memory_entry)
         self.assertIsNotNone(faiss_entry)
-        
+
         # The dataset state in both caches should match, confirming they're in sync
         memory_state = memory_entry[0]
         faiss_state = faiss_entry[0]

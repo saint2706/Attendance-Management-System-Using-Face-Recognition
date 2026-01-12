@@ -1,6 +1,6 @@
 /**
  * Table enhancements module for search, sort, and CSV export.
- * 
+ *
  * @module ui/tables
  */
 
@@ -20,7 +20,7 @@ export class TableEnhancer {
 
     /**
      * Enhance a single table with all features.
-     * 
+     *
      * @param {HTMLTableElement} table - The table element to enhance
      */
     enhanceTable(table) {
@@ -38,7 +38,7 @@ export class TableEnhancer {
 
     /**
      * Add search filter input above table.
-     * 
+     *
      * @param {HTMLTableElement} table - The table to add search to
      * @param {HTMLElement} container - Container element for controls
      */
@@ -79,7 +79,7 @@ export class TableEnhancer {
 
     /**
      * Add CSV export button to table controls.
-     * 
+     *
      * @param {HTMLTableElement} table - The table to export
      * @param {HTMLElement} container - Container element for controls
      */
@@ -102,7 +102,7 @@ export class TableEnhancer {
 
     /**
      * Export table data to CSV file.
-     * 
+     *
      * @param {HTMLTableElement} table - The table to export
      */
     exportToCSV(table) {
@@ -142,7 +142,7 @@ export class TableEnhancer {
 
     /**
      * Escape CSV special characters.
-     * 
+     *
      * @private
      * @param {string} str - String to escape
      * @returns {string} Escaped string
@@ -157,7 +157,7 @@ export class TableEnhancer {
 
     /**
      * Make table columns sortable by clicking headers.
-     * 
+     *
      * @param {HTMLTableElement} table - The table to make sortable
      */
     makeSortable(table) {
@@ -188,7 +188,7 @@ export class TableEnhancer {
 
     /**
      * Sort table by column.
-     * 
+     *
      * @private
      * @param {HTMLTableElement} table - The table to sort
      * @param {number} columnIndex - Column index to sort by

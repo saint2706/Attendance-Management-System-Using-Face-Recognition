@@ -26,7 +26,7 @@ Before running the tests, you need to:
    ```bash
    python manage.py runserver
    ```
-   
+
    The tests expect the application to be running at `http://localhost:8000/`
 
 ## Running Tests
@@ -143,7 +143,7 @@ from playwright.sync_api import Page, expect
 def test_something(page: Page):
     """Test description."""
     page.goto('http://localhost:8000/')
-    
+
     # Your test code here
     element = page.locator('#element-id')
     expect(element).to_be_visible()
@@ -156,7 +156,7 @@ def test_something(page: Page):
 def test_mobile_feature(mobile_page: Page):
     """Test mobile-specific feature."""
     mobile_page.goto('http://localhost:8000/')
-    
+
     # Your mobile test code here
 ```
 
@@ -191,13 +191,13 @@ def test_mobile_feature(mobile_page: Page):
 ```python
 def test_debug_example(page: Page):
     page.goto('http://localhost:8000/')
-    
+
     # Pause execution for manual inspection
     page.pause()
-    
+
     # Take a screenshot
     page.screenshot(path="debug.png")
-    
+
     # Print page content
     print(page.content())
 ```

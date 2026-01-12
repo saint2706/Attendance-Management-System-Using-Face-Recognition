@@ -37,4 +37,3 @@ class Migration(migrations.Migration):
             reverse_code=reverse_populate_out_from_direction,
         ),
     ]
-

@@ -48,13 +48,12 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.figure import Figure
 import seaborn as sns
 from celery.result import AsyncResult
 from deepface import DeepFace
 from django_ratelimit.core import is_ratelimited
 from django_ratelimit.decorators import ratelimit
-from matplotlib import rcParams
+from matplotlib.figure import Figure
 from pandas.plotting import register_matplotlib_converters
 from PIL import Image
 from sentry_sdk import Hub
@@ -1089,7 +1088,7 @@ class DatasetEmbeddingCache:
         # Sample the first few entries to determine format efficiently.
         # If all sampled entries have None embeddings, fall through to normalization loop.
         if dataset_index:
-            for entry in dataset_index[:self._FORMAT_DETECTION_SAMPLE_SIZE]:
+            for entry in dataset_index[: self._FORMAT_DETECTION_SAMPLE_SIZE]:
                 if not isinstance(entry, dict):
                     continue
                 embedding = entry.get("embedding")
@@ -1200,7 +1199,7 @@ class DatasetEmbeddingCache:
             return None
 
         key = (model_name, detector_backend, enforce_detection)
-        
+
         # Retrieve the dataset state from the same cache entry that provided the dataset_index
         # to ensure they're always in sync and avoid race conditions
         with self._lock:
@@ -1209,9 +1208,9 @@ class DatasetEmbeddingCache:
                 # This shouldn't happen since get_dataset_index just populated it, but be defensive
                 logger.warning("Dataset index cache entry missing after get_dataset_index call")
                 return None
-            
+
             dataset_state = memory_entry[0]
-            
+
             # Check if we have a cached FAISS index for this exact dataset state
             cached_entry = self._faiss_cache.get(key)
             if cached_entry and cached_entry[0] == dataset_state:
@@ -1231,9 +1230,7 @@ class DatasetEmbeddingCache:
             return None
 
         try:
-            faiss_index = build_faiss_index_from_embeddings(
-                np.array(embeddings_list), labels_list
-            )
+            faiss_index = build_faiss_index_from_embeddings(np.array(embeddings_list), labels_list)
         except Exception as exc:
             logger.warning("Failed to build FAISS index: %s", exc)
             return None

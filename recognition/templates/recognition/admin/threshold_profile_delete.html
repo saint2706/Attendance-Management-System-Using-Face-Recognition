@@ -18,12 +18,12 @@
 
     <section class="u-panel u-panel--warning" aria-labelledby="delete-heading">
         <h2 id="delete-heading" class="u-panel-title">Confirm Deletion</h2>
-        
+
         <div class="u-alert u-alert--warning">
             <p>Are you sure you want to delete the threshold profile <strong>"{{ profile.name }}"</strong>?</p>
             <p>This action cannot be undone.</p>
         </div>
-        
+
         <div class="u-info-grid">
             <div class="u-info-item">
                 <span class="u-info-label">Profile Name</span>
@@ -42,7 +42,7 @@
                 <span class="u-info-value">{% if profile.is_default %}Yes{% else %}No{% endif %}</span>
             </div>
         </div>
-        
+
         <form method="post" class="u-form">
             {% csrf_token %}
             <div class="u-form-actions">

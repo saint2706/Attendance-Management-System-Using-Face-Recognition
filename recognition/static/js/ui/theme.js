@@ -1,6 +1,6 @@
 /**
  * Theme management module for dark/light mode toggle.
- * 
+ *
  * @module ui/theme
  */
 
@@ -39,7 +39,7 @@ export class ThemeManager {
 
     /**
      * Check if dark mode is currently enabled.
-     * 
+     *
      * @returns {boolean} True if dark mode is active
      */
     isDarkMode() {
@@ -48,7 +48,7 @@ export class ThemeManager {
 
     /**
      * Enable dark mode.
-     * 
+     *
      * @param {boolean} [emitEvent=true] - Whether to emit theme:changed event
      */
     enableDarkMode(emitEvent = true) {
@@ -63,7 +63,7 @@ export class ThemeManager {
 
     /**
      * Enable light mode.
-     * 
+     *
      * @param {boolean} [emitEvent=true] - Whether to emit theme:changed event
      */
     enableLightMode(emitEvent = true) {
@@ -89,7 +89,7 @@ export class ThemeManager {
 
     /**
      * Update the toggle button icon to reflect current theme.
-     * 
+     *
      * @private
      */
     updateToggleIcon() {

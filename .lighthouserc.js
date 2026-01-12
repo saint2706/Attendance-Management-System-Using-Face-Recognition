@@ -32,10 +32,10 @@ module.exports = {
         'categories:best-practices': ['error', {minScore: 0.95}],
         'categories:performance': ['error', {minScore: 0.80}],
         'categories:seo': ['error', {minScore: 0.90}],
-        
+
         // Additional important checks
         'categories:pwa': 'off', // Not a PWA requirement
-        
+
         // Specific best practices
         'uses-http2': 'off', // Development server doesn't use HTTP/2
         'redirects-http': 'off', // Not applicable for development

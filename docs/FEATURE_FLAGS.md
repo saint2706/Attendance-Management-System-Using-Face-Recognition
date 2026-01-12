@@ -195,44 +195,44 @@ FEATURE_PROFILE=advanced
 
 ### Liveness Detection
 
-**Impact**: Prevents photo/screen spoofing attacks  
-**Complexity**: Low  
+**Impact**: Prevents photo/screen spoofing attacks
+**Complexity**: Low
 **Recommendation**: Enable for production even in basic profile
 
 ### DeepFace Anti-Spoofing
 
-**Impact**: Additional layer of spoof protection  
-**Complexity**: Medium (slower recognition)  
+**Impact**: Additional layer of spoof protection
+**Complexity**: Medium (slower recognition)
 **Recommendation**: Only needed for high-security environments; motion-based liveness is sufficient for most
 
 ### Scheduled Evaluations
 
-**Impact**: Automated model quality monitoring  
-**Complexity**: High (requires Celery, Redis)  
+**Impact**: Automated model quality monitoring
+**Complexity**: High (requires Celery, Redis)
 **Recommendation**: Run manually via `python manage.py eval` unless you have dedicated DevOps
 
 ### Fairness Audits
 
-**Impact**: Monitors for demographic bias  
-**Complexity**: High (requires Celery, analysis pipeline)  
+**Impact**: Monitors for demographic bias
+**Complexity**: High (requires Celery, analysis pipeline)
 **Recommendation**: Run manually via `python manage.py fairness_audit` periodically
 
 ### Performance Profiling
 
-**Impact**: Database query and request profiling  
-**Complexity**: Medium (adds middleware overhead)  
+**Impact**: Database query and request profiling
+**Complexity**: Medium (adds middleware overhead)
 **Recommendation**: Disable in production, enable temporarily for debugging
 
 ### Encryption
 
-**Impact**: Encrypts face embeddings at rest  
-**Complexity**: Low (requires key management)  
+**Impact**: Encrypts face embeddings at rest
+**Complexity**: Low (requires key management)
 **Recommendation**: Always enable for production deployments
 
 ### Sentry
 
-**Impact**: Error tracking and monitoring  
-**Complexity**: Low (requires Sentry account)  
+**Impact**: Error tracking and monitoring
+**Complexity**: Low (requires Sentry account)
 **Recommendation**: Highly recommended for production
 
 ## Migration Guide
@@ -278,7 +278,7 @@ Note: The system will warn about disabled encryption in production environments.
 export FEATURE_PROFILE=basic
 python manage.py show_features
 
-# Test standard profile  
+# Test standard profile
 export FEATURE_PROFILE=standard
 python manage.py show_features
 

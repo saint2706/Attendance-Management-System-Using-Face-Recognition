@@ -1,6 +1,6 @@
 /**
  * Mobile navigation menu module.
- * 
+ *
  * @module ui/navigation
  */
 
@@ -29,7 +29,7 @@ export class MobileNav {
 
     /**
      * Set up the toggle button click handler.
-     * 
+     *
      * @private
      */
     _setupToggle() {
@@ -47,7 +47,7 @@ export class MobileNav {
 
     /**
      * Close menu when clicking outside.
-     * 
+     *
      * @private
      */
     _setupOutsideClick() {
@@ -60,7 +60,7 @@ export class MobileNav {
 
     /**
      * Close menu when pressing Escape key.
-     * 
+     *
      * @private
      */
     _setupKeyboardNav() {

@@ -61,7 +61,7 @@
         <!-- Confirmation Form -->
         <form method="post" id="step2Form">
             {% csrf_token %}
-            
+
             <div class="card card-accent card-accent--success mb-4">
                 <div class="card-body">
                     <h3 class="h5 mb-3">
@@ -155,12 +155,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { 
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
                     width: { ideal: 640 },
                     height: { ideal: 480 },
                     facingMode: 'user'
-                } 
+                }
             });
 
             // Monitor track ended events (camera disconnected or permission revoked)
@@ -175,10 +175,10 @@ document.addEventListener('DOMContentLoaded', function() {
             placeholder.classList.add('d-none');
             startBtn.classList.add('d-none');
             stopBtn.classList.remove('d-none');
-            
+
             // Update liveness status
             showCameraSuccess('Camera connected! Try moving your head to test liveness.');
-            
+
             // Auto-check camera checkbox
             cameraCheckbox.checked = true;
         } catch (err) {

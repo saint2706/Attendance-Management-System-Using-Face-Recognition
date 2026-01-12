@@ -1,6 +1,6 @@
 /**
  * Attendance Session Monitor - Live attendance log updates.
- * 
+ *
  * @module attendance-session
  */
 
@@ -83,7 +83,7 @@ export class AttendanceSessionMonitor {
 
     /**
      * Fetch attendance feed from server.
-     * 
+     *
      * @private
      */
     async _fetchFeed() {
@@ -117,7 +117,7 @@ export class AttendanceSessionMonitor {
 
     /**
      * Render attendance events as table rows.
-     * 
+     *
      * @private
      * @param {Array} events - Array of attendance events
      */
@@ -142,7 +142,7 @@ export class AttendanceSessionMonitor {
 
     /**
      * Render a single attendance event.
-     * 
+     *
      * @private
      * @param {Object} event - Attendance event object
      * @returns {string} HTML string for table row
@@ -202,7 +202,7 @@ export class AttendanceSessionMonitor {
 
     /**
      * Create a status badge HTML.
-     * 
+     *
      * @private
      * @param {string} label - Badge label
      * @param {string} style - Badge CSS class

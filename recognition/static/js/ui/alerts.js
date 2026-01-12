@@ -1,6 +1,6 @@
 /**
  * Alert management module for auto-dismissing alerts.
- * 
+ *
  * @module ui/alerts
  */
 
@@ -24,7 +24,7 @@ export class AlertManager {
 
     /**
      * Set up close button functionality.
-     * 
+     *
      * @private
      * @param {HTMLElement} alert - Alert element
      */
@@ -40,7 +40,7 @@ export class AlertManager {
 
     /**
      * Set up auto-dismiss timer.
-     * 
+     *
      * @private
      * @param {HTMLElement} alert - Alert element
      */
@@ -59,7 +59,7 @@ export class AlertManager {
 
     /**
      * Dismiss an alert with fade animation.
-     * 
+     *
      * @param {HTMLElement} alert - Alert element to dismiss
      */
     dismiss(alert) {
@@ -75,7 +75,7 @@ export class AlertManager {
 
     /**
      * Show an alert programmatically.
-     * 
+     *
      * @param {string} message - Alert message
      * @param {string} [type='info'] - Alert type (success, info, warning, danger)
      * @param {boolean} [autoDismiss=true] - Whether to auto-dismiss

@@ -11,26 +11,26 @@ data:
   DJANGO_SETTINGS_MODULE: "attendance_system_facial_recognition.settings.production"
   DJANGO_DEBUG: "0"
   DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
-  
+
   # Database (host is the service name)
   DB_HOST: "postgres"
   DB_PORT: "5432"
   DB_NAME: "attendance"
-  
+
   # Redis/Celery
   CELERY_BROKER_URL: "redis://redis:6379/0"
   CELERY_RESULT_BACKEND: "redis://redis:6379/1"
-  
+
   # Feature flags
   FEATURE_FAISS_ENABLED: "true"
   FEATURE_LIVENESS_DETECTION_ENABLED: "true"
   FEATURE_MULTI_FACE_ENABLED: "true"
-  
+
   # Recognition settings
   RECOGNITION_DISTANCE_THRESHOLD: "0.45"
   RECOGNITION_DEEPFACE_MODEL: "Facenet"
   RECOGNITION_DEEPFACE_DETECTOR: "ssd"
-  
+
   # TensorFlow settings (for GPU deployments)
   TF_CPP_MIN_LOG_LEVEL: "2"
   TF_FORCE_GPU_ALLOW_GROWTH: "true"

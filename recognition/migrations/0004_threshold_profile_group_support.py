@@ -6,27 +6,58 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recognition', '0003_add_model_evaluation_result'),
+        ("recognition", "0003_add_model_evaluation_result"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='thresholdprofile',
-            name='group_type',
-            field=models.CharField(blank=True, choices=[('site', 'Site'), ('lighting', 'Lighting Condition'), ('camera', 'Camera Source'), ('role', 'User Role'), ('', 'None (Site-based only)')], default='', help_text='Type of group this profile applies to (for fairness adjustments)', max_length=16),
+            model_name="thresholdprofile",
+            name="group_type",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("site", "Site"),
+                    ("lighting", "Lighting Condition"),
+                    ("camera", "Camera Source"),
+                    ("role", "User Role"),
+                    ("", "None (Site-based only)"),
+                ],
+                default="",
+                help_text="Type of group this profile applies to (for fairness adjustments)",
+                max_length=16,
+            ),
         ),
         migrations.AddField(
-            model_name='thresholdprofile',
-            name='group_value',
-            field=models.CharField(blank=True, help_text="Specific group value (e.g., 'low_light', 'kiosk_camera')", max_length=100),
+            model_name="thresholdprofile",
+            name="group_value",
+            field=models.CharField(
+                blank=True,
+                help_text="Specific group value (e.g., 'low_light', 'kiosk_camera')",
+                max_length=100,
+            ),
         ),
         migrations.AlterField(
-            model_name='thresholdprofile',
-            name='selection_method',
-            field=models.CharField(blank=True, choices=[('eer', 'Equal Error Rate (EER)'), ('f1', 'Optimal F1 Score'), ('far', 'Target False Accept Rate'), ('frr', 'Target False Reject Rate'), ('manual', 'Manually Specified'), ('fairness_audit', 'From Fairness Audit')], default='manual', help_text='Method used to select the threshold', max_length=32),
+            model_name="thresholdprofile",
+            name="selection_method",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("eer", "Equal Error Rate (EER)"),
+                    ("f1", "Optimal F1 Score"),
+                    ("far", "Target False Accept Rate"),
+                    ("frr", "Target False Reject Rate"),
+                    ("manual", "Manually Specified"),
+                    ("fairness_audit", "From Fairness Audit"),
+                ],
+                default="manual",
+                help_text="Method used to select the threshold",
+                max_length=32,
+            ),
         ),
         migrations.AddIndex(
-            model_name='thresholdprofile',
-            index=models.Index(fields=['group_type', 'group_value'], name='recognition_group_t_79776f_idx'),
+            model_name="thresholdprofile",
+            index=models.Index(
+                fields=["group_type", "group_value"], name="recognition_group_t_79776f_idx"
+            ),
         ),
     ]

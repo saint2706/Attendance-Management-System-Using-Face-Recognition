@@ -1,9 +1,9 @@
 /**
  * Centralized configuration for all frontend modules.
- * 
+ *
  * This module provides a single source of truth for configuration values
  * that were previously hardcoded across multiple files.
- * 
+ *
  * @module core/config
  */
 
@@ -80,7 +80,7 @@ export const API_CONFIG = {
 /**
  * Get a configuration value by path
  * Example: getConfig('THEME_CONFIG.STORAGE_KEY')
- * 
+ *
  * @param {string} path - Dot-separated path to config value
  * @returns {*} The configuration value or undefined if not found
  */
@@ -100,7 +100,7 @@ export function getConfig(path) {
 
 /**
  * Merge user configuration with defaults
- * 
+ *
  * @param {Object} userConfig - User-provided configuration
  * @param {Object} defaultConfig - Default configuration
  * @returns {Object} Merged configuration

@@ -1,9 +1,9 @@
 /**
  * Smart Attendance System - Main Application Bootstrap
- * 
+ *
  * This is the entry point for all frontend JavaScript modules.
  * It initializes core utilities and UI enhancements in the correct order.
- * 
+ *
  * @module main
  */
 
@@ -57,7 +57,7 @@ class AttendanceApp {
 
     /**
      * Initialize core modules.
-     * 
+     *
      * @private
      */
     _initCore() {
@@ -70,7 +70,7 @@ class AttendanceApp {
 
     /**
      * Initialize UI modules.
-     * 
+     *
      * @private
      */
     _initUI() {
@@ -104,7 +104,7 @@ class AttendanceApp {
 
     /**
      * Initialize card animations with Intersection Observer.
-     * 
+     *
      * @private
      */
     _initCardAnimations() {
@@ -127,7 +127,7 @@ class AttendanceApp {
 
     /**
      * Set up global event listeners.
-     * 
+     *
      * @private
      */
     _setupEventListeners() {
@@ -144,7 +144,7 @@ class AttendanceApp {
 
     /**
      * Handle initialization errors gracefully.
-     * 
+     *
      * @private
      * @param {Error} error - The error that occurred
      */
@@ -163,7 +163,7 @@ class AttendanceApp {
 
     /**
      * Get a specific module instance.
-     * 
+     *
      * @param {string} name - Module name
      * @returns {Object|null} Module instance or null
      */

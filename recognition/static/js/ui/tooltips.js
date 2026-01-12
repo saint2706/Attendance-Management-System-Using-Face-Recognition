@@ -1,6 +1,6 @@
 /**
  * Tooltip management module.
- * 
+ *
  * @module ui/tooltips
  */
 
@@ -24,7 +24,7 @@ export class TooltipManager {
 
     /**
      * Show tooltip for an element.
-     * 
+     *
      * @param {HTMLElement} element - Element to show tooltip for
      */
     show(element) {
@@ -58,7 +58,7 @@ export class TooltipManager {
 
     /**
      * Hide tooltip for an element.
-     * 
+     *
      * @param {HTMLElement} element - Element to hide tooltip for
      */
     hide(element) {

@@ -1,18 +1,18 @@
 /**
  * Storage abstraction layer for localStorage and IndexedDB.
- * 
+ *
  * Provides consistent interfaces for browser storage with error handling,
  * making storage operations easier to test and mock.
- * 
+ *
  * @module core/storage
  */
 
 /**
  * LocalStorage adapter with consistent error handling.
- * 
+ *
  * @example
  * import { localStore } from './core/storage.js';
- * 
+ *
  * localStore.set('user', { name: 'John' });
  * const user = localStore.get('user');
  * localStore.remove('user');
@@ -20,7 +20,7 @@
 export class LocalStorageAdapter {
     /**
      * Get a value from localStorage.
-     * 
+     *
      * @param {string} key - Storage key
      * @param {*} [defaultValue=null] - Default value if key doesn't exist
      * @returns {*} Parsed value or default
@@ -47,7 +47,7 @@ export class LocalStorageAdapter {
 
     /**
      * Set a value in localStorage.
-     * 
+     *
      * @param {string} key - Storage key
      * @param {*} value - Value to store (will be JSON stringified)
      * @returns {boolean} True if successful
@@ -65,7 +65,7 @@ export class LocalStorageAdapter {
 
     /**
      * Remove a value from localStorage.
-     * 
+     *
      * @param {string} key - Storage key
      * @returns {boolean} True if successful
      */
@@ -81,7 +81,7 @@ export class LocalStorageAdapter {
 
     /**
      * Clear all localStorage items.
-     * 
+     *
      * @returns {boolean} True if successful
      */
     clear() {
@@ -96,7 +96,7 @@ export class LocalStorageAdapter {
 
     /**
      * Check if a key exists in localStorage.
-     * 
+     *
      * @param {string} key - Storage key
      * @returns {boolean} True if key exists
      */
@@ -107,10 +107,10 @@ export class LocalStorageAdapter {
 
 /**
  * IndexedDB adapter with Promise-based API.
- * 
+ *
  * @example
  * import { IndexedDBAdapter } from './core/storage.js';
- * 
+ *
  * const db = new IndexedDBAdapter('myDB', 'myStore');
  * await db.set('user', { name: 'John' });
  * const user = await db.get('user');
@@ -130,7 +130,7 @@ export class IndexedDBAdapter {
 
     /**
      * Open database connection.
-     * 
+     *
      * @private
      * @returns {Promise<IDBDatabase>} Database instance
      */
@@ -166,7 +166,7 @@ export class IndexedDBAdapter {
 
     /**
      * Get a value from IndexedDB.
-     * 
+     *
      * @param {string|number} key - Storage key
      * @returns {Promise<*>} The stored value or undefined
      */
@@ -190,7 +190,7 @@ export class IndexedDBAdapter {
 
     /**
      * Get all values from the store.
-     * 
+     *
      * @returns {Promise<Array>} Array of all stored values
      */
     async getAll() {
@@ -213,7 +213,7 @@ export class IndexedDBAdapter {
 
     /**
      * Set a value in IndexedDB.
-     * 
+     *
      * @param {*} value - Value to store (must have 'id' property or use auto-increment)
      * @returns {Promise<boolean>} True if successful
      */
@@ -237,7 +237,7 @@ export class IndexedDBAdapter {
 
     /**
      * Update a value in IndexedDB.
-     * 
+     *
      * @param {*} value - Value to update (must have existing 'id')
      * @returns {Promise<boolean>} True if successful
      */
@@ -261,7 +261,7 @@ export class IndexedDBAdapter {
 
     /**
      * Remove a value from IndexedDB by key.
-     * 
+     *
      * @param {string|number} key - Storage key
      * @returns {Promise<boolean>} True if successful
      */
@@ -285,7 +285,7 @@ export class IndexedDBAdapter {
 
     /**
      * Clear all values from the store.
-     * 
+     *
      * @returns {Promise<boolean>} True if successful
      */
     async clear() {
@@ -319,9 +319,9 @@ export class IndexedDBAdapter {
 
 /**
  * Global localStorage instance for convenience.
- * 
+ *
  * @type {LocalStorageAdapter}
- * 
+ *
  * @example
  * import { localStore } from './core/storage.js';
  * localStore.set('theme', 'dark');

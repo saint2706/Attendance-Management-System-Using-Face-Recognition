@@ -8,8 +8,19 @@ from django.urls import reverse
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def clear_rate_limit_cache():
+    """Clear rate limiting cache between tests to avoid interference."""
+    # This fixture clears any rate limiting state before each test
+    from django.core.cache import cache
+
+    cache.clear()
+    yield
+    cache.clear()
+
+
 @pytest.mark.django_db
-@override_settings(RECOGNITION_API_KEYS=("test-key",))
+@override_settings(RECOGNITION_API_KEYS=("test-key",), RECOGNITION_FACE_API_RATE_LIMIT="1000/m")
 def test_liveness_frames_limit_enforced(client):
     """
     Verify that the DoS vulnerability is mitigated by rejecting requests
@@ -51,7 +62,7 @@ def test_liveness_frames_limit_enforced(client):
 
 
 @pytest.mark.django_db
-@override_settings(RECOGNITION_API_KEYS=("test-key",))
+@override_settings(RECOGNITION_API_KEYS=("test-key",), RECOGNITION_FACE_API_RATE_LIMIT="1000/m")
 def test_liveness_frames_limit_rejection(client):
     """
     Verify that requests exceeding the liveness frames limit are rejected
@@ -81,7 +92,7 @@ def test_liveness_frames_limit_rejection(client):
 
 
 @pytest.mark.django_db
-@override_settings(RECOGNITION_API_KEYS=("test-key",))
+@override_settings(RECOGNITION_API_KEYS=("test-key",), RECOGNITION_FACE_API_RATE_LIMIT="1000/m")
 def test_liveness_frames_within_limit(client):
     """
     Verify that requests with liveness frames at or below the limit

@@ -20,7 +20,7 @@ This document contains a curated list of beginner-friendly tasks for new contrib
 - `docs/screenshots/`
 - `scripts/capture_screenshots.py`
 
-**Skill level:** Beginner  
+**Skill level:** Beginner
 **Estimated effort:** 1-2 hours
 
 ---
@@ -35,7 +35,7 @@ This document contains a curated list of beginner-friendly tasks for new contrib
 
 - `docs/troubleshooting.md`
 
-**Skill level:** Beginner  
+**Skill level:** Beginner
 **Estimated effort:** 1-2 hours
 
 ---
@@ -53,7 +53,7 @@ This document contains a curated list of beginner-friendly tasks for new contrib
 - `recognition/models.py`
 - `users/models.py`
 
-**Skill level:** Beginner (Python)  
+**Skill level:** Beginner (Python)
 **Estimated effort:** 2-3 hours
 
 ---
@@ -68,7 +68,7 @@ This document contains a curated list of beginner-friendly tasks for new contrib
 
 - `recognition/management/commands/*.py`
 
-**Skill level:** Beginner  
+**Skill level:** Beginner
 **Estimated effort:** 2-3 hours
 
 ---
@@ -86,7 +86,7 @@ This document contains a curated list of beginner-friendly tasks for new contrib
 - `frontend/src/components/`
 - `frontend/src/pages/`
 
-**Skill level:** Beginner (React/TypeScript)  
+**Skill level:** Beginner (React/TypeScript)
 **Estimated effort:** 2-4 hours
 
 ---
@@ -102,7 +102,7 @@ This document contains a curated list of beginner-friendly tasks for new contrib
 - `frontend/src/contexts/` or theme-related files
 - `frontend/src/App.tsx`
 
-**Skill level:** Beginner  
+**Skill level:** Beginner
 **Estimated effort:** 1-2 hours
 
 ---
@@ -120,7 +120,7 @@ This document contains a curated list of beginner-friendly tasks for new contrib
 - `tests/recognition/test_liveness.py`
 - `tests/recognition/test_enhanced_liveness.py`
 
-**Skill level:** Intermediate  
+**Skill level:** Intermediate
 **Estimated effort:** 3-4 hours
 
 ---
@@ -138,7 +138,7 @@ This document contains a curated list of beginner-friendly tasks for new contrib
 - `docs/API_REFERENCE.md`
 - `recognition/health.py`
 
-**Skill level:** Beginner  
+**Skill level:** Beginner
 **Estimated effort:** 1-2 hours
 
 ---

@@ -6,44 +6,44 @@ omit =
     # Virtual environments
     */.venv/*
     */venv/*
-    
+
     # Test files themselves (inside tests/ directory)
     tests/*
-    
+
     # Legacy test files in app directories
     */test_*.py
     */tests.py
-    
+
     # Django migrations
     */migrations/*
-    
+
     # Django admin customizations (typically low value for unit tests)
     */admin.py
-    
+
     # Cache directories
     */__pycache__/*
-    
+
     # Build artifacts
     */build/*
     */dist/*
-    
+
     # Static files
     */static/*
     staticfiles/*
-    
+
     # Django settings (covered by integration tests)
     attendance_system_facial_recognition/settings/*
-    
+
     # Management commands (tested via integration)
     */management/*
-    
+
     # External config files that may not be valid Python
     config*.py
-    
+
     # Utility scripts that are run standalone
     verify_exceptions.py
     predict_cli.py
-    
+
     # App configuration files
     */apps.py
 
@@ -52,24 +52,24 @@ omit =
 exclude_lines =
     # Standard pragma
     pragma: no cover
-    
+
     # Debug-only code
     def __repr__
-    
+
     # Defensive programming
     raise AssertionError
     raise NotImplementedError
-    
+
     # Abstract methods
     @abstractmethod
-    
+
     # Type checking blocks
     if TYPE_CHECKING:
     if typing.TYPE_CHECKING:
-    
+
     # Imports that may not be available
     except ImportError
-    
+
     # Pass statements in empty blocks
     pass
 

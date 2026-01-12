@@ -110,13 +110,13 @@
                         </td>
                         <td>
                             <div class="u-action-group">
-                                <a href="{% url 'admin_threshold_profile_edit' profile.id %}" 
+                                <a href="{% url 'admin_threshold_profile_edit' profile.id %}"
                                    class="u-btn u-btn--small u-btn--secondary" title="Edit">Edit</a>
                                 {% if not profile.is_default %}
-                                <a href="{% url 'admin_threshold_profile_set_default' profile.id %}" 
+                                <a href="{% url 'admin_threshold_profile_set_default' profile.id %}"
                                    class="u-btn u-btn--small u-btn--link" title="Set Default">Set Default</a>
                                 {% endif %}
-                                <a href="{% url 'admin_threshold_profile_delete' profile.id %}" 
+                                <a href="{% url 'admin_threshold_profile_delete' profile.id %}"
                                    class="u-btn u-btn--small u-btn--danger" title="Delete">Delete</a>
                             </div>
                         </td>
@@ -146,10 +146,10 @@
                 <li><strong>EER-based (balanced)</strong>: Threshold ~0.4. Balances false accepts and false rejects. Good for general use.</li>
                 <li><strong>Low FRR (lenient)</strong>: Threshold ~0.5-0.6. Reduces false rejects but may increase false accepts. Good for convenience-focused areas.</li>
             </ul>
-            
+
             <h3>Site Assignment</h3>
             <p>Assign profiles to specific sites using comma-separated site codes. The system will automatically select the appropriate threshold based on the request's site header.</p>
-            
+
             <h3>CLI Usage</h3>
             <pre><code>python manage.py threshold_profile list
 python manage.py threshold_profile create --name "strict" --threshold 0.3 --default

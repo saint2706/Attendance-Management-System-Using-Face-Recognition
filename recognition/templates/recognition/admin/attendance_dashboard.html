@@ -377,7 +377,7 @@
 (function() {
     const chartData = JSON.parse(document.getElementById('attendance-chart-data').textContent);
     const ctx = document.getElementById('attendanceChart');
-    
+
     if (ctx && chartData.labels && chartData.labels.length > 0) {
         new Chart(ctx, {
             type: 'bar',
