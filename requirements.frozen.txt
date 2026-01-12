@@ -68,7 +68,7 @@ MarkupSafe==2.1.5
 matplotlib==3.10.7
 mdurl==0.1.2
 mercurial==7.1.2
-ml_dtypes==0.5.3
+ml_dtypes==0.5.4
 mtcnn==1.0.0
 namex==0.1.0
 netaddr==0.8.0
