@@ -6,9 +6,35 @@ on:
       - main
     tags:
       - 'v*'
+    paths:
+      - Dockerfile
+      - Dockerfile.gpu
+      - .dockerignore
+      - docker-compose*.yml
+      - requirements*.txt
+      - pyproject.toml
+      - manage.py
+      - attendance_system_facial_recognition/**
+      - recognition/**
+      - users/**
+      - src/**
+      - scripts/**
   pull_request:
     branches:
       - main
+    paths:
+      - Dockerfile
+      - Dockerfile.gpu
+      - .dockerignore
+      - docker-compose*.yml
+      - requirements*.txt
+      - pyproject.toml
+      - manage.py
+      - attendance_system_facial_recognition/**
+      - recognition/**
+      - users/**
+      - src/**
+      - scripts/**
   workflow_dispatch:
 
 env:
@@ -84,7 +110,7 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64
           provenance: false
-          load: true
+          load: ${{ github.event_name == 'pull_request' }}
 
       - name: Generate artifact attestation
         if: github.event_name != 'pull_request'
