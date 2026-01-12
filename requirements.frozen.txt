@@ -124,7 +124,7 @@ systemd-python==235
 tensorboard==2.20.0
 tensorboard-data-server==0.7.2
 tensorflow==2.20.0
-termcolor==3.2.0
+termcolor==3.3.0
 tf_keras==2.20.1
 threadpoolctl==3.6.0
 tqdm==4.67.1
