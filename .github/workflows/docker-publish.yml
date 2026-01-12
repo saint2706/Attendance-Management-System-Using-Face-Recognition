@@ -110,7 +110,7 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64
           provenance: false
-          load: true
+          load: ${{ github.event_name == 'pull_request' }}
 
       - name: Generate artifact attestation
         if: github.event_name != 'pull_request'
