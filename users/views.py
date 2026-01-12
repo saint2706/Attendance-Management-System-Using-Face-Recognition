@@ -70,19 +70,21 @@ def register(request):
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
 
-    rate_limited = is_ratelimited(
-        request,
-        group="register",
-        key="user",
-        rate="10/m",
-        method="POST",
-        increment=True,
-    )
+    rate_limited = False
+    if request.method == "POST":
+        rate_limited = is_ratelimited(
+            request,
+            group="register",
+            key="user",
+            rate="10/m",
+            method="POST",
+            increment=True,
+        )
 
-    if rate_limited:
-        messages.error(request, "Too many registration attempts. Please try again later.")
-        form = UserCreationForm(request.POST)
-        return render(request, "users/register.html", {"form": form}, status=429)
+        if rate_limited:
+            messages.error(request, "Too many registration attempts. Please try again later.")
+            form = UserCreationForm(request.POST)
+            return render(request, "users/register.html", {"form": form}, status=429)
 
     if request.method == "POST":
         # If the form has been submitted, process the data.
