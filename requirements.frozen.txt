@@ -115,7 +115,7 @@ scikit-learn==1.7.2
 scipy==1.14.1
 seaborn==0.13.2
 sentry-sdk==2.43.0
-setuptools==80.10.2
+setuptools==82.0.0
 six==1.17.0
 soupsieve==2.8.3
 sqlparse==0.5.5
