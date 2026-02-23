@@ -73,7 +73,7 @@ mypy_extensions==1.1.0
 namex==0.1.0
 nodeenv==1.10.0
 numpy==1.26.4
-opencv-python==4.9.0.80
+opencv-python==4.13.0.92
 opt_einsum==3.4.0
 optree==0.18.0
 packaging==26.0
