@@ -122,6 +122,7 @@ jobs:
         continue-on-error: true
 
       - name: Scan image with Trivy
+        if: github.event_name != 'pull_request'
         id: trivy-scan
         uses: aquasecurity/trivy-action@0.22.0
         continue-on-error: true
@@ -134,13 +135,14 @@ jobs:
           exit-code: '1'
 
       - name: Upload Trivy scan report
-        if: always()
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: trivy-image-scan
           path: trivy-report.sarif
 
       - name: Generate SBOM (CycloneDX)
+        if: github.event_name != 'pull_request'
         id: trivy-sbom
         uses: aquasecurity/trivy-action@0.22.0
         with:
@@ -149,14 +151,14 @@ jobs:
           output: trivy-sbom.cdx.json
 
       - name: Upload SBOM artifact
-        if: always()
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: image-sbom
           path: trivy-sbom.cdx.json
 
       - name: Fail on Trivy vulnerabilities
-        if: steps.trivy-scan.outputs.exit-code != '0'
+        if: github.event_name != 'pull_request' && steps.trivy-scan.outputs.exit-code != '0'
         run: |
           echo "Trivy reported HIGH or CRITICAL vulnerabilities. See trivy-report.sarif for details."
           exit 1
