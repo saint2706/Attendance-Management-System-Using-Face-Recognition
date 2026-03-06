@@ -37,7 +37,7 @@ export const Login = () => {
         <div className="login-page animate-fade-in">
             <div className="login-card card card-elevated">
                 <div className="login-header">
-                    <LogIn size={32} className="login-icon" />
+                    <LogIn size={32} className="login-icon" aria-hidden="true" />
                     <h1 className="login-title">Welcome Back</h1>
                     <p className="login-subtitle text-muted">
                         Sign in to access your dashboard
@@ -46,7 +46,7 @@ export const Login = () => {
 
                 {error && (
                     <div className="login-error" role="alert" id="login-error">
-                        <AlertCircle size={18} />
+                        <AlertCircle size={18} aria-hidden="true" />
                         <span>{error}</span>
                     </div>
                 )}
@@ -94,9 +94,9 @@ export const Login = () => {
                                 disabled={isLoading}
                             >
                                 {showPassword ? (
-                                    <EyeOff size={20} />
+                                    <EyeOff size={20} aria-hidden="true" />
                                 ) : (
-                                    <Eye size={20} />
+                                    <Eye size={20} aria-hidden="true" />
                                 )}
                             </button>
                         </div>
@@ -109,12 +109,12 @@ export const Login = () => {
                     >
                         {isLoading ? (
                             <>
-                                <Loader2 size={18} className="animate-spin" />
+                                <Loader2 size={18} className="animate-spin" aria-hidden="true" />
                                 Signing in...
                             </>
                         ) : (
                             <>
-                                <LogIn size={18} />
+                                <LogIn size={18} aria-hidden="true" />
                                 Sign In
                             </>
                         )}

@@ -28,16 +28,16 @@ export const Home = () => {
                     </p>
                     <div className="hero-actions">
                         <Link to="/mark-attendance" className="btn btn-primary btn-lg">
-                            <Clock size={20} />
+                            <Clock size={20} aria-hidden="true" />
                             Mark Time-In
                         </Link>
                         <Link to="/mark-attendance?direction=out" className="btn btn-secondary btn-lg">
-                            <ArrowRight size={20} />
+                            <ArrowRight size={20} aria-hidden="true" />
                             Mark Time-Out
                         </Link>
                         {!isAuthenticated && (
                             <Link to="/login" className="btn btn-secondary btn-lg">
-                                <LogIn size={20} />
+                                <LogIn size={20} aria-hidden="true" />
                                 Dashboard Login
                             </Link>
                         )}
@@ -51,7 +51,7 @@ export const Home = () => {
                 <div className="features-grid">
                     <div className="feature-card card card-elevated">
                         <div className="card-body text-center">
-                            <Zap size={32} className="feature-icon" />
+                            <Zap size={32} className="feature-icon" aria-hidden="true" />
                             <h3>Fast & Accurate</h3>
                             <p className="text-muted">
                                 Advanced AI-powered face recognition ensures quick and precise attendance marking.
@@ -60,7 +60,7 @@ export const Home = () => {
                     </div>
                     <div className="feature-card card card-elevated">
                         <div className="card-body text-center">
-                            <Shield size={32} className="feature-icon" />
+                            <Shield size={32} className="feature-icon" aria-hidden="true" />
                             <h3>Secure & Private</h3>
                             <p className="text-muted">
                                 Your biometric data is encrypted and stored securely with industry-standard protection.
@@ -69,7 +69,7 @@ export const Home = () => {
                     </div>
                     <div className="feature-card card card-elevated">
                         <div className="card-body text-center">
-                            <ChartBar size={32} className="feature-icon" />
+                            <ChartBar size={32} className="feature-icon" aria-hidden="true" />
                             <h3>Detailed Reports</h3>
                             <p className="text-muted">
                                 Generate comprehensive attendance reports with visual analytics and export capabilities.
@@ -82,7 +82,7 @@ export const Home = () => {
             {/* Privacy Section */}
             <section className="privacy-notice card">
                 <div className="card-body text-center">
-                    <UserCheck size={32} className="feature-icon" />
+                    <UserCheck size={32} className="feature-icon" aria-hidden="true" />
                     <h3>Your Privacy Matters</h3>
                     <p className="text-muted">
                         By using this system, you consent to the collection and processing of your facial data

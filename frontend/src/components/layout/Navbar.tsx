@@ -29,7 +29,7 @@ export const Navbar = () => {
         <nav className="navbar">
             <div className="navbar-container">
                 <Link to="/" className="navbar-brand">
-                    <UserCheck size={24} />
+                    <UserCheck size={24} aria-hidden="true" />
                     <span>Smart Attendance</span>
                 </Link>
 
@@ -39,13 +39,13 @@ export const Navbar = () => {
                             <>
                                 <li>
                                     <Link to="/dashboard" className="nav-link">
-                                        <LayoutDashboard size={18} />
+                                        <LayoutDashboard size={18} aria-hidden="true" />
                                         <span>Dashboard</span>
                                     </Link>
                                 </li>
                                 <li>
                                     <button onClick={handleLogout} className="nav-link nav-button">
-                                        <LogOut size={18} />
+                                        <LogOut size={18} aria-hidden="true" />
                                         <span>Logout</span>
                                     </button>
                                 </li>
@@ -58,7 +58,7 @@ export const Navbar = () => {
                         ) : (
                             <li>
                                 <Link to="/login" className="nav-link">
-                                        <LogIn size={18} />
+                                        <LogIn size={18} aria-hidden="true" />
                                     <span>Login</span>
                                 </Link>
                             </li>
@@ -71,7 +71,7 @@ export const Navbar = () => {
                             aria-label={resolvedTheme === 'dark' ? "Switch to light mode" : "Switch to dark mode"}
                             title={resolvedTheme === 'dark' ? "Switch to light mode" : "Switch to dark mode"}
                     >
-                        {resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                        {resolvedTheme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
                     </button>
 
                     <button
@@ -80,7 +80,7 @@ export const Navbar = () => {
                             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
                             aria-expanded={mobileMenuOpen}
                     >
-                        {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                        {mobileMenuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
                     </button>
                 </div>
             </div>
