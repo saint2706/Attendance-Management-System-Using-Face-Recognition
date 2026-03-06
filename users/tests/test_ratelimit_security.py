@@ -11,9 +11,12 @@ from users.models import SetupWizardProgress
 @pytest.fixture(autouse=True)
 def clear_rate_limit_cache():
     """Clear rate limit cache before each test."""
-    cache.clear()
+    from django.core.cache import caches
+    from django.conf import settings
+    cache_name = getattr(settings, 'RATELIMIT_USE_CACHE', 'default')
+    caches[cache_name].clear()
     yield
-    cache.clear()
+    caches[cache_name].clear()
 
 
 @pytest.fixture
