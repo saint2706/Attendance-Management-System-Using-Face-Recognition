@@ -83,7 +83,7 @@ export const Home = () => {
             <section className="privacy-notice card">
                 <div className="card-body text-center">
                     <UserCheck size={32} className="feature-icon" />
-                    <h3>Your Privacy Matters</h3>
+                    <h2>Your Privacy Matters</h2>
                     <p className="text-muted">
                         By using this system, you consent to the collection and processing of your facial data
                         for attendance purposes only. Your images are encrypted and stored securely.

@@ -12,7 +12,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.http import FileResponse, Http404, HttpRequest
+from django.http import FileResponse, Http404, HttpRequest, HttpResponse
 from django.urls import include, path, re_path
 from django.views.generic import TemplateView
 
@@ -51,9 +51,32 @@ def progressive_web_app_service_worker(request: HttpRequest) -> FileResponse:
     return response
 
 
+def robots_txt(request: HttpRequest) -> HttpResponse:
+    content = (
+        "User-agent: *\n"
+        "Disallow: /admin/\n"
+        "Disallow: /api/\n"
+        "Allow: /\n"
+        "Sitemap: /sitemap.xml\n"
+    )
+    return HttpResponse(content, content_type="text/plain")
+
+def llms_txt(request: HttpRequest) -> HttpResponse:
+    content = (
+        "# Smart Attendance System Architecture\n"
+        "- /: Home page, explains the system features and privacy policy.\n"
+        "- /login: Dashboard login for administrators.\n"
+        "- /dashboard: Admin dashboard to view attendance, reports, and system health.\n"
+        "- /mark-attendance: Interface for employees to mark time-in and time-out using face recognition.\n"
+    )
+    return HttpResponse(content, content_type="text/plain")
+
+
 urlpatterns = [
     path("manifest.json", progressive_web_app_manifest, name="pwa-manifest"),
     path("sw.js", progressive_web_app_service_worker, name="service-worker"),
+    path("robots.txt", robots_txt, name="robots-txt"),
+    path("llms.txt", llms_txt, name="llms-txt"),
     # API V1
     path("api/v1/", include("recognition.api.urls")),
     # Custom Admin Views
