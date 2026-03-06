@@ -250,7 +250,7 @@ def _detect_blink_pattern(frames: Sequence[ArrayLike]) -> tuple[int, float]:
             continue
         # Focus on upper portion of face where eyes are
         height = frame.shape[0]
-        eye_region = frame[int(height * 0.2):int(height * 0.5), :]
+        eye_region = frame[int(height * 0.2) : int(height * 0.5), :]
         if eye_region.size > 0:
             intensities.append(float(np.mean(eye_region)))
 

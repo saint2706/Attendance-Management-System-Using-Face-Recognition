@@ -120,7 +120,7 @@ class TestFrameConsistency:
         frames = []
         for i in range(10):
             frame = np.zeros((64, 64, 3), dtype=np.uint8)
-            frame[i * 5:i * 5 + 20, 20:40] = 255  # Moving rectangle
+            frame[i * 5 : i * 5 + 20, 20:40] = 255  # Moving rectangle
             frames.append(frame)
 
         is_static, unique_ratio = detect_static_replay(frames)
@@ -236,7 +236,7 @@ class TestEnhancedLivenessVerification:
         frames = []
         for i in range(6):
             frame = np.zeros((64, 64, 3), dtype=np.uint8)
-            frame[i * 5:i * 5 + 20, 20:40] = 255
+            frame[i * 5 : i * 5 + 20, 20:40] = 255
             frames.append(frame)
 
         result = run_enhanced_liveness_verification(frames)
