@@ -77,6 +77,6 @@ them immediately.
 ## Related Documentation
 
 - [Beginner Setup](../README.md#beginner-setup-fast-demo-no-prior-experience-required) – Get a demo running in minutes
-- [User Guide](../USER_GUIDE.md) – Learn how to use the system
-- [Developer Guide](../DEVELOPER_GUIDE.md) – Technical details for contributors
-- [Data Card](../DATA_CARD.md) – Data model documentation
+- [User Guide](../docs/USER_GUIDE.md) – Learn how to use the system
+- [Developer Guide](../docs/DEVELOPER_GUIDE.md) – Technical details for contributors
+- [Data Card](../docs/DATA_CARD.md) – Data model documentation

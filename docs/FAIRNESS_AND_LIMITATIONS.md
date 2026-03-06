@@ -1,6 +1,6 @@
 # Fairness, Robustness, and Known Limitations
 
-This document captures the current status of the face-recognition fairness and robustness audit. The goal is to provide a reproducible measurement of how the matcher behaves for different operational groups (role, site, source) and environmental conditions (coarse lighting buckets) without storing or inferring sensitive attributes. The findings here complement the [DATA_CARD.md](../DATA_CARD.md), which documents how the dataset is collected and governed.
+This document captures the current status of the face-recognition fairness and robustness audit. The goal is to provide a reproducible measurement of how the matcher behaves for different operational groups (role, site, source) and environmental conditions (coarse lighting buckets) without storing or inferring sensitive attributes. The findings here complement the [DATA_CARD.md](DATA_CARD.md), which documents how the dataset is collected and governed.
 
 ## Methodology
 
@@ -63,7 +63,7 @@ python manage.py threshold_profile apply-recommendations \
   --recommendations-csv reports/fairness/threshold_recommendations.csv
 ```
 
-For complete threshold profile management options (list, update, delete), see [DEVELOPER_GUIDE.md](../DEVELOPER_GUIDE.md#threshold-profile-management).
+For complete threshold profile management options (list, update, delete), see [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md#threshold-profile-management).
 
 ## Domain Adaptation for Multiple Cameras
 
@@ -96,4 +96,4 @@ See [TRAINING_PROTOCOL.md](TRAINING_PROTOCOL.md) for guidance on collecting dive
 3. **Lighting heuristic** – The grayscale mean is a coarse proxy. It surfaces obvious dark vs. bright failures but it cannot distinguish shadows, glare, or occlusions such as masks and glasses. Extending the dataset with labelled conditions would enable a richer robustness audit.
 4. **Temporal drift** – The audit runs on static evaluation snapshots. If cameras move or new sensors are introduced, rerun `manage.py fairness_audit` after generating a new test split so the report reflects the latest conditions.
 
-For any deployment that extends the dataset or introduces new sensors, update this document and [DATA_CARD.md](../DATA_CARD.md) with the new context so downstream users understand the coverage and blind spots.
+For any deployment that extends the dataset or introduces new sensors, update this document and [DATA_CARD.md](DATA_CARD.md) with the new context so downstream users understand the coverage and blind spots.
