@@ -271,9 +271,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         # Convert dataset embeddings to proper format
         normalized_index = []
         for entry in dataset_index:
-            candidate = (
-                entry.get("embedding") if isinstance(entry, dict) else None
-            )
+            candidate = entry.get("embedding") if isinstance(entry, dict) else None
             if candidate is not None:
                 if not isinstance(candidate, np.ndarray):
                     try:
@@ -296,9 +294,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         # Find closest match
         from django.conf import settings
 
-        distance_metric = getattr(
-            settings, "DEEPFACE_DISTANCE_METRIC", "cosine"
-        )
+        distance_metric = getattr(settings, "DEEPFACE_DISTANCE_METRIC", "cosine")
         match_result = find_closest_dataset_match(
             embedding_vector, normalized_index, distance_metric
         )
@@ -307,9 +303,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(
                 {
                     "status": "failure",
-                    "message": (
-                        "Face recognized but no match found in database"
-                    ),
+                    "message": ("Face recognized but no match found in database"),
                     "recognition": {"detected": True, "matched": False},
                 },
                 status=status.HTTP_200_OK,
@@ -325,24 +319,18 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(
                 {
                     "status": "error",
-                    "message": (
-                        "Face not recognized with sufficient confidence"
-                    ),
+                    "message": ("Face not recognized with sufficient confidence"),
                     "recognition": {
                         "detected": True,
                         "matched": False,
-                        "confidence": (
-                            max(0, 1 - distance) if distance else 0
-                        ),
+                        "confidence": (max(0, 1 - distance) if distance else 0),
                     },
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Calculate confidence (inverse of distance for cosine)
-        confidence = (
-            max(0, min(1, 1 - distance)) if distance is not None else 0.0
-        )
+        confidence = max(0, min(1, 1 - distance)) if distance is not None else 0.0
 
         # Get the matched user
         try:
@@ -351,9 +339,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(
                 {
                     "status": "error",
-                    "message": (
-                        f"User '{matched_username}' not found in database"
-                    ),
+                    "message": (f"User '{matched_username}' not found in database"),
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )

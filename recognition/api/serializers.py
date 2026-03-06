@@ -60,9 +60,7 @@ class AttendanceRecordSerializer(serializers.ModelSerializer):
     """Serializer for attendance records (RecognitionAttempt)."""
 
     username = serializers.SerializerMethodField()
-    direction_display = serializers.CharField(
-        source="get_direction_display", read_only=True
-    )
+    direction_display = serializers.CharField(source="get_direction_display", read_only=True)
 
     class Meta:
         model = RecognitionAttempt
@@ -86,9 +84,7 @@ class RecognitionRequestSerializer(serializers.Serializer):
     """Serializer for face recognition requests."""
 
     image = serializers.CharField(help_text="Base64 encoded image data")
-    direction = serializers.ChoiceField(
-        choices=[("in", "In"), ("out", "Out")], required=False
-    )
+    direction = serializers.ChoiceField(choices=[("in", "In"), ("out", "Out")], required=False)
 
 
 class StatsSerializer(serializers.Serializer):
