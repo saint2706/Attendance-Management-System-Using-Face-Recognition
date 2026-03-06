@@ -34,7 +34,8 @@ class EmployeeSerializer(UserSerializer):
     """Extended serializer for employees.
 
     Currently provides the same fields as UserSerializer.
-    Kept as a separate class for future extensibility (e.g., adding profile fields).
+    Kept as a separate class for future extensibility
+    (e.g., adding profile fields).
     """
 
     class Meta(UserSerializer.Meta):
@@ -59,7 +60,9 @@ class AttendanceRecordSerializer(serializers.ModelSerializer):
     """Serializer for attendance records (RecognitionAttempt)."""
 
     username = serializers.SerializerMethodField()
-    direction_display = serializers.CharField(source="get_direction_display", read_only=True)
+    direction_display = serializers.CharField(
+        source="get_direction_display", read_only=True
+    )
 
     class Meta:
         model = RecognitionAttempt
@@ -83,7 +86,9 @@ class RecognitionRequestSerializer(serializers.Serializer):
     """Serializer for face recognition requests."""
 
     image = serializers.CharField(help_text="Base64 encoded image data")
-    direction = serializers.ChoiceField(choices=[("in", "In"), ("out", "Out")], required=False)
+    direction = serializers.ChoiceField(
+        choices=[("in", "In"), ("out", "Out")], required=False
+    )
 
 
 class StatsSerializer(serializers.Serializer):
