@@ -61,6 +61,7 @@ def robots_txt(request: HttpRequest) -> HttpResponse:
     )
     return HttpResponse(content, content_type="text/plain")
 
+
 def llms_txt(request: HttpRequest) -> HttpResponse:
     content = (
         "# Smart Attendance System Architecture\n"
