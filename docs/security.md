@@ -129,7 +129,7 @@ Or test via the browser by checking that secure cookies are being set correctly 
 4. Restart web and worker processes to load the new key.
 5. Verify the application can read existing data before removing backups.
 
-See [DEVELOPER_GUIDE.md](../DEVELOPER_GUIDE.md#encryption-key-rotation) for detailed command options.
+See [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md#encryption-key-rotation) for detailed command options.
 
 ### Enable database SSL
 

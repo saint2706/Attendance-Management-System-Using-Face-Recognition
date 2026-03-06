@@ -261,4 +261,4 @@ When adding new features to the UI, add corresponding tests:
 
 ## Questions?
 
-See the main project [Developer Guide](../../docs/developer-guide.md) for more information about the UI architecture and testing strategies.
+See the main project [Developer Guide](../../docs/DEVELOPER_GUIDE.md) for more information about the UI architecture and testing strategies.
