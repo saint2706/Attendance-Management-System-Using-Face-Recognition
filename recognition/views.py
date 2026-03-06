@@ -50,7 +50,6 @@ import pandas as pd
 import seaborn as sns
 from celery.result import AsyncResult
 from deepface import DeepFace
-from django_pandas.io import read_frame
 from django_ratelimit.core import is_ratelimited
 from django_ratelimit.decorators import ratelimit
 from matplotlib import rcParams
@@ -1629,9 +1628,11 @@ def hours_vs_date_given_employee(
     register_matplotlib_converters()
     df_hours = []
     df_break_hours = []
+    date_list = []
 
     for obj in present_qs:
         date = obj.date
+        date_list.append(date)
         times_all = time_qs.filter(date=date).order_by("time")
         times_in = times_all.filter(direction=Direction.IN)
         times_out = times_all.filter(direction=Direction.OUT)
@@ -1658,9 +1659,13 @@ def hours_vs_date_given_employee(
         obj.break_hours = convert_hours_to_hours_mins(break_hours_val)
 
     # Generate and save the plot
-    df = read_frame(present_qs, fieldnames=["date"])
-    df["hours"] = df_hours
-    df["break_hours"] = df_break_hours
+    df = pd.DataFrame(
+        {
+            "date": date_list,
+            "hours": df_hours,
+            "break_hours": df_break_hours,
+        }
+    )
     logger.debug("Attendance dataframe for employee: %s", df)
 
     sns.barplot(data=df, x="date", y="hours")
@@ -1691,9 +1696,11 @@ def hours_vs_employee_given_date(
     df_hours = []
     df_break_hours = []
     df_username = []
+    user_pk_list = []
 
     for obj in present_qs:
         user = obj.user
+        user_pk_list.append(user.pk)
         times_all = time_qs.filter(user=user).order_by("time")
         times_in = times_all.filter(direction=Direction.IN)
         times_out = times_all.filter(direction=Direction.OUT)
@@ -1721,10 +1728,14 @@ def hours_vs_employee_given_date(
         obj.break_hours = convert_hours_to_hours_mins(break_hours_val)
 
     # Generate and save the plot
-    df = read_frame(present_qs, fieldnames=["user"])
-    df["hours"] = df_hours
-    df["username"] = df_username
-    df["break_hours"] = df_break_hours
+    df = pd.DataFrame(
+        {
+            "user": user_pk_list,
+            "hours": df_hours,
+            "username": df_username,
+            "break_hours": df_break_hours,
+        }
+    )
 
     sns.barplot(data=df, x="username", y="hours")
     plt.xticks(rotation="vertical")
