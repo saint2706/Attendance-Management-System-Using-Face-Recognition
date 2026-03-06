@@ -300,7 +300,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(
                 {
                     "status": "failure",
-                    "message": "Face recognized but no match found in database",
+                    "message": ("Face recognized but no match found in database"),
                     "recognition": {"detected": True, "matched": False},
                 },
                 status=status.HTTP_200_OK,
@@ -316,11 +316,11 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(
                 {
                     "status": "error",
-                    "message": "Face not recognized with sufficient confidence",
+                    "message": ("Face not recognized with sufficient confidence"),
                     "recognition": {
                         "detected": True,
                         "matched": False,
-                        "confidence": max(0, 1 - distance) if distance else 0,
+                        "confidence": (max(0, 1 - distance) if distance else 0),
                     },
                 },
                 status=status.HTTP_400_BAD_REQUEST,
@@ -336,7 +336,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(
                 {
                     "status": "error",
-                    "message": f"User '{matched_username}' not found in database",
+                    "message": (f"User '{matched_username}' not found in database"),
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
