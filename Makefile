@@ -24,7 +24,7 @@ lint:
 	@echo "Running code quality checks..."
 	black --check --line-length=100 .
 	isort --check-only --profile=black --line-length=100 .
-	flake8 --max-line-length=100 --ignore=E203,W503,E501 --exclude=migrations,__pycache__,.venv,venv .
+	flake8 --max-line-length=100 --ignore=E203,W503,E501 --exclude=migrations,__pycache__,.venv,venv,frontend/node_modules .
 	@echo "Lint checks complete."
 
 # Format code with black and isort

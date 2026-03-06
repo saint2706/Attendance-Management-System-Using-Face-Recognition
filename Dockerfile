@@ -2,6 +2,21 @@
 
 ARG PYTHON_VERSION=3.12
 
+# =============================================================================
+# Stage 1: Build Frontend
+# =============================================================================
+FROM node:20-alpine AS frontend-build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ .
+# Ensure vite config base is correct (should be set in code, but we can enforce if needed)
+RUN npm run build
+USER node
+
+# =============================================================================
+# Stage 2: Base Python Runtime
+# =============================================================================
 FROM python:${PYTHON_VERSION}-slim AS python-base
 
 ENV PYTHONUNBUFFERED=1 \
@@ -18,6 +33,7 @@ RUN apt-get update \
         libxext6 \
         libxrender1 \
         curl \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 FROM python-base AS build
@@ -27,6 +43,7 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         build-essential \
         gcc \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -41,6 +58,9 @@ RUN pip install --upgrade pip setuptools wheel \
 
 # Copy the full project for asset compilation
 COPY . /app
+
+# Copy built frontend from Stage 1
+COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 
 # Collect static files using production configuration during the build stage
 RUN DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production \
