@@ -1614,8 +1614,13 @@ def update_attendance_in_db_in(
     today = timezone.localdate()
     current_time = timezone.now()
     attempt_ids = attempt_ids or {}
+
+    # ⚡ Performance: Batch fetch all users to avoid N+1 queries
+    usernames = list(present.keys())
+    users_by_username = {u.username: u for u in User.objects.filter(username__in=usernames)}
+
     for person, is_present in present.items():
-        user = User.objects.filter(username=person).first()
+        user = users_by_username.get(person)
         if user is None:
             logger.warning(
                 "Skipping check-in attendance update for unknown user '%s'. "
@@ -1697,11 +1702,20 @@ def update_attendance_in_db_out(
     today = timezone.localdate()
     current_time = timezone.now()
     attempt_ids = attempt_ids or {}
+
+    # ⚡ Performance: Batch fetch all users and their present records to avoid N+1 queries
+    usernames = [p for p, is_present in present.items() if is_present]
+    users_by_username = {u.username: u for u in User.objects.filter(username__in=usernames)}
+    present_records = {
+        p.user_id: p
+        for p in Present.objects.filter(user__in=users_by_username.values(), date=today)
+    }
+
     for person, is_present in present.items():
         if not is_present:
             continue
 
-        user = User.objects.filter(username=person).first()
+        user = users_by_username.get(person)
         if user is None:
             logger.warning(
                 "Skipping check-out attendance update for unknown user '%s'. "
@@ -1733,7 +1747,7 @@ def update_attendance_in_db_out(
 
         attempt_id = attempt_ids.get(person)
         if attempt_id:
-            present_record = Present.objects.filter(user=user, date=today).first()
+            present_record = present_records.get(user.id)
             attempt_updates: Dict[str, Any] = {
                 "user": user,
                 "time_record": time_record,
