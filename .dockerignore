@@ -80,3 +80,5 @@ Makefile
 # Environment files
 .env*
 !.env.example
+frontend/node_modules/
+frontend/dist/

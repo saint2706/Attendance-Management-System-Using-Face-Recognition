@@ -9,13 +9,14 @@ ARG PYTHON_VERSION=3.12
 # =============================================================================
 # Stage 1: Build Frontend
 # =============================================================================
-FROM node:25-alpine AS frontend-build
+FROM node:20-alpine AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ .
 # Ensure vite config base is correct (should be set in code, but we can enforce if needed)
 RUN npm run build
+USER node
 
 # =============================================================================
 # Stage 2: Base runtime with CUDA
@@ -46,6 +47,7 @@ RUN apt-get update \
     libxrender1 \
     curl \
     ca-certificates \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
     && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
@@ -61,6 +63,7 @@ RUN apt-get update \
     build-essential \
     gcc \
     g++ \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
