@@ -207,7 +207,7 @@ export const MarkAttendance = () => {
         <div className="mark-attendance animate-fade-in">
             <div className="attendance-container">
                 <header className="attendance-header">
-                    <Clock size={32} className="header-icon" />
+                    <Clock size={32} className="header-icon" aria-hidden="true" />
                     <h1>Mark Time-{direction === 'in' ? 'In' : 'Out'}</h1>
                     <p className="text-muted">
                         Position your face in the camera and click capture
@@ -218,10 +218,10 @@ export const MarkAttendance = () => {
                 <div className="camera-container card card-elevated">
                     {error ? (
                         <div className="camera-error">
-                            <CameraOff size={48} />
+                            <CameraOff size={48} aria-hidden="true" />
                             <p>{error}</p>
                             <button onClick={startCamera} className="btn btn-primary">
-                                <RefreshCw size={18} />
+                                <RefreshCw size={18} aria-hidden="true" />
                                 Retry
                             </button>
                         </div>
@@ -229,7 +229,7 @@ export const MarkAttendance = () => {
                         <>
                             {isInitializing && (
                                 <div className="flex flex-col items-center justify-center text-muted" role="status" style={{ position: 'absolute', inset: 0, zIndex: 10, backgroundColor: '#000' }}>
-                                    <Loader2 size={48} className="animate-spin mb-md" style={{ color: 'var(--color-primary)' }} />
+                                    <Loader2 size={48} className="animate-spin mb-md" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
                                     <p>Starting camera...</p>
                                 </div>
                             )}
@@ -280,7 +280,7 @@ export const MarkAttendance = () => {
                         <div className="result-content">
                             {result.recognized ? (
                                 <>
-                                    <CheckCircle size={32} />
+                                    <CheckCircle size={32} aria-hidden="true" />
                                     <div>
                                         <h3>Attendance Marked!</h3>
                                         <p>Welcome, {result.username}</p>
@@ -293,7 +293,7 @@ export const MarkAttendance = () => {
                                 </>
                             ) : result.spoofDetected ? (
                                 <>
-                                    <AlertTriangle size={32} />
+                                    <AlertTriangle size={32} aria-hidden="true" />
                                     <div>
                                         <h3>Liveness Check Failed</h3>
                                         <p>Please try again with your actual face</p>
@@ -301,7 +301,7 @@ export const MarkAttendance = () => {
                                 </>
                             ) : (
                                 <>
-                                    <XCircle size={32} />
+                                    <XCircle size={32} aria-hidden="true" />
                                     <div>
                                         <h3>Not Recognized</h3>
                                         <p>{result.message}</p>
@@ -340,17 +340,17 @@ export const MarkAttendance = () => {
                             >
                                 {isProcessing ? (
                                     <>
-                                        <Loader2 size={20} className="animate-spin" />
+                                        <Loader2 size={20} className="animate-spin" aria-hidden="true" />
                                         Processing...
                                     </>
                                 ) : countdown !== null ? (
                                     <>
-                                        <Camera size={20} />
+                                        <Camera size={20} aria-hidden="true" />
                                         Capturing in {countdown}...
                                     </>
                                 ) : (
                                     <>
-                                        <Camera size={20} />
+                                        <Camera size={20} aria-hidden="true" />
                                         Capture & Recognize
                                     </>
                                 )}
@@ -369,7 +369,7 @@ export const MarkAttendance = () => {
                                             className="btn btn-secondary btn-lg"
                                             aria-label="Return to Home Page"
                                         >
-                                            <Home size={20} />
+                                            <Home size={20} aria-hidden="true" />
                                             Return Home
                                         </button>
                                         <button
@@ -378,7 +378,7 @@ export const MarkAttendance = () => {
                                             aria-label="Mark attendance for another person"
                                             aria-keyshortcuts="Escape"
                                         >
-                                            <UserCheck size={20} />
+                                            <UserCheck size={20} aria-hidden="true" />
                                             Mark Another
                                         </button>
                                     </>
@@ -388,7 +388,7 @@ export const MarkAttendance = () => {
                                         className="btn btn-secondary btn-lg"
                                         aria-keyshortcuts="Escape"
                                     >
-                                        <RefreshCw size={20} />
+                                        <RefreshCw size={20} aria-hidden="true" />
                                         Try Again
                                     </button>
                                 )}
