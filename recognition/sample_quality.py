@@ -158,8 +158,8 @@ def analyze_sample_quality(
     else:
         # Estimate face presence without explicit region
         center_region = gray[
-            gray.shape[0] // 4 : 3 * gray.shape[0] // 4,
-            gray.shape[1] // 4 : 3 * gray.shape[1] // 4,
+            gray.shape[0] // 4:3 * gray.shape[0] // 4,
+            gray.shape[1] // 4:3 * gray.shape[1] // 4,
         ]
         center_variance = np.var(center_region)
         if center_variance < 100:

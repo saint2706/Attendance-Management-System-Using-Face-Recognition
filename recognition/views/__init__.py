@@ -26,7 +26,8 @@ from recognition.pipeline import find_closest_dataset_match
 
 # Import all public views from the legacy module
 # This maintains backward compatibility while we gradually migrate code
-from recognition.views_legacy import (  # API views; Attendance marking views; Dashboard views; Dataset & training views; Reporting views; Utility views; Helper functions used by analytics; Chart generation functions; Dashboard helper functions; Constants and objects used by tasks; Internal helper functions used by tasks; Attendance update functions used by tasks
+# Components imported: API views, Attendance marking, Dashboard, Dataset & training, Reporting, Utility views
+from recognition.views_legacy import (
     DATA_ROOT,
     LIVENESS_FAILURE_MESSAGE,
     TRAINING_DATASET_ROOT,
