@@ -377,7 +377,8 @@ def generate_failure_report(fa_df: pd.DataFrame, fr_df: pd.DataFrame, output_pat
 
         f.write("### For False Accepts:\n")
         f.write(
-            "1. **Increase threshold**: Raising the acceptance threshold will reduce false accepts at the cost of more false rejects.\n"
+            "1. **Increase threshold**: Raising the acceptance threshold will reduce false accepts "
+            "at the cost of more false rejects.\n"
         )
         f.write(
             "2. **Improve enrollment quality**: Ensure enrollment photos are high-quality, well-lit, and frontal.\n"
@@ -388,10 +389,12 @@ def generate_failure_report(fa_df: pd.DataFrame, fr_df: pd.DataFrame, output_pat
 
         f.write("### For False Rejects:\n")
         f.write(
-            "1. **Lower threshold**: Reducing the threshold will decrease false rejects but may increase false accepts.\n"
+            "1. **Lower threshold**: Reducing the threshold will decrease false rejects "
+            "but may increase false accepts.\n"
         )
         f.write(
-            "2. **Collect more diverse samples**: Include images with various lighting conditions and poses during enrollment.\n"
+            "2. **Collect more diverse samples**: Include images with various lighting "
+            "conditions and poses during enrollment.\n"
         )
         f.write(
             "3. **Improve preprocessing**: Enhance face alignment and normalization to handle pose variations.\n"
