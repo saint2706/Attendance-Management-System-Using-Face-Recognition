@@ -643,7 +643,7 @@ else:
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-            "LOCATION": "unique-snowflake",
+            "LOCATION": f"unique-snowflake-{os.environ.get('PYTEST_XDIST_WORKER', 'main')}",
         },
         "embeddings": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
