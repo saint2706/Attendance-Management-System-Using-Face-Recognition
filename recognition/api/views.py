@@ -158,10 +158,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         import numpy as np
         from deepface import DeepFace
 
-        from recognition.pipeline import (
-            extract_embedding,
-            find_closest_dataset_match,
-        )
+        from recognition.pipeline import extract_embedding, find_closest_dataset_match
         from recognition.views import (
             _get_face_detection_backend,
             _get_face_recognition_model,
