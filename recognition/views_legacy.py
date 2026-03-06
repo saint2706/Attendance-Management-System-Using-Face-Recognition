@@ -1617,9 +1617,7 @@ def update_attendance_in_db_in(
 
     # ⚡ Performance: Batch fetch all users to avoid N+1 queries
     usernames = list(present.keys())
-    users_by_username = {
-        u.username: u for u in User.objects.filter(username__in=usernames)
-    }
+    users_by_username = {u.username: u for u in User.objects.filter(username__in=usernames)}
 
     for person, is_present in present.items():
         user = users_by_username.get(person)
@@ -1707,13 +1705,10 @@ def update_attendance_in_db_out(
 
     # ⚡ Performance: Batch fetch all users and their present records to avoid N+1 queries
     usernames = [p for p, is_present in present.items() if is_present]
-    users_by_username = {
-        u.username: u for u in User.objects.filter(username__in=usernames)
-    }
+    users_by_username = {u.username: u for u in User.objects.filter(username__in=usernames)}
     present_records = {
-        p.user_id: p for p in Present.objects.filter(
-            user__in=users_by_username.values(), date=today
-        )
+        p.user_id: p
+        for p in Present.objects.filter(user__in=users_by_username.values(), date=today)
     }
 
     for person, is_present in present.items():
