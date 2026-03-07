@@ -2,8 +2,9 @@
 Tests for the users app.
 
 This module contains test cases for the user registration view, ensuring that
-access is correctly restricted based on user roles (staff, superuser, regular user)
-and that the registration functionality works as expected for authorized users.
+access is correctly restricted based on user roles (staff, superuser,
+regular user) and that the registration functionality works as expected for
+authorized users.
 """
 
 from django.contrib.auth import get_user_model
@@ -29,7 +30,9 @@ class RegisterViewTests(TestCase):
         )
         # Create a superuser who should have access
         self.superuser = User.objects.create_superuser(
-            username="super_user", email="super@example.com", password=self.password
+            username="super_user",
+            email="super@example.com",
+            password=self.password,
         )
         # Create a regular user who should NOT have access
         self.regular_user = User.objects.create_user(

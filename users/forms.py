@@ -86,10 +86,20 @@ class AddEmployeeForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ["username", "first_name", "last_name", "email", "password1", "password2"]
+        fields = [
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "password1",
+            "password2",
+        ]
         widgets = {
             "username": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "e.g., john.doe"}
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "e.g., john.doe",
+                }
             ),
             "first_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "First name"}
@@ -98,7 +108,10 @@ class AddEmployeeForm(UserCreationForm):
                 attrs={"class": "form-control", "placeholder": "Last name"}
             ),
             "email": forms.EmailInput(
-                attrs={"class": "form-control", "placeholder": "employee@company.com"}
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "employee@company.com",
+                }
             ),
         }
 

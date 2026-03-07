@@ -25,7 +25,13 @@ class RecognitionAttemptAdmin(admin.ModelAdmin):
         "spoof_detected",
         "latency_ms",
     )
-    list_filter = ("direction", "site", "source", "successful", "spoof_detected")
+    list_filter = (
+        "direction",
+        "site",
+        "source",
+        "successful",
+        "spoof_detected",
+    )
     search_fields = ("username", "user__username", "site", "source")
     readonly_fields = ("created_at", "updated_at")
 

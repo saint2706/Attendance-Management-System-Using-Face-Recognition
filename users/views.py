@@ -1,8 +1,8 @@
 """
 Views for the users app.
 
-This module contains views related to user management, such as employee registration
-and the setup wizard for onboarding new administrators.
+This module contains views related to user management, such as employee
+registration and the setup wizard for onboarding new administrators.
 """
 
 import logging
@@ -39,7 +39,8 @@ REGISTER_RATE_LIMIT = getattr(settings, "REGISTER_RATE_LIMIT", "10/m")
 
 @method_decorator(ratelimit(key="ip", rate="5/m", method="POST", block=False), name="post")
 @method_decorator(
-    ratelimit(key="post:username", rate="5/m", method="POST", block=False), name="post"
+    ratelimit(key="post:username", rate="5/m", method="POST", block=False),
+    name="post",
 )
 class CustomLoginView(LoginView):
     """
