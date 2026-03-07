@@ -22,3 +22,8 @@
 **Vulnerability:** The UI logic in `recognition/static/js/ui.js`, `recognition/static/js/ui/tables.js`, and `recognition/templates/recognition/admin/attendance_dashboard.html` assigned HTML strings to elements using `.innerHTML`. While currently using safe strings, this pattern is inherently dangerous and can lead to DOM-based XSS if the inputs become dynamic.
 **Learning:** `innerHTML` should be strictly avoided in favor of safe DOM manipulation methods.
 **Prevention:** Refactored the code to use `document.createElement()`, `textContent`, `append()`, and `replaceChildren()` to build and insert DOM elements safely without parsing HTML strings.
+
+## 2025-05-24 - GitHub Actions Secrets in Unit Tests
+**Vulnerability:** In `.github/workflows/ci.yml`, mapping GitHub secrets (e.g., `DJANGO_SECRET_KEY`) to environment variables caused CI failures during PRs from forks, because fork PRs do not have access to repository secrets. This resulted in empty strings and `ImproperlyConfigured` errors.
+**Learning:** For basic unit tests that do not deploy or access real external services, use dummy strings for environment variables in the CI pipeline instead of GitHub secrets.
+**Prevention:** Replaced `${{ secrets.DJANGO_SECRET_KEY }}`, `${{ secrets.DATA_ENCRYPTION_KEY }}`, and `${{ secrets.FACE_DATA_ENCRYPTION_KEY }}` with dummy string values directly in `ci.yml`.
