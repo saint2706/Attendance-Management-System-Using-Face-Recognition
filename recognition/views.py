@@ -518,7 +518,8 @@ class FaceRecognitionAPI(View):
         if uploaded is not None:
             if uploaded.size > max_size:
                 raise ValueError(
-                    f"Image size {uploaded.size} bytes exceeds maximum allowed size of {max_size} bytes."
+                    f"Image size {uploaded.size} bytes exceeds maximum allowed size "
+                    f"of {max_size} bytes."
                 )
             return uploaded.read()
 
@@ -550,7 +551,8 @@ class FaceRecognitionAPI(View):
             decoded = base64.b64decode(image_data, validate=True)
             if len(decoded) > max_size:
                 raise ValueError(
-                    f"Decoded image size {len(decoded)} bytes exceeds maximum allowed size of {max_size} bytes."
+                    f"Decoded image size {len(decoded)} bytes exceeds maximum allowed "
+                    f"size of {max_size} bytes."
                 )
             return decoded
         except (binascii.Error, ValueError) as exc:
@@ -623,7 +625,17 @@ class FaceRecognitionAPI(View):
                 spoofed=False,
                 error=auth_error or "Authentication failed.",
             )
-            return JsonResponse({"error": auth_error or "Authentication failed."}, status=401)
+            return JsonResponse(
+                {
+                    "type": "about:blank",
+                    "title": "Authentication Error",
+                    "status": 401,
+                    "detail": auth_error or "Authentication failed.",
+                    "instance": request.path,
+                },
+                status=401,
+                content_type="application/problem+json",
+            )
 
         if getattr(request, "limited", False):
             attempt_logger = _RecognitionAttemptLogger(
@@ -636,7 +648,17 @@ class FaceRecognitionAPI(View):
                 spoofed=False,
                 error="Too many requests.",
             )
-            return JsonResponse({"error": "Too many requests."}, status=429)
+            return JsonResponse(
+                {
+                    "type": "about:blank",
+                    "title": "Rate Limit Exceeded",
+                    "status": 429,
+                    "detail": "Too many requests.",
+                    "instance": request.path,
+                },
+                status=429,
+                content_type="application/problem+json",
+            )
 
         try:
             payload = self._parse_payload(request)
@@ -651,7 +673,17 @@ class FaceRecognitionAPI(View):
                 spoofed=False,
                 error=str(exc),
             )
-            return JsonResponse({"error": str(exc)}, status=400)
+            return JsonResponse(
+                {
+                    "type": "about:blank",
+                    "title": "Validation Error",
+                    "status": 400,
+                    "detail": "Invalid request payload.",
+                    "instance": request.path,
+                },
+                status=400,
+                content_type="application/problem+json",
+            )
 
         raw_direction = payload.get("direction")
         if isinstance(raw_direction, str):
@@ -684,21 +716,62 @@ class FaceRecognitionAPI(View):
         try:
             liveness_frames = self._extract_liveness_frames(payload)
         except ValueError as exc:
-            attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
-            return JsonResponse({"error": str(exc)}, status=400)
+            logger.exception("Failed to extract liveness frames from payload.")
+            attempt_logger.log_failure(
+                submitted_username,
+                spoofed=False,
+                error="Invalid liveness data in request payload.",
+            )
+            return JsonResponse(
+                {
+                    "type": "about:blank",
+                    "title": "Validation Error",
+                    "status": 400,
+                    "detail": "Invalid liveness data in request payload.",
+                    "instance": request.path,
+                },
+                status=400,
+                content_type="application/problem+json",
+            )
 
         try:
             embedding_vector = self._coerce_embedding(payload.get("embedding"))
         except ValueError as exc:
-            attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
-            return JsonResponse({"error": str(exc)}, status=400)
+            logger.exception("Failed to coerce embedding from payload.")
+                    "detail": "Invalid embedding payload.",
+                submitted_username,
+                spoofed=False,
+                error="Invalid embedding data in request payload.",
+            )
+            return JsonResponse(
+                {
+                    "type": "about:blank",
+                    "title": "Validation Error",
+                    "status": 400,
+                    "detail": "Invalid embedding data in request payload.",
+                # Log the detailed error server-side but return a generic message to the client
+                    "instance": request.path,
+                },
+                status=400,
+                content_type="application/problem+json",
+            )
 
-        if embedding_vector is None:
+                        "detail": "Invalid image payload.",
             try:
                 image_bytes = self._extract_image_bytes(request, payload)
             except ValueError as exc:
                 attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
-                return JsonResponse({"error": str(exc)}, status=400)
+                return JsonResponse(
+                    {
+                        "type": "about:blank",
+                        "title": "Validation Error",
+                        "status": 400,
+                        "detail": str(exc),
+                        "instance": request.path,
+                    },
+                    status=400,
+                    content_type="application/problem+json",
+                )
 
             if not image_bytes:
                 attempt_logger.log_failure(
@@ -707,8 +780,15 @@ class FaceRecognitionAPI(View):
                     error="Provide either an 'embedding' array or an 'image' payload.",
                 )
                 return JsonResponse(
-                    {"error": "Provide either an 'embedding' array or an 'image' payload."},
+                    {
+                        "type": "about:blank",
+                        "title": "Validation Error",
+                        "status": 400,
+                        "detail": "Provide either an 'embedding' array or an 'image' payload.",
+                        "instance": request.path,
+                    },
                     status=400,
+                    content_type="application/problem+json",
                 )
 
             frame = _decode_image_bytes(image_bytes)
@@ -718,7 +798,17 @@ class FaceRecognitionAPI(View):
                     spoofed=False,
                     error="Unable to decode the supplied image.",
                 )
-                return JsonResponse({"error": "Unable to decode the supplied image."}, status=400)
+                return JsonResponse(
+                    {
+                        "type": "about:blank",
+                        "title": "Validation Error",
+                        "status": 400,
+                        "detail": "Unable to decode the supplied image.",
+                        "instance": request.path,
+                    },
+                    status=400,
+                    content_type="application/problem+json",
+                )
 
             try:
                 representations = DeepFace.represent(
@@ -736,8 +826,15 @@ class FaceRecognitionAPI(View):
                     error="No face detected in the provided image.",
                 )
                 return JsonResponse(
-                    {"error": "No face detected in the provided image."},
+                    {
+                        "type": "about:blank",
+                        "title": "Validation Error",
+                        "status": 400,
+                        "detail": "No face detected in the provided image.",
+                        "instance": request.path,
+                    },
                     status=400,
+                    content_type="application/problem+json",
                 )
             except AttributeError as exc:
                 # DeepFace raises AttributeError for library/dependency issues
@@ -748,8 +845,15 @@ class FaceRecognitionAPI(View):
                     error="Face recognition service misconfiguration.",
                 )
                 return JsonResponse(
-                    {"error": "Face recognition service misconfiguration."},
+                    {
+                        "type": "about:blank",
+                        "title": "Internal Server Error",
+                        "status": 500,
+                        "detail": "Face recognition service misconfiguration.",
+                        "instance": request.path,
+                    },
                     status=500,
+                    content_type="application/problem+json",
                 )
             except OSError as exc:
                 # DeepFace raises OSError for file system or model loading issues
@@ -760,8 +864,15 @@ class FaceRecognitionAPI(View):
                     error="Failed to load face recognition models.",
                 )
                 return JsonResponse(
-                    {"error": "Failed to load face recognition models."},
+                    {
+                        "type": "about:blank",
+                        "title": "Internal Server Error",
+                        "status": 500,
+                        "detail": "Failed to load face recognition models.",
+                        "instance": request.path,
+                    },
                     status=500,
+                    content_type="application/problem+json",
                 )
             except Exception as exc:  # pragma: no cover - catch truly unexpected errors
                 # Fallback for any other unexpected exceptions from DeepFace
@@ -772,8 +883,15 @@ class FaceRecognitionAPI(View):
                     error="Failed to analyse the provided image.",
                 )
                 return JsonResponse(
-                    {"error": "Failed to analyse the provided image."},
+                    {
+                        "type": "about:blank",
+                        "title": "Internal Server Error",
+                        "status": 500,
+                        "detail": "Failed to analyse the provided image.",
+                        "instance": request.path,
+                    },
                     status=500,
+                    content_type="application/problem+json",
                 )
 
             extracted_embedding, facial_area = extract_embedding(representations)
@@ -784,8 +902,15 @@ class FaceRecognitionAPI(View):
                     error="No face embedding could be extracted from the image.",
                 )
                 return JsonResponse(
-                    {"error": "No face embedding could be extracted from the image."},
+                    {
+                        "type": "about:blank",
+                        "title": "Validation Error",
+                        "status": 400,
+                        "detail": "No face embedding could be extracted from the image.",
+                        "instance": request.path,
+                    },
                     status=400,
+                    content_type="application/problem+json",
                 )
 
             try:
@@ -797,7 +922,17 @@ class FaceRecognitionAPI(View):
                     spoofed=False,
                     error="Invalid embedding generated.",
                 )
-                return JsonResponse({"error": "Invalid embedding generated."}, status=500)
+                return JsonResponse(
+                    {
+                        "type": "about:blank",
+                        "title": "Internal Server Error",
+                        "status": 500,
+                        "detail": "Invalid embedding generated.",
+                        "instance": request.path,
+                    },
+                    status=500,
+                    content_type="application/problem+json",
+                )
 
         dataset_index = _load_dataset_embeddings_for_matching(
             model_name, detector_backend, enforce_detection
@@ -825,8 +960,15 @@ class FaceRecognitionAPI(View):
                 error="No enrolled face embeddings are available for comparison.",
             )
             return JsonResponse(
-                {"error": "No enrolled face embeddings are available for comparison."},
+                {
+                    "type": "about:blank",
+                    "title": "Service Unavailable",
+                    "status": 503,
+                    "detail": "No enrolled face embeddings are available for comparison.",
+                    "instance": request.path,
+                },
                 status=503,
+                content_type="application/problem+json",
             )
 
         distance_metric = _get_deepface_distance_metric()
@@ -3368,7 +3510,8 @@ def mark_attendance_view(request, attendance_type):
     )
     if not dataset_index:
         logger.warning(
-            "Cached embeddings are empty while marking attendance via SVC; continuing with model predictions.",
+            "Cached embeddings are empty while marking attendance via SVC; "
+            "continuing with model predictions.",
             extra={
                 "flow": "svc_attendance",
                 "direction": attendance_type,
