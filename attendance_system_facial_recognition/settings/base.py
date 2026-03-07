@@ -152,7 +152,7 @@ DEFAULT_SECRET_KEY = "a-secure-default-key-for-development-only"
 # Automatically enable DEBUG mode when running tests.
 DEBUG = _get_bool_env("DJANGO_DEBUG", default=not TESTING)
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", DEFAULT_SECRET_KEY)
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or DEFAULT_SECRET_KEY
 if SECRET_KEY == DEFAULT_SECRET_KEY and not DEBUG:
     raise ImproperlyConfigured(
         "DJANGO_SECRET_KEY must be set to a secure value when DJANGO_DEBUG is not enabled."
