@@ -31,6 +31,7 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 ### Documentation (Unreleased)
 
 - Comprehensive documentation refresh for 2026: updated React SPA frontend references, fixed broken links, updated agent instructions
+- Added missing JSDoc/TSDoc comments to exported frontend components and API functions
 
 ---
 

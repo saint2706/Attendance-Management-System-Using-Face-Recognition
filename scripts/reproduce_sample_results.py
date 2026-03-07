@@ -92,10 +92,11 @@ def _ensure_django_ready() -> None:
 
 def _patch_dataset_root(dataset_root: Path) -> None:
     from recognition import views as recognition_views
+    from recognition import views_legacy
 
     recognition_views.DATA_ROOT = dataset_root.parent
     recognition_views.TRAINING_DATASET_ROOT = dataset_root
-    recognition_views._dataset_embedding_cache = recognition_views.DatasetEmbeddingCache(
+    recognition_views._dataset_embedding_cache = views_legacy.DatasetEmbeddingCache(
         recognition_views.TRAINING_DATASET_ROOT,
         recognition_views.DATA_ROOT,
     )

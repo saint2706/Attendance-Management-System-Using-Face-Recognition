@@ -7,11 +7,11 @@ ARG PYTHON_VERSION=3.12
 # =============================================================================
 FROM node:20-alpine AS frontend-build
 WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm ci
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
 COPY frontend/ .
 # Ensure vite config base is correct (should be set in code, but we can enforce if needed)
-RUN npm run build
+RUN pnpm run build
 USER node
 
 # =============================================================================
