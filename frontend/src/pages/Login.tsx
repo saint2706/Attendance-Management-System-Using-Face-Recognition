@@ -5,6 +5,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { LogIn, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import './Login.css';
 
+/**
+ * The login page component.
+ * Allows users to authenticate and access protected areas of the application.
+ * @returns {JSX.Element} The login form UI.
+ */
 export const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');

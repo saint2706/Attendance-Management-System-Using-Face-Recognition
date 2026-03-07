@@ -14,6 +14,11 @@ import {
 import { useState } from 'react';
 import './Navbar.css';
 
+/**
+ * The main navigation bar component for the application.
+ * Provides navigation links, authentication controls, and theme toggling.
+ * @returns {JSX.Element} The rendered navigation bar.
+ */
 export const Navbar = () => {
     const { isAuthenticated, user, logout } = useAuth();
     const { resolvedTheme, toggleTheme } = useTheme();

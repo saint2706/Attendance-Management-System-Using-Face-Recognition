@@ -21,6 +21,13 @@ const getSystemTheme = (): 'light' | 'dark' => {
     return 'light';
 };
 
+/**
+ * Context provider for managing the application's visual theme.
+ * Handles user preferences and system settings for light/dark mode.
+ * @param {Object} props - The component props.
+ * @param {ReactNode} props.children - The child components to wrap.
+ * @returns {JSX.Element} The theme context provider.
+ */
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const [theme, setThemeState] = useState<Theme>(() => {
         if (typeof window !== 'undefined') {
@@ -69,6 +76,12 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
+/**
+ * Hook to access the current theme context.
+ * Must be used within a ThemeProvider.
+ * @returns {ThemeContextType} The theme context value.
+ * @throws {Error} If used outside of a ThemeProvider.
+ */
 // Export the hook separately to fix react-refresh/only-export-components
 export function useTheme() {
     const context = useContext(ThemeContext);
