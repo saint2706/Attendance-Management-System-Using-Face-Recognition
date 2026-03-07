@@ -12,6 +12,11 @@ import {
 } from 'lucide-react';
 import './Dashboard.css';
 
+/**
+ * The protected admin dashboard page.
+ * Displays system statistics and provides links to management functions.
+ * @returns {JSX.Element} The admin dashboard UI.
+ */
 export const Dashboard = () => {
     const { user } = useAuth();
 

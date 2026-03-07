@@ -5,7 +5,7 @@ from __future__ import annotations
 import datetime
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 from django.contrib.auth.models import Group
 from django.db.models import Max, Min, Q
@@ -68,7 +68,7 @@ class AttendanceAnalytics:
         start_date: Optional[datetime.date] = None,
         end_date: Optional[datetime.date] = None,
         employee_id: Optional[int] = None,
-    ) -> Dict[str, Iterable[DailyTrend]]:
+    ) -> Dict[str, Union[Optional[datetime.date], Optional[int], Iterable[DailyTrend]]]:
         """Aggregate punctuality trends on a per-day basis.
 
         Args:
@@ -118,7 +118,7 @@ class AttendanceAnalytics:
             )
         }
 
-        daily_metrics: Dict[datetime.date, Dict[str, object]] = defaultdict(
+        daily_metrics: Dict[datetime.date, Dict[str, Any]] = defaultdict(
             lambda: {
                 "present": 0,
                 "total": 0,

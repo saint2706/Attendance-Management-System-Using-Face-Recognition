@@ -8,7 +8,7 @@ import logging
 from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Callable, Dict, Iterable, List, Mapping, Optional, Sequence
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence
 
 from django.conf import settings
 from django.db.models import Count
@@ -131,7 +131,7 @@ class FairnessAuditResult:
     evaluation: EvaluationSummary
     group_metrics: Dict[str, GroupMetrics]
     summary_path: Path
-    threshold_recommendations: List[ThresholdRecommendation] = None
+    threshold_recommendations: Optional[List[ThresholdRecommendation]] = None
 
     def __post_init__(self):
         if self.threshold_recommendations is None:
@@ -335,7 +335,7 @@ def _write_summary_markdown(
     ]
 
     for key in ["samples", "accuracy", "precision", "recall", "f1", "far", "frr"]:
-        value = summary.metrics.get(key)
+        value: Any = summary.metrics.get(key)
         if value is None:
             continue
         if isinstance(value, float):
@@ -460,9 +460,9 @@ def compute_threshold_recommendations(
 
         for row in metrics.rows:
             group_value = str(row.get("group", ""))
-            sample_count = int(row.get("samples", 0))
-            far = float(row.get("far", 0.0))
-            frr = float(row.get("frr", 0.0))
+            sample_count = int(str(row.get("samples", 0)))
+            far = float(str(row.get("far", 0.0)))
+            frr = float(str(row.get("frr", 0.0)))
 
             if sample_count < min_samples:
                 continue  # Not enough data for reliable recommendation

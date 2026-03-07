@@ -17,6 +17,12 @@ import {
 import { Kbd } from '../components/ui/Kbd';
 import './MarkAttendance.css';
 
+/**
+ * The kiosk-style page for marking attendance.
+ * Accesses the device camera, captures a frame, and sends it for recognition.
+ * Includes liveness detection feedback and auto-reset functionality.
+ * @returns {JSX.Element} The Mark Attendance page UI.
+ */
 export const MarkAttendance = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();

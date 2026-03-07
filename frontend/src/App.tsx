@@ -8,7 +8,13 @@ import { Dashboard } from './pages/Dashboard';
 import { MarkAttendance } from './pages/MarkAttendance';
 import './index.css';
 
-// Protected route wrapper
+/**
+ * A wrapper component that protects routes requiring authentication.
+ * If the user is not authenticated, it redirects them to the login page.
+ * @param {Object} props - The component props.
+ * @param {React.ReactNode} props.children - The child components to render if authenticated.
+ * @returns {JSX.Element} The child components or a redirect to the login page.
+ */
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -27,7 +33,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Main app content
+/**
+ * The main application content component containing navigation and routing.
+ * @returns {JSX.Element} The main layout and route structure of the application.
+ */
 const AppContent = () => {
   return (
     <div className="app">
@@ -67,6 +76,11 @@ const AppContent = () => {
   );
 };
 
+/**
+ * The root component of the React application.
+ * Sets up routing, theming, and authentication providers.
+ * @returns {JSX.Element} The configured React application.
+ */
 function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
