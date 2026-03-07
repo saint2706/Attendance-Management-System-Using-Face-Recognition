@@ -11,6 +11,11 @@ import {
 } from 'lucide-react';
 import './Home.css';
 
+/**
+ * The landing page component for the application.
+ * Displays project overview, key features, and quick links.
+ * @returns {JSX.Element} The home page UI.
+ */
 export const Home = () => {
     const { isAuthenticated } = useAuth();
 

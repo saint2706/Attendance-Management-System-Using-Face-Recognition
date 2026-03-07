@@ -37,7 +37,14 @@ export interface AttendanceFeedEvent {
     liveness?: 'passed' | 'failed' | 'skipped';
 }
 
-// Get attendance records
+/**
+ * Retrieves attendance records based on optional filtering parameters.
+ * @param {Object} [params] - Optional filtering parameters.
+ * @param {string} [params.date] - The date to filter by (YYYY-MM-DD).
+ * @param {number} [params.userId] - The ID of the user to filter by.
+ * @param {'in' | 'out'} [params.direction] - The direction of attendance ('in' or 'out').
+ * @returns {Promise<AttendanceRecord[]>} A promise resolving to an array of attendance records.
+ */
 export const getAttendanceRecords = async (params?: {
     date?: string;
     userId?: number;
@@ -47,13 +54,21 @@ export const getAttendanceRecords = async (params?: {
     return response.data;
 };
 
-// Get today's attendance statistics
+/**
+ * Retrieves today's attendance statistics.
+ * @returns {Promise<AttendanceStats>} A promise resolving to the attendance statistics.
+ */
 export const getAttendanceStats = async (): Promise<AttendanceStats> => {
     const response = await apiClient.get<AttendanceStats>('/dashboard/stats/');
     return response.data;
 };
 
-// Mark attendance with face image
+/**
+ * Marks attendance by sending a captured face image for recognition.
+ * @param {string} imageBase64 - The base64-encoded image data.
+ * @param {'in' | 'out'} direction - The direction of attendance.
+ * @returns {Promise<RecognitionResult>} A promise resolving to the recognition result.
+ */
 export const markAttendance = async (
     imageBase64: string,
     direction: 'in' | 'out'
@@ -65,7 +80,10 @@ export const markAttendance = async (
     return response.data;
 };
 
-// Get live attendance feed
+/**
+ * Retrieves the live attendance feed events.
+ * @returns {Promise<{ events: AttendanceFeedEvent[] }>} A promise resolving to the feed events.
+ */
 export const getAttendanceFeed = async (): Promise<{ events: AttendanceFeedEvent[] }> => {
     // This uses the existing Django endpoint
     const response = await apiClient.get<{ events: AttendanceFeedEvent[] }>(
@@ -74,7 +92,11 @@ export const getAttendanceFeed = async (): Promise<{ events: AttendanceFeedEvent
     return response.data;
 };
 
-// Get attendance by date
+/**
+ * Retrieves attendance records for a specific date.
+ * @param {string} date - The date to fetch records for (YYYY-MM-DD).
+ * @returns {Promise<AttendanceRecord[]>} A promise resolving to an array of attendance records.
+ */
 export const getAttendanceByDate = async (date: string): Promise<AttendanceRecord[]> => {
     const response = await apiClient.get<AttendanceRecord[]>('/attendance/', {
         params: { date },
@@ -82,7 +104,13 @@ export const getAttendanceByDate = async (date: string): Promise<AttendanceRecor
     return response.data;
 };
 
-// Get employee attendance history
+/**
+ * Retrieves the attendance history for a specific employee.
+ * @param {number} userId - The ID of the user.
+ * @param {string} [startDate] - The start date for filtering (YYYY-MM-DD).
+ * @param {string} [endDate] - The end date for filtering (YYYY-MM-DD).
+ * @returns {Promise<AttendanceRecord[]>} A promise resolving to an array of attendance records.
+ */
 export const getEmployeeAttendance = async (
     userId: number,
     startDate?: string,

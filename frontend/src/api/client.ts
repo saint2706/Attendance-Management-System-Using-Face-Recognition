@@ -17,12 +17,38 @@ const apiClient = axios.create({
 const TOKEN_KEY = 'auth_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
 
+/**
+ * Retrieves the authentication token from local storage.
+ * @returns {string | null} The authentication token, or null if not found.
+ */
 export const getToken = (): string | null => localStorage.getItem(TOKEN_KEY);
+
+/**
+ * Stores the authentication token in local storage.
+ * @param {string} token - The authentication token to store.
+ */
 export const setToken = (token: string): void => localStorage.setItem(TOKEN_KEY, token);
+
+/**
+ * Removes the authentication token from local storage.
+ */
 export const removeToken = (): void => localStorage.removeItem(TOKEN_KEY);
 
+/**
+ * Retrieves the refresh token from local storage.
+ * @returns {string | null} The refresh token, or null if not found.
+ */
 export const getRefreshToken = (): string | null => localStorage.getItem(REFRESH_TOKEN_KEY);
+
+/**
+ * Stores the refresh token in local storage.
+ * @param {string} token - The refresh token to store.
+ */
 export const setRefreshToken = (token: string): void => localStorage.setItem(REFRESH_TOKEN_KEY, token);
+
+/**
+ * Removes the refresh token from local storage.
+ */
 export const removeRefreshToken = (): void => localStorage.removeItem(REFRESH_TOKEN_KEY);
 
 // Request interceptor - add auth token
