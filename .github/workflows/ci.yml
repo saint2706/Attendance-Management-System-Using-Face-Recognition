@@ -72,8 +72,8 @@ jobs:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
       DJANGO_SECRET_KEY: dummy-django-secret-key-1234567890
-      DATA_ENCRYPTION_KEY: dummy-data-encryption-key-12345678
-      FACE_DATA_ENCRYPTION_KEY: dummy-face-data-encryption-key-12
+      DATA_ENCRYPTION_KEY: G_mPy4V_QlLydqa2CUifitiYhR5hT7qVaQFuh4sdWPk=
+      FACE_DATA_ENCRYPTION_KEY: G_mPy4V_QlLydqa2CUifitiYhR5hT7qVaQFuh4sdWPk=
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -179,8 +179,8 @@ jobs:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
       DJANGO_SECRET_KEY: dummy-django-secret-key-1234567890
-      DATA_ENCRYPTION_KEY: dummy-data-encryption-key-12345678
-      FACE_DATA_ENCRYPTION_KEY: dummy-face-data-encryption-key-12
+      DATA_ENCRYPTION_KEY: G_mPy4V_QlLydqa2CUifitiYhR5hT7qVaQFuh4sdWPk=
+      FACE_DATA_ENCRYPTION_KEY: G_mPy4V_QlLydqa2CUifitiYhR5hT7qVaQFuh4sdWPk=
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -257,8 +257,8 @@ jobs:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
       DJANGO_SECRET_KEY: dummy-django-secret-key-1234567890
-      DATA_ENCRYPTION_KEY: dummy-data-encryption-key-12345678
-      FACE_DATA_ENCRYPTION_KEY: dummy-face-data-encryption-key-12
+      DATA_ENCRYPTION_KEY: G_mPy4V_QlLydqa2CUifitiYhR5hT7qVaQFuh4sdWPk=
+      FACE_DATA_ENCRYPTION_KEY: G_mPy4V_QlLydqa2CUifitiYhR5hT7qVaQFuh4sdWPk=
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
