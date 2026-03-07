@@ -1414,8 +1414,13 @@ def update_attendance_in_db_in(
     today = timezone.localdate()
     current_time = timezone.now()
     attempt_ids = attempt_ids or {}
+
+    # ⚡ Performance: Batch fetch all users to avoid N+1 queries
+    usernames = list(present.keys())
+    users_by_username = {u.username: u for u in User.objects.filter(username__in=usernames)}
+
     for person, is_present in present.items():
-        user = User.objects.filter(username=person).first()
+        user = users_by_username.get(person)
         if user is None:
             logger.warning(
                 "Skipping check-in attendance update for unknown user '%s'. "
@@ -1497,11 +1502,20 @@ def update_attendance_in_db_out(
     today = timezone.localdate()
     current_time = timezone.now()
     attempt_ids = attempt_ids or {}
+
+    # ⚡ Performance: Batch fetch all users and their present records to avoid N+1 queries
+    usernames = [p for p, is_present in present.items() if is_present]
+    users_by_username = {u.username: u for u in User.objects.filter(username__in=usernames)}
+    present_records = {
+        p.user_id: p
+        for p in Present.objects.filter(user__in=users_by_username.values(), date=today)
+    }
+
     for person, is_present in present.items():
         if not is_present:
             continue
 
-        user = User.objects.filter(username=person).first()
+        user = users_by_username.get(person)
         if user is None:
             logger.warning(
                 "Skipping check-out attendance update for unknown user '%s'. "
@@ -1533,7 +1547,7 @@ def update_attendance_in_db_out(
 
         attempt_id = attempt_ids.get(person)
         if attempt_id:
-            present_record = Present.objects.filter(user=user, date=today).first()
+            present_record = present_records.get(user.id)
             attempt_updates: Dict[str, Any] = {
                 "user": user,
                 "time_record": time_record,
@@ -1543,15 +1557,17 @@ def update_attendance_in_db_out(
             RecognitionAttempt.objects.filter(id=attempt_id).update(**attempt_updates)
 
 
-def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
+def check_validity_times(times_all: Sequence[Time] | QuerySet[Time]) -> tuple[bool, float]:
     """
     Validate and calculate break hours from a sequence of time entries.
 
     This function checks if the time entries follow a valid in-out sequence and
     calculates the total break time in hours.
 
+    ⚡ Performance: Optimized to perform a single pass over the data.
+
     Args:
-        times_all: A queryset of `Time` objects for a user on a given day,
+        times_all: A queryset or list of `Time` objects for a user on a given day,
                    ordered by time.
 
     Returns:
@@ -1562,7 +1578,14 @@ def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
     if not times_all:
         return True, 0  # No records, so no invalidity
 
-    first_entry = times_all.first()
+    # ⚡ Performance: Convert to list once if needed, to allow efficient iteration
+    # and indexing without repeated database queries or multiple iterations.
+    entries = list(times_all) if not isinstance(times_all, list) else times_all
+
+    if not entries:
+        return True, 0
+
+    first_entry = entries[0]
     if first_entry is None or first_entry.time is None:
         return True, 0
 
@@ -1570,27 +1593,29 @@ def check_validity_times(times_all: QuerySet[Time]) -> tuple[bool, float]:
     if first_entry.direction == Direction.OUT:
         return False, 0
 
-    # The number of check-ins must equal the number of check-outs
-    if (
-        times_all.filter(direction=Direction.IN).count()
-        != times_all.filter(direction=Direction.OUT).count()
-    ):
-        return False, 0
-
-    break_hours = 0
+    in_count = 0
+    out_count = 0
+    break_hours = 0.0
     prev_time = None
     is_break = False
 
-    for entry in times_all:
-        if entry.direction == Direction.IN:  # This is a check-in
+    for entry in entries:
+        if entry.direction == Direction.IN:
+            in_count += 1
             if is_break and prev_time is not None and entry.time is not None:
                 # Calculate time since the last check-out
                 break_duration = (entry.time - prev_time).total_seconds() / 3600
                 break_hours += break_duration
             is_break = False
-        else:  # This is a check-out
+        elif entry.direction == Direction.OUT:
+            out_count += 1
             is_break = True
+
         prev_time = entry.time
+
+    # The number of check-ins must equal the number of check-outs
+    if in_count != out_count:
+        return False, 0
 
     return True, break_hours
 
@@ -1630,16 +1655,25 @@ def hours_vs_date_given_employee(
     df_break_hours = []
     date_list = []
 
+    # ⚡ Performance: Fetch all time records once and group in memory to avoid N+1 queries
+    # Sorting in the DB is more efficient than sorting each group in Python
+    all_times = list(time_qs.order_by("time"))
+    times_by_date = {}
+    for t in all_times:
+        if t.date not in times_by_date:
+            times_by_date[t.date] = []
+        times_by_date[t.date].append(t)
+
     for obj in present_qs:
         date = obj.date
         date_list.append(date)
-        times_all = time_qs.filter(date=date).order_by("time")
-        times_in = times_all.filter(direction=Direction.IN)
-        times_out = times_all.filter(direction=Direction.OUT)
+        times_all = times_by_date.get(date, [])
 
-        # Use intermediate variables to avoid calling .time on None
-        first_in = times_in.first()
-        last_out = times_out.last()
+        # ⚡ Performance: Optimized to find first IN and last OUT in single pass over already sorted list
+        # instead of creating full lists with list comprehensions.
+        first_in = next((t for t in times_all if t.direction == Direction.IN), None)
+        last_out = next((t for t in reversed(times_all) if t.direction == Direction.OUT), None)
+
         obj.time_in = first_in.time if first_in else None
         obj.time_out = last_out.time if last_out else None
 
@@ -1696,18 +1730,29 @@ def hours_vs_employee_given_date(
     df_hours = []
     df_break_hours = []
     df_username = []
-    user_pk_list = []
 
+    # ⚡ Performance: Fetch all time records once and group in memory to avoid N+1 queries
+    # Sorting in the DB is more efficient than sorting each group in Python
+    all_times = list(time_qs.order_by("time"))
+    times_by_user = {}
+    for t in all_times:
+        if t.user_id not in times_by_user:
+            times_by_user[t.user_id] = []
+        times_by_user[t.user_id].append(t)
+
+    # ⚡ Performance: Optimize related object fetching
+    present_qs = present_qs.select_related("user")
+
+    user_pk_list = []
     for obj in present_qs:
         user = obj.user
         user_pk_list.append(user.pk)
-        times_all = time_qs.filter(user=user).order_by("time")
-        times_in = times_all.filter(direction=Direction.IN)
-        times_out = times_all.filter(direction=Direction.OUT)
+        times_all = times_by_user.get(user.id, [])
 
-        # Use intermediate variables to avoid calling .time on None
-        first_in = times_in.first()
-        last_out = times_out.last()
+        # ⚡ Performance: Optimized to find first IN and last OUT in single pass
+        first_in = next((t for t in times_all if t.direction == Direction.IN), None)
+        last_out = next((t for t in reversed(times_all) if t.direction == Direction.OUT), None)
+
         obj.time_in = first_in.time if first_in else None
         obj.time_out = last_out.time if last_out else None
 
