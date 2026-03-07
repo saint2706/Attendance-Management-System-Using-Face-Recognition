@@ -71,9 +71,9 @@ jobs:
     env:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
-      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-      DATA_ENCRYPTION_KEY: ${{ secrets.DATA_ENCRYPTION_KEY }}
-      FACE_DATA_ENCRYPTION_KEY: ${{ secrets.FACE_DATA_ENCRYPTION_KEY }}
+      DJANGO_SECRET_KEY: "dummy-django-secret-key-for-ci-testing-purposes"
+      DATA_ENCRYPTION_KEY: "ufkljjgdbIMsc4N4-cVeRTtBk8sM6rDl6q-FMpepe8g="
+      FACE_DATA_ENCRYPTION_KEY: "ufkljjgdbIMsc4N4-cVeRTtBk8sM6rDl6q-FMpepe8g="
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -178,9 +178,9 @@ jobs:
     env:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
-      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-      DATA_ENCRYPTION_KEY: ${{ secrets.DATA_ENCRYPTION_KEY }}
-      FACE_DATA_ENCRYPTION_KEY: ${{ secrets.FACE_DATA_ENCRYPTION_KEY }}
+      DJANGO_SECRET_KEY: "dummy-django-secret-key-for-ci-testing-purposes"
+      DATA_ENCRYPTION_KEY: "ufkljjgdbIMsc4N4-cVeRTtBk8sM6rDl6q-FMpepe8g="
+      FACE_DATA_ENCRYPTION_KEY: "ufkljjgdbIMsc4N4-cVeRTtBk8sM6rDl6q-FMpepe8g="
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -256,9 +256,9 @@ jobs:
     env:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
-      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-      DATA_ENCRYPTION_KEY: ${{ secrets.DATA_ENCRYPTION_KEY }}
-      FACE_DATA_ENCRYPTION_KEY: ${{ secrets.FACE_DATA_ENCRYPTION_KEY }}
+      DJANGO_SECRET_KEY: "dummy-django-secret-key-for-ci-testing-purposes"
+      DATA_ENCRYPTION_KEY: "ufkljjgdbIMsc4N4-cVeRTtBk8sM6rDl6q-FMpepe8g="
+      FACE_DATA_ENCRYPTION_KEY: "ufkljjgdbIMsc4N4-cVeRTtBk8sM6rDl6q-FMpepe8g="
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
