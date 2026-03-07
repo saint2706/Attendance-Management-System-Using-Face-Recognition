@@ -620,11 +620,11 @@ configure_environment(
 # --- Cache Configuration ---
 # Use Redis for production (when REDIS_URL is set), with LocMemCache fallback.
 # Redis is required for multi-process deployments and embedding caching.
-TESTING = "pytest" in sys.modules
+_PYTEST_RUNNING = "pytest" in sys.modules
 REDIS_URL = os.environ.get("REDIS_URL")
 EMBEDDING_CACHE_TTL = _parse_int_env("EMBEDDING_CACHE_TTL", default=3600, minimum=60)
 
-if REDIS_URL and not TESTING:
+if REDIS_URL and not _PYTEST_RUNNING:
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.redis.RedisCache",
