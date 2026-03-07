@@ -71,9 +71,9 @@ jobs:
     env:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
-      DJANGO_SECRET_KEY: dummy-secret-key-for-ci-testing-only-12345
-      DATA_ENCRYPTION_KEY: mlnGQQ89rI8krA2ola0frkpYHqRQuirGuDfWmdifb50=
-      FACE_DATA_ENCRYPTION_KEY: 8-PZdCHck99pg_ToWG7-k0knbd_MW54fAjRa5Ab98ew=
+      DJANGO_SECRET_KEY: "dummy-secret-key-for-testing"
+      DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
+      FACE_DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -178,9 +178,9 @@ jobs:
     env:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
-      DJANGO_SECRET_KEY: dummy-secret-key-for-ci-testing-only-12345
-      DATA_ENCRYPTION_KEY: mlnGQQ89rI8krA2ola0frkpYHqRQuirGuDfWmdifb50=
-      FACE_DATA_ENCRYPTION_KEY: 8-PZdCHck99pg_ToWG7-k0knbd_MW54fAjRa5Ab98ew=
+      DJANGO_SECRET_KEY: "dummy-secret-key-for-testing"
+      DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
+      FACE_DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -256,9 +256,9 @@ jobs:
     env:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
-      DJANGO_SECRET_KEY: dummy-secret-key-for-ci-testing-only-12345
-      DATA_ENCRYPTION_KEY: mlnGQQ89rI8krA2ola0frkpYHqRQuirGuDfWmdifb50=
-      FACE_DATA_ENCRYPTION_KEY: 8-PZdCHck99pg_ToWG7-k0knbd_MW54fAjRa5Ab98ew=
+      DJANGO_SECRET_KEY: "dummy-secret-key-for-testing"
+      DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
+      FACE_DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"

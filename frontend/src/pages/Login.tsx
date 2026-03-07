@@ -53,7 +53,9 @@ export const Login = () => {
 
                 <form onSubmit={handleSubmit} className="login-form">
                     <div className="form-group">
-                        <label htmlFor="username" className="input-label">Username</label>
+                        <label htmlFor="username" className="input-label">
+                            Username <span className="text-danger" aria-hidden="true">*</span>
+                        </label>
                         <input
                             type="text"
                             id="username"
@@ -62,6 +64,7 @@ export const Login = () => {
                             onChange={(e) => setUsername(e.target.value)}
                             placeholder="Enter your username"
                             required
+                            aria-required="true"
                             autoFocus
                             autoComplete="username"
                             disabled={isLoading}
@@ -71,7 +74,9 @@ export const Login = () => {
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="password" className="input-label">Password</label>
+                        <label htmlFor="password" className="input-label">
+                            Password <span className="text-danger" aria-hidden="true">*</span>
+                        </label>
                         <div className="input-with-icon">
                             <input
                                 type={showPassword ? 'text' : 'password'}
@@ -81,6 +86,7 @@ export const Login = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Enter your password"
                                 required
+                                aria-required="true"
                                 autoComplete="current-password"
                                 disabled={isLoading}
                                 aria-invalid={!!error}
