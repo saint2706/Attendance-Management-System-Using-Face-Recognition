@@ -678,7 +678,7 @@ class FaceRecognitionAPI(View):
                     "type": "about:blank",
                     "title": "Validation Error",
                     "status": 400,
-                    "detail": str(exc),
+                    "detail": "Invalid request payload.",
                     "instance": request.path,
                 },
                 status=400,
