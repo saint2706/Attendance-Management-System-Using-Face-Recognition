@@ -620,7 +620,6 @@ configure_environment(
 # --- Cache Configuration ---
 # Use Redis for production (when REDIS_URL is set), with LocMemCache fallback.
 # Redis is required for multi-process deployments and embedding caching.
-import sys
 TESTING = "pytest" in sys.modules
 REDIS_URL = os.environ.get("REDIS_URL")
 EMBEDDING_CACHE_TTL = _parse_int_env("EMBEDDING_CACHE_TTL", default=3600, minimum=60)
