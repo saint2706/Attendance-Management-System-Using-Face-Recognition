@@ -12,3 +12,13 @@
 **Vulnerability:** The `django` package version `6.0` was vulnerable to several high severity CVEs including CVE-2025-13473. The `rollup` dependency in the frontend had an arbitrary file write via path traversal vulnerability (CVE-2024-36517) in versions `<4.59.0`.
 **Learning:** Outdated dependencies are a common source of critical vulnerabilities. Routine scanning using tools like `pip-audit` and `pnpm audit` is essential to identify and patch vulnerable libraries.
 **Prevention:** Updated `django` to version `6.0.3` (or newer) in `requirements.txt` and `rollup` to `4.59.0` (or newer) in the frontend. Both dependencies have been updated to non-vulnerable versions.
+
+## 2025-05-24 - CSV Injection in Frontend Export
+**Vulnerability:** The table export logic in the frontend (`recognition/static/js/ui/tables.js` and `recognition/static/js/ui.js`) did not sanitize string fields starting with formula characters (`=`, `+`, `-`, `@`). This could allow attackers to inject malicious formulas that execute when the exported CSV is opened in spreadsheet software like Excel.
+**Learning:** Data exported to CSV must be sanitized not just on the backend but also on the frontend to prevent Formula Injection (CSV Injection) attacks.
+**Prevention:** Updated the `_escapeCSV` and `escapeCSV` functions to prepend a single quote (`'`) to any string that begins with a dangerous character (`=`, `+`, `-`, `@`), effectively neutralizing the formula execution.
+
+## 2025-05-24 - DOM XSS via innerHTML
+**Vulnerability:** The UI logic in `recognition/static/js/ui.js`, `recognition/static/js/ui/tables.js`, and `recognition/templates/recognition/admin/attendance_dashboard.html` assigned HTML strings to elements using `.innerHTML`. While currently using safe strings, this pattern is inherently dangerous and can lead to DOM-based XSS if the inputs become dynamic.
+**Learning:** `innerHTML` should be strictly avoided in favor of safe DOM manipulation methods.
+**Prevention:** Refactored the code to use `document.createElement()`, `textContent`, `append()`, and `replaceChildren()` to build and insert DOM elements safely without parsing HTML strings.

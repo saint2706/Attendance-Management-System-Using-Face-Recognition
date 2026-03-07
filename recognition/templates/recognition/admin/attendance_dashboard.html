@@ -429,7 +429,11 @@
             }
         });
     } else {
-        ctx.parentElement.innerHTML = '<p class="u-empty-state">No chart data available for the past 7 days.</p>';
+        ctx.parentElement.replaceChildren();
+        const p = document.createElement('p');
+        p.className = 'u-empty-state';
+        p.textContent = 'No chart data available for the past 7 days.';
+        ctx.parentElement.appendChild(p);
     }
 })();
 </script>

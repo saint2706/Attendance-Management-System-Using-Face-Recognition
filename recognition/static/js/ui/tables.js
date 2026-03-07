@@ -92,7 +92,10 @@ export class TableEnhancer {
 
         const exportBtn = document.createElement('button');
         exportBtn.className = 'btn btn-outline-primary';
-        exportBtn.innerHTML = '<i class="fas fa-download"></i> Export CSV';
+        exportBtn.textContent = '';
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-download';
+        exportBtn.append(icon, ' Export CSV');
         exportBtn.setAttribute('aria-label', 'Export table as CSV');
 
         exportBtn.addEventListener('click', () => this.exportToCSV(table));
@@ -148,6 +151,10 @@ export class TableEnhancer {
      * @returns {string} Escaped string
      */
     _escapeCSV(str) {
+        // Prevent CSV Injection (Formula Injection)
+        if (/^[=+\-@]/.test(str)) {
+            str = "'" + str;
+        }
         // Escape quotes and wrap in quotes if contains comma, quote, or newline
         if (str.includes(',') || str.includes('"') || str.includes('\n')) {
             return '"' + str.replace(/"/g, '""') + '"';
@@ -171,10 +178,11 @@ export class TableEnhancer {
             header.setAttribute('role', 'button');
             header.setAttribute('tabindex', '0');
 
-            const originalContent = header.innerHTML;
-            header.innerHTML = originalContent + ' <i class="fas fa-sort" style="opacity: 0.3; margin-left: 0.25rem;"></i>';
-
-            const sortIcon = header.querySelector('i');
+            const sortIcon = document.createElement('i');
+            sortIcon.className = 'fas fa-sort';
+            sortIcon.style.opacity = '0.3';
+            sortIcon.style.marginLeft = '0.25rem';
+            header.append(' ', sortIcon);
 
             header.addEventListener('click', () => this._sortTable(table, index, header, sortIcon));
             header.addEventListener('keydown', (e) => {
