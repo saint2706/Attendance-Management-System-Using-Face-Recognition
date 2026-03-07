@@ -738,7 +738,7 @@ class FaceRecognitionAPI(View):
             embedding_vector = self._coerce_embedding(payload.get("embedding"))
         except ValueError as exc:
             logger.exception("Failed to coerce embedding from payload.")
-            attempt_logger.log_failure(
+                    "detail": "Invalid embedding payload.",
                 submitted_username,
                 spoofed=False,
                 error="Invalid embedding data in request payload.",
