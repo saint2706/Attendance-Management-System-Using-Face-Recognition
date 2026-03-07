@@ -716,13 +716,18 @@ class FaceRecognitionAPI(View):
         try:
             liveness_frames = self._extract_liveness_frames(payload)
         except ValueError as exc:
-            attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
+            logger.exception("Failed to extract liveness frames from payload.")
+            attempt_logger.log_failure(
+                submitted_username,
+                spoofed=False,
+                error="Invalid liveness data in request payload.",
+            )
             return JsonResponse(
                 {
                     "type": "about:blank",
                     "title": "Validation Error",
                     "status": 400,
-                    "detail": str(exc),
+                    "detail": "Invalid liveness data in request payload.",
                     "instance": request.path,
                 },
                 status=400,
@@ -732,13 +737,18 @@ class FaceRecognitionAPI(View):
         try:
             embedding_vector = self._coerce_embedding(payload.get("embedding"))
         except ValueError as exc:
-            attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
+            logger.exception("Failed to coerce embedding from payload.")
+            attempt_logger.log_failure(
+                submitted_username,
+                spoofed=False,
+                error="Invalid embedding data in request payload.",
+            )
             return JsonResponse(
                 {
                     "type": "about:blank",
                     "title": "Validation Error",
                     "status": 400,
-                    "detail": str(exc),
+                    "detail": "Invalid embedding data in request payload.",
                     "instance": request.path,
                 },
                 status=400,
