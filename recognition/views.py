@@ -715,7 +715,7 @@ class FaceRecognitionAPI(View):
 
         try:
             liveness_frames = self._extract_liveness_frames(payload)
-        except ValueError as exc:
+        except ValueError:
             logger.exception("Failed to extract liveness frames from payload.")
             attempt_logger.log_failure(
                 submitted_username,
@@ -736,7 +736,7 @@ class FaceRecognitionAPI(View):
 
         try:
             embedding_vector = self._coerce_embedding(payload.get("embedding"))
-        except ValueError as exc:
+        except ValueError:
             logger.exception("Failed to coerce embedding from payload.")
             attempt_logger.log_failure(
                 submitted_username,
