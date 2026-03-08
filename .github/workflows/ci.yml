@@ -51,7 +51,7 @@ jobs:
     timeout-minutes: 15
     services:
       postgres:
-        image: postgres:16
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: ams
           POSTGRES_PASSWORD: ams
@@ -64,7 +64,7 @@ jobs:
           --health-timeout=5s
           --health-retries=5
     strategy:
-      fail-fast: false
+      fail-fast: true
       max-parallel: 4
       matrix:
         python-version: ["3.12"]
@@ -163,7 +163,7 @@ jobs:
     needs: tests_fast
     services:
       postgres:
-        image: postgres:16
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: ams
           POSTGRES_PASSWORD: ams
@@ -241,7 +241,7 @@ jobs:
     needs: tests_fast
     services:
       postgres:
-        image: postgres:16
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: ams
           POSTGRES_PASSWORD: ams
