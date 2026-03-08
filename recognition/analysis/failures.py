@@ -164,23 +164,23 @@ def detect_occlusion(image_path: Optional[Path], facial_area: Optional[Dict] = N
             lower_y = face_y + int(face_h * 0.6)
             lower_h = int(face_h * 0.4)
             lower_region = gray[
-                max(0, lower_y) : min(height, lower_y + lower_h),
-                max(0, face_x) : min(width, face_x + face_w),
+                max(0, lower_y):min(height, lower_y + lower_h),
+                max(0, face_x):min(width, face_x + face_w),
             ]
 
             # Define eye region (top 30-50% of face)
             eye_y = face_y + int(face_h * 0.25)
             eye_h = int(face_h * 0.25)
             eye_region = gray[
-                max(0, eye_y) : min(height, eye_y + eye_h),
-                max(0, face_x) : min(width, face_x + face_w),
+                max(0, eye_y):min(height, eye_y + eye_h),
+                max(0, face_x):min(width, face_x + face_w),
             ]
         else:
             # Fall back to center regions
-            lower_region = gray[int(height * 0.6) :, int(width * 0.25) : int(width * 0.75)]
+            lower_region = gray[int(height * 0.6):, int(width * 0.25):int(width * 0.75)]
             eye_region = gray[
-                int(height * 0.25) : int(height * 0.45),
-                int(width * 0.2) : int(width * 0.8),
+                int(height * 0.25):int(height * 0.45),
+                int(width * 0.2):int(width * 0.8),
             ]
 
         # Check for heavy occlusion (mask detection)
@@ -192,11 +192,11 @@ def detect_occlusion(image_path: Optional[Path], facial_area: Optional[Dict] = N
                 # Additional check: look for common mask colors (blue, white, black)
                 if facial_area:
                     lower_hsv = hsv[
-                        max(0, lower_y) : min(height, lower_y + lower_h),
-                        max(0, face_x) : min(width, face_x + face_w),
+                        max(0, lower_y):min(height, lower_y + lower_h),
+                        max(0, face_x):min(width, face_x + face_w),
                     ]
                 else:
-                    lower_hsv = hsv[int(height * 0.6) :, int(width * 0.25) : int(width * 0.75)]
+                    lower_hsv = hsv[int(height * 0.6):, int(width * 0.25):int(width * 0.75)]
 
                 if lower_hsv.size > 0:
                     # Check saturation - masks often have low saturation (white/black)
@@ -381,10 +381,12 @@ def generate_failure_report(fa_df: pd.DataFrame, fr_df: pd.DataFrame, output_pat
             "at the cost of more false rejects.\n"
         )
         f.write(
-            "2. **Improve enrollment quality**: Ensure enrollment photos are high-quality, well-lit, and frontal.\n"
+            "2. **Improve enrollment quality**: Ensure enrollment photos are high-quality, "
+            "well-lit, and frontal.\n"
         )
         f.write(
-            "3. **Add liveness detection**: Implement anti-spoofing to prevent photo-based attacks.\n\n"
+            "3. **Add liveness detection**: Implement anti-spoofing to prevent photo-based "
+            "attacks.\n\n"
         )
 
         f.write("### For False Rejects:\n")
@@ -397,10 +399,12 @@ def generate_failure_report(fa_df: pd.DataFrame, fr_df: pd.DataFrame, output_pat
             "conditions and poses during enrollment.\n"
         )
         f.write(
-            "3. **Improve preprocessing**: Enhance face alignment and normalization to handle pose variations.\n"
+            "3. **Improve preprocessing**: Enhance face alignment and normalization "
+            "to handle pose variations.\n"
         )
         f.write(
-            "4. **Secondary authentication**: For low-confidence matches, prompt for PIN or OTP.\n\n"
+            "4. **Secondary authentication**: For low-confidence matches, "
+            "prompt for PIN or OTP.\n\n"
         )
 
 
