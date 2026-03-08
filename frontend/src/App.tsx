@@ -57,7 +57,6 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
-          {/* Placeholder routes - to be implemented */}
           <Route path="/attendance" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/session" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/add-photos" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
