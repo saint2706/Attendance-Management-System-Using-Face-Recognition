@@ -738,7 +738,7 @@ class FaceRecognitionAPI(View):
             embedding_vector = self._coerce_embedding(payload.get("embedding"))
         except ValueError as exc:
             logger.exception("Failed to coerce embedding from payload.")
-                    "detail": "Invalid embedding payload.",
+            attempt_logger.log_failure(
                 submitted_username,
                 spoofed=False,
                 error="Invalid embedding data in request payload.",
@@ -749,14 +749,13 @@ class FaceRecognitionAPI(View):
                     "title": "Validation Error",
                     "status": 400,
                     "detail": "Invalid embedding data in request payload.",
-                # Log the detailed error server-side but return a generic message to the client
                     "instance": request.path,
                 },
                 status=400,
                 content_type="application/problem+json",
             )
 
-                        "detail": "Invalid image payload.",
+        if embedding_vector is None:
             try:
                 image_bytes = self._extract_image_bytes(request, payload)
             except ValueError as exc:
