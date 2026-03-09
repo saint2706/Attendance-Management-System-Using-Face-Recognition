@@ -1811,8 +1811,8 @@ def hours_vs_date_given_employee(
         date_list.append(date)
         times_all = times_by_date.get(date, [])
 
-        # ⚡ Performance: Optimized to find first IN and last OUT in single pass over already sorted list
-        # instead of creating full lists with list comprehensions.
+        # ⚡ Performance: Optimized to find first IN and last OUT in single pass over
+        # already sorted list instead of creating full lists with list comprehensions.
         first_in = next((t for t in times_all if t.direction == Direction.IN), None)
         last_out = next((t for t in reversed(times_all) if t.direction == Direction.OUT), None)
 
