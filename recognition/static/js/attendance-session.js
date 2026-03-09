@@ -105,7 +105,13 @@ export class AttendanceSessionMonitor {
 
             console.error('[AttendanceSession] Fetch error:', error);
 
-            this.tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Unable to load live log (${this._escapeHtml(error.message)}).</td></tr>`;
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = 6;
+            td.className = 'text-center text-danger py-4';
+            td.textContent = `Unable to load live log (${error.message}).`;
+            tr.appendChild(td);
+            this.tbody.replaceChildren(tr);
 
             // Stop polling after too many errors
             if (this.errorCount >= POLLING_CONFIG.MAX_POLLING_ERRORS) {
@@ -122,22 +128,28 @@ export class AttendanceSessionMonitor {
      * @param {Array} events - Array of attendance events
      */
     _renderRows(events) {
-        let newHtml = '';
-        if (!events || events.length === 0) {
-            newHtml = '<tr><td colspan="6" class="text-center py-4 text-muted">No recent recognition events.</td></tr>';
-        } else {
-            const rows = events.map((event) => this._renderEvent(event));
-            newHtml = rows.join('');
-        }
+        const newDataString = JSON.stringify(events);
 
         // ⚡ Performance: Prevent unnecessary DOM updates if content hasn't changed.
         // This avoids expensive layout thrashing and repaints.
-        if (this.lastRenderedHtml === newHtml) {
+        if (this.lastRenderedHtml === newDataString) {
             return;
         }
 
-        this.tbody.innerHTML = newHtml;
-        this.lastRenderedHtml = newHtml;
+        if (!events || events.length === 0) {
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = 6;
+            td.className = 'text-center py-4 text-muted';
+            td.textContent = 'No recent recognition events.';
+            tr.appendChild(td);
+            this.tbody.replaceChildren(tr);
+        } else {
+            const rows = events.map((event) => this._renderEvent(event));
+            this.tbody.replaceChildren(...rows);
+        }
+
+        this.lastRenderedHtml = newDataString;
     }
 
     /**
@@ -145,13 +157,12 @@ export class AttendanceSessionMonitor {
      *
      * @private
      * @param {Object} event - Attendance event object
-     * @returns {string} HTML string for table row
+     * @returns {HTMLElement} Table row element
      */
     _renderEvent(event) {
         const timestamp = new Date(event.timestamp).toLocaleString();
-        // 🛡️ Sentinel: Escape user input to prevent XSS
-        const username = this._escapeHtml(event.username || 'Unknown');
-        const direction = this._escapeHtml(event.direction || '—');
+        const username = event.username || 'Unknown';
+        const direction = event.direction || '—';
 
         let status = 'Pending';
         let statusStyle = 'bg-secondary';
@@ -183,33 +194,54 @@ export class AttendanceSessionMonitor {
             if (event.error) {
                 status = 'Error';
                 statusStyle = 'bg-danger';
-                // 🛡️ Sentinel: Escape error message too
-                confidence = this._escapeHtml(event.error);
+                confidence = event.error;
             }
         }
 
-        return `
-      <tr>
-        <td class="text-nowrap">${timestamp}</td>
-        <td>${username}</td>
-        <td class="text-capitalize">${direction}</td>
-        <td>${this._statusBadge(status, statusStyle)}</td>
-        <td>${this._statusBadge(liveness, livenessStyle)}</td>
-        <td>${confidence}</td>
-      </tr>
-    `;
+        const tr = document.createElement('tr');
+
+        const tdTime = document.createElement('td');
+        tdTime.className = 'text-nowrap';
+        tdTime.textContent = timestamp;
+        tr.appendChild(tdTime);
+
+        const tdUser = document.createElement('td');
+        tdUser.textContent = username;
+        tr.appendChild(tdUser);
+
+        const tdDir = document.createElement('td');
+        tdDir.className = 'text-capitalize';
+        tdDir.textContent = direction;
+        tr.appendChild(tdDir);
+
+        const tdStatus = document.createElement('td');
+        tdStatus.appendChild(this._statusBadge(status, statusStyle));
+        tr.appendChild(tdStatus);
+
+        const tdLiveness = document.createElement('td');
+        tdLiveness.appendChild(this._statusBadge(liveness, livenessStyle));
+        tr.appendChild(tdLiveness);
+
+        const tdConf = document.createElement('td');
+        tdConf.textContent = confidence;
+        tr.appendChild(tdConf);
+
+        return tr;
     }
 
     /**
-     * Create a status badge HTML.
+     * Create a status badge DOM element.
      *
      * @private
      * @param {string} label - Badge label
      * @param {string} style - Badge CSS class
-     * @returns {string} HTML string for badge
+     * @returns {HTMLElement} DOM element for badge
      */
     _statusBadge(label, style) {
-        return `<span class="badge ${style}">${label}</span>`;
+        const span = document.createElement('span');
+        span.className = `badge ${style}`;
+        span.textContent = label;
+        return span;
     }
 
     /**
