@@ -75,6 +75,7 @@
     right: 0.5rem;
     background: none;
     border: none;
+    border-radius: var(--radius-sm);
     color: var(--color-text-secondary);
     cursor: pointer;
     padding: 0.25rem;
@@ -86,6 +87,11 @@
 
 .password-toggle:hover {
     color: var(--color-text);
+}
+
+.password-toggle:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
 }
 
 .password-toggle:disabled {
