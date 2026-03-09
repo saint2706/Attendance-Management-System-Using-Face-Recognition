@@ -756,7 +756,7 @@ class FaceRecognitionAPI(View):
                 content_type="application/problem+json",
             )
 
-        if not embedding_vector:
+        if embedding_vector is None:
             try:
                 image_bytes = self._extract_image_bytes(request, payload)
             except ValueError as exc:
