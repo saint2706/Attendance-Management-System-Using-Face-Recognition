@@ -36,7 +36,7 @@ dependencies = [
     "numpy<2.0,>=1.24.0",
     "pandas==3.0.1",
     "scipy==1.14.1",
-    "prometheus-client==0.23.1",
+    "prometheus-client==0.24.1",
     "PyYAML==6.0.2",
     "psycopg2-binary==2.9.11",
     "faiss-cpu==1.13.1",
