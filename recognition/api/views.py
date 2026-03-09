@@ -87,50 +87,23 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         today = timezone.now().date()
         total_employees = User.objects.filter(is_active=True).count()
 
-        # Get users who successfully checked in today
-        checked_in_users = (
-            RecognitionAttempt.objects.filter(
-                created_at__date=today,
-                successful=True,
-                direction=Direction.IN,
-            )
-            .values("user")
-            .distinct()
-        )
-        present_today = checked_in_users.count()
+        # Single query to get all successful attempts for today
+        attempts_today = RecognitionAttempt.objects.filter(
+            created_at__date=today,
+            successful=True
+        ).values_list("user_id", "direction").distinct()
 
-        # Get users who successfully checked out today
-        checked_out_users = (
-            RecognitionAttempt.objects.filter(
-                created_at__date=today,
-                successful=True,
-                direction=Direction.OUT,
-            )
-            .values("user")
-            .distinct()
-        )
-        checked_out_today = checked_out_users.count()
+        checked_in_user_ids = set()
+        checked_out_user_ids = set()
 
-        # Pending checkout = checked in but haven't checked out yet
-        # We need users in checked_in but not in checked_out
-        checked_in_user_ids = set(
-            RecognitionAttempt.objects.filter(
-                created_at__date=today,
-                successful=True,
-                direction=Direction.IN,
-            )
-            .values_list("user_id", flat=True)
-            .distinct()
-        )
-        checked_out_user_ids = set(
-            RecognitionAttempt.objects.filter(
-                created_at__date=today,
-                successful=True,
-                direction=Direction.OUT,
-            )
-            .values_list("user_id", flat=True)
-            .distinct()
-        )
+        for user_id, direction in attempts_today:
+            if direction == Direction.IN:
+                checked_in_user_ids.add(user_id)
+            elif direction == Direction.OUT:
+                checked_out_user_ids.add(user_id)
+
+        present_today = len(checked_in_user_ids)
+        checked_out_today = len(checked_out_user_ids)
         pending_checkout = len(checked_in_user_ids - checked_out_user_ids)
 
         data = {

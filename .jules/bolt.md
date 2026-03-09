@@ -5,3 +5,9 @@
 ## 2026-03-08 - [N+1 query with ModelSerializer in DRF]
 **Learning:** In Django Rest Framework, using a generic `ModelSerializer` without explicitly fetching related objects can cause a huge amount of N+1 database queries. Since serializers will implicitly access related objects to get data for serializer fields, this triggers a new database fetch.
 **Action:** When creating a ModelViewSet in Django Rest Framework, always use `select_related()` (for foreign keys and one-to-one relations) or `prefetch_related()` (for many-to-many and reverse foreign key relations) in the `get_queryset` method to prevent N+1 queries during serialization.
+
+## Optimization: N+1 query issue in attendance stats endpoint
+- The `attendance-stats` API endpoint (`AttendanceViewSet.stats` in `recognition/api/views.py`) previously executed 4 separate redundant queries against the `RecognitionAttempt` table for the same date.
+- The queries checked for IN attempts, OUT attempts, and both again to calculate pending checkout values.
+- **Optimization:** Refactored the view to fetch a single list of `user_id` and `direction` values from the `RecognitionAttempt` table. Used Python `set` operations to efficiently group the distinct active IN/OUT attempts to compute the metrics. This avoids redundant roundtrips to the DB.
+- **Result:** Decreased queries on `attendance-stats` endpoint from 5 down to 2.
