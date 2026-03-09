@@ -4,6 +4,9 @@ import { getCurrentUser, login as apiLogin, logout as apiLogout } from '../api/a
 import type { User, LoginCredentials } from '../api/auth';
 import { getToken } from '../api/client';
 
+/**
+ * Defines the state and functions available in the AuthContext.
+ */
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
