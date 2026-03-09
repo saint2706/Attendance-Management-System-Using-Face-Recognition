@@ -101,8 +101,14 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Cache npm global packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-lhci
+
       - name: Install Lighthouse CI
-        run: npm install -g @lhci/cli
+        run: npm install -g @lhci/cli@0.14.0
 
       - name: Run Lighthouse audits
         run: lhci autorun
