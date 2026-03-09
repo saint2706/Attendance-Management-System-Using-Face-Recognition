@@ -84,7 +84,7 @@ platformdirs==4.5.1
 playwright==1.57.0
 pluggy==1.6.0
 pre_commit==4.0.1
-prometheus_client==0.23.1
+prometheus_client==0.24.1
 prompt_toolkit==3.0.52
 protobuf==6.33.5
 psycopg2-binary==2.9.11
