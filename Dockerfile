@@ -54,7 +54,7 @@ ENV PATH="/venv/bin:$PATH"
 # Leverage Docker layer caching for dependency installation
 COPY requirements.txt ./
 RUN pip install --upgrade pip setuptools wheel \
-    && pip install -r requirements.txt
+    && pip install --no-cache-dir -r requirements.txt
 
 # Copy the full project for asset compilation
 COPY . /app

@@ -80,5 +80,13 @@ Makefile
 # Environment files
 .env*
 !.env.example
+
+# Frontend build artifacts
 frontend/node_modules/
 frontend/dist/
+
+# Development specific directories
+tests/
+k8s/
+scripts/
+docs/
