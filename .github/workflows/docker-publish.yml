@@ -44,6 +44,7 @@ env:
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 concurrency:
   group: docker-${{ github.workflow }}-${{ github.ref }}
