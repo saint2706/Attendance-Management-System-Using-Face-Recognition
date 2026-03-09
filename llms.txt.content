@@ -1,0 +1,5 @@
+# Site Architecture
+- /: Home page
+- /dashboard: User dashboard
+- /login: User login
+- /register: User registration

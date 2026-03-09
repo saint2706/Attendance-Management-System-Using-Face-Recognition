@@ -1,5 +1,8 @@
 import React from 'react';
 
+/**
+ * Props for the Kbd component.
+ */
 interface KbdProps {
   children: React.ReactNode;
   className?: string;

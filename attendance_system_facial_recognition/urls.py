@@ -51,7 +51,23 @@ def progressive_web_app_service_worker(request: HttpRequest) -> FileResponse:
     return response
 
 
+def robots_txt(request: HttpRequest) -> FileResponse:
+    return _serve_static_asset(
+        "recognition/static/robots.txt",
+        content_type="text/plain",
+    )
+
+
+def llms_txt(request: HttpRequest) -> FileResponse:
+    return _serve_static_asset(
+        "recognition/static/llms.txt",
+        content_type="text/plain",
+    )
+
+
 urlpatterns = [
+    path("robots.txt", robots_txt, name="robots_txt"),
+    path("llms.txt", llms_txt, name="llms_txt"),
     path("manifest.json", progressive_web_app_manifest, name="pwa-manifest"),
     path("sw.js", progressive_web_app_service_worker, name="service-worker"),
     # API V1

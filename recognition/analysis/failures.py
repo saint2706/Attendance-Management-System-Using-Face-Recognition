@@ -381,10 +381,12 @@ def generate_failure_report(fa_df: pd.DataFrame, fr_df: pd.DataFrame, output_pat
             "at the cost of more false rejects.\n"
         )
         f.write(
-            "2. **Improve enrollment quality**: Ensure enrollment photos are high-quality, well-lit, and frontal.\n"
+            "2. **Improve enrollment quality**: Ensure enrollment photos are high-quality, "
+            "well-lit, and frontal.\n"
         )
         f.write(
-            "3. **Add liveness detection**: Implement anti-spoofing to prevent photo-based attacks.\n\n"
+            "3. **Add liveness detection**: Implement anti-spoofing to prevent photo-based "
+            "attacks.\n\n"
         )
 
         f.write("### For False Rejects:\n")
@@ -397,10 +399,12 @@ def generate_failure_report(fa_df: pd.DataFrame, fr_df: pd.DataFrame, output_pat
             "conditions and poses during enrollment.\n"
         )
         f.write(
-            "3. **Improve preprocessing**: Enhance face alignment and normalization to handle pose variations.\n"
+            "3. **Improve preprocessing**: Enhance face alignment and normalization "
+            "to handle pose variations.\n"
         )
         f.write(
-            "4. **Secondary authentication**: For low-confidence matches, prompt for PIN or OTP.\n\n"
+            "4. **Secondary authentication**: For low-confidence matches, "
+            "prompt for PIN or OTP.\n\n"
         )
 
 

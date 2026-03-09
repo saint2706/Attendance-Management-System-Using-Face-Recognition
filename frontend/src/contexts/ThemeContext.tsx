@@ -1,8 +1,14 @@
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 
+/**
+ * Represents the available theme preferences.
+ */
 type Theme = 'light' | 'dark' | 'system';
 
+/**
+ * Defines the state and functions available in the ThemeContext.
+ */
 interface ThemeContextType {
     theme: Theme;
     resolvedTheme: 'light' | 'dark';

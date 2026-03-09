@@ -64,7 +64,7 @@ This document provides a map of all documentation in this project, organized by 
 
 ### Project Management
 
-- **[TODO / Roadmap](TODO.md)** – Feature roadmap for 2025-2026
+- **[Roadmap](TODO.md)** – Feature roadmap for 2025-2026
 - **[Changelog](../CHANGELOG.md)** – Version history and release notes
 - **[Business Actions](BUSINESS_ACTIONS.md)** – Policy-based action mapping
 
