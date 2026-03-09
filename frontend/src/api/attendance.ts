@@ -1,5 +1,8 @@
 import apiClient from './client';
 
+/**
+ * Represents a single attendance record.
+ */
 export interface AttendanceRecord {
     id: number;
     userId: number;
@@ -11,6 +14,9 @@ export interface AttendanceRecord {
     spoofDetected: boolean;
 }
 
+/**
+ * Represents the daily attendance statistics.
+ */
 export interface AttendanceStats {
     totalEmployees: number;
     presentToday: number;
@@ -18,6 +24,9 @@ export interface AttendanceStats {
     pendingCheckout: number;
 }
 
+/**
+ * Represents the result of a facial recognition attempt.
+ */
 export interface RecognitionResult {
     recognized: boolean;
     username?: string;
@@ -27,6 +36,9 @@ export interface RecognitionResult {
     message: string;
 }
 
+/**
+ * Represents an event in the live attendance feed.
+ */
 export interface AttendanceFeedEvent {
     eventType: 'attempt' | 'outcome';
     username: string;
