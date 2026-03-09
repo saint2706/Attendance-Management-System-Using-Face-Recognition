@@ -5,7 +5,7 @@ ARG PYTHON_VERSION=3.12
 # =============================================================================
 # Stage 1: Build Frontend
 # =============================================================================
-FROM node:20-alpine AS frontend-build
+FROM node:25-alpine AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
 RUN corepack enable pnpm && pnpm install --frozen-lockfile
