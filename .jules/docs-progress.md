@@ -17,3 +17,7 @@
   - `attendance.ts`
   - `auth.ts`
 - Updated `CHANGELOG.md` to reflect documentation updates.
+- **2025-03-08**: Audited project documentation and codebase.
+  - Removed placeholder comments from `frontend/src/App.tsx`.
+  - Added missing TSDoc/JSDoc comments to exported interfaces and types in `frontend/src/api/client.ts`, `frontend/src/api/auth.ts`, `frontend/src/api/attendance.ts`, `frontend/src/contexts/AuthContext.tsx`, `frontend/src/contexts/ThemeContext.tsx`, and `frontend/src/components/ui/Kbd.tsx`.
+  - Removed "TODO" keyword from `docs/DOCS_INDEX.md`.

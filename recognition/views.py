@@ -749,13 +749,15 @@ class FaceRecognitionAPI(View):
                     "type": "about:blank",
                     "title": "Validation Error",
                     "status": 400,
-                    "detail": "Invalid embedding payload.",
+                    "detail": "Invalid embedding data in request payload.",
+                    # Log the detailed error server-side but return a generic message to the client
                     "instance": request.path,
                 },
                 status=400,
                 content_type="application/problem+json",
             )
 
+        if embedding_vector is None:
             try:
                 image_bytes = self._extract_image_bytes(request, payload)
             except ValueError as exc:
@@ -1810,8 +1812,8 @@ def hours_vs_date_given_employee(
         date_list.append(date)
         times_all = times_by_date.get(date, [])
 
-        # ⚡ Performance: Optimized to find first IN and last OUT in single pass over already sorted list
-        # instead of creating full lists with list comprehensions.
+        # ⚡ Performance: Optimized to find first IN and last OUT in single pass over
+        # already sorted list instead of creating full lists with list comprehensions.
         first_in = next((t for t in times_all if t.direction == Direction.IN), None)
         last_out = next((t for t in reversed(times_all) if t.direction == Direction.OUT), None)
 

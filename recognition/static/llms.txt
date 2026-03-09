@@ -1,0 +1,8 @@
+# Site Architecture
+- /: Home page - Welcome to the Smart Attendance System
+- /dashboard: User dashboard - Access attendance records and manage users
+- /login: User login - Dashboard Login
+- /register: User registration
+- /mark_your_attendance: Mark Time-In - Clock in for the day
+- /mark_your_attendance_out: Mark Time-Out - Clock out when you're done
+- /view_my_attendance: View personal attendance records

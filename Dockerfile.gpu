@@ -12,7 +12,7 @@ ARG PYTHON_VERSION=3.12
 FROM node:20-alpine AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
 COPY frontend/ .
 # Ensure vite config base is correct (should be set in code, but we can enforce if needed)
 RUN pnpm run build
@@ -85,6 +85,9 @@ RUN pip install --upgrade pip setuptools wheel \
 # Copy full project
 COPY . /app
 
+# Remove raw frontend source to prevent bloat in the final image
+RUN rm -rf /app/frontend
+
 # Copy built frontend from Stage 1
 COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 
@@ -119,19 +122,13 @@ WORKDIR /app
 RUN groupadd --gid 1000 appgroup \
     && useradd --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
 
-# Copy virtual environment and application
-COPY --from=build /venv /venv
-COPY --from=build /app /app
-
-# Ensure frontend/dist is present and has correct permissions
-# (It was copied to /app in build stage, so it should be there, provided it wasn't excluded)
-# But we must ensure it's there.
-# Build stage COPY . /app would copy source frontend, then overwrite with built dist.
-# Then COPY --from=build /app /app copies it all to runtime.
-
 # Create runtime directories
 RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
     && chown -R appuser:appgroup /app
+
+# Copy virtual environment and application
+COPY --from=build --chown=appuser:appgroup /venv /venv
+COPY --from=build --chown=appuser:appgroup /app /app
 
 USER appuser
 
