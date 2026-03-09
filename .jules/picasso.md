@@ -1,6 +1,4 @@
-# Picasso: UX Learnings & Progress
+# Picasso Learnings
 
-## [Date]
-* **Accessibility improvements**: Implemented the "Form Label with Required Indicator" pattern on the `Login.tsx` page. Added a visual `*` (with `aria-hidden="true"` and a new utility class `.text-danger` mapped to the existing `--color-danger` token) and `aria-required="true"` to input elements to improve screen reader compatibility and visual cues for mandatory fields.
-* **Dependencies**: Encountered a minor React version mismatch (`react` vs `react-dom` versions not aligning perfectly in a Vite project) when running local dev server; resolved by reinstalling the specific matching versions. Keep an eye on dependency resolution when updating packages to ensure `react` and `react-dom` are strictly aligned.
-- Added `name` attributes to login input fields in `frontend/src/pages/Login.tsx` to improve autofill support and better support automated tests.
+- Keyboard accessibility focus states should be implemented using the `:focus-visible` pseudo-class (e.g., `outline: 2px solid var(--color-border-focus); outline-offset: 2px;`) to ensure clear visibility for keyboard users while avoiding lingering outlines on mouse clicks.
+- When using Playwright to visually verify local frontend changes, start the Vite development server (`cd frontend && pnpm run dev`) rather than a generic python `http.server` on the build directory to properly handle SPA routing and assets.

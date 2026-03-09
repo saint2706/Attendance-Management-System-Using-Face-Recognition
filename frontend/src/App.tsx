@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Loader2 } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Navbar } from './components/layout/Navbar';
 import { Home } from './pages/Home';
@@ -20,7 +21,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center" style={{ minHeight: '60vh' }}>
+      <div className="flex flex-col items-center justify-center" style={{ minHeight: '60vh' }} role="status">
+        <Loader2 size={48} className="animate-spin mb-md" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
         <div className="animate-pulse text-muted">Loading...</div>
       </div>
     );
