@@ -70,17 +70,12 @@ def test_dirty_check_implementation_exists(page: Page, server_url: str, admin_ac
             window.domUpdateAttempts = 0;
             const tbody = document.getElementById('attendance-log-body');
 
-            // Override innerHTML setter to track updates
-            const originalDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
-            Object.defineProperty(tbody, 'innerHTML', {
-                set: function(value) {
-                    window.domUpdateAttempts++;
-                    originalDescriptor.set.call(this, value);
-                },
-                get: function() {
-                    return originalDescriptor.get.call(this);
-                }
-            });
+            // Override replaceChildren to track updates
+            const originalReplaceChildren = tbody.replaceChildren;
+            tbody.replaceChildren = function(...nodes) {
+                window.domUpdateAttempts++;
+                return originalReplaceChildren.apply(this, nodes);
+            };
 
             // Call _renderRows with some test events
             const testEvents = [
@@ -201,16 +196,11 @@ def test_dirty_check_handles_empty_to_data_transition(page: Page, server_url: st
             window.domUpdateAttempts = 0;
             const tbody = document.getElementById('attendance-log-body');
 
-            const originalDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
-            Object.defineProperty(tbody, 'innerHTML', {
-                set: function(value) {
-                    window.domUpdateAttempts++;
-                    originalDescriptor.set.call(this, value);
-                },
-                get: function() {
-                    return originalDescriptor.get.call(this);
-                }
-            });
+            const originalReplaceChildren = tbody.replaceChildren;
+            tbody.replaceChildren = function(...nodes) {
+                window.domUpdateAttempts++;
+                return originalReplaceChildren.apply(this, nodes);
+            };
 
             // Reset lastRenderedHtml to simulate fresh state
             window.attendanceMonitor.lastRenderedHtml = null;

@@ -92,7 +92,10 @@ export class TableEnhancer {
 
         const exportBtn = document.createElement('button');
         exportBtn.className = 'btn btn-outline-primary';
-        exportBtn.innerHTML = '<i class="fas fa-download"></i> Export CSV';
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-download';
+        exportBtn.appendChild(icon);
+        exportBtn.appendChild(document.createTextNode(' Export CSV'));
         exportBtn.setAttribute('aria-label', 'Export table as CSV');
 
         exportBtn.addEventListener('click', () => this.exportToCSV(table));
@@ -171,10 +174,12 @@ export class TableEnhancer {
             header.setAttribute('role', 'button');
             header.setAttribute('tabindex', '0');
 
-            const originalContent = header.innerHTML;
-            header.innerHTML = originalContent + ' <i class="fas fa-sort" style="opacity: 0.3; margin-left: 0.25rem;"></i>';
-
-            const sortIcon = header.querySelector('i');
+            const sortIcon = document.createElement('i');
+            sortIcon.className = 'fas fa-sort';
+            sortIcon.style.opacity = '0.3';
+            sortIcon.style.marginLeft = '0.25rem';
+            header.appendChild(document.createTextNode(' '));
+            header.appendChild(sortIcon);
 
             header.addEventListener('click', () => this._sortTable(table, index, header, sortIcon));
             header.addEventListener('keydown', (e) => {
