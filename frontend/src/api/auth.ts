@@ -1,17 +1,26 @@
 import apiClient from './client';
 import { setToken, setRefreshToken, removeToken, removeRefreshToken } from './client';
 
+/**
+ * Credentials required for user login.
+ */
 export interface LoginCredentials {
     username: string;
     password: string;
 }
 
+/**
+ * The response received after a successful login.
+ */
 export interface LoginResponse {
     access: string;
     refresh: string;
     user: User;
 }
 
+/**
+ * Represents a user profile in the system.
+ */
 export interface User {
     id: number;
     username: string;
@@ -22,6 +31,9 @@ export interface User {
     isActive: boolean;
 }
 
+/**
+ * Data required to register a new employee.
+ */
 export interface RegisterData {
     username: string;
     email: string;

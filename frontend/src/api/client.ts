@@ -105,12 +105,19 @@ apiClient.interceptors.response.use(
 export default apiClient;
 
 // API response types
+/**
+ * Represents an error response from the API.
+ */
 export interface ApiError {
     message: string;
     code?: string;
     details?: Record<string, string[]>;
 }
 
+/**
+ * Represents a paginated response from the API.
+ * @template T The type of the results array.
+ */
 export interface PaginatedResponse<T> {
     count: number;
     next: string | null;
