@@ -88,10 +88,11 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         total_employees = User.objects.filter(is_active=True).count()
 
         # Single query to get all successful attempts for today
-        attempts_today = RecognitionAttempt.objects.filter(
-            created_at__date=today,
-            successful=True
-        ).values_list("user_id", "direction").distinct()
+        attempts_today = (
+            RecognitionAttempt.objects.filter(created_at__date=today, successful=True)
+            .values_list("user_id", "direction")
+            .distinct()
+        )
 
         checked_in_user_ids = set()
         checked_out_user_ids = set()
