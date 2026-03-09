@@ -64,6 +64,7 @@ export const Login = () => {
                         <input
                             type="text"
                             id="username"
+                            name="username"
                             className="input"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
@@ -86,6 +87,7 @@ export const Login = () => {
                             <input
                                 type={showPassword ? 'text' : 'password'}
                                 id="password"
+                                name="password"
                                 className="input"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
