@@ -80,7 +80,7 @@ COPY requirements.txt ./
 RUN pip install --upgrade pip setuptools wheel \
     && sed 's/faiss-cpu/faiss-gpu/g' requirements.txt > requirements-gpu.txt \
     && echo "tensorflow[and-cuda]==2.18.0" >> requirements-gpu.txt \
-    && pip install -r requirements-gpu.txt
+    && pip install --no-cache-dir -r requirements-gpu.txt
 
 # Copy full project
 COPY . /app

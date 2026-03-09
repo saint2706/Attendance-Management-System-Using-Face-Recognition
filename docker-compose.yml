@@ -32,7 +32,7 @@ services:
   web:
     build:
       context: .
-    image: ${IMAGE_NAME:-attendance-system}:${IMAGE_TAG:-latest}
+    image: ${IMAGE_NAME:-attendance-system}:${IMAGE_TAG:-production}
     restart: unless-stopped
     depends_on:
       postgres:
@@ -60,7 +60,7 @@ services:
       - media_data:/app/media
 
   celery:
-    image: ${IMAGE_NAME:-attendance-system}:${IMAGE_TAG:-latest}
+    image: ${IMAGE_NAME:-attendance-system}:${IMAGE_TAG:-production}
     restart: unless-stopped
     working_dir: /app
     command: >-
@@ -89,7 +89,7 @@ services:
         condition: service_healthy
 
   celery-beat:
-    image: ${IMAGE_NAME:-attendance-system}:${IMAGE_TAG:-latest}
+    image: ${IMAGE_NAME:-attendance-system}:${IMAGE_TAG:-production}
     restart: unless-stopped
     working_dir: /app
     command: >-
