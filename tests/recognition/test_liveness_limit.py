@@ -87,8 +87,8 @@ def test_liveness_frames_limit_rejection(client):
     # Should return 400 Bad Request
     assert response.status_code == 400
     response_data = response.json()
-    assert "error" in response_data
-    assert "Too many liveness frames" in response_data["error"]
+    assert "detail" in response_data
+    assert "Too many liveness frames" in response_data["detail"]
 
 
 @pytest.mark.django_db
@@ -126,7 +126,7 @@ def test_liveness_frames_within_limit(client):
         # but it should not be rejected with the "Too many liveness frames" error
         if response.status_code == 400:
             response_data = response.json()
-            assert "Too many liveness frames" not in response_data.get("error", "")
+            assert "Too many liveness frames" not in response_data.get("detail", "")
 
 
 @pytest.mark.django_db
@@ -157,4 +157,4 @@ def test_liveness_frames_single_frame(client):
         # Should not be rejected for having too many frames
         if response.status_code == 400:
             response_data = response.json()
-            assert "Too many liveness frames" not in response_data.get("error", "")
+            assert "Too many liveness frames" not in response_data.get("detail", "")

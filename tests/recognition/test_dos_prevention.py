@@ -55,4 +55,4 @@ def test_large_image_rejection(client):
         # Expect 400 Bad Request due to rejection
         assert response.status_code == 400
         # The generic error message for "returned None" is "Unable to decode the supplied image."
-        assert "Unable to decode the supplied image" in response.json().get("error", "")
+        assert "Unable to decode the supplied image" in response.json().get("detail", "")

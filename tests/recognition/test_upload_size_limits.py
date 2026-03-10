@@ -141,7 +141,7 @@ def test_file_upload_exceeds_limit(client):
     )
 
     assert response.status_code == 400
-    assert "exceeds maximum allowed size" in response.json().get("error", "")
+    assert "exceeds maximum allowed size" in response.json().get("detail", "")
 
 
 @pytest.mark.django_db
@@ -205,7 +205,7 @@ def test_base64_without_header_exceeds_limit(client):
     )
 
     assert response.status_code == 400
-    assert "exceeds maximum allowed size" in response.json().get("error", "")
+    assert "exceeds maximum allowed size" in response.json().get("detail", "")
 
 
 @pytest.mark.django_db
@@ -275,7 +275,7 @@ def test_base64_with_header_exceeds_limit(client):
     )
 
     assert response.status_code == 400
-    assert "exceeds maximum allowed size" in response.json().get("error", "")
+    assert "exceeds maximum allowed size" in response.json().get("detail", "")
 
 
 @pytest.mark.django_db
@@ -315,7 +315,7 @@ def test_base64_approximation_check(client):
     )
 
     assert response.status_code == 400
-    assert "exceeds maximum allowed size" in response.json().get("error", "")
+    assert "exceeds maximum allowed size" in response.json().get("detail", "")
 
 
 @pytest.mark.django_db
@@ -354,7 +354,7 @@ def test_post_decode_size_check(client):
     )
 
     assert response.status_code == 400
-    assert "exceeds maximum allowed size" in response.json().get("error", "")
+    assert "exceeds maximum allowed size" in response.json().get("detail", "")
 
 
 @pytest.mark.django_db
@@ -415,4 +415,4 @@ def test_custom_size_limit(client):
     )
 
     assert response.status_code == 400
-    assert "exceeds maximum allowed size" in response.json().get("error", "")
+    assert "exceeds maximum allowed size" in response.json().get("detail", "")

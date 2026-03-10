@@ -603,7 +603,17 @@ class FaceRecognitionAPI(View):
                 spoofed=False,
                 error="Too many requests.",
             )
-            return JsonResponse({"error": "Too many requests."}, status=429)
+            return JsonResponse(
+                {
+                    "type": "about:blank",
+                    "title": "Rate Limit Exceeded",
+                    "status": 429,
+                    "detail": "Too many requests.",
+                    "instance": request.path,
+                },
+                status=429,
+                content_type="application/problem+json",
+            )
 
         auth_ok, principal, auth_error = self._authenticate_request(request)
         if principal and not request_username:
@@ -620,7 +630,17 @@ class FaceRecognitionAPI(View):
                 spoofed=False,
                 error=auth_error or "Authentication failed.",
             )
-            return JsonResponse({"error": auth_error or "Authentication failed."}, status=401)
+            return JsonResponse(
+                {
+                    "type": "about:blank",
+                    "title": "Authentication Error",
+                    "status": 401,
+                    "detail": auth_error or "Authentication failed.",
+                    "instance": request.path,
+                },
+                status=401,
+                content_type="application/problem+json",
+            )
 
         try:
             payload = self._parse_payload(request)
@@ -635,7 +655,17 @@ class FaceRecognitionAPI(View):
                 spoofed=False,
                 error=str(exc),
             )
-            return JsonResponse({"error": str(exc)}, status=400)
+            return JsonResponse(
+                {
+                    "type": "about:blank",
+                    "title": "Validation Error",
+                    "status": 400,
+                    "detail": "Invalid request payload.",
+                    "instance": request.path,
+                },
+                status=400,
+                content_type="application/problem+json",
+            )
 
         raw_direction = payload.get("direction")
         if isinstance(raw_direction, str):
@@ -670,21 +700,56 @@ class FaceRecognitionAPI(View):
         try:
             liveness_frames = self._extract_liveness_frames(payload)
         except ValueError as exc:
+            # Log full error details server-side, but return a generic message to the client
             attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
-            return JsonResponse({"error": str(exc)}, status=400)
+            Hub.current.capture_exception(exc)
+            return JsonResponse(
+                {
+                    "type": "about:blank",
+                    "detail": "Invalid liveness data in request payload.",
+                    "status": 400,
+                    "detail": "Invalid liveness data in request.",
+                    "instance": request.path,
+                },
+                status=400,
+                content_type="application/problem+json",
+            )
 
         try:
+            # Log full error details for diagnostics, but avoid exposing them to the client.
             embedding_vector = self._coerce_embedding(payload.get("embedding"))
         except ValueError as exc:
+            # Log full error details server-side, but return a generic message to the client
             attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
-            return JsonResponse({"error": str(exc)}, status=400)
+            Hub.current.capture_exception(exc)
+                    "detail": "Invalid embedding data in request payload.",
+                    "detail": "Invalid embedding data.",
+                    "type": "about:blank",
+                    "title": "Validation Error",
+                    "status": 400,
+                    "detail": "Invalid embedding data in request.",
+                    "instance": request.path,
+                },
+                status=400,
+                content_type="application/problem+json",
+            )
 
         if embedding_vector is None:
             try:
                 image_bytes = self._extract_image_bytes(request, payload)
             except ValueError as exc:
                 attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
-                return JsonResponse({"error": str(exc)}, status=400)
+                        "detail": "Invalid image data in request payload.",
+                    {
+                        "type": "about:blank",
+                        "title": "Validation Error",
+                        "status": 400,
+                        "detail": str(exc),
+                        "instance": request.path,
+                    },
+                    status=400,
+                    content_type="application/problem+json",
+                )
 
             if not image_bytes:
                 attempt_logger.log_failure(
@@ -704,7 +769,17 @@ class FaceRecognitionAPI(View):
                     spoofed=False,
                     error="Unable to decode the supplied image.",
                 )
-                return JsonResponse({"error": "Unable to decode the supplied image."}, status=400)
+                return JsonResponse(
+                    {
+                        "type": "about:blank",
+                        "title": "Validation Error",
+                        "status": 400,
+                        "detail": "Unable to decode the supplied image.",
+                        "instance": request.path,
+                    },
+                    status=400,
+                    content_type="application/problem+json",
+                )
 
             try:
                 representations = DeepFace.represent(
@@ -783,7 +858,17 @@ class FaceRecognitionAPI(View):
                     spoofed=False,
                     error="Invalid embedding generated.",
                 )
-                return JsonResponse({"error": "Invalid embedding generated."}, status=500)
+                return JsonResponse(
+                    {
+                        "type": "about:blank",
+                        "title": "Internal Server Error",
+                        "status": 500,
+                        "detail": "Invalid embedding generated.",
+                        "instance": request.path,
+                    },
+                    status=500,
+                    content_type="application/problem+json",
+                )
 
         dataset_index = _load_dataset_embeddings_for_matching(
             model_name, detector_backend, enforce_detection
@@ -921,21 +1006,61 @@ def enqueue_attendance_batch(request):
     """Accept a batch of attendance records and enqueue them for Celery processing."""
 
     if request.method.upper() != "POST":
-        return JsonResponse({"detail": "Method not allowed."}, status=405)
+        return JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Method Not Allowed",
+                "status": 405,
+                "detail": "Method not allowed.",
+                "instance": request.path,
+            },
+            status=405,
+            content_type="application/problem+json",
+        )
 
     try:
         raw_body = request.body.decode(request.encoding or "utf-8") if request.body else "{}"
     except UnicodeDecodeError:
-        return JsonResponse({"detail": "Request body must be UTF-8 encoded."}, status=400)
+        return JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Validation Error",
+                "status": 400,
+                "detail": "Request body must be UTF-8 encoded.",
+                "instance": request.path,
+            },
+            status=400,
+            content_type="application/problem+json",
+        )
 
     try:
         payload = json.loads(raw_body or "{}")
     except json.JSONDecodeError:
-        return JsonResponse({"detail": "Invalid JSON payload."}, status=400)
+        return JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Validation Error",
+                "status": 400,
+                "detail": "Invalid JSON payload.",
+                "instance": request.path,
+            },
+            status=400,
+            content_type="application/problem+json",
+        )
 
     records = payload.get("records")
     if not isinstance(records, list):
-        return JsonResponse({"detail": "'records' must be a list."}, status=400)
+        return JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Validation Error",
+                "status": 400,
+                "detail": "'records' must be a list.",
+                "instance": request.path,
+            },
+            status=400,
+            content_type="application/problem+json",
+        )
 
     normalized_records: list[Dict[str, Any]] = []
     for index, record in enumerate(records):
@@ -951,7 +1076,15 @@ def enqueue_attendance_batch(request):
     except Exception:  # pragma: no cover - defensive programming
         logger.exception("Failed to enqueue attendance batch via API.")
         return JsonResponse(
-            {"detail": "Unable to enqueue attendance batch at this time."}, status=503
+            {
+                "type": "about:blank",
+                "title": "Service Unavailable",
+                "status": 503,
+                "detail": "Unable to enqueue attendance batch at this time.",
+                "instance": request.path,
+            },
+            status=503,
+            content_type="application/problem+json",
         )
 
     return JsonResponse(
@@ -2693,7 +2826,17 @@ def attendance_session_feed(request) -> JsonResponse:
     """Return a live feed of recent recognition attempts and outcomes for the UI log."""
 
     if not (request.user.is_staff or request.user.is_superuser):
-        return JsonResponse({"detail": "Not authorised"}, status=403)
+        return JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Forbidden",
+                "status": 403,
+                "detail": "Not authorised",
+                "instance": request.path,
+            },
+            status=403,
+            content_type="application/problem+json",
+        )
 
     try:
         minutes = int(request.GET.get("minutes", "60"))
@@ -3226,7 +3369,17 @@ def task_status(request, task_id: str) -> JsonResponse:
     """Return JSON describing the state of a Celery task."""
 
     if not (request.user.is_staff or request.user.is_superuser):
-        return JsonResponse({"detail": "Not authorised"}, status=403)
+        return JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Forbidden",
+                "status": 403,
+                "detail": "Not authorised",
+                "instance": request.path,
+            },
+            status=403,
+            content_type="application/problem+json",
+        )
 
     payload = _describe_async_result(task_id)
     return JsonResponse(payload)
