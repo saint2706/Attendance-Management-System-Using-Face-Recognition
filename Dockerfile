@@ -25,6 +25,7 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
 # Runtime libraries required by OpenCV/DeepFace
+# hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         libgl1 \
@@ -39,6 +40,7 @@ RUN apt-get update \
 FROM python-base AS build
 
 # Build tools required for Python packages with native extensions
+# hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         build-essential \
@@ -53,7 +55,8 @@ ENV PATH="/venv/bin:$PATH"
 
 # Leverage Docker layer caching for dependency installation
 COPY requirements.txt ./
-RUN pip install --upgrade pip setuptools wheel \
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir -r requirements.txt
 
 # Copy the full project for asset compilation

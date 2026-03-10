@@ -30,6 +30,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PIP_NO_CACHE_DIR=1
 
 # Install Python 3.12 and runtime dependencies
+# hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
     software-properties-common \
@@ -58,6 +59,7 @@ RUN apt-get update \
 FROM cuda-base AS build
 
 # Build tools for native extensions
+# hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
     build-essential \
@@ -77,7 +79,8 @@ COPY requirements.txt ./
 
 # Create GPU-specific requirements and install
 # We use faiss-gpu instead of faiss-cpu
-RUN pip install --upgrade pip setuptools wheel \
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
     && sed 's/faiss-cpu/faiss-gpu/g' requirements.txt > requirements-gpu.txt \
     && echo "tensorflow[and-cuda]==2.18.0" >> requirements-gpu.txt \
     && pip install --no-cache-dir -r requirements-gpu.txt
