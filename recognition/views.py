@@ -1064,28 +1064,75 @@ def enqueue_attendance_batch(request):
     """Accept a batch of attendance records and enqueue them for Celery processing."""
 
     if request.method.upper() != "POST":
-        return JsonResponse({"detail": "Method not allowed."}, status=405)
+        return JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Method Not Allowed",
+                "status": 405,
+                "detail": "Method not allowed.",
+                "instance": request.path,
+            },
+            status=405,
+            content_type="application/problem+json",
+        )
 
     try:
         raw_body = request.body.decode(request.encoding or "utf-8") if request.body else "{}"
     except UnicodeDecodeError:
-        return JsonResponse({"detail": "Request body must be UTF-8 encoded."}, status=400)
+        return JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Validation Error",
+                "status": 400,
+                "detail": "Request body must be UTF-8 encoded.",
+                "instance": request.path,
+            },
+            status=400,
+            content_type="application/problem+json",
+        )
 
     try:
         payload = json.loads(raw_body or "{}")
     except json.JSONDecodeError:
-        return JsonResponse({"detail": "Invalid JSON payload."}, status=400)
+        return JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Validation Error",
+                "status": 400,
+                "detail": "Invalid JSON payload.",
+                "instance": request.path,
+            },
+            status=400,
+            content_type="application/problem+json",
+        )
 
     records = payload.get("records")
     if not isinstance(records, list):
-        return JsonResponse({"detail": "'records' must be a list."}, status=400)
+        return JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Validation Error",
+                "status": 400,
+                "detail": "'records' must be a list.",
+                "instance": request.path,
+            },
+            status=400,
+            content_type="application/problem+json",
+        )
 
     normalized_records: list[Dict[str, Any]] = []
     for index, record in enumerate(records):
         if not isinstance(record, dict):
             return JsonResponse(
-                {"detail": f"Record at index {index} must be a JSON object."},
+                {
+                    "type": "about:blank",
+                    "title": "Validation Error",
+                    "status": 400,
+                    "detail": f"Record at index {index} must be a JSON object.",
+                    "instance": request.path,
+                },
                 status=400,
+                content_type="application/problem+json",
             )
         normalized_records.append(record)
 
@@ -1094,7 +1141,15 @@ def enqueue_attendance_batch(request):
     except Exception:  # pragma: no cover - defensive programming
         logger.exception("Failed to enqueue attendance batch via API.")
         return JsonResponse(
-            {"detail": "Unable to enqueue attendance batch at this time."}, status=503
+            {
+                "type": "about:blank",
+                "title": "Service Unavailable",
+                "status": 503,
+                "detail": "Unable to enqueue attendance batch at this time.",
+                "instance": request.path,
+            },
+            status=503,
+            content_type="application/problem+json",
         )
 
     return JsonResponse(
@@ -2644,7 +2699,17 @@ def attendance_session_feed(request) -> JsonResponse:
     """Return a live feed of recent recognition attempts and outcomes for the UI log."""
 
     if not (request.user.is_staff or request.user.is_superuser):
-        return JsonResponse({"detail": "Not authorised"}, status=403)
+        return JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Forbidden",
+                "status": 403,
+                "detail": "Not authorised.",
+                "instance": request.path,
+            },
+            status=403,
+            content_type="application/problem+json",
+        )
 
     try:
         minutes = int(request.GET.get("minutes", "60"))
@@ -3133,7 +3198,17 @@ def task_status(request, task_id: str) -> JsonResponse:
     """Return JSON describing the state of a Celery task."""
 
     if not (request.user.is_staff or request.user.is_superuser):
-        return JsonResponse({"detail": "Not authorised"}, status=403)
+        return JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Forbidden",
+                "status": 403,
+                "detail": "Not authorised.",
+                "instance": request.path,
+            },
+            status=403,
+            content_type="application/problem+json",
+        )
 
     payload = _describe_async_result(task_id)
     return JsonResponse(payload)

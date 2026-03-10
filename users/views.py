@@ -478,7 +478,17 @@ def setup_wizard_status(request):
     Returns JSON with current step and completion status.
     """
     if not (request.user.is_staff or request.user.is_superuser):
-        return JsonResponse({"error": "Not authorized"}, status=403)
+        return JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Forbidden",
+                "status": 403,
+                "detail": "Not authorized.",
+                "instance": request.path,
+            },
+            status=403,
+            content_type="application/problem+json",
+        )
 
     progress = _get_or_create_wizard_progress(request.user)
 
