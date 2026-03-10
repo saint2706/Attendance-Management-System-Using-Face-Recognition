@@ -241,7 +241,7 @@ if __name__ == "__main__":
     if employees:
         # Clear old data to avoid duplicates over multiple runs
         print("Clearing old synthetic data timestamps...")
-        # Optional: strictly speaking we should just append, but checking stats is easier with fresh daily data
+        # Optional: strictly speaking we should just append, but checking stats is easier with fresh daily data  # noqa: E501
         # For simplicity, we just generate.
 
         generate_attendance_history(employees)

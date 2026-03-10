@@ -26,7 +26,7 @@ from recognition.pipeline import find_closest_dataset_match
 
 # Import all public views from the legacy module
 # This maintains backward compatibility while we gradually migrate code
-# Components imported: API views, Attendance marking, Dashboard, Dataset & training, Reporting, Utility views
+# Components imported: API views, Attendance marking, Dashboard, Dataset & training, Reporting, Utility views  # noqa: E501
 from recognition.views_legacy import (
     DATA_ROOT,
     LIVENESS_FAILURE_MESSAGE,

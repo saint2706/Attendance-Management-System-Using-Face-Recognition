@@ -139,7 +139,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     else:
         split_path = None
         print(
-            f"[reproduce] Split CSV {split_csv} not found. Falling back to scanning the dataset root.",
+            f"[reproduce] Split CSV {split_csv} not found. Falling back to scanning the dataset root.",  # noqa: E501
             file=sys.stderr,
         )
 

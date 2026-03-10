@@ -135,7 +135,7 @@ def test_focus_returns_to_capture_button_after_mark_another(
         lambda route: route.fulfill(
             status=200,
             content_type="application/json",
-            body='{"recognized": true, "username": "testuser", "confidence": 0.95, "message": "Attendance marked successfully"}',
+            body='{"recognized": true, "username": "testuser", "confidence": 0.95, "message": "Attendance marked successfully"}',  # noqa: E501
         ),
     )
 
@@ -202,7 +202,7 @@ def test_focus_on_result_card_when_result_appears(page_with_camera: Page, server
         lambda route: route.fulfill(
             status=200,
             content_type="application/json",
-            body='{"recognized": true, "username": "testuser", "confidence": 0.95, "message": "Success"}',
+            body='{"recognized": true, "username": "testuser", "confidence": 0.95, "message": "Success"}',  # noqa: E501
         ),
     )
 

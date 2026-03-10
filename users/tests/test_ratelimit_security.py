@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.test import Client
+from django.test import Client, override_settings
 from django.urls import reverse
 
 import pytest
@@ -97,7 +97,7 @@ def test_wizard_step4_rate_limit(client):
 
     # Limit is 5/m
     for i in range(5):
-        # We don't send 'start_training' to avoid mocking celery here, just POSTing is enough to trigger ratelimit
+        # We don't send 'start_training' to avoid mocking celery here, just POSTing is enough to trigger ratelimit  # noqa: E501
         response = client.post(url, {})
         assert response.status_code != 429
 
@@ -211,6 +211,7 @@ def test_successful_login_under_rate_limit(client, test_user):
 
 
 @pytest.mark.django_db
+@override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
 def test_different_usernames_have_separate_limits(db):
     """
     Test that rate limits are applied per username, not globally.

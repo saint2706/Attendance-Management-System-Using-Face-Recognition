@@ -239,7 +239,8 @@ def assess_dataset_diversity(
                 f"Insufficient {bucket_display} samples ({count}/{target_samples_per_lighting})"
             )
             recommendations.append(
-                f"Capture {target_samples_per_lighting - count} more images in {bucket_display} conditions"
+                f"Capture {target_samples_per_lighting - count} more images "
+                f"in {bucket_display} conditions"
             )
 
     # Check for quality issues

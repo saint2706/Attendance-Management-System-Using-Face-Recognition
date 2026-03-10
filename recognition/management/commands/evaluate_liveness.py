@@ -31,7 +31,7 @@ class Command(BaseCommand):
             dest="threshold",
             type=float,
             default=None,
-            help="Override the motion threshold (defaults to settings.RECOGNITION_LIVENESS_MOTION_THRESHOLD).",
+            help="Override the motion threshold (defaults to settings.RECOGNITION_LIVENESS_MOTION_THRESHOLD).",  # noqa: E501
         )
         parser.add_argument(
             "--min-frames",
@@ -104,7 +104,7 @@ class Command(BaseCommand):
             rate = (hits / total * 100.0) if total else 0.0
             baseline = "100.0" if label == "genuine" else "0.0"
             self.stdout.write(
-                f"- {label.title():<7}: {hits}/{total} {context} ({rate:.1f}% vs {baseline}% without liveness)"
+                f"- {label.title():<7}: {hits}/{total} {context} ({rate:.1f}% vs {baseline}% without liveness)"  # noqa: E501
             )
 
     def _load_frames(self, sample_dir: Path) -> Iterable[np.ndarray]:

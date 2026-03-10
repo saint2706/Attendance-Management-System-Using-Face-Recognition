@@ -501,7 +501,7 @@ class FaceRecognitionAPI(View):
         if uploaded is not None:
             if uploaded.size > max_size:
                 raise ValueError(
-                    f"Image size {uploaded.size} bytes exceeds maximum allowed size of {max_size} bytes."
+                    f"Image size {uploaded.size} bytes exceeds maximum allowed size of {max_size} bytes."  # noqa: E501
                 )
             return uploaded.read()
 
@@ -533,7 +533,7 @@ class FaceRecognitionAPI(View):
             decoded = base64.b64decode(image_data, validate=True)
             if len(decoded) > max_size:
                 raise ValueError(
-                    f"Decoded image size {len(decoded)} bytes exceeds maximum allowed size of {max_size} bytes."
+                    f"Decoded image size {len(decoded)} bytes exceeds maximum allowed size of {max_size} bytes."  # noqa: E501
                 )
             return decoded
         except (binascii.Error, ValueError) as exc:
@@ -1228,10 +1228,10 @@ class DatasetEmbeddingCache:
                 # Ignore entries without an embedding; they don't tell us about the format.
                 if embedding is None:
                     continue
-                # If we see a non-None numpy array embedding, assume new-format cache and fast-path return.
+                # If we see a non-None numpy array embedding, assume new-format cache and fast-path return.  # noqa: E501
                 if isinstance(embedding, np.ndarray):
                     return dataset_state, dataset_index
-                # Found a non-None, non-ndarray embedding: we must run the normalization logic below.
+                # Found a non-None, non-ndarray embedding: we must run the normalization logic below.  # noqa: E501
                 break
 
         normalized_index: list[dict] = []
@@ -1980,7 +1980,7 @@ def hours_vs_date_given_employee(
         time_qs: A queryset of `Time` objects for the employee.
 
     Returns:
-        A tuple containing the annotated queryset and the Base64-encoded data URI of the generated plot.
+        A tuple containing the annotated queryset and the Base64-encoded data URI of the generated plot.  # noqa: E501
     """
     register_matplotlib_converters()
     df_hours = []
@@ -2001,7 +2001,7 @@ def hours_vs_date_given_employee(
         date_list.append(date)
         times_all = times_by_date.get(date, [])
 
-        # ⚡ Performance: Optimized to find first IN and last OUT in single pass over already sorted list
+        # ⚡ Performance: Optimized to find first IN and last OUT in single pass over already sorted list  # noqa: E501
         # instead of creating full lists with list comprehensions.
         first_in = next((t for t in times_all if t.direction == Direction.IN), None)
         last_out = next((t for t in reversed(times_all) if t.direction == Direction.OUT), None)
@@ -2845,7 +2845,7 @@ def attendance_session_feed(request) -> JsonResponse:
 
     since = timezone.now() - datetime.timedelta(minutes=max(minutes, 1))
     outcome_records = RecognitionOutcome.objects.filter(created_at__gte=since)[:50]
-    # PERF: select_related('user') avoids N+1 queries when username is empty and falls back to user relation
+    # PERF: select_related('user') avoids N+1 queries when username is empty and falls back to user relation  # noqa: E501
     attempt_records = RecognitionAttempt.objects.filter(created_at__gte=since).select_related(
         "user"
     )[:50]
@@ -3323,7 +3323,7 @@ def train(request):
     # 🛡️ Sentinel: Enforce rate limit to prevent training job flooding (DoS)
     if getattr(request, "limited", False):
         messages.error(request, "Too many training requests. Please wait before retrying.")
-        # Show error and skip starting a new training task; POST handler is guarded by request.limited.
+        # Show error and skip starting a new training task; POST handler is guarded by request.limited.  # noqa: E501
 
     task_context: Dict[str, Any] | None = None
     task_id = request.GET.get("task_id")
@@ -3747,7 +3747,7 @@ def mark_attendance_view(request, attendance_type):
     )
     if not dataset_index:
         logger.warning(
-            "Cached embeddings are empty while marking attendance via SVC; continuing with model predictions.",
+            "Cached embeddings are empty while marking attendance via SVC; continuing with model predictions.",  # noqa: E501
             extra={
                 "flow": "svc_attendance",
                 "direction": attendance_type,

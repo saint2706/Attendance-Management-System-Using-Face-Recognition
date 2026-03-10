@@ -97,7 +97,7 @@ class Migration(migrations.Migration):
                     "is_default",
                     models.BooleanField(
                         default=False,
-                        help_text="Use this profile as the fallback when no site-specific profile matches",
+                        help_text="Use this profile as the fallback when no site-specific profile matches",  # noqa: E501
                     ),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),

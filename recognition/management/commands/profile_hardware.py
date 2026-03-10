@@ -80,7 +80,7 @@ class Command(BaseCommand):
         if not options["skip_profiling"]:
             self.stdout.write(self.style.SUCCESS("\n=== Model Performance Profiling ===\n"))
             self.stdout.write(
-                f"Profiling {len(options['models'])} models with {options['iterations']} iterations each..."
+                f"Profiling {len(options['models'])} models with {options['iterations']} iterations each..."  # noqa: E501
             )
             self.stdout.write("(This may take a few minutes)\n")
 
@@ -101,7 +101,7 @@ class Command(BaseCommand):
             if results:
                 self.stdout.write("\n=== Performance Summary ===\n")
                 self.stdout.write(
-                    f"{'Model':<15} {'Mean (ms)':<12} {'Std (ms)':<12} {'Min (ms)':<12} {'Max (ms)'}"
+                    f"{'Model':<15} {'Mean (ms)':<12} {'Std (ms)':<12} {'Min (ms)':<12} {'Max (ms)'}"  # noqa: E501
                 )
                 self.stdout.write("-" * 65)
 

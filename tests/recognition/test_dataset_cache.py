@@ -195,7 +195,7 @@ class DatasetEmbeddingCacheTests(TestCase):
 
     @override_settings(RECOGNITION_DATASET_STATE_CACHE_TIMEOUT=1)
     def test_cache_expires_after_timeout(self):
-        """Test that cached dataset state expires after the configured timeout and triggers a filesystem rescan."""
+        """Test that cached dataset state expires after the configured timeout and triggers a filesystem rescan."""  # noqa: E501
         self._seed_dataset()
 
         # Mock the filesystem state computation to verify it's called after timeout

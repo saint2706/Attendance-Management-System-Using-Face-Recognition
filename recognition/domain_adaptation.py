@@ -284,7 +284,7 @@ def assess_domain_gap(
         )
     if color_gap > 0:
         recommendations.append(
-            f"Color temperature mismatch ({source_profile.color_temperature} vs {target_profile.color_temperature}). "
+            f"Color temperature mismatch ({source_profile.color_temperature} vs {target_profile.color_temperature}). "  # noqa: E501
             "May affect recognition in some lighting conditions."
         )
     if overall_gap > 0.4:

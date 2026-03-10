@@ -35,7 +35,7 @@ class Command(BaseCommand):
             type=str,
             choices=["eer", "f1", "far"],
             default="eer",
-            help="Method for threshold selection: eer (Equal Error Rate), f1 (max F1), or far (target FAR)",
+            help="Method for threshold selection: eer (Equal Error Rate), f1 (max F1), or far (target FAR)",  # noqa: E501
         )
 
     def handle(self, *args, **options):

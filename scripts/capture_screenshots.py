@@ -220,7 +220,7 @@ def main() -> int:
         print("  1. The development server is running: python manage.py runserver")
         print("  2. The demo environment is set up: make demo")
         print(
-            "  3. Playwright is installed: pip install pytest-playwright && playwright install chromium"
+            "  3. Playwright is installed: pip install pytest-playwright && playwright install chromium"  # noqa: E501
         )
         return 1
 

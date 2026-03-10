@@ -259,7 +259,7 @@ class FAISSIndexCacheTests(TestCase):
         self.assertIsNone(faiss_index)
 
     def test_faiss_index_uses_dataset_state_from_cache_entry(self):
-        """Verify FAISS index uses dataset state from the same cache entry to avoid race conditions."""
+        """Verify FAISS index uses dataset state from the same cache entry to avoid race conditions."""  # noqa: E501
         self._seed_dataset()
 
         fake_index = [{"identity": "alice/1.jpg", "embedding": np.array([0.1, 0.2, 0.3, 0.4])}]
