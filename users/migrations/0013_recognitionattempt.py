@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
                     "username",
                     models.CharField(
                         blank=True,
-                        help_text="Username inferred at recognition time (may be empty on failure).",
+                        help_text="Username inferred at recognition time (may be empty on failure).",  # noqa: E501
                         max_length=150,
                     ),
                 ),

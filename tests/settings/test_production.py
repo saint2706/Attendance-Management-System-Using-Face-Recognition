@@ -130,7 +130,7 @@ def test_secure_proxy_ssl_header_enabled_when_configured(
 def test_secure_proxy_ssl_header_disabled_with_false_value(
     monkeypatch, mock_dependencies, base_env_setup
 ):
-    """Test that SECURE_PROXY_SSL_HEADER is not set when environment variable is explicitly false."""
+    """Test that SECURE_PROXY_SSL_HEADER is not set when environment variable is explicitly false."""  # noqa: E501
     # Explicitly disable SECURE_PROXY_SSL_HEADER
     monkeypatch.setenv("DJANGO_SECURE_PROXY_SSL_HEADER", "false")
 

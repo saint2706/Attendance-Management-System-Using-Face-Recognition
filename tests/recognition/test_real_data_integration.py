@@ -130,7 +130,7 @@ class TestRealDataIntegration:
 
         # Patch TRAINING_DATASET_ROOT to point to our local dataset folder
         # And mock the cache path to force it to call the builder callback
-        # Note: We patch views_legacy because recognition.views is a package that re-exports from views_legacy
+        # Note: We patch views_legacy because recognition.views is a package that re-exports from views_legacy  # noqa: E501
         with patch("recognition.views_legacy.TRAINING_DATASET_ROOT", dataset_root):
             with patch("recognition.views_legacy._dataset_embedding_cache") as mock_cache:
                 # Force the cache to just run the callback (which builds from dataset_root)

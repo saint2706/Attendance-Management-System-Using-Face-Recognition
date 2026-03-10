@@ -16,7 +16,7 @@ if DATABASES["default"].get("ENGINE") == "django.db.backends.sqlite3":
 
 if DATABASES["default"].get("ENGINE") == "django.db.backends.sqlite3":
     raise ImproperlyConfigured(
-        "Production deployments must configure a PostgreSQL database via DATABASE_URL or DB_* environment variables."
+        "Production deployments must configure a PostgreSQL database via DATABASE_URL or DB_* environment variables."  # noqa: E501
     )
 
 

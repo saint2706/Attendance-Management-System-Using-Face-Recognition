@@ -63,7 +63,7 @@ class Command(BaseCommand):
             "--far-threshold",
             type=float,
             default=0.05,
-            help="FAR above this value triggers a stricter threshold recommendation (default: 0.05)",
+            help="FAR above this value triggers a stricter threshold recommendation (default: 0.05)",  # noqa: E501
         )
 
     def handle(self, *args, **options):

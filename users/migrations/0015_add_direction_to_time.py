@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
             name="out",
             field=models.BooleanField(
                 default=False,
-                help_text="DEPRECATED: Use direction field instead. False for a time-in event, True for a time-out event.",
+                help_text="DEPRECATED: Use direction field instead. False for a time-in event, True for a time-out event.",  # noqa: E501
             ),
         ),
     ]

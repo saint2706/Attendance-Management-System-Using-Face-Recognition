@@ -387,7 +387,7 @@ def _resolve_allowed_hosts(
 
     if require_explicit_hosts:
         raise ImproperlyConfigured(
-            "DJANGO_ALLOWED_HOSTS must be provided (comma separated) when secure defaults are enforced."
+            "DJANGO_ALLOWED_HOSTS must be provided (comma separated) when secure defaults are enforced."  # noqa: E501
         )
 
     return list(default_allowed_hosts)

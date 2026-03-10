@@ -359,7 +359,7 @@ def generate_ablation_report(df: pd.DataFrame, output_path: Path) -> None:
     with open(output_path, "w") as f:
         f.write("# Ablation Study Results\n\n")
         f.write(
-            "This report summarizes the impact of different components on face recognition performance.\n\n"
+            "This report summarizes the impact of different components on face recognition performance.\n\n"  # noqa: E501
         )
 
         # Find baseline (SSD, alignment=True, cosine, rebalancing=False)
@@ -416,7 +416,7 @@ def generate_ablation_report(df: pd.DataFrame, output_path: Path) -> None:
                 f1 = row.iloc[0]["f1_score"]
                 delta = acc - baseline_acc if not baseline_row.empty else 0.0
                 f.write(
-                    f"| {'Enabled' if alignment else 'Disabled'} | {acc:.4f} | {f1:.4f} | {delta:+.4f} |\n"
+                    f"| {'Enabled' if alignment else 'Disabled'} | {acc:.4f} | {f1:.4f} | {delta:+.4f} |\n"  # noqa: E501
                 )
         f.write("\n")
 
@@ -452,7 +452,7 @@ def generate_ablation_report(df: pd.DataFrame, output_path: Path) -> None:
                 f1 = row.iloc[0]["f1_score"]
                 delta = acc - baseline_acc if not baseline_row.empty else 0.0
                 f.write(
-                    f"| {'Enabled' if rebalancing else 'Disabled'} | {acc:.4f} | {f1:.4f} | {delta:+.4f} |\n"
+                    f"| {'Enabled' if rebalancing else 'Disabled'} | {acc:.4f} | {f1:.4f} | {delta:+.4f} |\n"  # noqa: E501
                 )
         f.write("\n")
 

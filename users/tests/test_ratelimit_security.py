@@ -97,7 +97,7 @@ def test_wizard_step4_rate_limit(client):
 
     # Limit is 5/m
     for i in range(5):
-        # We don't send 'start_training' to avoid mocking celery here, just POSTing is enough to trigger ratelimit
+        # We don't send 'start_training' to avoid mocking celery here, just POSTing is enough to trigger ratelimit  # noqa: E501
         response = client.post(url, {})
         assert response.status_code != 429
 

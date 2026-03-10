@@ -52,7 +52,7 @@ class Command(BaseCommand):
         if profile.value == "basic":
             self.stdout.write(
                 self.style.WARNING(
-                    "⚠  Basic profile detected. Consider enabling encryption for production deployments."
+                    "⚠  Basic profile detected. Consider enabling encryption for production deployments."  # noqa: E501
                 )
             )
             self.stdout.write(

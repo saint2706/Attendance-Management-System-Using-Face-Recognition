@@ -4,7 +4,7 @@ Django management command to manage threshold profiles for recognition.
 Usage:
     python manage.py threshold_profile list
     python manage.py threshold_profile create --name "strict_office" --threshold 0.3 --default
-    python manage.py threshold_profile create --name "lenient_lab" --threshold 0.5 --sites "lab1,lab2"
+    python manage.py threshold_profile create --name "lenient_lab" --threshold 0.5 --sites "lab1,lab2"  # noqa: E501
     python manage.py threshold_profile update "strict_office" --threshold 0.35
     python manage.py threshold_profile delete "old_profile"
     python manage.py threshold_profile import --file reports/selected_threshold.json
@@ -274,7 +274,7 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"\n✓ Created profile '{profile.name}' with threshold {profile.distance_threshold:.4f}"
+                f"\n✓ Created profile '{profile.name}' with threshold {profile.distance_threshold:.4f}"  # noqa: E501
             )
         )
         if profile.is_default:
@@ -371,7 +371,7 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"\n✓ Imported profile '{profile.name}' with threshold {profile.distance_threshold:.4f}"
+                f"\n✓ Imported profile '{profile.name}' with threshold {profile.distance_threshold:.4f}"  # noqa: E501
             )
         )
 

@@ -360,9 +360,11 @@ def attendance_dashboard(request: HttpRequest) -> HttpResponse:
         outcomes = RecognitionOutcome.objects.filter(outcome_filters).order_by("-created_at")[
             :DASHBOARD_RECORD_LIMIT
         ]
-    attempts = RecognitionAttempt.objects.filter(attempt_filters).order_by("-created_at")[
-        :DASHBOARD_RECORD_LIMIT
-    ]
+    attempts = (
+        RecognitionAttempt.objects.select_related("user")
+        .filter(attempt_filters)
+        .order_by("-created_at")[:DASHBOARD_RECORD_LIMIT]
+    )
 
     # Get chart data
     chart_data = _get_chart_data_for_period(days=7)
@@ -424,7 +426,11 @@ def export_attendance_csv(request: HttpRequest) -> HttpResponse:
     elif outcome_filter == "low_confidence":
         attempt_filters &= Q(successful=False) & Q(spoof_detected=False)
 
-    attempts = RecognitionAttempt.objects.filter(attempt_filters).order_by("-created_at")
+    attempts = (
+        RecognitionAttempt.objects.select_related("user")
+        .filter(attempt_filters)
+        .order_by("-created_at")
+    )
 
     # Create CSV response
     response = HttpResponse(content_type="text/csv")
@@ -453,7 +459,7 @@ def export_attendance_csv(request: HttpRequest) -> HttpResponse:
         # Treat leading characters that can trigger CSV/Excel formula evaluation as dangerous.
         dangerous_prefixes = ("=", "+", "-", "@", "\t", "\r")
         if s and s.startswith(dangerous_prefixes):
-            # Prepend a space to prevent formula interpretation while preserving the visible content.
+            # Prepend a space to prevent formula interpretation while preserving the visible content.  # noqa: E501
             return f" {s}"
         return s
 
@@ -641,7 +647,7 @@ def threshold_profile_create(request: HttpRequest) -> HttpResponse:
             profile = form.save()
             messages.success(
                 request,
-                f"Created threshold profile '{profile.name}' with threshold {profile.distance_threshold:.4f}",
+                f"Created threshold profile '{profile.name}' with threshold {profile.distance_threshold:.4f}",  # noqa: E501
             )
             return redirect("admin_threshold_profiles")
     else:
@@ -757,7 +763,7 @@ def threshold_profile_import(request: HttpRequest) -> HttpResponse:
 
             messages.success(
                 request,
-                f"Imported profile '{profile.name}' with threshold {profile.distance_threshold:.4f}",
+                f"Imported profile '{profile.name}' with threshold {profile.distance_threshold:.4f}",  # noqa: E501
             )
             return redirect("admin_threshold_profiles")
     else:
