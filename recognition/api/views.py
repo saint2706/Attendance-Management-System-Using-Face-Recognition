@@ -36,10 +36,16 @@ class UserViewSet(viewsets.ModelViewSet):
         return UserSerializer
 
     def get_queryset(self):
+        # ⚡ Bolt: Added prefetch_related for groups and user_permissions to
+        # prevent N+1 queries when serializing the User model.
         user = self.request.user
         if user.is_staff:
-            return User.objects.all().order_by("-date_joined")
-        return User.objects.filter(id=user.id)
+            return (
+                User.objects.all()
+                .prefetch_related("groups", "user_permissions")
+                .order_by("-date_joined")
+            )
+        return User.objects.filter(id=user.id).prefetch_related("groups", "user_permissions")
 
     @action(detail=False, methods=["get"])
     def me(self, request):

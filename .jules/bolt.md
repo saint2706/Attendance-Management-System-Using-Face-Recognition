@@ -11,3 +11,8 @@
 - The queries checked for IN attempts, OUT attempts, and both again to calculate pending checkout values.
 - **Optimization:** Refactored the view to fetch a single list of `user_id` and `direction` values from the `RecognitionAttempt` table. Used Python `set` operations to efficiently group the distinct active IN/OUT attempts to compute the metrics. This avoids redundant roundtrips to the DB.
 - **Result:** Decreased queries on `attendance-stats` endpoint from 5 down to 2.
+
+## Optimization: N+1 query issue in UserViewSet
+- The `user-list` API endpoint (`UserViewSet.get_queryset` in `recognition/api/views.py`) previously executed an N+1 query issue when serializing the User model by implicitly fetching its groups and user permissions.
+- **Optimization:** Added `.prefetch_related("groups", "user_permissions")` on `User.objects` queries to batch database hits.
+- **Result:** Decreased queries on `user-list` endpoint significantly for a list of users.
