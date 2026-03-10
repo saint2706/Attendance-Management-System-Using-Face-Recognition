@@ -7,3 +7,10 @@
 - /mark_your_attendance_out: Mark Time-Out - Clock out when you're done
 - /view_my_attendance: View personal attendance records
 - /docs: Technical documentation
+- /mark-attendance: Mark attendance in the SPA
+- /attendance: View attendance in the SPA
+- /session: Active attendance session in the SPA
+- /add-photos: Add user photos in the SPA
+- /train: Train facial recognition models in the SPA
+- /employees/register: Register a new employee in the SPA
+- /setup-wizard: Setup wizard for first-time configuration in the SPA
