@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.test import Client
+from django.test import Client, override_settings
 from django.urls import reverse
 
 import pytest
@@ -211,6 +211,7 @@ def test_successful_login_under_rate_limit(client, test_user):
 
 
 @pytest.mark.django_db
+@override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
 def test_different_usernames_have_separate_limits(db):
     """
     Test that rate limits are applied per username, not globally.
