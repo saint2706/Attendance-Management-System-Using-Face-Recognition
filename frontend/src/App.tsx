@@ -94,4 +94,8 @@ function App() {
   );
 }
 
+/**
+ * The main application component that sets up routing and context providers.
+ * @returns {JSX.Element} The rendered application component.
+ */
 export default App;

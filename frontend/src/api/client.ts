@@ -102,6 +102,9 @@ apiClient.interceptors.response.use(
     }
 );
 
+/**
+ * The configured Axios API client instance.
+ */
 export default apiClient;
 
 // API response types
