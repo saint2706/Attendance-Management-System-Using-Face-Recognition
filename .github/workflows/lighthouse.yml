@@ -105,7 +105,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-npm-lhci
+          # Cache based on the OS and a hash of this workflow file since lhci version is hardcoded below
+          key: ${{ runner.os }}-npm-lhci-${{ hashFiles('.github/workflows/lighthouse.yml') }}
+          # Fallback prefix to restore the latest cache if an exact match isn't found
+          restore-keys: |
+            ${{ runner.os }}-npm-lhci-
 
       - name: Install Lighthouse CI
         run: npm install -g @lhci/cli@0.14.0
