@@ -706,7 +706,7 @@ class FaceRecognitionAPI(View):
             return JsonResponse(
                 {
                     "type": "about:blank",
-                    "title": "Validation Error",
+                    "detail": "Invalid liveness data in request payload.",
                     "status": 400,
                     "detail": "Invalid liveness data in request.",
                     "instance": request.path,
@@ -722,7 +722,7 @@ class FaceRecognitionAPI(View):
             # Log full error details server-side, but return a generic message to the client
             attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
             Hub.current.capture_exception(exc)
-            return JsonResponse(
+                    "detail": "Invalid embedding data in request payload.",
                     "detail": "Invalid embedding data.",
                     "type": "about:blank",
                     "title": "Validation Error",
@@ -739,7 +739,7 @@ class FaceRecognitionAPI(View):
                 image_bytes = self._extract_image_bytes(request, payload)
             except ValueError as exc:
                 attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
-                return JsonResponse(
+                        "detail": "Invalid image data in request payload.",
                     {
                         "type": "about:blank",
                         "title": "Validation Error",
