@@ -40,7 +40,11 @@ class UserViewSet(viewsets.ModelViewSet):
         # prevent N+1 queries when serializing the User model.
         user = self.request.user
         if user.is_staff:
-            return User.objects.all().prefetch_related("groups", "user_permissions").order_by("-date_joined")
+            return (
+                User.objects.all()
+                .prefetch_related("groups", "user_permissions")
+                .order_by("-date_joined")
+            )
         return User.objects.filter(id=user.id).prefetch_related("groups", "user_permissions")
 
     @action(detail=False, methods=["get"])
