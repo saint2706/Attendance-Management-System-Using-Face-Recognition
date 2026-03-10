@@ -716,13 +716,14 @@ class FaceRecognitionAPI(View):
             )
 
         try:
+            # Log full error details for diagnostics, but avoid exposing them to the client.
             embedding_vector = self._coerce_embedding(payload.get("embedding"))
         except ValueError as exc:
             # Log full error details server-side, but return a generic message to the client
             attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
             Hub.current.capture_exception(exc)
             return JsonResponse(
-                {
+                    "detail": "Invalid embedding data.",
                     "type": "about:blank",
                     "title": "Validation Error",
                     "status": 400,
