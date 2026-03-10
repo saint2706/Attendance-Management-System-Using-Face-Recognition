@@ -680,9 +680,8 @@ STATIC_URL = "/static/"
 STATIC_ROOT = Path(os.environ.get("DJANGO_STATIC_ROOT", BASE_DIR / "staticfiles"))
 # Django automatically collects static files from app-specific static directories
 # (e.g., recognition/static). Additional directories can be added here if needed.
-STATICFILES_DIRS = [
-    BASE_DIR / "frontend/dist",
-]
+FRONTEND_DIST_DIR = BASE_DIR / "frontend/dist"
+STATICFILES_DIRS = [FRONTEND_DIST_DIR] if FRONTEND_DIST_DIR.exists() else []
 
 MEDIA_URL = os.environ.get("DJANGO_MEDIA_URL", "/media/")
 MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT", BASE_DIR / "media"))
