@@ -97,11 +97,3 @@ exclude = [
     "dist",
 ]
 ignore = ["E203", "W503", "E501"]
-
-[tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "attendance_system_facial_recognition.settings"
-python_files = ["tests.py", "test_*.py", "*_tests.py"]
-testpaths = ["tests"]
-# Note: Main pytest configuration is in pytest.ini
-# This section is kept minimal for tool compatibility
-addopts = "-v --strict-markers --tb=short"

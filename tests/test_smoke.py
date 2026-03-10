@@ -19,6 +19,10 @@ pytestmark = pytest.mark.django_db
 class TestServerSmokeTests:
     """Verify that the Django server can start and serve basic requests."""
 
+    def test_staticfiles_dirs_are_existing_paths(self, settings) -> None:
+        """Configured static asset directories should exist to avoid Django warnings."""
+        assert all(path.exists() for path in settings.STATICFILES_DIRS)
+
     def test_home_page_loads(self, client: Client) -> None:
         """The home page should return HTTP 200 with expected content."""
         response = client.get(reverse("home"))

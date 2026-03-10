@@ -35,12 +35,10 @@ logger = logging.getLogger(__name__)
 
 
 REGISTER_RATE_LIMIT = getattr(settings, "REGISTER_RATE_LIMIT", "10/m")
+LOGIN_RATE_LIMIT = getattr(settings, "LOGIN_RATE_LIMIT", "5/m")
 
 
 @method_decorator(ratelimit(key="ip", rate="5/m", method="POST", block=False), name="post")
-@method_decorator(
-    ratelimit(key="post:username", rate="5/m", method="POST", block=False), name="post"
-)
 class CustomLoginView(LoginView):
     """
     Custom Login View with Rate Limiting.
@@ -49,7 +47,15 @@ class CustomLoginView(LoginView):
     template_name = "users/login.html"
 
     def post(self, request, *args, **kwargs):
-        if getattr(request, "limited", False):
+        username_rate_limited = is_ratelimited(
+            request=request,
+            group="login-username",
+            key="post:username",
+            rate=LOGIN_RATE_LIMIT,
+            method="POST",
+            increment=True,
+        )
+        if getattr(request, "limited", False) or username_rate_limited:
             form = self.get_form()
             form.add_error(None, "Too many login attempts. Please try again later.")
             return self.render_to_response(self.get_context_data(form=form), status=429)

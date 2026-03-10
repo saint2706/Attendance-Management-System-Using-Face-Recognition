@@ -56,7 +56,7 @@ from django_ratelimit.decorators import ratelimit
 from matplotlib.figure import Figure
 from pandas.plotting import register_matplotlib_converters
 from PIL import Image
-from sentry_sdk import Hub
+from sentry_sdk import Hub, capture_exception
 
 from src.common import FaceDataEncryption, InvalidToken, decrypt_bytes
 from users.models import Direction, Present, RecognitionAttempt, Time
@@ -702,13 +702,13 @@ class FaceRecognitionAPI(View):
         except ValueError as exc:
             # Log full error details server-side, but return a generic message to the client
             attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
-            Hub.current.capture_exception(exc)
+            capture_exception(exc)
             return JsonResponse(
                 {
                     "type": "about:blank",
-                    "detail": "Invalid liveness data in request payload.",
+                    "title": "Validation Error",
                     "status": 400,
-                    "detail": "Invalid liveness data in request.",
+                    "detail": str(exc),
                     "instance": request.path,
                 },
                 status=400,
@@ -721,13 +721,13 @@ class FaceRecognitionAPI(View):
         except ValueError as exc:
             # Log full error details server-side, but return a generic message to the client
             attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
-            Hub.current.capture_exception(exc)
-                    "detail": "Invalid embedding data in request payload.",
-                    "detail": "Invalid embedding data.",
+            capture_exception(exc)
+            return JsonResponse(
+                {
                     "type": "about:blank",
                     "title": "Validation Error",
                     "status": 400,
-                    "detail": "Invalid embedding data in request.",
+                    "detail": "Invalid embedding data in request payload.",
                     "instance": request.path,
                 },
                 status=400,
@@ -739,7 +739,7 @@ class FaceRecognitionAPI(View):
                 image_bytes = self._extract_image_bytes(request, payload)
             except ValueError as exc:
                 attempt_logger.log_failure(submitted_username, spoofed=False, error=str(exc))
-                        "detail": "Invalid image data in request payload.",
+                return JsonResponse(
                     {
                         "type": "about:blank",
                         "title": "Validation Error",

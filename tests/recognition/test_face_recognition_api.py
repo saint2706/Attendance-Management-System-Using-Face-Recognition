@@ -123,3 +123,31 @@ def test_face_recognition_api_rate_limit(client, monkeypatch):
         HTTP_X_API_KEY="test-api-key",
     )
     assert limited.status_code == 429
+
+
+@override_settings(
+    RECOGNITION_API_KEYS=("test-api-key",),
+    RECOGNITION_DISTANCE_THRESHOLD=0.5,
+    DEEPFACE_OPTIMIZATIONS={
+        "distance_metric": "euclidean_l2",
+        "model": "Facenet",
+        "detector_backend": "opencv",
+        "enforce_detection": False,
+        "anti_spoofing": False,
+    },
+)
+def test_face_recognition_api_rejects_invalid_embedding_payload(client):
+    cache.clear()
+
+    url = reverse("face-recognition-api")
+    payload = json.dumps({"embedding": "not-a-vector"})
+    response = client.post(
+        url,
+        data=payload,
+        content_type="application/json",
+        HTTP_X_API_KEY="test-api-key",
+    )
+
+    assert response.status_code == 400
+    assert response["Content-Type"] == "application/problem+json"
+    assert response.json()["detail"] == "Invalid embedding data in request payload."

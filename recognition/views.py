@@ -715,19 +715,19 @@ class FaceRecognitionAPI(View):
 
         try:
             liveness_frames = self._extract_liveness_frames(payload)
-        except ValueError:
+        except ValueError as exc:
             logger.exception("Failed to extract liveness frames from payload.")
             attempt_logger.log_failure(
                 submitted_username,
                 spoofed=False,
-                error="Invalid liveness data in request payload.",
+                error=str(exc),
             )
             return JsonResponse(
                 {
                     "type": "about:blank",
                     "title": "Validation Error",
                     "status": 400,
-                    "detail": "Invalid liveness data in request payload.",
+                    "detail": str(exc),
                     "instance": request.path,
                 },
                 status=400,
