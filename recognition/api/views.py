@@ -74,6 +74,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         end_date_str = self.request.query_params.get("end_date")
 
         import datetime
+
         from rest_framework.exceptions import ValidationError
 
         if start_date_str:
