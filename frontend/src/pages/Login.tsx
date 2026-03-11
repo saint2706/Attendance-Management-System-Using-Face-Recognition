@@ -50,7 +50,7 @@ export const Login = () => {
                 </div>
 
                 {error && (
-                    <div className="login-error" role="alert" id="login-error">
+                    <div className="login-error" role="alert" id="login-error" aria-live="assertive">
                         <AlertCircle size={18} aria-hidden="true" />
                         <span>{error}</span>
                     </div>
