@@ -82,13 +82,13 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
+// Export the hook separately to fix react-refresh/only-export-components
 /**
  * Hook to access the current theme context.
  * Must be used within a ThemeProvider.
  * @returns {ThemeContextType} The theme context value.
  * @throws {Error} If used outside of a ThemeProvider.
  */
-// Export the hook separately to fix react-refresh/only-export-components
 export function useTheme() {
     const context = useContext(ThemeContext);
     if (context === undefined) {
