@@ -7,12 +7,14 @@ ARG PYTHON_VERSION=3.12
 # =============================================================================
 FROM node:20-alpine AS frontend-build
 WORKDIR /app/frontend
-COPY frontend/package.json frontend/pnpm-lock.yaml ./
-RUN corepack enable pnpm && pnpm install --frozen-lockfile
-COPY frontend/ .
+RUN corepack enable pnpm \
+    && chown -R node:node /app/frontend
+USER node
+COPY --chown=node:node frontend/package.json frontend/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+COPY --chown=node:node frontend/ .
 # Ensure vite config base is correct (should be set in code, but we can enforce if needed)
 RUN pnpm run build
-USER node
 
 # =============================================================================
 # Stage 2: Base Python Runtime
