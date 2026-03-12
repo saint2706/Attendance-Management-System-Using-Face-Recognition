@@ -71,6 +71,11 @@
     font-family: inherit;
 }
 
+.nav-button:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
 .nav-user {
     display: flex;
     align-items: center;
