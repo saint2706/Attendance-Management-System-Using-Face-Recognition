@@ -22,3 +22,4 @@
   - Added missing TSDoc/JSDoc comments to exported interfaces and types in `frontend/src/api/client.ts`, `frontend/src/api/auth.ts`, `frontend/src/api/attendance.ts`, `frontend/src/contexts/AuthContext.tsx`, `frontend/src/contexts/ThemeContext.tsx`, and `frontend/src/components/ui/Kbd.tsx`.
   - Removed "TODO" keyword from `docs/DOCS_INDEX.md`.
   - Added missing TSDoc/JSDoc comments to `export default App;` in `frontend/src/App.tsx` and `export default apiClient;` in `frontend/src/api/client.ts`.
+  - Configured `markdown-link-check` to ignore local development server URLs (`http://127.0.0.1` and `http://localhost`) via `.markdownlinkcheck.json` to resolve dead link false positives without removing hyperlink functionality.
