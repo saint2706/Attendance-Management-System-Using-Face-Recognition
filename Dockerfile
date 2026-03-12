@@ -5,19 +5,27 @@ ARG PYTHON_VERSION=3.12
 # =============================================================================
 # Stage 1: Build Frontend
 # =============================================================================
-FROM node:20-alpine AS frontend-build
+FROM node:20.11.1-alpine AS frontend-build
+
+RUN corepack enable pnpm
+
+RUN mkdir -p /app/frontend && chown -R node:node /app/frontend
+
 WORKDIR /app/frontend
-COPY frontend/package.json frontend/pnpm-lock.yaml ./
-RUN corepack enable pnpm && pnpm install --frozen-lockfile
-COPY frontend/ .
+
+USER node
+
+COPY --chown=node:node frontend/package.json frontend/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY --chown=node:node frontend/ .
 # Ensure vite config base is correct (should be set in code, but we can enforce if needed)
 RUN pnpm run build
-USER node
 
 # =============================================================================
 # Stage 2: Base Python Runtime
 # =============================================================================
-FROM python:${PYTHON_VERSION}-slim AS python-base
+FROM python:${PYTHON_VERSION}-slim-bookworm AS python-base
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -66,7 +74,7 @@ COPY . /app
 RUN rm -rf /app/frontend
 
 # Copy built frontend from Stage 1
-COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
+COPY --from=frontend-build --chown=root:root /app/frontend/dist /app/frontend/dist
 
 # Collect static files using production configuration during the build stage
 RUN DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production \
