@@ -253,7 +253,7 @@ def compute_dataset_hash(dataset_path: str) -> str:
     import os
     from pathlib import Path
 
-    hasher = hashlib.md5()
+    hasher = hashlib.sha256()
     dataset_dir = Path(dataset_path)
 
     if not dataset_dir.exists():
