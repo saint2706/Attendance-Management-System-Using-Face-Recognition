@@ -72,13 +72,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
+// Export the hook separately to fix react-refresh/only-export-components
 /**
  * Hook to access the authentication context.
  * Must be used within an AuthProvider.
  * @returns {AuthContextType} The authentication context value.
  * @throws {Error} If used outside of an AuthProvider.
  */
-// Export the hook separately to fix react-refresh/only-export-components
 export function useAuth() {
     const context = useContext(AuthContext);
     if (context === undefined) {
