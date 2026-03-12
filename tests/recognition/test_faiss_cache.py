@@ -11,6 +11,7 @@ from __future__ import annotations
 import os
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -42,19 +43,26 @@ class FAISSIndexCacheTests(TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.dataset_root = views.TRAINING_DATASET_ROOT
-        self.data_root = views.DATA_ROOT
-        shutil.rmtree(self.dataset_root, ignore_errors=True)
-        shutil.rmtree(self.data_root, ignore_errors=True)
-        self.dataset_root.mkdir(parents=True, exist_ok=True)
-        self.data_root.mkdir(parents=True, exist_ok=True)
+        # Use isolated temp directories to prevent cross-worker filesystem conflicts
+        # when tests run in parallel with pytest-xdist (-n auto).
+        self._tmp_dataset = tempfile.mkdtemp()
+        self._tmp_data = tempfile.mkdtemp()
+        self.dataset_root = Path(self._tmp_dataset)
+        self.data_root = Path(self._tmp_data)
+        # Patch the module-level singleton's paths to point at our temp dirs.
+        self._orig_dataset_root = views._dataset_embedding_cache._dataset_root
+        self._orig_cache_root = views._dataset_embedding_cache._cache_root
+        views._dataset_embedding_cache._dataset_root = self.dataset_root
+        views._dataset_embedding_cache._cache_root = self.data_root
         views._dataset_embedding_cache.invalidate()
 
     def tearDown(self):  # pragma: no cover - cleanup
         """Clean up test fixtures."""
         views._dataset_embedding_cache.invalidate()
-        shutil.rmtree(self.dataset_root, ignore_errors=True)
-        shutil.rmtree(self.data_root, ignore_errors=True)
+        views._dataset_embedding_cache._dataset_root = self._orig_dataset_root
+        views._dataset_embedding_cache._cache_root = self._orig_cache_root
+        shutil.rmtree(self._tmp_dataset, ignore_errors=True)
+        shutil.rmtree(self._tmp_data, ignore_errors=True)
 
     def _seed_dataset(self, username: str = "alice") -> Path:
         """Create a dummy dataset entry for testing."""
