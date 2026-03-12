@@ -70,13 +70,26 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(user=user)
 
         # Filter by date range
-        start_date = self.request.query_params.get("start_date")
-        end_date = self.request.query_params.get("end_date")
+        start_date_str = self.request.query_params.get("start_date")
+        end_date_str = self.request.query_params.get("end_date")
 
-        if start_date:
-            queryset = queryset.filter(created_at__date__gte=start_date)
-        if end_date:
-            queryset = queryset.filter(created_at__date__lte=end_date)
+        import datetime
+
+        from rest_framework.exceptions import ValidationError
+
+        if start_date_str:
+            try:
+                start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
+                queryset = queryset.filter(created_at__date__gte=start_date)
+            except ValueError:
+                raise ValidationError({"detail": "Invalid start_date format. Expected YYYY-MM-DD."})
+
+        if end_date_str:
+            try:
+                end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
+                queryset = queryset.filter(created_at__date__lte=end_date)
+            except ValueError:
+                raise ValidationError({"detail": "Invalid end_date format. Expected YYYY-MM-DD."})
 
         return queryset
 
