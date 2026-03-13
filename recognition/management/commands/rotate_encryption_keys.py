@@ -60,12 +60,20 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options) -> None:
-        data_root: Path = options["data_root"].resolve()
-        dataset_root: Path = options["dataset_root"].resolve()
+        data_root: Path = (
+            Path(options["data_root"]).resolve()
+            if options.get("data_root")
+            else Path(settings.BASE_DIR) / "face_recognition_data"
+        )
+        dataset_root: Path = (
+            Path(options["dataset_root"]).resolve()
+            if options.get("dataset_root")
+            else Path(settings.BASE_DIR) / "face_recognition_data" / "training_dataset"
+        )
         new_data_key: str = options["new_data_key"]
         new_face_key: str = options["new_face_key"]
-        backup_dir: Path | None = options.get("backup_dir")
-        dry_run: bool = options["dry_run"]
+        backup_dir: Path | None = Path(options["backup_dir"]) if options.get("backup_dir") else None
+        dry_run: bool = options.get("dry_run", False)
 
         if not data_root.exists():
             raise CommandError(f"data-root does not exist: {data_root}")
