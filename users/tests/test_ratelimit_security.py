@@ -200,6 +200,9 @@ def test_successful_login_under_rate_limit(client, test_user):
     """
     Test that successful logins work correctly when under the rate limit.
     """
+    test_user.set_password("testpassword123")
+    test_user.save()
+
     url = reverse("login")
 
     # Make a few failed attempts (under the limit)
