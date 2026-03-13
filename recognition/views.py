@@ -3623,7 +3623,7 @@ def mark_attendance_view(request, attendance_type):
         model_path = DATA_ROOT / "svc.sav"
         classes_path = DATA_ROOT / "classes.npy"
         encrypted_model = model_path.read_bytes()
-        model = pickle.loads(decrypt_bytes(encrypted_model))  # noqa: F841
+        model = pickle.loads(decrypt_bytes(encrypted_model))
 
         encrypted_classes = classes_path.read_bytes()
         class_names = np.load(io.BytesIO(decrypt_bytes(encrypted_classes)), allow_pickle=True)
@@ -3716,7 +3716,7 @@ def mark_attendance_view(request, attendance_type):
                         first = embeddings[0]
                         if isinstance(first, dict):
                             embedding_vector = first.get("embedding")
-                            facial_area = first.get("facial_area")  # noqa: F841
+                            facial_area = first.get("facial_area")
                         elif isinstance(first, (list, tuple, np.ndarray)):
                             embedding_vector = list(first)
                         else:
