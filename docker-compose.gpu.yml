@@ -18,7 +18,7 @@ services:
           devices:
             - driver: nvidia
               count: 1
-              capabilities: [ gpu ]
+              capabilities: [gpu]
     environment:
       # TensorFlow GPU configuration
       TF_FORCE_GPU_ALLOW_GROWTH: "true"
@@ -40,7 +40,7 @@ services:
           devices:
             - driver: nvidia
               count: 1
-              capabilities: [ gpu ]
+              capabilities: [gpu]
     environment:
       TF_FORCE_GPU_ALLOW_GROWTH: "true"
       TF_CPP_MIN_LOG_LEVEL: "2"
