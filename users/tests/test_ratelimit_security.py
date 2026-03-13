@@ -112,6 +112,7 @@ def test_wizard_step4_rate_limit(client):
 
 
 @pytest.mark.django_db
+@override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
 def test_login_ip_based_rate_limit(client, test_user):
     """
     Test that login attempts from the same IP are rate-limited.
@@ -135,6 +136,7 @@ def test_login_ip_based_rate_limit(client, test_user):
 
 
 @pytest.mark.django_db
+@override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
 def test_login_username_based_rate_limit(client, test_user):
     """
     Test that login attempts for the same username are rate-limited.
@@ -158,6 +160,7 @@ def test_login_username_based_rate_limit(client, test_user):
 
 
 @pytest.mark.django_db
+@override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
 def test_distributed_brute_force_prevention(test_user):
     """
     Test that username-based rate limiting prevents distributed brute-force attacks.
@@ -189,10 +192,14 @@ def test_distributed_brute_force_prevention(test_user):
 
 
 @pytest.mark.django_db
+@override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
 def test_successful_login_under_rate_limit(client, test_user):
     """
     Test that successful logins work correctly when under the rate limit.
     """
+    test_user.set_password("testpassword123")
+    test_user.save()
+
     url = reverse("login")
 
     # Make a few failed attempts (under the limit)
