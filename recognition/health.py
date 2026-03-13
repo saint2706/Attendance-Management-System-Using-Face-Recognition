@@ -208,13 +208,22 @@ def recognition_activity() -> Dict[str, Any]:
 
     last_attempt = RecognitionAttempt.objects.select_related("user").order_by("-created_at").first()
     last_spoof = (
-        RecognitionAttempt.objects.select_related("user").filter(spoof_detected=True).order_by("-created_at").first()
+        RecognitionAttempt.objects.select_related("user")
+        .filter(spoof_detected=True)
+        .order_by("-created_at")
+        .first()
     )
     last_success = (
-        RecognitionAttempt.objects.select_related("user").filter(successful=True).order_by("-created_at").first()
+        RecognitionAttempt.objects.select_related("user")
+        .filter(successful=True)
+        .order_by("-created_at")
+        .first()
     )
     last_failure = (
-        RecognitionAttempt.objects.select_related("user").filter(successful=False).order_by("-created_at").first()
+        RecognitionAttempt.objects.select_related("user")
+        .filter(successful=False)
+        .order_by("-created_at")
+        .first()
     )
     last_outcome = RecognitionOutcome.objects.order_by("-created_at").first()
 
