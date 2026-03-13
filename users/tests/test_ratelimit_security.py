@@ -22,7 +22,7 @@ def clear_rate_limit_cache():
 @pytest.fixture
 def test_user(db):
     """Create a test user for login tests."""
-    from django.test import override_settings
+    from django.test.utils import override_settings
 
     with override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"]):
         User = get_user_model()
