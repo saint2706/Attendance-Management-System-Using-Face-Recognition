@@ -22,10 +22,13 @@ def clear_rate_limit_cache():
 @pytest.fixture
 def test_user(db):
     """Create a test user for login tests."""
-    User = get_user_model()
-    return User.objects.create_user(
-        username="testuser", password="testpassword123", email="testuser@example.com"
-    )
+    from django.test import override_settings
+
+    with override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"]):
+        User = get_user_model()
+        return User.objects.create_user(
+            username="testuser", password="testpassword123", email="testuser@example.com"
+        )
 
 
 @pytest.mark.django_db
@@ -112,6 +115,7 @@ def test_wizard_step4_rate_limit(client):
 
 
 @pytest.mark.django_db
+@override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
 def test_login_ip_based_rate_limit(client, test_user):
     """
     Test that login attempts from the same IP are rate-limited.
@@ -135,6 +139,7 @@ def test_login_ip_based_rate_limit(client, test_user):
 
 
 @pytest.mark.django_db
+@override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
 def test_login_username_based_rate_limit(client, test_user):
     """
     Test that login attempts for the same username are rate-limited.
@@ -158,6 +163,7 @@ def test_login_username_based_rate_limit(client, test_user):
 
 
 @pytest.mark.django_db
+@override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
 def test_distributed_brute_force_prevention(test_user):
     """
     Test that username-based rate limiting prevents distributed brute-force attacks.
@@ -189,6 +195,7 @@ def test_distributed_brute_force_prevention(test_user):
 
 
 @pytest.mark.django_db
+@override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
 def test_successful_login_under_rate_limit(client, test_user):
     """
     Test that successful logins work correctly when under the rate limit.
