@@ -226,7 +226,7 @@ export const MarkAttendance = () => {
                         <div className="camera-error">
                             <CameraOff size={48} aria-hidden="true" />
                             <p>{error}</p>
-                            <button onClick={startCamera} className="btn btn-primary">
+                            <button onClick={startCamera} className="btn btn-primary" aria-label="Retry camera access">
                                 <RefreshCw size={18} aria-hidden="true" />
                                 Retry
                             </button>
