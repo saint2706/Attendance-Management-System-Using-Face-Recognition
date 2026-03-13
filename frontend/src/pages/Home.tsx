@@ -54,7 +54,7 @@ export const Home = () => {
             <section className="features">
                 <h2 className="features-title text-center">Why Choose Our System?</h2>
                 <div className="features-grid">
-                    <div className="feature-card card card-elevated">
+                    <article className="feature-card card card-elevated">
                         <div className="card-body text-center">
                             <Zap size={32} className="feature-icon" aria-hidden="true" />
                             <h3>Fast & Accurate</h3>
@@ -62,8 +62,8 @@ export const Home = () => {
                                 Advanced AI-powered face recognition ensures quick and precise attendance marking.
                             </p>
                         </div>
-                    </div>
-                    <div className="feature-card card card-elevated">
+                    </article>
+                    <article className="feature-card card card-elevated">
                         <div className="card-body text-center">
                             <Shield size={32} className="feature-icon" aria-hidden="true" />
                             <h3>Secure & Private</h3>
@@ -71,8 +71,8 @@ export const Home = () => {
                                 Your biometric data is encrypted and stored securely with industry-standard protection.
                             </p>
                         </div>
-                    </div>
-                    <div className="feature-card card card-elevated">
+                    </article>
+                    <article className="feature-card card card-elevated">
                         <div className="card-body text-center">
                             <ChartBar size={32} className="feature-icon" aria-hidden="true" />
                             <h3>Detailed Reports</h3>
@@ -80,7 +80,7 @@ export const Home = () => {
                                 Generate comprehensive attendance reports with visual analytics and export capabilities.
                             </p>
                         </div>
-                    </div>
+                    </article>
                 </div>
             </section>
 

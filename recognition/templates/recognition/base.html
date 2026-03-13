@@ -19,10 +19,20 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "Smart Attendance System",
-        "applicationCategory": "BusinessApplication",
-        "description": "Automated attendance tracking using face recognition technology"
+        "@graph": [
+          {
+            "@type": "SoftwareApplication",
+            "name": "Smart Attendance System",
+            "applicationCategory": "BusinessApplication",
+            "description": "Automated attendance tracking using face recognition technology"
+          },
+          {
+            "@type": "WebSite",
+            "name": "Smart Attendance System",
+            "description": "Automated attendance tracking using face recognition technology",
+            "url": "https://attendance-system.example.com/"
+          }
+        ]
       }
     </script>
     <meta name="application-name" content="Smart Attendance System">
