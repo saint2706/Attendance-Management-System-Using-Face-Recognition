@@ -36,11 +36,6 @@ ENV PYTHONUNBUFFERED=1 \
 # hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
-        libgl1 \
-        libglib2.0-0 \
-        libsm6 \
-        libxext6 \
-        libxrender1 \
         curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

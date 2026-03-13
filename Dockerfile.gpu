@@ -49,11 +49,6 @@ RUN apt-get update \
     python3.12-venv \
     python3.12-dev \
     python3-pip \
-    libgl1 \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender1 \
     curl \
     ca-certificates \
     && apt-get clean \
