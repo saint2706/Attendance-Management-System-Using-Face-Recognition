@@ -19,3 +19,8 @@
 **Vulnerability:** The `compute_dataset_hash` function in `recognition/embedding_cache.py` used the weak `hashlib.md5()` hashing algorithm to compute cache invalidation hashes. MD5 is vulnerable to collision attacks.
 
 **Prevention:** Replaced `hashlib.md5()` with `hashlib.sha256()` to ensure strong cryptographic hashing is used consistently across the application.
+## 2026-03-13 - Rate Limiting on Expensive Admin Views
+
+**Vulnerability:** The `add_photos` and `train` views in `recognition/views.py` were not protected by rate limits. These views trigger expensive background tasks (dataset capture and model training). Without rate limits, a compromised admin account or an intentional abuse could flood the task queue, causing a Denial of Service (DoS) and degrading performance for all users.
+**Learning:** Resource-intensive administrative endpoints must be rate-limited, even if they require authentication, to prevent abuse or compromised accounts from taking down the system. Defense in depth means assuming authenticated users can still perform malicious actions.
+**Prevention:** Added `@ratelimit` decorators to `add_photos` (10/min) and `train` (3/min) views in `recognition/views.py`, mirroring the protections already established in `recognition/views_legacy.py`. The view logic now explicitly checks `getattr(request, 'limited', False)` and returns an error message instead of triggering the background tasks.
