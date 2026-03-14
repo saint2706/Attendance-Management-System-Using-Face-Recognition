@@ -1,6 +1,8 @@
 # Hunter Progress
 
 ## Fixed
+- `frontend/pnpm-lock.yaml`: Updated `flatted` to version `>=3.4.0` to resolve unbounded recursion DoS vulnerability in `parse()` revive phase (pnpm audit).
+- `recognition/views.py`: Fixed E501 line length issue on line 3166 by wrapping the `messages.error` call.
 - `recognition/analysis/failures.py`: Fixed E501 line length issues by splitting long strings implicitly.
 - `recognition/views/__init__.py`: Fixed E501 line length issue by rewriting an inline comment to a block comment.
 - `recognition/views.py`: Fixed missing imports and unused variable warnings (F841) from exception handling (`except ValueError as exc:` -> `except ValueError:`).
