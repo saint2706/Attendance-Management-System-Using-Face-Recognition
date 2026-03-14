@@ -810,12 +810,13 @@ def liveness_results_dashboard(request: HttpRequest) -> HttpResponse:
     since = timezone.now() - datetime.timedelta(days=days)
 
     # Get liveness results
-    results = LivenessResult.objects.filter(created_at__gte=since).order_by("-created_at")[:100]
+    results_qs = LivenessResult.objects.filter(created_at__gte=since)
+    results = results_qs.order_by("-created_at")[:100]
 
     # Aggregate statistics
-    total_checks = results.count()
-    passed_count = results.filter(challenge_status="passed").count()
-    failed_count = results.filter(challenge_status="failed").count()
+    total_checks = results_qs.count()
+    passed_count = results_qs.filter(challenge_status="passed").count()
+    failed_count = results_qs.filter(challenge_status="failed").count()
 
     # Aggregate by challenge type with pass rates computed
     by_challenge_raw = (
