@@ -373,7 +373,7 @@ export const MarkAttendance = () => {
                                         <button
                                             onClick={() => navigate('/')}
                                             className="btn btn-secondary btn-lg"
-                                            aria-label="Return to Home Page"
+                                            aria-label="Return Home"
                                         >
                                             <Home size={20} aria-hidden="true" />
                                             Return Home
@@ -381,7 +381,7 @@ export const MarkAttendance = () => {
                                         <button
                                             onClick={resetAttempt}
                                             className="btn btn-primary btn-lg"
-                                            aria-label="Mark attendance for another person"
+                                            aria-label="Mark Another person's attendance"
                                             aria-keyshortcuts="Escape"
                                         >
                                             <UserCheck size={20} aria-hidden="true" />
@@ -392,6 +392,7 @@ export const MarkAttendance = () => {
                                     <button
                                         onClick={resetAttempt}
                                         className="btn btn-secondary btn-lg"
+                                        aria-label="Try Again camera access"
                                         aria-keyshortcuts="Escape"
                                     >
                                         <RefreshCw size={20} aria-hidden="true" />
