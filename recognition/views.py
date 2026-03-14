@@ -3163,7 +3163,8 @@ def train(request):
     # 🛡️ Sentinel: Enforce rate limit to prevent training job flooding (DoS)
     if getattr(request, "limited", False):
         messages.error(request, "Too many training requests. Please wait before retrying.")
-        # Show error and skip starting a new training task; POST handler is guarded by request.limited.
+        # Show error and skip starting a new training task;
+        # POST handler is guarded by request.limited.
 
     task_context: Dict[str, Any] | None = None
     task_id = request.GET.get("task_id")
