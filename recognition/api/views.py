@@ -1,10 +1,10 @@
-from django.contrib.auth import get_user_model  # type: ignore[import-untyped]
-from django.utils import timezone  # type: ignore[import-untyped]
+from django.contrib.auth import get_user_model
+from django.utils import timezone
 
-from rest_framework import permissions, status, viewsets  # type: ignore[import-untyped]
-from rest_framework.decorators import action  # type: ignore[import-untyped]
-from rest_framework.pagination import PageNumberPagination  # type: ignore[import-untyped]
-from rest_framework.response import Response  # type: ignore[import-untyped]
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 from recognition.api.serializers import (
     AttendanceRecordSerializer,
@@ -75,7 +75,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
 
         import datetime
 
-        from rest_framework.exceptions import ValidationError  # type: ignore[import-untyped]
+        from rest_framework.exceptions import ValidationError
 
         if start_date_str:
             try:
@@ -152,7 +152,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
 
         import cv2
         import numpy as np
-        from deepface import DeepFace  # type: ignore[import-untyped]
+        from deepface import DeepFace
 
         from recognition.pipeline import extract_embedding, find_closest_dataset_match
         from recognition.views import (
@@ -329,7 +329,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
         # Find closest match
-        from django.conf import settings  # type: ignore[import-untyped]
+        from django.conf import settings
 
         distance_metric = getattr(settings, "DEEPFACE_DISTANCE_METRIC", "cosine")
         match_result = find_closest_dataset_match(

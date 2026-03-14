@@ -38,8 +38,10 @@ def test_n_plus_one_hours_vs_employee_given_date(django_assert_num_queries):
                 hours_vs_employee_given_date(present_qs, time_qs)
 
             # Count only actual queries, exclude EXPLAIN
-            actual_queries = [q for q in ctx.captured_queries if not q['sql'].startswith('EXPLAIN')]
-            assert len(actual_queries) == 2, f"Expected 2 queries, got {len(actual_queries)}: {[q['sql'] for q in actual_queries]}"
+            actual_queries = [q for q in ctx.captured_queries if not q["sql"].startswith("EXPLAIN")]
+            assert (
+                len(actual_queries) == 2
+            ), f"Expected 2 queries, got {len(actual_queries)}: {[q['sql'] for q in actual_queries]}"
 
 
 @pytest.mark.django_db
@@ -69,5 +71,7 @@ def test_n_plus_one_hours_vs_date_given_employee(django_assert_num_queries):
                 hours_vs_date_given_employee(present_qs, time_qs)
 
             # Count only actual queries, exclude EXPLAIN
-            actual_queries = [q for q in ctx.captured_queries if not q['sql'].startswith('EXPLAIN')]
-            assert len(actual_queries) == 2, f"Expected 2 queries, got {len(actual_queries)}: {[q['sql'] for q in actual_queries]}"
+            actual_queries = [q for q in ctx.captured_queries if not q["sql"].startswith("EXPLAIN")]
+            assert (
+                len(actual_queries) == 2
+            ), f"Expected 2 queries, got {len(actual_queries)}: {[q['sql'] for q in actual_queries]}"

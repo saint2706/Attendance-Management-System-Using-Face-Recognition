@@ -1,0 +1,42 @@
+from django.contrib.auth import get_user_model
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+from django.urls import reverse
+
+import pytest
+from rest_framework.test import APIClient
+
+from users.models import Direction, RecognitionAttempt
+
+
+@pytest.mark.django_db
+def test_attendance_api_query_count():
+    User = get_user_model()
+    admin = User.objects.create_superuser(username="admin", password="password")
+    client = APIClient()
+    client.force_authenticate(user=admin)
+
+    # Create 10 attempts
+    for i in range(10):
+        user = User.objects.create_user(username=f"user_{i}", password="password")
+        RecognitionAttempt.objects.create(
+            user=user,
+            username="",  # Force serializer to access obj.user.username
+            direction=Direction.IN,
+            successful=True,
+            source="api",
+        )
+
+    url = reverse("attendance-list")  # Or whatever the url is for the api ViewSet
+
+    with CaptureQueriesContext(connection) as ctx:
+        response = client.get(url)
+
+    assert response.status_code == 200
+
+    # Filter out EXPLAIN queries added by test runners or tools
+    actual_queries = [q for q in ctx.captured_queries if not q['sql'].startswith('EXPLAIN')]
+
+    print(f"Number of queries: {len(actual_queries)}")
+    # Should be < 10.
+    assert len(actual_queries) < 10

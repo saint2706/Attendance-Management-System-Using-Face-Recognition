@@ -40,14 +40,22 @@ def test_attendance_session_feed_query_count(client):
     # 2. Auth user
     # 3. RecognitionOutcome
     # 4. RecognitionAttempt (with select_related)
-    # Total ~4 (or double if using pytest-xdist which runs EXPLAIN queries)
+    # Total ~4
 
-    import os
-    max_queries = 25 if os.environ.get("PYTEST_XDIST_WORKER") else 5
+    # We should exclude EXPLAIN queries, and also Silk logging queries
+    # (INSERT INTO silk_request, UPDATE silk_request, etc.) which might occur
+    # and also transaction savepoints.
+    actual_queries = [
+        q for q in ctx.captured_queries
+        if not q['sql'].startswith('EXPLAIN')
+        and 'silk_' not in q['sql'].lower()
+        and not q['sql'].startswith('SAVEPOINT')
+        and not q['sql'].startswith('RELEASE SAVEPOINT')
+    ]
 
     assert (
-        len(ctx.captured_queries) <= max_queries
-    ), f"Expected optimized queries, got {len(ctx.captured_queries)}"
+        len(actual_queries) <= 5
+    ), f"Expected optimized queries, got {len(actual_queries)}: {[q['sql'] for q in actual_queries]}"
 
 
 @pytest.mark.django_db
@@ -81,9 +89,14 @@ def test_attendance_session_feed_query_count_mixed_scenarios(client):
     assert response.status_code == 200
 
     # Query count should remain constant regardless of mixed username scenarios
-    import os
-    max_queries = 25 if os.environ.get("PYTEST_XDIST_WORKER") else 5
+    actual_queries = [
+        q for q in ctx.captured_queries
+        if not q['sql'].startswith('EXPLAIN')
+        and 'silk_' not in q['sql'].lower()
+        and not q['sql'].startswith('SAVEPOINT')
+        and not q['sql'].startswith('RELEASE SAVEPOINT')
+    ]
 
     assert (
-        len(ctx.captured_queries) <= max_queries
-    ), f"Expected optimized queries, got {len(ctx.captured_queries)}"
+        len(actual_queries) <= 5
+    ), f"Expected optimized queries, got {len(actual_queries)}: {[q['sql'] for q in actual_queries]}"

@@ -98,6 +98,14 @@ exclude = [
 ]
 ignore = ["E203", "W503", "E501"]
 
+[tool.mypy]
+ignore_missing_imports = true
+exclude = [
+    "^migrations/",
+    "^frontend/",
+    "^tests/",
+]
+
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "attendance_system_facial_recognition.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
