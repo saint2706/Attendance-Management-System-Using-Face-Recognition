@@ -29,20 +29,17 @@ def test_n_plus_one_hours_vs_employee_given_date(django_assert_num_queries):
     present_qs = Present.objects.filter(date=date)
     time_qs = Time.objects.filter(date=date)
 
-    # When running with pytest-xdist (-n auto), Django's query assertions include
-    # EXPLAIN QUERY PLAN queries for performance analysis.
-    # 2 actual queries + 2 EXPLAIN queries = 4 total
-    # This occurs with both PostgreSQL (CI) and SQLite (with -n auto in full test suite)
-    # However, in local environment without xdist, we expect 2 queries.
-    expected_queries = 2
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
 
     with patch("recognition.views_legacy.plt"):
         with patch("recognition.views_legacy.sns"):
-            # Optimized implementation:
-            # 1 query for present_qs (+ 1 EXPLAIN for performance analysis)
-            # 1 query for time_qs (list(time_qs)) (+ 1 EXPLAIN for performance analysis)
-            with django_assert_num_queries(expected_queries):
+            with CaptureQueriesContext(connection) as ctx:
                 hours_vs_employee_given_date(present_qs, time_qs)
+
+            # Count only actual queries, exclude EXPLAIN
+            actual_queries = [q for q in ctx.captured_queries if not q['sql'].startswith('EXPLAIN')]
+            assert len(actual_queries) == 2, f"Expected 2 queries, got {len(actual_queries)}: {[q['sql'] for q in actual_queries]}"
 
 
 @pytest.mark.django_db
@@ -63,17 +60,14 @@ def test_n_plus_one_hours_vs_date_given_employee(django_assert_num_queries):
     present_qs = Present.objects.filter(user=user)
     time_qs = Time.objects.filter(user=user)
 
-    # When running with pytest-xdist (-n auto), Django's query assertions include
-    # EXPLAIN QUERY PLAN queries for performance analysis.
-    # 2 actual queries + 2 EXPLAIN queries = 4 total
-    # This occurs with both PostgreSQL (CI) and SQLite (with -n auto in full test suite)
-    # However, in local environment without xdist, we expect 2 queries.
-    expected_queries = 2
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
 
     with patch("recognition.views_legacy.plt"):
         with patch("recognition.views_legacy.sns"):
-            # Optimized implementation:
-            # 1 query for present_qs (+ 1 EXPLAIN for performance analysis)
-            # 1 query for time_qs (+ 1 EXPLAIN for performance analysis)
-            with django_assert_num_queries(expected_queries):
+            with CaptureQueriesContext(connection) as ctx:
                 hours_vs_date_given_employee(present_qs, time_qs)
+
+            # Count only actual queries, exclude EXPLAIN
+            actual_queries = [q for q in ctx.captured_queries if not q['sql'].startswith('EXPLAIN')]
+            assert len(actual_queries) == 2, f"Expected 2 queries, got {len(actual_queries)}: {[q['sql'] for q in actual_queries]}"
