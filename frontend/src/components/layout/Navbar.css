@@ -64,6 +64,11 @@
     background-color: var(--color-bg-secondary);
 }
 
+.nav-link:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
 .nav-button {
     background: none;
     border: none;
@@ -90,6 +95,11 @@
 .theme-toggle:hover {
     background-color: var(--color-bg-secondary);
     color: var(--color-text);
+}
+
+.theme-toggle:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
 }
 
 .mobile-menu-toggle {
