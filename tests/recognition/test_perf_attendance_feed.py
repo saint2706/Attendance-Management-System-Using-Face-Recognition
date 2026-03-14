@@ -46,11 +46,12 @@ def test_attendance_session_feed_query_count(client):
     # (INSERT INTO silk_request, UPDATE silk_request, etc.) which might occur
     # and also transaction savepoints.
     actual_queries = [
-        q for q in ctx.captured_queries
-        if not q['sql'].startswith('EXPLAIN')
-        and 'silk_' not in q['sql'].lower()
-        and not q['sql'].startswith('SAVEPOINT')
-        and not q['sql'].startswith('RELEASE SAVEPOINT')
+        q
+        for q in ctx.captured_queries
+        if not q["sql"].startswith("EXPLAIN")
+        and "silk_" not in q["sql"].lower()
+        and not q["sql"].startswith("SAVEPOINT")
+        and not q["sql"].startswith("RELEASE SAVEPOINT")
     ]
 
     assert (
@@ -90,11 +91,12 @@ def test_attendance_session_feed_query_count_mixed_scenarios(client):
 
     # Query count should remain constant regardless of mixed username scenarios
     actual_queries = [
-        q for q in ctx.captured_queries
-        if not q['sql'].startswith('EXPLAIN')
-        and 'silk_' not in q['sql'].lower()
-        and not q['sql'].startswith('SAVEPOINT')
-        and not q['sql'].startswith('RELEASE SAVEPOINT')
+        q
+        for q in ctx.captured_queries
+        if not q["sql"].startswith("EXPLAIN")
+        and "silk_" not in q["sql"].lower()
+        and not q["sql"].startswith("SAVEPOINT")
+        and not q["sql"].startswith("RELEASE SAVEPOINT")
     ]
 
     assert (

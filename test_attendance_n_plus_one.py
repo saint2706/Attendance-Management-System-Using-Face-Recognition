@@ -35,7 +35,7 @@ def test_attendance_api_query_count():
     assert response.status_code == 200
 
     # Filter out EXPLAIN queries added by test runners or tools
-    actual_queries = [q for q in ctx.captured_queries if not q['sql'].startswith('EXPLAIN')]
+    actual_queries = [q for q in ctx.captured_queries if not q["sql"].startswith("EXPLAIN")]
 
     print(f"Number of queries: {len(actual_queries)}")
     # Should be < 10.
