@@ -92,11 +92,9 @@ def test_dashboard_shows_morning_greeting(
 
     # Mock the time to be in the morning (e.g., 10 AM)
     # Inject a script to set testGreetingHour before the page script runs
-    authenticated_page.add_init_script(
-        """
+    authenticated_page.add_init_script("""
         window.testGreetingHour = 10;
-    """
-    )
+    """)
 
     # Navigate to Django dashboard
     authenticated_page.goto(f"{server_url}/dashboard/")
@@ -118,11 +116,9 @@ def test_dashboard_shows_afternoon_greeting(
 
     # Mock the time to be in the afternoon (e.g., 3 PM)
     # Inject a script to set testGreetingHour before the page script runs
-    authenticated_page.add_init_script(
-        """
+    authenticated_page.add_init_script("""
         window.testGreetingHour = 15;
-    """
-    )
+    """)
 
     # Navigate to Django dashboard
     authenticated_page.goto(f"{server_url}/dashboard/")
@@ -144,11 +140,9 @@ def test_dashboard_shows_evening_greeting(
 
     # Mock the time to be in the evening (e.g., 8 PM)
     # Inject a script to set testGreetingHour before the page script runs
-    authenticated_page.add_init_script(
-        """
+    authenticated_page.add_init_script("""
         window.testGreetingHour = 20;
-    """
-    )
+    """)
 
     # Navigate to Django dashboard
     authenticated_page.goto(f"{server_url}/dashboard/")
@@ -170,11 +164,9 @@ def test_dashboard_greeting_boundary_at_noon(
 
     # Mock the time to be exactly at noon (12:00 PM)
     # Inject a script to set testGreetingHour before the page script runs
-    authenticated_page.add_init_script(
-        """
+    authenticated_page.add_init_script("""
         window.testGreetingHour = 12;
-    """
-    )
+    """)
 
     # Navigate to Django dashboard
     authenticated_page.goto(f"{server_url}/dashboard/")
@@ -196,11 +188,9 @@ def test_dashboard_greeting_boundary_at_6pm(
 
     # Mock the time to be exactly at 6 PM (18:00)
     # Inject a script to set testGreetingHour before the page script runs
-    authenticated_page.add_init_script(
-        """
+    authenticated_page.add_init_script("""
         window.testGreetingHour = 18;
-    """
-    )
+    """)
 
     # Navigate to Django dashboard
     authenticated_page.goto(f"{server_url}/dashboard/")
