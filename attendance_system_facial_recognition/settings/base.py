@@ -885,10 +885,6 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
-# Allow all in DEBUG mode if needed (be careful)
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-
 RECOGNITION_MULTI_FACE_ENABLED = _get_bool_env("RECOGNITION_MULTI_FACE_ENABLED", default=False)
 RECOGNITION_MAX_FACES_PER_FRAME = _parse_int_env(
     "RECOGNITION_MAX_FACES_PER_FRAME", default=5, minimum=1
