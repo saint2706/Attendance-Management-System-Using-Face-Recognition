@@ -24,6 +24,15 @@ export const Home = () => {
             {/* Hero Section */}
             <section className="hero">
                 <div className="hero-content">
+                    <img
+                        src="/static/icons/icon-512.png"
+                        alt=""
+                        width="128"
+                        height="128"
+                        fetchPriority="high"
+                        className="hero-image"
+                        aria-hidden="true"
+                    />
                     <h1 className="hero-title">
                         Smart Attendance System
                     </h1>

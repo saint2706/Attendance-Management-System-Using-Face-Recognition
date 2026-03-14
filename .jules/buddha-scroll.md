@@ -10,3 +10,4 @@
 - **Fixed Semantic HTML**: In `frontend/src/pages/Home.tsx`, updated the privacy section heading from `<h3>` to `<h2>` to correct the semantic outline hierarchy. Also updated `frontend/src/pages/Home.css` so that `.privacy-notice h2` is styled appropriately.
 - Synchronized `robots.txt` across root, `recognition/static/`, and `frontend/public/`.
 - Synchronized `llms.txt` across `llms.txt.content`, `recognition/static/`, and `frontend/public/`.
+- **🧘 Buddha: [PERF] Add priority LCP Hero image to Home page**: Added explicit `<img />` tag for Hero section with `fetchpriority="high"` and explicit dimensions/styles to improve Largest Contentful Paint (LCP) measurement and prioritization.
