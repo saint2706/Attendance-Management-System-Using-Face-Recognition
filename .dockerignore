@@ -67,6 +67,9 @@ docs/
 # GitHub specific files
 .github/
 
+# AI context directories
+.jules/
+
 # Sample data (not needed in production image)
 sample_data/
 
@@ -90,6 +93,7 @@ tests/
 k8s/
 scripts/
 docs/
+run_tests.sh
 Dockerfile
 Dockerfile.gpu
 docker-compose.yml
