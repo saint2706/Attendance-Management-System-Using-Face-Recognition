@@ -24,3 +24,10 @@
 **Vulnerability:** The `add_photos` and `train` views in `recognition/views.py` were not protected by rate limits. These views trigger expensive background tasks (dataset capture and model training). Without rate limits, a compromised admin account or an intentional abuse could flood the task queue, causing a Denial of Service (DoS) and degrading performance for all users.
 **Learning:** Resource-intensive administrative endpoints must be rate-limited, even if they require authentication, to prevent abuse or compromised accounts from taking down the system. Defense in depth means assuming authenticated users can still perform malicious actions.
 **Prevention:** Added `@ratelimit` decorators to `add_photos` (10/min) and `train` (3/min) views in `recognition/views.py`, mirroring the protections already established in `recognition/views_legacy.py`. The view logic now explicitly checks `getattr(request, 'limited', False)` and returns an error message instead of triggering the background tasks.
+
+# Sentinel Learnings
+
+## CORS Misconfiguration
+- **Vulnerability**: The application was setting `CORS_ALLOW_ALL_ORIGINS = True` when `DEBUG = True`.
+- **Severity**: High (in development environments potentially exposed, or if DEBUG is mistakenly left on in production).
+- **Fix**: Removed the conditional `CORS_ALLOW_ALL_ORIGINS` setting entirely to enforce strict CORS origins (`CORS_ALLOWED_ORIGINS`) regardless of the `DEBUG` flag. It is best practice never to allow open CORS unless deliberately intended for a public API, which is not the case here.
