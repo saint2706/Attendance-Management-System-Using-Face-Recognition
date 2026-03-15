@@ -750,7 +750,6 @@ class FaceRecognitionAPI(View):
                     "title": "Validation Error",
                     "status": 400,
                     "detail": "Invalid embedding data in request payload.",
-                    # Log the detailed error server-side but return a generic message to the client
                     "instance": request.path,
                 },
                 status=400,
