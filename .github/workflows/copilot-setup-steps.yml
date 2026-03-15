@@ -41,8 +41,8 @@ jobs:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
       DJANGO_SECRET_KEY: "dev-secret-long-value-with-more-than-fifty-characters-12345"
-      DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
-      FACE_DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
+      DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
+      FACE_DATA_ENCRYPTION_KEY: "j7iSLd8SZ80sbA-jm0AbOonybFEq9XAAgo82TBnws6g="
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -53,15 +53,26 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Setup Python Environment
-        uses: ./.github/actions/setup-python-env
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          requirements-file: requirements-dev.txt
+          cache: pip
           cache-dependency-path: |
             requirements.txt
             requirements-dev.txt
             pyproject.toml
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgl1 libglib2.0-0 libsm6 libxrender1 libxext6
+          sudo apt-get clean
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements-dev.txt
 
       - name: Install Playwright browsers
         run: |
