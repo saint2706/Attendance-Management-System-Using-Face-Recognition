@@ -11,3 +11,4 @@
 - Synchronized `robots.txt` across root, `recognition/static/`, and `frontend/public/`.
 - Synchronized `llms.txt` across `llms.txt.content`, `recognition/static/`, and `frontend/public/`.
 - **🧘 Buddha: [PERF] Add priority LCP Hero image to Home page**: Added explicit `<img />` tag for Hero section with `fetchpriority="high"` and explicit dimensions/styles to improve Largest Contentful Paint (LCP) measurement and prioritization.
+- **🧘 Buddha: [SEO] Add sitemap to robots.txt**: Added `Sitemap: https://attendance-system.example.com/sitemap.xml` to `robots.txt` across root, `recognition/static/`, and `frontend/public/` to improve search engine discoverability.

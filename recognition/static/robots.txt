@@ -3,3 +3,4 @@ Disallow: /admin/
 Disallow: /django-admin/
 Disallow: /api/
 Allow: /
+Sitemap: https://attendance-system.example.com/sitemap.xml
