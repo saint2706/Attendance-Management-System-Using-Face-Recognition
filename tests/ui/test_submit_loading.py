@@ -32,12 +32,14 @@ def test_submit_loading_state(page: Page, server_url: str):
     # Add a submit listener that prevents default to stop navigation
     # This runs after the application's listener (which sets loading state)
     # ensuring the UI updates but the page doesn't reload.
-    page.evaluate("""
+    page.evaluate(
+        """
         const form = document.querySelector('form');
         form.addEventListener('submit', (e) => {
             e.preventDefault();
         });
-    """)
+    """
+    )
 
     # Click submit
     submit_btn = page.locator("button[type='submit']")
