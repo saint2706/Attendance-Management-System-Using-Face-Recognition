@@ -31,3 +31,9 @@
 - **Vulnerability**: The application was setting `CORS_ALLOW_ALL_ORIGINS = True` when `DEBUG = True`.
 - **Severity**: High (in development environments potentially exposed, or if DEBUG is mistakenly left on in production).
 - **Fix**: Removed the conditional `CORS_ALLOW_ALL_ORIGINS` setting entirely to enforce strict CORS origins (`CORS_ALLOWED_ORIGINS`) regardless of the `DEBUG` flag. It is best practice never to allow open CORS unless deliberately intended for a public API, which is not the case here.
+
+## 2026-03-23 - Rate Limiting on API Attendance Endpoint
+
+**Severity:** High
+**Vulnerability:** The `/api/attendance/mark/` endpoint lacked rate limiting, making it vulnerable to brute-force attacks and resource exhaustion (DoS) through rapid, repeated submissions of facial data.
+**Fix:** Implemented Django REST Framework's native `UserRateThrottle` by applying an `AttendanceRateThrottle` custom class to the endpoint. It dynamically restricts requests according to the `RECOGNITION_ATTENDANCE_RATE_LIMIT` setting (e.g., 5/minute).
