@@ -28,10 +28,24 @@ class RecognitionAttemptAdmin(admin.ModelAdmin):
     list_filter = ("direction", "site", "source", "successful", "spoof_detected")
     search_fields = ("username", "user__username", "site", "source")
     readonly_fields = ("created_at", "updated_at")
+    list_select_related = ("user",)
 
 
-# Register the Time model to make it available in the Django admin panel.
-admin.site.register(Time)
+@admin.register(Time)
+class TimeAdmin(admin.ModelAdmin):
+    """Admin configuration for time entry records."""
 
-# Register the Present model to make it available in the Django admin panel.
-admin.site.register(Present)
+    list_display = ("user", "date", "time", "direction")
+    list_filter = ("direction", "date")
+    search_fields = ("user__username",)
+    list_select_related = ("user",)
+
+
+@admin.register(Present)
+class PresentAdmin(admin.ModelAdmin):
+    """Admin configuration for daily present records."""
+
+    list_display = ("user", "date", "present")
+    list_filter = ("present", "date")
+    search_fields = ("user__username",)
+    list_select_related = ("user",)

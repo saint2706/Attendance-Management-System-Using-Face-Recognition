@@ -16,3 +16,8 @@
 - The `user-list` API endpoint (`UserViewSet.get_queryset` in `recognition/api/views.py`) previously executed an N+1 query issue when serializing the User model by implicitly fetching its groups and user permissions.
 - **Optimization:** Added `.prefetch_related("groups", "user_permissions")` on `User.objects` queries to batch database hits.
 - **Result:** Decreased queries on `user-list` endpoint significantly for a list of users.
+
+## Optimization: N+1 query issue in Django Admin models
+**Learning:** In Django Admin, if `__str__` accesses a related field (like `self.user.username`) or if the `list_display` renders methods that traverse relations, Django will trigger an N+1 query for each object in the list view, degrading performance significantly when dealing with many objects like `Time`, `Present`, or `RecognitionAttempt`.
+**Action:** Always create custom `ModelAdmin` classes for models displayed in the admin interface and add `list_select_related = ("user",)` (or relevant foreign keys) to explicitly join the related tables in a single query.
+- **Result:** Decreased N+1 queries in the Django Admin for `Time`, `Present`, and `RecognitionAttempt` models.
