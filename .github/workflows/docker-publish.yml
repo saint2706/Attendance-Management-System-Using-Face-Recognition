@@ -79,8 +79,6 @@ jobs:
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # Set latest tag for default branch
-            type=raw,value=latest,enable={{is_default_branch}}
             # Branch name with short SHA (e.g., main-abc1234)
             type=raw,value={{branch}}-{{sha}},enable={{is_default_branch}}
             # Semantic versioning from git tags (e.g., v1.2.3 -> 1.2.3, v1.2.3 -> v1.2.3)

@@ -16,7 +16,8 @@ WORKDIR /app/frontend
 USER node
 
 COPY --chown=node:node frontend/package.json frontend/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile \
+    && pnpm store prune
 
 COPY --chown=node:node frontend/ .
 # Ensure vite config base is correct (should be set in code, but we can enforce if needed)
