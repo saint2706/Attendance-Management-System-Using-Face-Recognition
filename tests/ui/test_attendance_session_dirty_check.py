@@ -48,12 +48,14 @@ def test_dirty_check_implementation_exists(page: Page, server_url: str, admin_ac
 
     # The monitor automatically starts and fetches data, so lastRenderedHtml may already be set
     # But we can stop it and reset to test the dirty check mechanism
-    page.evaluate("""
+    page.evaluate(
+        """
         () => {
             window.attendanceMonitor.stop();
             window.attendanceMonitor.lastRenderedHtml = null;
         }
-    """)
+    """
+    )
 
     # Verify lastRenderedHtml is now null
     last_rendered_html = page.evaluate("() => window.attendanceMonitor.lastRenderedHtml")
@@ -61,7 +63,8 @@ def test_dirty_check_implementation_exists(page: Page, server_url: str, admin_ac
 
     # Test the dirty check mechanism directly by calling _renderRows with identical data
     # First, inject test data and call _renderRows
-    page.evaluate("""
+    page.evaluate(
+        """
         () => {
             // Track DOM update attempts
             window.domUpdateAttempts = 0;
@@ -88,7 +91,8 @@ def test_dirty_check_implementation_exists(page: Page, server_url: str, admin_ac
 
             window.attendanceMonitor._renderRows(testEvents);
         }
-    """)
+    """
+    )
 
     # Check that first call updated the DOM
     update_count_after_first = page.evaluate("() => window.domUpdateAttempts")
@@ -104,7 +108,8 @@ def test_dirty_check_implementation_exists(page: Page, server_url: str, admin_ac
     assert "testuser" in last_rendered_after_first, "Rendered HTML should contain test data"
 
     # Call _renderRows again with THE SAME data
-    page.evaluate("""
+    page.evaluate(
+        """
         () => {
             const testEvents = [
                 {
@@ -119,7 +124,8 @@ def test_dirty_check_implementation_exists(page: Page, server_url: str, admin_ac
 
             window.attendanceMonitor._renderRows(testEvents);
         }
-    """)
+    """
+    )
 
     # Check that dirty check prevented the second DOM update
     update_count_after_second = page.evaluate("() => window.domUpdateAttempts")
@@ -129,7 +135,8 @@ def test_dirty_check_implementation_exists(page: Page, server_url: str, admin_ac
     )
 
     # Call _renderRows with DIFFERENT data
-    page.evaluate("""
+    page.evaluate(
+        """
         () => {
             const testEvents = [
                 {
@@ -144,7 +151,8 @@ def test_dirty_check_implementation_exists(page: Page, server_url: str, admin_ac
 
             window.attendanceMonitor._renderRows(testEvents);
         }
-    """)
+    """
+    )
 
     # Check that different data triggered an update
     update_count_after_different = page.evaluate("() => window.domUpdateAttempts")
@@ -182,7 +190,8 @@ def test_dirty_check_handles_empty_to_data_transition(page: Page, server_url: st
     page.evaluate("() => window.attendanceMonitor.stop()")
 
     # Test rendering empty data first
-    page.evaluate("""
+    page.evaluate(
+        """
         () => {
             window.domUpdateAttempts = 0;
             const tbody = document.getElementById('attendance-log-body');
@@ -199,7 +208,8 @@ def test_dirty_check_handles_empty_to_data_transition(page: Page, server_url: st
             // Render empty data
             window.attendanceMonitor._renderRows([]);
         }
-    """)
+    """
+    )
 
     # Should render empty message
     empty_message = page.locator("#attendance-log-body")
@@ -209,7 +219,8 @@ def test_dirty_check_handles_empty_to_data_transition(page: Page, server_url: st
     assert update_count == 1, f"Expected 1 update for empty data, got {update_count}"
 
     # Render populated data
-    page.evaluate("""
+    page.evaluate(
+        """
         () => {
             const testEvents = [
                 {
@@ -224,7 +235,8 @@ def test_dirty_check_handles_empty_to_data_transition(page: Page, server_url: st
 
             window.attendanceMonitor._renderRows(testEvents);
         }
-    """)
+    """
+    )
 
     # Should now show the data
     rows = page.locator("#attendance-log-body tr")
