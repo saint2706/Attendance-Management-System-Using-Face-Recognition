@@ -212,9 +212,7 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr(views, "update_attendance_in_db_in", lambda *args, **kwargs: None)
 
-        valid_png_b64 = (
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
-        )
+        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501
         response = api_client.post(url, {"image": valid_png_b64, "direction": "invalid_dir"})
 
         assert response.status_code == status.HTTP_200_OK
@@ -258,7 +256,7 @@ class TestAttendanceViewSetMarkEndpoint:
 
         import base64
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501
+        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501  # noqa: E501
         raw_bytes = base64.b64decode(valid_png_b64)
 
         class MockRequestData:
@@ -283,7 +281,7 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr("cv2.imdecode", lambda *args, **kwargs: None)
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501
+        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501  # noqa: E501
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -306,7 +304,7 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr(DeepFace, "represent", raise_value_error)
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501
+        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501  # noqa: E501
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -330,7 +328,7 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr(DeepFace, "represent", raise_exception)
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501
+        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501  # noqa: E501
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -363,11 +361,250 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr(pipeline, "extract_embedding", lambda *args, **kwargs: (None, None))
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "No face detected" in response.data["detail"]
+
+    def test_mark_dataset_index_formats(self, api_client, admin_user, monkeypatch):
+        api_client.force_authenticate(user=admin_user)
+        url = reverse("attendance-mark")
+
+        import numpy as np
+
+        monkeypatch.setattr(
+            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+        )
+
+        from recognition import pipeline
+
+        monkeypatch.setattr(
+            pipeline,
+            "extract_embedding",
+            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
+        )
+
+        from recognition import views
+
+        class Unconvertible:
+            def __float__(self):
+                raise ValueError("cannot convert")
+
+        # Mock dataset with mixed formats: dict with list, string, missing
+        mock_dataset = [
+            {"username": "user1", "embedding": [0.0] * 128},
+            {"username": "user2", "embedding": Unconvertible()},
+            {"username": "user3"},  # No embedding key
+        ]
+
+        monkeypatch.setattr(
+            "recognition.views._load_dataset_embeddings_for_matching",
+            lambda *args, **kwargs: mock_dataset,
+        )
+
+        monkeypatch.setattr(
+            pipeline, "find_closest_dataset_match", lambda *args, **kwargs: ("user1", 0.1, 0)
+        )
+
+        monkeypatch.setattr(pipeline, "is_within_distance_threshold", lambda *args, **kwargs: True)
+
+        # For this test, mock User.objects.get so it doesn't fail on "user1" not found.
+        # user1 doesn't exist in test DB. Make the mock return admin_user.username
+        mock_dataset[0]["username"] = admin_user.username
+        monkeypatch.setattr(
+            pipeline,
+            "find_closest_dataset_match",
+            lambda *args, **kwargs: (admin_user.username, 0.1, 0),
+        )
+
+        monkeypatch.setattr(views, "update_attendance_in_db_in", lambda *args, **kwargs: None)
+
+        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501
+        response = api_client.post(url, {"image": valid_png_b64})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "success"
+
+    def test_mark_empty_normalized_index(self, api_client, admin_user, monkeypatch):
+        api_client.force_authenticate(user=admin_user)
+        url = reverse("attendance-mark")
+
+        import numpy as np
+
+        monkeypatch.setattr(
+            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+        )
+
+        from recognition import pipeline
+
+        monkeypatch.setattr(
+            pipeline,
+            "extract_embedding",
+            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
+        )
+
+        class Unconvertible:
+            def __float__(self):
+                raise ValueError("cannot convert")
+
+        # Mock dataset where everything fails to convert
+        mock_dataset = [{"username": "user2", "embedding": Unconvertible()}]
+
+        monkeypatch.setattr(
+            "recognition.views._load_dataset_embeddings_for_matching",
+            lambda *args, **kwargs: mock_dataset,
+        )
+
+        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501
+        response = api_client.post(url, {"image": valid_png_b64})
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "No valid embeddings available" in response.data["detail"]
+
+    def test_mark_low_confidence(self, api_client, admin_user, monkeypatch):
+        api_client.force_authenticate(user=admin_user)
+        url = reverse("attendance-mark")
+
+        import numpy as np
+
+        monkeypatch.setattr(
+            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+        )
+
+        from recognition import pipeline
+
+        monkeypatch.setattr(
+            pipeline,
+            "extract_embedding",
+            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
+        )
+
+        monkeypatch.setattr(
+            "recognition.views._load_dataset_embeddings_for_matching",
+            lambda *args, **kwargs: [{"embedding": np.zeros(128)}],
+        )
+
+        monkeypatch.setattr(
+            pipeline,
+            "find_closest_dataset_match",
+            lambda *args, **kwargs: (admin_user.username, 0.9, 0),
+        )
+        monkeypatch.setattr(pipeline, "is_within_distance_threshold", lambda *args, **kwargs: False)
+
+        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501
+        response = api_client.post(url, {"image": valid_png_b64})
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "sufficient confidence" in response.data["detail"]
+
+    def test_mark_user_does_not_exist(self, api_client, admin_user, monkeypatch):
+        api_client.force_authenticate(user=admin_user)
+        url = reverse("attendance-mark")
+
+        import numpy as np
+
+        monkeypatch.setattr(
+            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+        )
+
+        from recognition import pipeline
+
+        monkeypatch.setattr(
+            pipeline,
+            "extract_embedding",
+            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
+        )
+
+        monkeypatch.setattr(
+            "recognition.views._load_dataset_embeddings_for_matching",
+            lambda *args, **kwargs: [{"embedding": np.zeros(128)}],
+        )
+
+        monkeypatch.setattr(
+            pipeline, "find_closest_dataset_match", lambda *args, **kwargs: ("ghost_user", 0.1, 0)
+        )
+        monkeypatch.setattr(pipeline, "is_within_distance_threshold", lambda *args, **kwargs: True)
+
+        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501
+        response = api_client.post(url, {"image": valid_png_b64})
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "not found in database" in response.data["detail"]
+
+    def test_mark_find_closest_dataset_match_returns_none(
+        self, api_client, admin_user, monkeypatch
+    ):
+        api_client.force_authenticate(user=admin_user)
+        url = reverse("attendance-mark")
+
+        import numpy as np
+
+        monkeypatch.setattr(
+            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+        )
+
+        from recognition import pipeline
+
+        monkeypatch.setattr(
+            pipeline,
+            "extract_embedding",
+            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
+        )
+
+        monkeypatch.setattr(
+            "recognition.views._load_dataset_embeddings_for_matching",
+            lambda *args, **kwargs: [{"embedding": np.zeros(128)}],
+        )
+
+        monkeypatch.setattr(pipeline, "find_closest_dataset_match", lambda *args, **kwargs: None)
+
+        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501
+        response = api_client.post(url, {"image": valid_png_b64})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert "no match found in database" in response.data["detail"]
+
+    def test_mark_success_out(self, api_client, admin_user, monkeypatch):
+        api_client.force_authenticate(user=admin_user)
+        url = reverse("attendance-mark")
+
+        import numpy as np
+
+        monkeypatch.setattr(
+            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+        )
+
+        from recognition import pipeline
+
+        monkeypatch.setattr(
+            pipeline,
+            "extract_embedding",
+            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
+        )
+
+        monkeypatch.setattr(
+            "recognition.views._load_dataset_embeddings_for_matching",
+            lambda *args, **kwargs: [{"embedding": np.zeros(128)}],
+        )
+
+        monkeypatch.setattr(
+            pipeline,
+            "find_closest_dataset_match",
+            lambda *args, **kwargs: (admin_user.username, 0.1, 0),
+        )
+        monkeypatch.setattr(pipeline, "is_within_distance_threshold", lambda *args, **kwargs: True)
+
+        from recognition import views
+
+        monkeypatch.setattr(views, "update_attendance_in_db_out", lambda *args, **kwargs: None)
+
+        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501
+        response = api_client.post(url, {"image": valid_png_b64, "direction": "out"})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "success"
+        assert response.data["recognition"]["direction"] == "out"
 
     def test_mark_valid_image_but_no_database_match(self, api_client, admin_user, monkeypatch):
         api_client.force_authenticate(user=admin_user)
@@ -395,14 +632,11 @@ class TestAttendanceViewSetMarkEndpoint:
             views, "_load_dataset_embeddings_for_matching", lambda *args, **kwargs: []
         )
 
-        # wait, the mark method imports _load_dataset_embeddings_for_matching from recognition.views inside the method
-        # It's better to patch it where it is used or patch the actual module.
-        # Since it does `from recognition.views import ...`, we can mock `recognition.views._load_dataset_embeddings_for_matching`
         monkeypatch.setattr(
             "recognition.views._load_dataset_embeddings_for_matching", lambda *args, **kwargs: []
         )
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="  # noqa: E501
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
