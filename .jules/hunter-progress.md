@@ -12,3 +12,5 @@
 - `.flake8`: Excluded `frontend/node_modules/` from being linted by `flake8`.
 - `recognition/views.py`: Fixed unused variable `model` and removed `# noqa: F841`.
 - `recognition/views_legacy.py`: Fixed unused variable `model` and removed `# noqa: F841`.
+- `frontend/src/pages/MarkAttendance.tsx`: Removed unused `err` variables in `catch` blocks and removed `console.error` logs to clean up code.
+- `recognition/static/js/ui.js`: Removed leftover `console.log('UI enhancements initialized')` from initialization logic.

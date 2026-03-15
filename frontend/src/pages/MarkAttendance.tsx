@@ -64,8 +64,7 @@ export const MarkAttendance = () => {
                 videoRef.current.srcObject = mediaStream;
                 await videoRef.current.play();
             }
-        } catch (err) {
-            console.error('Camera error:', err);
+        } catch {
             setError('Unable to access camera. Please ensure camera permissions are granted.');
         } finally {
             setIsInitializing(false);
@@ -122,8 +121,7 @@ export const MarkAttendance = () => {
         try {
             const recognitionResult = await markAttendance(imageBase64, direction);
             setResult(recognitionResult);
-        } catch (err) {
-            console.error('Recognition error:', err);
+        } catch {
             setResult({
                 recognized: false,
                 spoofDetected: false,
@@ -160,7 +158,7 @@ export const MarkAttendance = () => {
         if (!stream) {
             startCamera();
         } else if (videoRef.current) {
-            videoRef.current.play().catch(console.error);
+            videoRef.current.play().catch(() => {});
         }
     }, [stream, startCamera]);
 
