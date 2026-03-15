@@ -202,6 +202,9 @@ This version represents the state of the codebase when the original CHANGELOG.md
 
 ### Fixed in 1.2.0
 
+- Fixed Django CI linting and formatting errors by running `make format` to format tests.
+
+
 - Django CI linting and formatting errors (`9665a73`)
 - Coverage files added to `.gitignore` (`44bbc34`)
 - Test failures by updating function signatures for `enforce_detection` parameter (`7bb0e2b`)
