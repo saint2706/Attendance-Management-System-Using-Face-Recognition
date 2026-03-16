@@ -24,14 +24,6 @@ runs:
         cache: pip
         cache-dependency-path: ${{ inputs.cache-dependency-path }}
 
-    - name: Install system dependencies
-      shell: bash
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends \
-          libgl1 libglib2.0-0 libsm6 libxrender1 libxext6
-        sudo apt-get clean
-
     - name: Install Python dependencies
       shell: bash
       run: |
