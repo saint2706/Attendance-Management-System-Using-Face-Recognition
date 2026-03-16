@@ -5,7 +5,7 @@ ARG PYTHON_VERSION=3.12
 # =============================================================================
 # Stage 1: Build Frontend
 # =============================================================================
-FROM node:20.11.1-alpine AS frontend-build
+FROM node:25.8.1-alpine AS frontend-build
 
 RUN corepack enable pnpm
 
