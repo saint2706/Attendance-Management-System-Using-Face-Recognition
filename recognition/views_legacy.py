@@ -384,9 +384,10 @@ class FaceRecognitionAPI(View):
         api_key = request.META.get("HTTP_X_API_KEY")
         if api_key:
             valid_key = False
-            for allowed_key in api_keys:
-                if secrets.compare_digest(api_key, allowed_key):
-                    valid_key = True
+            if api_keys:
+                for allowed_key in api_keys:
+                    if secrets.compare_digest(api_key, allowed_key):
+                        valid_key = True
 
             if valid_key:
                 masked_key = hashlib.sha256(api_key.encode()).hexdigest()

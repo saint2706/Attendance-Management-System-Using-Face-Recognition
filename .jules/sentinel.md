@@ -37,3 +37,9 @@
 **Severity:** High
 **Vulnerability:** The `/api/attendance/mark/` endpoint lacked rate limiting, making it vulnerable to brute-force attacks and resource exhaustion (DoS) through rapid, repeated submissions of facial data.
 **Fix:** Implemented Django REST Framework's native `UserRateThrottle` by applying an `AttendanceRateThrottle` custom class to the endpoint. It dynamically restricts requests according to the `RECOGNITION_ATTENDANCE_RATE_LIMIT` setting (e.g., 5/minute).
+
+## 2026-03-16 - Timing Attack Vulnerability in API Key Validation
+
+**Vulnerability:** The `_authenticate_request` method in `recognition/views.py` and `recognition/views_legacy.py` used a standard Python `in` operator (`if api_key in api_keys:`) to validate API keys against a tuple of allowed keys. This non-constant-time comparison can theoretically be exploited in a timing attack to guess API keys character by character.
+**Learning:** Sensitive strings like API keys, tokens, or passwords must always be compared using a constant-time comparison function to mitigate timing side-channels.
+**Prevention:** Refactored the key matching logic to iterate over all allowed keys and use `secrets.compare_digest(api_key, allowed_key)` from the standard `secrets` library, ensuring constant-time validation.
