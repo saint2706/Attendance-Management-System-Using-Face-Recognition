@@ -26,12 +26,11 @@ export const Home = () => {
                 <div className="hero-content">
                     <img
                         src="/static/icons/icon-512.png"
-                        alt=""
+                        alt="Smart Attendance Logo"
                         width="128"
                         height="128"
                         fetchPriority="high"
                         className="hero-image"
-                        aria-hidden="true"
                     />
                     <h1 className="hero-title">
                         Smart Attendance System

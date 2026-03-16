@@ -336,11 +336,13 @@ export const MarkAttendance = () => {
                                 disabled={!stream || isProcessing || countdown !== null}
                                 className="btn btn-primary btn-lg capture-button"
                                 aria-label={
-                                    countdown !== null && countdown > 0
-                                        ? `Capturing in ${countdown}...`
-                                        : countdown === 0
-                                            ? "Capturing now..."
-                                            : "Start capture sequence"
+                                    isProcessing
+                                        ? "Processing..."
+                                        : countdown !== null && countdown > 0
+                                            ? `Capturing in ${countdown}...`
+                                            : countdown === 0
+                                                ? "Capturing now..."
+                                                : "Capture & Recognize: Start capture sequence"
                                 }
                                 aria-keyshortcuts="Space"
                             >
