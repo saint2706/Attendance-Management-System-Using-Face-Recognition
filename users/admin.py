@@ -15,6 +15,7 @@ from .models import Present, RecognitionAttempt, Time
 class RecognitionAttemptAdmin(admin.ModelAdmin):
     """Admin configuration for recognition attempt records."""
 
+    list_select_related = ("user",)
     list_display = (
         "created_at",
         "username",
@@ -30,8 +31,15 @@ class RecognitionAttemptAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
 
 
-# Register the Time model to make it available in the Django admin panel.
-admin.site.register(Time)
+@admin.register(Time)
+class TimeAdmin(admin.ModelAdmin):
+    """Admin configuration for time records."""
 
-# Register the Present model to make it available in the Django admin panel.
-admin.site.register(Present)
+    list_select_related = ("user",)
+
+
+@admin.register(Present)
+class PresentAdmin(admin.ModelAdmin):
+    """Admin configuration for present records."""
+
+    list_select_related = ("user",)
