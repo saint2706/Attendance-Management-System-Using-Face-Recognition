@@ -25,11 +25,12 @@ export const Home = () => {
             <section className="hero">
                 <div className="hero-content">
                     <img
-                        src="/static/icons/icon-512.png"
-                        alt=""
+                        src="/icons/icon-512.png"
+                        alt="Smart Attendance System Logo"
                         width="128"
                         height="128"
                         fetchPriority="high"
+                        loading="eager"
                         className="hero-image"
                         aria-hidden="true"
                     />

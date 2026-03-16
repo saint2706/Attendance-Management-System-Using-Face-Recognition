@@ -11,3 +11,4 @@
 - Synchronized `robots.txt` across root, `recognition/static/`, and `frontend/public/`.
 - Synchronized `llms.txt` across `llms.txt.content`, `recognition/static/`, and `frontend/public/`.
 - **🧘 Buddha: [PERF] Add priority LCP Hero image to Home page**: Added explicit `<img />` tag for Hero section with `fetchpriority="high"` and explicit dimensions/styles to improve Largest Contentful Paint (LCP) measurement and prioritization.
+- **🧘 Buddha: [PERF] Fix Hero image lazy-loading**: Added `loading="eager"`, explicit alt text, and corrected `src` for the LCP hero image in `frontend/src/pages/Home.tsx` to optimize Core Web Vitals.
