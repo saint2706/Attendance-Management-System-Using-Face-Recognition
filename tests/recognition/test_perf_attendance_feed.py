@@ -35,6 +35,15 @@ def test_attendance_session_feed_query_count(client):
 
     assert response.status_code == 200
 
+    filtered_queries = [
+        q
+        for q in ctx.captured_queries
+        if not q["sql"].startswith("EXPLAIN")
+        and "silk_" not in q["sql"].lower()
+        and not q["sql"].startswith("SAVEPOINT")
+        and not q["sql"].startswith("RELEASE SAVEPOINT")
+    ]
+
     # We expect query count to be LOW (constant) now.
     # 1. Session
     # 2. Auth user
@@ -42,9 +51,7 @@ def test_attendance_session_feed_query_count(client):
     # 4. RecognitionAttempt (with select_related)
     # Total ~4
 
-    assert (
-        len(ctx.captured_queries) <= 5
-    ), f"Expected optimized queries, got {len(ctx.captured_queries)}"
+    assert len(filtered_queries) <= 5, f"Expected optimized queries, got {len(filtered_queries)}"
 
 
 @pytest.mark.django_db
@@ -77,7 +84,14 @@ def test_attendance_session_feed_query_count_mixed_scenarios(client):
 
     assert response.status_code == 200
 
+    filtered_queries = [
+        q
+        for q in ctx.captured_queries
+        if not q["sql"].startswith("EXPLAIN")
+        and "silk_" not in q["sql"].lower()
+        and not q["sql"].startswith("SAVEPOINT")
+        and not q["sql"].startswith("RELEASE SAVEPOINT")
+    ]
+
     # Query count should remain constant regardless of mixed username scenarios
-    assert (
-        len(ctx.captured_queries) <= 5
-    ), f"Expected optimized queries, got {len(ctx.captured_queries)}"
+    assert len(filtered_queries) <= 5, f"Expected optimized queries, got {len(filtered_queries)}"

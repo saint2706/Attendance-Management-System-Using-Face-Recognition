@@ -18,6 +18,7 @@ import logging
 import math
 import os
 import pickle
+import secrets
 import sys
 import threading
 import time
@@ -405,7 +406,13 @@ class FaceRecognitionAPI(View):
         )
         api_key = request.META.get("HTTP_X_API_KEY")
         if api_key:
-            if api_keys and api_key in api_keys:
+            valid_key = False
+            if api_keys:
+                for allowed_key in api_keys:
+                    if secrets.compare_digest(api_key, allowed_key):
+                        valid_key = True
+
+            if valid_key:
                 masked_key = hashlib.sha256(api_key.encode()).hexdigest()
                 request.face_api_principal = f"api-key:{masked_key}"
                 return True, request.face_api_principal, None
