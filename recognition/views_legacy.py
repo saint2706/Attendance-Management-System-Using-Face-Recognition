@@ -834,8 +834,14 @@ class FaceRecognitionAPI(View):
                     error="Failed to analyse the provided image.",
                 )
                 return JsonResponse(
-                    {"error": "Failed to analyse the provided image."},
+                    {
+                        "type": "about:blank",
+                        "title": "Internal Server Error",
+                        "status": 500,
+                        "detail": "Failed to analyse the provided image.",
+                    },
                     status=500,
+                    content_type="application/problem+json",
                 )
 
             extracted_embedding, facial_area = extract_embedding(representations)
@@ -846,8 +852,14 @@ class FaceRecognitionAPI(View):
                     error="No face embedding could be extracted from the image.",
                 )
                 return JsonResponse(
-                    {"error": "No face embedding could be extracted from the image."},
+                    {
+                        "type": "about:blank",
+                        "title": "Validation Error",
+                        "status": 400,
+                        "detail": "No face embedding could be extracted from the image.",
+                    },
                     status=400,
+                    content_type="application/problem+json",
                 )
 
             try:
@@ -909,8 +921,14 @@ class FaceRecognitionAPI(View):
                 error="No enrolled face embeddings are available for comparison.",
             )
             return JsonResponse(
-                {"error": "No enrolled face embeddings are available for comparison."},
+                {
+                    "type": "about:blank",
+                    "title": "Service Unavailable",
+                    "status": 503,
+                    "detail": "No enrolled face embeddings are available for comparison.",
+                },
                 status=503,
+                content_type="application/problem+json",
             )
 
         distance_metric = _get_deepface_distance_metric()
@@ -1067,8 +1085,14 @@ def enqueue_attendance_batch(request):
     for index, record in enumerate(records):
         if not isinstance(record, dict):
             return JsonResponse(
-                {"detail": f"Record at index {index} must be a JSON object."},
+                {
+                    "type": "about:blank",
+                    "title": "Validation Error",
+                    "status": 400,
+                    "detail": f"Record at index {index} must be a JSON object.",
+                },
                 status=400,
+                content_type="application/problem+json",
             )
         normalized_records.append(record)
 
