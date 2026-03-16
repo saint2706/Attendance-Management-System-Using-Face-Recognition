@@ -30,8 +30,7 @@ def page_with_camera(browser) -> Iterator[Page]:
     page = context.new_page()
 
     # Mock getUserMedia to provide a fake camera stream
-    page.add_init_script(
-        """
+    js_script = """
         // Create a mock video stream
         const mockStream = {
             getTracks: () => [{
@@ -57,7 +56,7 @@ def page_with_camera(browser) -> Iterator[Page]:
             return Promise.resolve();
         };
     """
-    )
+    page.add_init_script(js_script)
 
     yield page
     page.close()

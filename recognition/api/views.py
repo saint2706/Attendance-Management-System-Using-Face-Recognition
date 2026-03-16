@@ -5,6 +5,7 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 
 from recognition.api.serializers import (
     AttendanceRecordSerializer,
@@ -16,6 +17,15 @@ from recognition.api.serializers import (
 from users.models import Direction, RecognitionAttempt
 
 User = get_user_model()
+
+
+class AttendanceRateThrottle(UserRateThrottle):
+    scope = "attendance"
+
+    def get_rate(self):
+        from django.conf import settings
+
+        return getattr(settings, "RECOGNITION_ATTENDANCE_RATE_LIMIT", "5/m")
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -136,7 +146,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = StatsSerializer(data)
         return Response(serializer.data)
 
-    @action(detail=False, methods=["post"])
+    @action(detail=False, methods=["post"], throttle_classes=[AttendanceRateThrottle])
     def mark(self, request):
         """
         Endpoint for marking attendance via API using face recognition.
