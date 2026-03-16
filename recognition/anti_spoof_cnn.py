@@ -285,7 +285,7 @@ class AntiSpoofCNN:
         frames: Sequence[ArrayLike],
         threshold: Optional[float] = None,
     ) -> list[AntiSpoofResult]:
-        """Predict for multiple frames.
+        """Predict for multiple frames in a single batch.
 
         Args:
             frames: Sequence of face images.
@@ -294,7 +294,74 @@ class AntiSpoofCNN:
         Returns:
             List of AntiSpoofResult for each frame.
         """
-        return [self.predict(frame, threshold) for frame in frames]
+        if not frames:
+            return []
+
+        if threshold is None:
+            threshold = _get_antispoof_threshold()
+
+        # Ensure model is loaded
+        if not self.load_model() or self._model is None:
+            logger.debug("Anti-spoof model not available, assuming real for batch.")
+            return [
+                AntiSpoofResult(
+                    is_real=True,
+                    confidence=0.5,
+                    spoof_probability=0.5,
+                    model_available=False,
+                )
+                for _ in frames
+            ]
+
+        # Preprocess all frames
+        preprocessed_frames = []
+        valid_indices = []
+
+        for i, frame in enumerate(frames):
+            preprocessed = self._preprocess_frame(frame)
+            if preprocessed is not None:
+                preprocessed_frames.append(preprocessed)
+                valid_indices.append(i)
+
+        # Initialize results with default fallbacks
+        results = [
+            AntiSpoofResult(
+                is_real=True,
+                confidence=0.5,
+                spoof_probability=0.5,
+                model_available=True,
+            )
+            for _ in frames
+        ]
+
+        if not preprocessed_frames:
+            return results
+
+        try:
+            # Create a single batch for efficient inference
+            batch = np.stack(preprocessed_frames)
+
+            # Predict entire batch at once
+            predictions = self._model.predict(batch, verbose=0)
+
+            # Update results for valid frames
+            for idx, prediction_val in zip(valid_indices, predictions):
+                real_probability = float(prediction_val[0])
+                spoof_probability = 1.0 - real_probability
+
+                is_real = real_probability >= threshold
+
+                results[idx] = AntiSpoofResult(
+                    is_real=is_real,
+                    confidence=real_probability if is_real else spoof_probability,
+                    spoof_probability=spoof_probability,
+                    model_available=True,
+                )
+
+        except Exception as e:
+            logger.warning("Anti-spoof batch prediction failed: %s", e)
+
+        return results
 
 
 def get_antispoof_model() -> AntiSpoofCNN:
