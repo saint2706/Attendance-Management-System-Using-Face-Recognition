@@ -51,7 +51,7 @@ jobs:
     timeout-minutes: 15
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:16.2-alpine
         env:
           POSTGRES_USER: ams
           POSTGRES_PASSWORD: ams
@@ -156,7 +156,7 @@ jobs:
         python-version: ["3.12"]
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:16.2-alpine
         env:
           POSTGRES_USER: ams
           POSTGRES_PASSWORD: ams
@@ -227,7 +227,7 @@ jobs:
         python-version: ["3.12"]
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:16.2-alpine
         env:
           POSTGRES_USER: ams
           POSTGRES_PASSWORD: ams
