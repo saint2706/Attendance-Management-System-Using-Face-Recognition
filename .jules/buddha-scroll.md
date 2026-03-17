@@ -12,3 +12,11 @@
 - Synchronized `llms.txt` across `llms.txt.content`, `recognition/static/`, and `frontend/public/`.
 - **🧘 Buddha: [PERF] Add priority LCP Hero image to Home page**: Added explicit `<img />` tag for Hero section with `fetchpriority="high"` and explicit dimensions/styles to improve Largest Contentful Paint (LCP) measurement and prioritization.
 - **🧘 Buddha: [PERF] Fix Hero image lazy-loading**: Added `loading="eager"`, explicit alt text, and corrected `src` for the LCP hero image in `frontend/src/pages/Home.tsx` to optimize Core Web Vitals.
+# Buddha Scroll - SEO/GEO Optimizations
+
+## [GEO] [SEO] Added FAQPage Structured Data (JSON-LD)
+- Added direct answers to common questions ("How does the Smart Attendance System work?", "Is my biometric data secure?") directly into the JSON-LD schema using `FAQPage` schema on `frontend/index.html` and `recognition/templates/recognition/base.html`.
+- This enhances vector friendliness and provides structured answers for Generative Engines (ChatGPT, Perplexity, Google SGE) to easily extract answers.
+- `llms.txt` and `robots.txt` were verified to be up-to-date and consistent across the frontend, static assets, and root directories.
+- Verified LCP hero images are eager-loaded.
+- Verified headings hierarchy uses proper semantic HTML structure.
