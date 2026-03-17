@@ -83,6 +83,7 @@ export const Navbar = () => {
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         className="btn btn-icon mobile-menu-toggle"
                             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                            title={mobileMenuOpen ? "Close menu" : "Open menu"}
                             aria-expanded={mobileMenuOpen}
                     >
                         {mobileMenuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}

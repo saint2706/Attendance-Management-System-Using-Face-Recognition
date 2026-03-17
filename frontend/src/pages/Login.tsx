@@ -104,6 +104,7 @@ export const Login = () => {
                                 className="password-toggle"
                                 onClick={() => setShowPassword(!showPassword)}
                                 aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                title={showPassword ? 'Hide password' : 'Show password'}
                                 disabled={isLoading}
                             >
                                 {showPassword ? (

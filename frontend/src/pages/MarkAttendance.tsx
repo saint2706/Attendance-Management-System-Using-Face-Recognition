@@ -223,7 +223,7 @@ export const MarkAttendance = () => {
                 {/* Camera View */}
                 <div className="camera-container card card-elevated">
                     {error ? (
-                        <div className="camera-error">
+                        <div className="camera-error" role="alert" aria-live="assertive">
                             <CameraOff size={48} aria-hidden="true" />
                             <p>{error}</p>
                             <button onClick={startCamera} className="btn btn-primary" aria-label="Retry camera access">
@@ -234,7 +234,7 @@ export const MarkAttendance = () => {
                     ) : (
                         <>
                             {isInitializing && (
-                                <div className="flex flex-col items-center justify-center text-muted" role="status" style={{ position: 'absolute', inset: 0, zIndex: 10, backgroundColor: '#000' }}>
+                                <div className="flex flex-col items-center justify-center text-muted" role="status" aria-live="polite" style={{ position: 'absolute', inset: 0, zIndex: 10, backgroundColor: '#000' }}>
                                     <Loader2 size={48} className="animate-spin mb-md" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
                                     <p>Starting camera...</p>
                                 </div>
