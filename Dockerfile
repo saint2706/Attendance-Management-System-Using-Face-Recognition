@@ -33,14 +33,6 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1
 
-# Runtime libraries required by OpenCV/DeepFace
-# hadolint ignore=DL3008
-RUN apt-get update \
-    && apt-get install --no-install-recommends -y \
-        curl \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
 FROM python-base AS build
 
 # Build tools required for Python packages with native extensions
@@ -111,7 +103,7 @@ EXPOSE 8000
 
 # Health check to verify the application is running
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl --fail http://localhost:8000/ || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/')" || exit 1
 
 # Default command runs the production WSGI server
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--threads", "4", "--worker-class", "gthread", "attendance_system_facial_recognition.wsgi:application"]
