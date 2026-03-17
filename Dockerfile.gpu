@@ -4,7 +4,7 @@
 # Requires: nvidia-container-toolkit and NVIDIA GPU driver on host
 
 ARG CUDA_VERSION=12.3.2
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.12.2
 
 # =============================================================================
 # Stage 1: Build Frontend
