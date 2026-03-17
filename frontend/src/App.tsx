@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center" style={{ minHeight: '60vh' }} role="status">
+      <div className="flex flex-col items-center justify-center" style={{ minHeight: '60vh' }} role="status" aria-live="polite">
         <Loader2 size={48} className="animate-spin mb-md" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
         <div className="animate-pulse text-muted">Loading...</div>
       </div>
