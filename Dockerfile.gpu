@@ -4,7 +4,7 @@
 # Requires: nvidia-container-toolkit and NVIDIA GPU driver on host
 
 ARG CUDA_VERSION=12.3.2
-ARG PYTHON_VERSION=3.12.2
+ARG PYTHON_VERSION=3.12
 
 # =============================================================================
 # Stage 1: Build Frontend
@@ -48,7 +48,6 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y \
     python3.12 \
     python3.12-venv \
-    curl \
     ca-certificates \
     && apt-get purge -y --auto-remove software-properties-common \
     && apt-get clean \
@@ -143,7 +142,7 @@ EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl --fail http://localhost:8000/ || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/')" || exit 1
 
 # GPU inference uses more memory - reduce workers, increase threads
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "1", "--threads", "8", "--worker-class", "gthread", "--timeout", "120", "attendance_system_facial_recognition.wsgi:application"]
