@@ -94,6 +94,25 @@ export const Home = () => {
                 </div>
             </section>
 
+            {/* FAQ Section */}
+            <section className="faq-section card mb-lg" aria-labelledby="faq-title">
+                <div className="card-body">
+                    <h2 id="faq-title" className="text-center mb-md">Frequently Asked Questions</h2>
+                    <div className="faq-item mb-md">
+                        <h3 className="text-lg font-semibold mb-sm">How does the Smart Attendance System work?</h3>
+                        <p className="text-muted">
+                            The system uses advanced AI-powered face recognition technology to quickly and accurately mark attendance when you scan your face.
+                        </p>
+                    </div>
+                    <div className="faq-item">
+                        <h3 className="text-lg font-semibold mb-sm">Is my biometric data secure?</h3>
+                        <p className="text-muted">
+                            Yes, your biometric data is encrypted and stored securely with industry-standard protection. We do not share your biometric data with third parties.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
             {/* Privacy Section */}
             <section className="privacy-notice card">
                 <div className="card-body text-center">
