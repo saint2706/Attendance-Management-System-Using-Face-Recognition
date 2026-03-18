@@ -760,8 +760,15 @@ class FaceRecognitionAPI(View):
                     error="Provide either an 'embedding' array or an 'image' payload.",
                 )
                 return JsonResponse(
-                    {"error": "Provide either an 'embedding' array or an 'image' payload."},
+                    {
+                        "type": "about:blank",
+                        "title": "Validation Error",
+                        "status": 400,
+                        "detail": "Provide either an 'embedding' array or an 'image' payload.",
+                        "instance": request.path,
+                    },
                     status=400,
+                    content_type="application/problem+json",
                 )
 
             frame = _decode_image_bytes(image_bytes)
@@ -799,8 +806,15 @@ class FaceRecognitionAPI(View):
                     error="No face detected in the provided image.",
                 )
                 return JsonResponse(
-                    {"error": "No face detected in the provided image."},
+                    {
+                        "type": "about:blank",
+                        "title": "Validation Error",
+                        "status": 400,
+                        "detail": "No face detected in the provided image.",
+                        "instance": request.path,
+                    },
                     status=400,
+                    content_type="application/problem+json",
                 )
             except AttributeError as exc:
                 # DeepFace raises AttributeError for library/dependency issues
@@ -811,8 +825,15 @@ class FaceRecognitionAPI(View):
                     error="Face recognition service misconfiguration.",
                 )
                 return JsonResponse(
-                    {"error": "Face recognition service misconfiguration."},
+                    {
+                        "type": "about:blank",
+                        "title": "Internal Server Error",
+                        "status": 500,
+                        "detail": "Face recognition service misconfiguration.",
+                        "instance": request.path,
+                    },
                     status=500,
+                    content_type="application/problem+json",
                 )
             except OSError as exc:
                 # DeepFace raises OSError for file system or model loading issues
@@ -823,8 +844,15 @@ class FaceRecognitionAPI(View):
                     error="Failed to load face recognition models.",
                 )
                 return JsonResponse(
-                    {"error": "Failed to load face recognition models."},
+                    {
+                        "type": "about:blank",
+                        "title": "Internal Server Error",
+                        "status": 500,
+                        "detail": "Failed to load face recognition models.",
+                        "instance": request.path,
+                    },
                     status=500,
+                    content_type="application/problem+json",
                 )
             except Exception as exc:  # pragma: no cover - catch truly unexpected errors
                 # Fallback for any other unexpected exceptions from DeepFace
@@ -840,6 +868,7 @@ class FaceRecognitionAPI(View):
                         "title": "Internal Server Error",
                         "status": 500,
                         "detail": "Failed to analyse the provided image.",
+                        "instance": request.path,
                     },
                     status=500,
                     content_type="application/problem+json",
@@ -858,6 +887,7 @@ class FaceRecognitionAPI(View):
                         "title": "Validation Error",
                         "status": 400,
                         "detail": "No face embedding could be extracted from the image.",
+                        "instance": request.path,
                     },
                     status=400,
                     content_type="application/problem+json",
@@ -927,6 +957,7 @@ class FaceRecognitionAPI(View):
                     "title": "Service Unavailable",
                     "status": 503,
                     "detail": "No enrolled face embeddings are available for comparison.",
+                    "instance": request.path,
                 },
                 status=503,
                 content_type="application/problem+json",
@@ -1091,6 +1122,7 @@ def enqueue_attendance_batch(request):
                     "title": "Validation Error",
                     "status": 400,
                     "detail": f"Record at index {index} must be a JSON object.",
+                    "instance": request.path,
                 },
                 status=400,
                 content_type="application/problem+json",
@@ -2857,7 +2889,7 @@ def attendance_session_feed(request) -> JsonResponse:
                 "type": "about:blank",
                 "title": "Forbidden",
                 "status": 403,
-                "detail": "Not authorised",
+                "detail": "Not authorised.",
                 "instance": request.path,
             },
             status=403,
@@ -3400,7 +3432,7 @@ def task_status(request, task_id: str) -> JsonResponse:
                 "type": "about:blank",
                 "title": "Forbidden",
                 "status": 403,
-                "detail": "Not authorised",
+                "detail": "Not authorised.",
                 "instance": request.path,
             },
             status=403,

@@ -10,6 +10,7 @@ from rest_framework.throttling import UserRateThrottle
 from recognition.api.serializers import (
     AttendanceRecordSerializer,
     EmployeeSerializer,
+    RecognitionRequestSerializer,
     RegisterEmployeeSerializer,
     StatsSerializer,
     UserSerializer,
@@ -176,25 +177,26 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
 
         logger = logging.getLogger(__name__)
 
-        # Get direction (default to check-in)
-        direction = request.data.get("direction", "in").lower()
-        if direction not in ["in", "out"]:
-            direction = "in"
-
-        # Extract image from request
-        image_data = request.data.get("image")
-        if not image_data:
+        serializer = RecognitionRequestSerializer(data=request.data)
+        if not serializer.is_valid():
             return Response(
                 {
                     "type": "about:blank",
                     "title": "Validation Error",
                     "status": status.HTTP_400_BAD_REQUEST,
-                    "detail": "No image provided",
+                    "detail": "Invalid request payload.",
                     "instance": request.path,
+                    "errors": serializer.errors,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 content_type="application/problem+json",
             )
+
+        # Get direction (default to check-in)
+        direction = serializer.validated_data.get("direction", "in")
+
+        # Extract image from request
+        image_data = serializer.validated_data.get("image")
 
         # Decode base64 image
         try:
