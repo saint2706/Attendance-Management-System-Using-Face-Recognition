@@ -24,6 +24,10 @@ spec:
         fsGroup: 999  # PostgreSQL group
       containers:
         - name: postgres
+          securityContext:
+            runAsUser: 999
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
           image: postgres:16-alpine
           imagePullPolicy: IfNotPresent
           ports:

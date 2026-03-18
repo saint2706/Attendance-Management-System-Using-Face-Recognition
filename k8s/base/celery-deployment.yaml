@@ -27,7 +27,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: celery
-          image: attendance-system:latest
+          image: attendance-system:1.7.0
           imagePullPolicy: IfNotPresent
           command:
             - celery
@@ -48,6 +48,26 @@ spec:
             limits:
               memory: "2Gi"
               cpu: "1000m"
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - celery -A attendance_system_facial_recognition inspect ping -d celery@$HOSTNAME
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - celery -A attendance_system_facial_recognition inspect ping -d celery@$HOSTNAME
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           volumeMounts:
             - name: face-data
               mountPath: /app/face_recognition_data

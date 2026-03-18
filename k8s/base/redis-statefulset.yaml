@@ -24,6 +24,10 @@ spec:
         fsGroup: 1000
       containers:
         - name: redis
+          securityContext:
+            runAsUser: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
           image: redis:7-alpine
           imagePullPolicy: IfNotPresent
           ports:
