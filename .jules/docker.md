@@ -1,1 +1,3 @@
 - **Optimize OpenCV Dependencies:** When using OpenCV in a headless environment like Docker, always prefer `opencv-python-headless` over `opencv-python`. This allows the removal of heavyweight system packages like `libgl1`, `libglib2.0-0`, `libsm6`, `libxext6`, and `libxrender1` from the `apt-get install` commands, leading to significant image size reductions and a smaller attack surface.
+
+- **Pin Base Image Patch Versions in Compose & Manifests:** Always explicitly pin patch versions for external services in Docker Compose and Kubernetes manifests (e.g., `redis:7.2.13-alpine` instead of `redis:7.2-alpine` and `postgres:16.2-alpine` instead of `postgres:16-alpine`). This guarantees reproducible deployments and prevents breaking changes from minor/patch upstream updates.
