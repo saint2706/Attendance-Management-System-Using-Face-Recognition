@@ -165,7 +165,8 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+            "cv2.imdecode",
+            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
         )
 
         # mock extract_embedding instead since DeepFace.represent is not the only failure point
@@ -173,7 +174,10 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr(pipeline, "extract_embedding", lambda *args, **kwargs: (None, None))
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        valid_png_b64 = (
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8"
+            "AAAAASUVORK5CYII="
+        )
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -186,7 +190,8 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+            "cv2.imdecode",
+            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
         )
 
         # Mock valid embedding
@@ -205,14 +210,20 @@ class TestAttendanceViewSetMarkEndpoint:
             views, "_load_dataset_embeddings_for_matching", lambda *args, **kwargs: []
         )
 
-        # wait, the mark method imports _load_dataset_embeddings_for_matching from recognition.views inside the method
+        # wait, the mark method imports _load_dataset_embeddings_for_matching from recognition.views
+        # inside the method
         # It's better to patch it where it is used or patch the actual module.
-        # Since it does `from recognition.views import ...`, we can mock `recognition.views._load_dataset_embeddings_for_matching`
+        # Since it does `from recognition.views import ...`, we can mock
+        # `recognition.views._load_dataset_embeddings_for_matching`
         monkeypatch.setattr(
-            "recognition.views._load_dataset_embeddings_for_matching", lambda *args, **kwargs: []
+            "recognition.views._load_dataset_embeddings_for_matching",
+            lambda *args, **kwargs: [],
         )
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        valid_png_b64 = (
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8"
+            "AAAAASUVORK5CYII="
+        )
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
