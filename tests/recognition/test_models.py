@@ -375,11 +375,7 @@ class TestThresholdProfileDefaults(TestCase):
         assert ThresholdProfile.get_for_site("unknown_site").id == default_profile.id
 
     def test_get_threshold_for_site_with_profile(self):
-        ThresholdProfile.objects.create(
-            name="site_profile",
-            distance_threshold=0.45,
-            sites="site1"
-        )
+        ThresholdProfile.objects.create(name="site_profile", distance_threshold=0.45, sites="site1")
         assert ThresholdProfile.get_threshold_for_site("site1") == 0.45
 
 
@@ -521,7 +517,6 @@ class TestThresholdProfileDefaultsFallbackHitEmpty2(TestCase):
             )
             == 0.6
         )
-
 
 
 class TestThresholdProfileSiteFallbackEmptyHit4(TestCase):
