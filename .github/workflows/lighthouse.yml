@@ -79,9 +79,6 @@ jobs:
             requirements.txt
             requirements-dev.txt
 
-      - name: Install psycopg2
-        run: pip install psycopg2-binary
-
       - name: Apply database migrations
         run: python manage.py migrate --noinput
 
