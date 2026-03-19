@@ -98,3 +98,10 @@ Dockerfile
 Dockerfile.gpu
 docker-compose.yml
 docker-compose.gpu.yml
+
+# Additional exclusions for image size reduction
+requirements-dev.txt
+CHANGELOG.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+SECURITY.md

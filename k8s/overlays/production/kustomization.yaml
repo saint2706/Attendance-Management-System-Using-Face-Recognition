@@ -90,5 +90,5 @@ patches:
 # Use production image tag
 images:
   - name: attendance-system
-    newName: your-registry.io/attendance-system
-    newTag: "1.0.0"
+    newName: ghcr.io/saint2706/attendance-management-system-using-face-recognition
+    newTag: v1.7.0
