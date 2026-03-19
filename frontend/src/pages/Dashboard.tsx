@@ -42,7 +42,7 @@ export const Dashboard = () => {
                     <p className="text-muted">{getGreeting()}, {user?.username}!</p>
                 </div>
                 <div className="header-actions">
-                    <Link to="/setup-wizard" className="btn btn-primary" aria-label="Setup Wizard - start">
+                    <Link to="/setup-wizard" className="btn btn-primary">
                         Setup Wizard
                     </Link>
                 </div>
@@ -88,7 +88,7 @@ export const Dashboard = () => {
             <section className="actions-section">
                 <h2 className="section-title">Admin Actions</h2>
                 <div className="actions-grid">
-                    <Link to="/employees/register" className="action-card card card-elevated" aria-label="Register Employee: Add a new employee to the system">
+                    <Link to="/employees/register" className="action-card card card-elevated">
                         <div className="card-body">
                             <UserPlus size={32} className="action-icon" aria-hidden="true" />
                             <h3>Register Employee</h3>
@@ -98,7 +98,7 @@ export const Dashboard = () => {
                         </div>
                     </Link>
 
-                    <Link to="/add-photos" className="action-card card card-elevated" aria-label="Add Photos: Capture photos for face recognition">
+                    <Link to="/add-photos" className="action-card card card-elevated">
                         <div className="card-body">
                             <Camera size={32} className="action-icon" aria-hidden="true" />
                             <h3>Add Photos</h3>
@@ -108,7 +108,7 @@ export const Dashboard = () => {
                         </div>
                     </Link>
 
-                    <Link to="/train" className="action-card card card-elevated" aria-label="Train Model: Update the recognition model">
+                    <Link to="/train" className="action-card card card-elevated">
                         <div className="card-body">
                             <Brain size={32} className="action-icon" aria-hidden="true" />
                             <h3>Train Model</h3>
@@ -118,7 +118,7 @@ export const Dashboard = () => {
                         </div>
                     </Link>
 
-                    <Link to="/attendance" className="action-card card card-elevated" aria-label="View Attendance: Access attendance reports">
+                    <Link to="/attendance" className="action-card card card-elevated">
                         <div className="card-body">
                             <ChartBar size={32} className="action-icon" aria-hidden="true" />
                             <h3>View Attendance</h3>
@@ -128,7 +128,7 @@ export const Dashboard = () => {
                         </div>
                     </Link>
 
-                    <Link to="/session" className="action-card card card-elevated" aria-label="Attendance Session: Monitor live recognition">
+                    <Link to="/session" className="action-card card card-elevated">
                         <div className="card-body">
                             <Radio size={32} className="action-icon" aria-hidden="true" />
                             <h3>Attendance Session</h3>
