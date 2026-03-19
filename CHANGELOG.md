@@ -33,6 +33,7 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 - Comprehensive documentation refresh for 2026: updated React SPA frontend references, fixed broken links, updated agent instructions
 - Added missing JSDoc/TSDoc comments to exported frontend components and API functions
 - Configured `markdown-link-check` to ignore local development server URLs (`http://127.0.0.1` and `http://localhost`) and GitHub PR/commit links via `.markdownlinkcheck.json` to resolve false positives
+- Recorded frontend build fixes: verified build (`pnpm run build`) and lint (`pnpm run lint`) after resolving missing local modules by running `pnpm install --frozen-lockfile`
 
 ---
 
