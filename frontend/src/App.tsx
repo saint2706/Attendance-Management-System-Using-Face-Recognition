@@ -1,13 +1,15 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
+import React, { Suspense } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Navbar } from './components/layout/Navbar';
-import { Home } from './pages/Home';
-import { Login } from './pages/Login';
-import { Dashboard } from './pages/Dashboard';
-import { MarkAttendance } from './pages/MarkAttendance';
 import './index.css';
+
+const Home = React.lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
+const Login = React.lazy(() => import('./pages/Login').then(module => ({ default: module.Login })));
+const Dashboard = React.lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const MarkAttendance = React.lazy(() => import('./pages/MarkAttendance').then(module => ({ default: module.MarkAttendance })));
 
 /**
  * A wrapper component that protects routes requiring authentication.
@@ -47,28 +49,35 @@ const AppContent = () => {
       </a>
       <Navbar />
       <main id="main-content" className="container" style={{ paddingTop: 'var(--spacing-lg)', paddingBottom: 'var(--spacing-xl)' }} tabIndex={-1}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/mark-attendance" element={<MarkAttendance />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/attendance" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/session" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/add-photos" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/train" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/employees/register" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/setup-wizard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Suspense fallback={
+          <div className="flex flex-col items-center justify-center" style={{ minHeight: '60vh' }} role="status" aria-live="polite">
+            <Loader2 size={48} className="animate-spin mb-md" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
+            <div className="animate-pulse text-muted">Loading...</div>
+          </div>
+        }>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/mark-attendance" element={<MarkAttendance />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/attendance" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/session" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/add-photos" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/train" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/employees/register" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/setup-wizard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
 
-          {/* Fallback - redirect to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Fallback - redirect to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </main>
       <footer className="text-center text-muted text-sm" style={{ padding: 'var(--spacing-lg)', borderTop: '1px solid var(--color-border)' }}>
         © 2024 Smart Attendance System. All rights reserved.
