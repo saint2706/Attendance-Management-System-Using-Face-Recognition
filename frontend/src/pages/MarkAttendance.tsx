@@ -226,7 +226,7 @@ export const MarkAttendance = () => {
                         <div className="camera-error" role="alert" aria-live="assertive">
                             <CameraOff size={48} aria-hidden="true" />
                             <p>{error}</p>
-                            <button onClick={startCamera} className="btn btn-primary" aria-label="Retry camera access">
+                            <button onClick={startCamera} className="btn btn-primary">
                                 <RefreshCw size={18} aria-hidden="true" />
                                 Retry
                             </button>
@@ -335,13 +335,6 @@ export const MarkAttendance = () => {
                                 onClick={startCaptureSequence}
                                 disabled={!stream || isProcessing || countdown !== null}
                                 className="btn btn-primary btn-lg capture-button"
-                                aria-label={
-                                    countdown !== null && countdown > 0
-                                        ? `Capturing in ${countdown}...`
-                                        : countdown === 0
-                                            ? "Capturing now..."
-                                            : "Start capture sequence"
-                                }
                                 aria-keyshortcuts="Space"
                             >
                                 {isProcessing ? (
@@ -373,7 +366,6 @@ export const MarkAttendance = () => {
                                         <button
                                             onClick={() => navigate('/')}
                                             className="btn btn-secondary btn-lg"
-                                            aria-label="Return Home"
                                         >
                                             <Home size={20} aria-hidden="true" />
                                             Return Home
@@ -381,7 +373,6 @@ export const MarkAttendance = () => {
                                         <button
                                             onClick={resetAttempt}
                                             className="btn btn-primary btn-lg"
-                                            aria-label="Mark Another person's attendance"
                                             aria-keyshortcuts="Escape"
                                         >
                                             <UserCheck size={20} aria-hidden="true" />
@@ -392,7 +383,6 @@ export const MarkAttendance = () => {
                                     <button
                                         onClick={resetAttempt}
                                         className="btn btn-secondary btn-lg"
-                                        aria-label="Try Again camera access"
                                         aria-keyshortcuts="Escape"
                                     >
                                         <RefreshCw size={20} aria-hidden="true" />
