@@ -52,7 +52,7 @@ ENV PATH="/venv/bin:$PATH"
 # Leverage Docker layer caching for dependency installation
 COPY requirements.txt ./
 # hadolint ignore=DL3013
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
+RUN pip install --no-cache-dir --upgrade pip==26.0.1 setuptools==82.0.1 wheel==0.46.3 \
     && pip install --no-cache-dir -r requirements.txt
 
 # Copy the full project for asset compilation

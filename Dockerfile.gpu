@@ -83,7 +83,7 @@ COPY requirements.txt ./
 # Create GPU-specific requirements and install
 # We use faiss-gpu instead of faiss-cpu
 # hadolint ignore=DL3013
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
+RUN pip install --no-cache-dir --upgrade pip==26.0.1 setuptools==82.0.1 wheel==0.46.3 \
     && sed 's/faiss-cpu/faiss-gpu/g' requirements.txt > requirements-gpu.txt \
     && echo "tensorflow[and-cuda]==2.18.0" >> requirements-gpu.txt \
     && pip install --no-cache-dir -r requirements-gpu.txt
