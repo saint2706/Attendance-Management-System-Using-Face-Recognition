@@ -20,6 +20,7 @@ spec:
         app.kubernetes.io/component: backend
     spec:
       serviceAccountName: default
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -66,9 +67,11 @@ spec:
               mountPath: /app/face_recognition_data
             - name: media
               mountPath: /app/media
+            - name: tmp
+              mountPath: /tmp
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
@@ -79,3 +82,5 @@ spec:
         - name: media
           persistentVolumeClaim:
             claimName: media-data
+        - name: tmp
+          emptyDir: {}
