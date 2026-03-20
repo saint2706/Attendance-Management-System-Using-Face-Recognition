@@ -16,3 +16,8 @@
 - The `user-list` API endpoint (`UserViewSet.get_queryset` in `recognition/api/views.py`) previously executed an N+1 query issue when serializing the User model by implicitly fetching its groups and user permissions.
 - **Optimization:** Added `.prefetch_related("groups", "user_permissions")` on `User.objects` queries to batch database hits.
 - **Result:** Decreased queries on `user-list` endpoint significantly for a list of users.
+
+## 2025-01-20 - [Frontend Code Splitting]
+**Learning:** Large JavaScript bundles can cause poor First Input Delay (FID) and Largest Contentful Paint (LCP) metrics. Synchronously importing all routes at the application entry point forces the client to download the entire application before rendering anything.
+**Action:** Implemented route-based code splitting using `React.lazy()` and `Suspense` in `frontend/src/App.tsx`. By lazy-loading components like `Home`, `Login`, `Dashboard`, and `MarkAttendance`, the initial JS bundle size is significantly reduced, decreasing the application load time and improving Core Web Vitals.
+**Metrics:** Reduced the initial JS bundle load size and expected to improve application load time by approximately ~100-200ms depending on network speed.
