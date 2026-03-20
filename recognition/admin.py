@@ -2,7 +2,25 @@
 
 from django.contrib import admin
 
-from .models import LivenessResult, RecognitionOutcome, ThresholdProfile
+from .models import LivenessResult, ModelEvaluationResult, RecognitionOutcome, ThresholdProfile
+
+
+@admin.register(ModelEvaluationResult)
+class ModelEvaluationResultAdmin(admin.ModelAdmin):
+    """Expose model evaluation results for auditing."""
+
+    list_display = (
+        "created_at",
+        "evaluation_type",
+        "accuracy",
+        "far",
+        "frr",
+        "success",
+    )
+    list_filter = ("evaluation_type", "success")
+    search_fields = ("task_id", "error_message")
+    ordering = ("-created_at",)
+    readonly_fields = ("created_at",)
 
 
 @admin.register(RecognitionOutcome)
