@@ -20,6 +20,7 @@ spec:
         app.kubernetes.io/component: worker
     spec:
       serviceAccountName: default
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -48,14 +49,36 @@ spec:
             limits:
               memory: "2Gi"
               cpu: "1000m"
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - celery -A attendance_system_facial_recognition inspect ping -d celery@$HOSTNAME
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - celery -A attendance_system_facial_recognition inspect ping -d celery@$HOSTNAME
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           volumeMounts:
             - name: face-data
               mountPath: /app/face_recognition_data
             - name: media
               mountPath: /app/media
+            - name: tmp
+              mountPath: /tmp
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
@@ -66,3 +89,5 @@ spec:
         - name: media
           persistentVolumeClaim:
             claimName: media-data
+        - name: tmp
+          emptyDir: {}
