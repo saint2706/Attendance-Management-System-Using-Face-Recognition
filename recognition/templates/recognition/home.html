@@ -1,9 +1,19 @@
 {% extends "recognition/base.html" %}
 
+{% load static %}
 {% block title %}Home - Smart Attendance System{% endblock %}
 
 {% block content %}
 <div class="text-center mb-8">
+    <img src="{% static 'icons/icon-512.png' %}"
+         alt="Smart Attendance System Logo"
+         width="128"
+         height="128"
+         fetchpriority="high"
+         loading="eager"
+         class="mb-4"
+         style="border-radius: 50%; object-fit: contain; margin: 0 auto;"
+         aria-hidden="true">
     <h1 class="text-4xl font-weight-bold mb-4">
         Welcome to the Smart Attendance System
     </h1>
