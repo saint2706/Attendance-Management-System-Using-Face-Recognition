@@ -498,8 +498,6 @@
     AlertManager.init();
     TooltipManager.init();
     CardAnimator.init();
-
-    console.log('UI enhancements initialized');
   }
 
   // Run on DOM ready
