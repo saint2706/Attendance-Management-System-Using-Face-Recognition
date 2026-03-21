@@ -8,7 +8,7 @@ administrators to view, add, edit, and delete attendance records directly.
 
 from django.contrib import admin
 
-from .models import Present, RecognitionAttempt, Time
+from .models import Present, RecognitionAttempt, SetupWizardProgress, Time
 
 
 @admin.register(RecognitionAttempt)
@@ -41,5 +41,12 @@ class TimeAdmin(admin.ModelAdmin):
 @admin.register(Present)
 class PresentAdmin(admin.ModelAdmin):
     """Admin configuration for the Present model."""
+
+    list_select_related = ("user",)
+
+
+@admin.register(SetupWizardProgress)
+class SetupWizardProgressAdmin(admin.ModelAdmin):
+    """Admin configuration for the SetupWizardProgress model."""
 
     list_select_related = ("user",)
