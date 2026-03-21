@@ -131,6 +131,12 @@ class AttendanceAnalytics:
 
         current_tz = timezone.get_current_timezone()
 
+        # Prefetch all Time records
+        all_time_records = list(Time.objects.filter(**time_filters).order_by("time"))
+        time_records_by_key = defaultdict(list)
+        for t in all_time_records:
+            time_records_by_key[(t.user_id, t.date)].append(t)
+
         for record in present_records:
             day_data = daily_metrics[record.date]
             day_data["total"] += 1
@@ -156,9 +162,7 @@ class AttendanceAnalytics:
                 else:
                     day_data["on_time"] += 1
 
-            times_qs = Time.objects.filter(user_id=record.user_id, date=record.date).order_by(
-                "time"
-            )
+            times_qs = time_records_by_key.get((record.user_id, record.date), [])
             is_valid, break_hours = check_validity_times(times_qs)
             if is_valid:
                 day_data["break_hours"].append(break_hours)
@@ -224,14 +228,21 @@ class AttendanceAnalytics:
         # Build a mapping from user id to department name once.
         user_departments: Dict[int, str] = {}
         user_ids = present_qs.values_list("user_id", flat=True).distinct()
+
+        # Batch query groups for all users
+        group_memberships = (
+            Group.objects.filter(user__id__in=user_ids).values("user__id", "name").order_by("name")
+        )
+        # Since a user could be in multiple groups, we keep the first one found (as it's ordered by name)
+        # similar to the previous behavior which used .first()
+        for membership in group_memberships:
+            uid = membership["user__id"]
+            if uid not in user_departments:
+                user_departments[uid] = membership["name"]
+
         for user_id in user_ids:
-            group = (
-                Group.objects.filter(user__id=user_id)
-                .order_by("name")
-                .values_list("name", flat=True)
-                .first()
-            )
-            user_departments[user_id] = group or "Unassigned"
+            if user_id not in user_departments:
+                user_departments[user_id] = "Unassigned"
 
         department_stats: Dict[str, Dict[str, float]] = defaultdict(
             lambda: {"total": 0, "present": 0}
