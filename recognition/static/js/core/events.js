@@ -62,10 +62,6 @@ export class EventBus {
 
         this._events.get(event).push(callback);
 
-        if (this.debug) {
-            console.log(`[EventBus] Subscribed to '${event}'`);
-        }
-
         return this;
     }
 
@@ -108,10 +104,6 @@ export class EventBus {
 
         if (index !== -1) {
             callbacks.splice(index, 1);
-
-            if (this.debug) {
-                console.log(`[EventBus] Unsubscribed from '${event}'`);
-            }
         }
 
         // Clean up empty event arrays
@@ -131,16 +123,8 @@ export class EventBus {
     clear(event) {
         if (event) {
             this._events.delete(event);
-
-            if (this.debug) {
-                console.log(`[EventBus] Cleared all listeners for '${event}'`);
-            }
         } else {
             this._events.clear();
-
-            if (this.debug) {
-                console.log('[EventBus] Cleared all listeners');
-            }
         }
 
         return this;
@@ -158,17 +142,10 @@ export class EventBus {
      */
     emit(event, data) {
         if (!this._events.has(event)) {
-            if (this.debug) {
-                console.log(`[EventBus] No listeners for '${event}'`);
-            }
             return this;
         }
 
         const callbacks = this._events.get(event);
-
-        if (this.debug) {
-            console.log(`[EventBus] Emitting '${event}' to ${callbacks.length} listeners`, data);
-        }
 
         // Create a copy of callbacks array to avoid issues if callbacks modify the array
         [...callbacks].forEach(callback => {

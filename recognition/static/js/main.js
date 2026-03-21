@@ -44,7 +44,6 @@ class AttendanceApp {
             this._setupEventListeners();
 
             this.initialized = true;
-            console.log('[AttendanceApp] ✓ All modules initialized successfully');
 
             // Emit initialization complete event
             globalBus.emit('app:ready', { modules: Object.keys(this.modules) });
@@ -131,11 +130,6 @@ class AttendanceApp {
      * @private
      */
     _setupEventListeners() {
-        // Example: Listen to theme changes
-        globalBus.on('theme:changed', (data) => {
-            console.log('[AttendanceApp] Theme changed to:', data.theme);
-        });
-
         // Clean up on page unload
         window.addEventListener('beforeunload', () => {
             this.dispose();
@@ -175,7 +169,6 @@ class AttendanceApp {
      * Clean up resources on page unload.
      */
     dispose() {
-        console.log('[AttendanceApp] Cleaning up...');
         globalBus.clear();
         this.modules = {};
         this.initialized = false;
