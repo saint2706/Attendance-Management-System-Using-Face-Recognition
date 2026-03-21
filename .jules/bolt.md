@@ -21,3 +21,8 @@
 **Learning:** Large JavaScript bundles can cause poor First Input Delay (FID) and Largest Contentful Paint (LCP) metrics. Synchronously importing all routes at the application entry point forces the client to download the entire application before rendering anything.
 **Action:** Implemented route-based code splitting using `React.lazy()` and `Suspense` in `frontend/src/App.tsx`. By lazy-loading components like `Home`, `Login`, `Dashboard`, and `MarkAttendance`, the initial JS bundle size is significantly reduced, decreasing the application load time and improving Core Web Vitals.
 **Metrics:** Reduced the initial JS bundle load size and expected to improve application load time by approximately ~100-200ms depending on network speed.
+
+## Optimization: N+1 query issue in Django Admin for SetupWizardProgress
+- Found `SetupWizardProgress` model with `user` foreign key, but it was not registered explicitly in Django Admin with `list_select_related`. The `__str__` method explicitly used `self.user.username` resulting in N+1 queries.
+- **Optimization:** Explicitly added `SetupWizardProgress` to `users/admin.py` with `@admin.register(SetupWizardProgress)` and defined `list_select_related = ("user",)`.
+- **Result:** Decreased database hits when viewing `SetupWizardProgress` models in admin interface to a single query.
