@@ -1,5 +1,6 @@
 import apiClient from './client';
 import { setToken, setRefreshToken, removeToken, removeRefreshToken } from './client';
+import { z } from 'zod';
 
 /**
  * Credentials required for user login.
@@ -8,6 +9,11 @@ export interface LoginCredentials {
     username: string;
     password: string;
 }
+
+export const LoginCredentialsSchema = z.object({
+    username: z.string().min(1, 'Username is required').max(150, 'Username is too long'),
+    password: z.string().min(1, 'Password is required'),
+});
 
 /**
  * The response received after a successful login.
@@ -48,6 +54,9 @@ export interface RegisterData {
  * @returns {Promise<LoginResponse>} A promise resolving to the login response containing tokens and user data.
  */
 export const login = async (credentials: LoginCredentials): Promise<LoginResponse> => {
+    // Validate credentials using Zod schema
+    LoginCredentialsSchema.parse(credentials);
+
     const response = await apiClient.post<LoginResponse>('/auth/login/', credentials);
 
     // Store tokens

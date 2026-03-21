@@ -43,3 +43,7 @@
 **Vulnerability:** The `_authenticate_request` method in `recognition/views.py` and `recognition/views_legacy.py` used a standard Python `in` operator (`if api_key in api_keys:`) to validate API keys against a tuple of allowed keys. This non-constant-time comparison can theoretically be exploited in a timing attack to guess API keys character by character.
 **Learning:** Sensitive strings like API keys, tokens, or passwords must always be compared using a constant-time comparison function to mitigate timing side-channels.
 **Prevention:** Refactored the key matching logic to iterate over all allowed keys and use `secrets.compare_digest(api_key, allowed_key)` from the standard `secrets` library, ensuring constant-time validation.
+
+### Input Validation (Zod)
+- Use `zod` for parsing and validating inputs on the frontend before interacting with APIs to ensure input constraints like minimum and maximum length are satisfied and fast fail.
+- Added `zod` schema to validate `LoginCredentials` before executing login requests.
