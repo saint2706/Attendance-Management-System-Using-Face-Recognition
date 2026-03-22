@@ -38,10 +38,10 @@ class IntegrationTest(TestCase):
 
         # Run split generation twice with same seed
         set_global_seed(42)
-        train1, val1, test1, info1 = create_stratified_splits(image_paths, random_state=42)
+        train1, val1, test1, _ = create_stratified_splits(image_paths, random_state=42)
 
         set_global_seed(42)
-        train2, val2, test2, info2 = create_stratified_splits(image_paths, random_state=42)
+        train2, val2, test2, _ = create_stratified_splits(image_paths, random_state=42)
 
         # Results should be identical
         self.assertEqual(len(train1), len(train2))
@@ -124,7 +124,7 @@ class IntegrationTest(TestCase):
             self.assertIn("reject", bands)
 
             # Check each band has required fields
-            for band_name, band_config in bands.items():
+            for _, band_config in bands.items():
                 self.assertIn("threshold_min", band_config)
                 self.assertIn("threshold_max", band_config)
                 self.assertIn("action", band_config)

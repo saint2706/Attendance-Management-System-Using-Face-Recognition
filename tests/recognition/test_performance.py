@@ -274,7 +274,7 @@ class TestLoadSimulation:
         """Stress test: Repeated build/search/clear cycles."""
         dimension = 128
 
-        for cycle in range(5):
+        for _ in range(5):
             index = FAISSIndex(dimension=dimension)
 
             # Build

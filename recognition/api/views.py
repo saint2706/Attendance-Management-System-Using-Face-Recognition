@@ -251,7 +251,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
                 detector_backend=detector_backend,
                 enforce_detection=enforce_detection,
             )
-            embedding_vector, facial_area = extract_embedding(representations)
+            embedding_vector, _ = extract_embedding(representations)
 
             if embedding_vector is None:
                 return Response(

@@ -160,7 +160,7 @@ class TestRunMultiChallengeLiveness:
         """Test running multiple challenges."""
         frames = [np.zeros((64, 64, 3), dtype=np.uint8) for _ in range(5)]
 
-        passed, confidence, results = run_multi_challenge_liveness(
+        passed, _, results = run_multi_challenge_liveness(
             frames,
             challenges=[ChallengeType.MOTION, ChallengeType.BLINK],
         )
@@ -172,7 +172,7 @@ class TestRunMultiChallengeLiveness:
         """Test requiring all challenges to pass."""
         frames = [np.zeros((64, 64, 3), dtype=np.uint8) for _ in range(5)]
 
-        passed, confidence, results = run_multi_challenge_liveness(
+        passed, _, results = run_multi_challenge_liveness(
             frames,
             challenges=[ChallengeType.MOTION, ChallengeType.BLINK],
             require_all=True,
@@ -186,7 +186,7 @@ class TestRunMultiChallengeLiveness:
         """Test using default challenges (MOTION only)."""
         frames = [np.zeros((64, 64, 3), dtype=np.uint8) for _ in range(5)]
 
-        passed, confidence, results = run_multi_challenge_liveness(frames)
+        _, _, results = run_multi_challenge_liveness(frames)
 
         assert len(results) == 1
         assert results[0].challenge_type == ChallengeType.MOTION
@@ -199,7 +199,7 @@ class TestLivenessBuffer:
         """Test that buffer respects max length."""
         buffer = LivenessBuffer(maxlen=3)
 
-        for i in range(5):
+        for _ in range(5):
             buffer.append(np.zeros((10, 10, 3), dtype=np.uint8))
 
         assert len(buffer) == 3

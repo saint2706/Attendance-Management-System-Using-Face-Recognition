@@ -13,3 +13,10 @@
 - `recognition/views.py`: Fixed unused variable `model` and removed `# noqa: F841`.
 - `recognition/views_legacy.py`: Fixed unused variable `model` and removed `# noqa: F841`.
 - `recognition/static/js/main.js`, `recognition/static/js/ui.js`, `recognition/static/js/core/events.js`: Removed `console.log` statements.
+- `recognition/test_integration.py`: Fixed unused variables `info1`, `info2` from dataset splits and `band_name` from dict.items() loop.
+- `recognition/api/views.py`: Fixed unused variable `facial_area` returned from `extract_embedding`.
+- `recognition/evaluation/metrics.py`: Fixed unused variables `fpr`, `tpr`, and `pr_thresholds` returned from sklearn curves.
+- `tests/recognition/test_health.py`: Fixed unused variables `classes` and `report` from `mock_model_files` tuple.
+- `tests/recognition/test_enhanced_liveness.py`: Fixed unused variable `confidence` returned from `run_multi_challenge_liveness`, and unused loop counter `i`.
+- `tests/recognition/test_performance.py`: Fixed unused loop counter `cycle`.
+- `tests/conftest.py`: Fixed unused imports `deepface` and `tensorflow` causing warnings.

@@ -134,11 +134,11 @@ def calculate_verification_metrics(
     y_pred = (y_scores >= threshold).astype(int)
 
     # ROC metrics
-    fpr, tpr, roc_thresholds = roc_curve(y_true, y_scores)
+    _, _, _ = roc_curve(y_true, y_scores)
     roc_auc = roc_auc_score(y_true, y_scores)
 
     # Precision-Recall metrics
-    precision, recall, pr_thresholds = precision_recall_curve(y_true, y_scores)
+    precision, recall, _ = precision_recall_curve(y_true, y_scores)
     pr_auc = auc(recall, precision)
 
     # EER

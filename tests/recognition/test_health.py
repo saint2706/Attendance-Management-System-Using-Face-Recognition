@@ -81,7 +81,7 @@ class TestModelHealth:
         assert result["last_trained"] is not None
 
     def test_stale_model(self, mock_model_files):
-        model, classes, report = mock_model_files
+        model, _, _ = mock_model_files
         model.touch()
 
         # Dataset updated after model
