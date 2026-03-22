@@ -362,7 +362,7 @@ def _save_confusion_outputs(
             writer.writerow([labels[idx]] + row)
 
     plt.figure(figsize=(max(6, len(labels)), max(6, len(labels))))
-    plt.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
+    plt.imshow(cm, interpolation="nearest", cmap=plt.get_cmap("Blues"))
     plt.title("Confusion Matrix")
     plt.colorbar()
     tick_marks = np.arange(len(labels))
