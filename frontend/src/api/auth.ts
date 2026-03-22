@@ -48,6 +48,14 @@ export interface RegisterData {
     lastName?: string;
 }
 
+export const RegisterDataSchema = z.object({
+    username: z.string().min(1, 'Username is required').max(150, 'Username is too long'),
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(8, 'Password must be at least 8 characters long'),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+});
+
 /**
  * Authenticates a user and stores their tokens.
  * @param {LoginCredentials} credentials - The user's login credentials.
@@ -94,6 +102,7 @@ export const getCurrentUser = async (): Promise<User> => {
  * @returns {Promise<User>} A promise resolving to the created user's profile.
  */
 export const registerEmployee = async (data: RegisterData): Promise<User> => {
+    RegisterDataSchema.parse(data);
     const response = await apiClient.post<User>('/auth/register/', data);
     return response.data;
 };
