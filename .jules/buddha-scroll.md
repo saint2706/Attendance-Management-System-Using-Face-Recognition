@@ -24,3 +24,10 @@
 - **🧘 Buddha: [PERF] Add Preload and Index Tags**: Edited `frontend/index.html` and `recognition/templates/recognition/base.html` to add explicit index follow robots meta tags, and added an image preload (`<link rel="preload" href="/icons/icon-512.png" as="image" fetchpriority="high" />`) to improve LCP for the SPA home page.
 - **🧘 Buddha: [PERF] Add Preload for LCP in Django Base Template**: Added explicit `<link rel="preload" href="{% static 'icons/icon-512.png' %}" as="image" fetchpriority="high">` in `recognition/templates/recognition/base.html` to improve LCP for Django-rendered pages.
 - **🧘 Buddha: [PERF] Add Priority LCP Hero image to Django Home Page**: Added explicit `<img />` tag for Hero section with `fetchpriority="high"`, `loading="eager"`, and explicit dimensions to improve Largest Contentful Paint (LCP) measurement and prioritization in `recognition/templates/recognition/home.html`.
+
+## SEO/GEO Optimization: Index and Semantics
+- Improved JSON-LD structured data in `frontend/index.html` to help AI agents discover the site via a defined schema layout and Site Search potential action.
+- Checked Core Web Vitals optimizations for hero images.
+- Refactored semantic hierarchy in `frontend/src/pages/MarkAttendance.tsx` by upgrading h3/h4 headings to h2.
+
+Tags: `[SEO]`, `[GEO]`

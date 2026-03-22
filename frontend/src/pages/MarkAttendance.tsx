@@ -288,7 +288,7 @@ export const MarkAttendance = () => {
                                 <>
                                     <CheckCircle size={32} aria-hidden="true" />
                                     <div>
-                                        <h3>Attendance Marked!</h3>
+                                        <h2>Attendance Marked!</h2>
                                         <p>Welcome, {result.username}</p>
                                         {result.confidence && (
                                             <span className="badge badge-success">
@@ -301,7 +301,7 @@ export const MarkAttendance = () => {
                                 <>
                                     <AlertTriangle size={32} aria-hidden="true" />
                                     <div>
-                                        <h3>Liveness Check Failed</h3>
+                                        <h2>Liveness Check Failed</h2>
                                         <p>Please try again with your actual face</p>
                                     </div>
                                 </>
@@ -309,7 +309,7 @@ export const MarkAttendance = () => {
                                 <>
                                     <XCircle size={32} aria-hidden="true" />
                                     <div>
-                                        <h3>Not Recognized</h3>
+                                        <h2>Not Recognized</h2>
                                         <p>{result.message}</p>
                                     </div>
                                 </>
@@ -402,7 +402,7 @@ export const MarkAttendance = () => {
                 {/* Instructions */}
                 <div className="instructions card" id="attendance-instructions">
                     <div className="card-body">
-                        <h4>Tips for best results:</h4>
+                        <h2>Tips for best results:</h2>
                         <ul>
                             <li>Ensure good lighting on your face</li>
                             <li>Look directly at the camera</li>
