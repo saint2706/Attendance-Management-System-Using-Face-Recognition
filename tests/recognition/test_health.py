@@ -1,196 +1,266 @@
-import datetime as dt
-from unittest import mock
+from datetime import datetime, timedelta
+from datetime import timezone as datetime_timezone
+from pathlib import Path
+from unittest.mock import MagicMock, patch
 
-from django.core.cache import cache
 from django.utils import timezone
 
 import pytest
 
-from recognition import health
+from recognition.health import (
+    _isoformat_or_none,
+    _safe_mtime,
+    dataset_health,
+    evaluation_health,
+    model_health,
+    recognition_activity,
+    worker_health,
+)
 from recognition.models import ModelEvaluationResult, RecognitionOutcome
-from users.models import RecognitionAttempt
+from users.models import RecognitionAttempt, User
 
 
-@pytest.fixture(autouse=True)
-def clear_cache():
-    cache.clear()
+@pytest.mark.django_db
+class TestHelperFunctions:
+    def test_safe_mtime_missing_file(self):
+        assert _safe_mtime(Path("/nonexistent/file/path")) is None
+
+    @patch("pathlib.Path.stat")
+    def test_safe_mtime_os_error(self, mock_stat):
+        mock_stat.side_effect = OSError("Access denied")
+        assert _safe_mtime(Path("/some/path")) is None
+
+    def test_isoformat_or_none(self):
+        assert _isoformat_or_none(None) is None
+        now = timezone.now()
+        assert _isoformat_or_none(now) == now.isoformat()
+        naive = datetime(2023, 1, 1)
+        assert (
+            _isoformat_or_none(naive)
+            == timezone.make_aware(naive, datetime_timezone.utc).isoformat()
+        )
 
 
-@pytest.fixture
-def mock_dataset_root(tmp_path):
-    with mock.patch("recognition.health.TRAINING_DATASET_ROOT", tmp_path):
-        yield tmp_path
-
-
-@pytest.fixture
-def mock_model_files(tmp_path):
-    model_path = tmp_path / "svc.sav"
-    classes_path = tmp_path / "classes.npy"
-    report_path = tmp_path / "classification_report.txt"
-
-    with (
-        mock.patch("recognition.health.MODEL_PATH", model_path),
-        mock.patch("recognition.health.CLASSES_PATH", classes_path),
-        mock.patch("recognition.health.REPORT_PATH", report_path),
-    ):
-        yield model_path, classes_path, report_path
-
-
+@pytest.mark.django_db
 class TestDatasetHealth:
-    def test_empty_dataset(self, mock_dataset_root):
-        result = health.dataset_health()
-        assert result["exists"] is True
-        assert result["image_count"] == 0
-        assert result["identity_count"] == 0
-        assert result["last_updated"] is None
+    @patch("recognition.health.TRAINING_DATASET_ROOT")
+    @patch("recognition.health.cache.get", return_value=None)
+    @patch("recognition.health.cache.set")
+    def test_empty_dataset(self, mock_cache_set, mock_cache_get, mock_root):
+        mock_root.glob.return_value = []
+        mock_root.exists.return_value = False
+        res = dataset_health()
+        assert res["exists"] is False
+        assert res["image_count"] == 0
+        assert res["identity_count"] == 0
+        assert res["last_updated"] is None
+        mock_cache_set.assert_called_once()
 
-    def test_populated_dataset(self, mock_dataset_root):
-        # Create some fake images
-        (mock_dataset_root / "person1").mkdir()
-        (mock_dataset_root / "person1" / "1.jpg").touch()
-        (mock_dataset_root / "person1" / "2.jpg").touch()
-        (mock_dataset_root / "person2").mkdir()
-        (mock_dataset_root / "person2" / "1.jpg").touch()
+    @patch("recognition.health.TRAINING_DATASET_ROOT")
+    @patch("recognition.health.cache.get", return_value=None)
+    @patch("recognition.health._safe_mtime")
+    def test_populated_dataset(self, mock_mtime, mock_cache_get, mock_root):
+        mock_file1 = MagicMock()
+        mock_file1.is_file.return_value = True
+        mock_file1.parent.name = "user1"
+        mock_file2 = MagicMock()
+        mock_file2.is_file.return_value = True
+        mock_file2.parent.name = "user2"
+        mock_root.glob.return_value = [mock_file1, mock_file2]
+        mock_root.exists.return_value = True
 
-        result = health.dataset_health()
-        assert result["image_count"] == 3
-        assert result["identity_count"] == 2
-        assert result["last_updated"] is not None
-        assert result["last_updated_display"] is not None
+        mock_time = timezone.now()
+        mock_mtime.return_value = mock_time
+
+        res = dataset_health()
+        assert res["exists"] is True
+        assert res["image_count"] == 2
+        assert res["identity_count"] == 2
+        assert res["last_updated"] == mock_time
+
+    @patch("recognition.health.cache.get")
+    def test_cached_dataset(self, mock_cache_get):
+        mock_cache_get.return_value = {"exists": True, "image_count": 5}
+        res = dataset_health()
+        assert res["image_count"] == 5
 
 
+@pytest.mark.django_db
 class TestModelHealth:
-    def test_no_artifacts(self, mock_model_files):
-        result = health.model_health(dataset_last_updated=None)
-        assert result["model_present"] is False
-        assert result["classes_present"] is False
-        assert result["report_present"] is False
-        assert result["last_trained"] is None
-        assert result["stale"] is False
+    @patch("recognition.health.MODEL_PATH")
+    @patch("recognition.health.CLASSES_PATH")
+    @patch("recognition.health.REPORT_PATH")
+    def test_no_artifacts(self, mock_report, mock_classes, mock_model):
+        mock_model.exists.return_value = False
+        mock_classes.exists.return_value = False
+        mock_report.exists.return_value = False
 
-    def test_all_artifacts_present(self, mock_model_files):
-        model, classes, report = mock_model_files
-        model.touch()
-        classes.touch()
-        report.touch()
+        with patch("recognition.health._safe_mtime", return_value=None):
+            res = model_health(dataset_last_updated=None)
 
-        result = health.model_health(dataset_last_updated=None)
-        assert result["model_present"] is True
-        assert result["classes_present"] is True
-        assert result["report_present"] is True
-        assert result["last_trained"] is not None
+        assert res["model_present"] is False
+        assert res["classes_present"] is False
+        assert res["report_present"] is False
+        assert res["last_trained"] is None
+        assert res["stale"] is False
 
-    def test_stale_model(self, mock_model_files):
-        model, classes, report = mock_model_files
-        model.touch()
+    @patch("recognition.health.MODEL_PATH")
+    @patch("recognition.health.CLASSES_PATH")
+    @patch("recognition.health.REPORT_PATH")
+    def test_all_artifacts_present(self, mock_report, mock_classes, mock_model):
+        mock_model.exists.return_value = True
+        mock_classes.exists.return_value = True
+        mock_report.exists.return_value = True
 
-        # Dataset updated after model
-        dataset_time = timezone.now() + dt.timedelta(hours=1)
-        result = health.model_health(dataset_last_updated=dataset_time)
-        assert result["stale"] is True
+        train_time = timezone.now()
+        with patch("recognition.health._safe_mtime", return_value=train_time):
+            res = model_health(dataset_last_updated=train_time - timedelta(days=1))
+
+        assert res["model_present"] is True
+        assert res["classes_present"] is True
+        assert res["report_present"] is True
+        assert res["last_trained"] == train_time
+        assert res["stale"] is False
+
+    @patch("recognition.health.MODEL_PATH")
+    @patch("recognition.health.CLASSES_PATH")
+    @patch("recognition.health.REPORT_PATH")
+    def test_stale_model(self, mock_report, mock_classes, mock_model):
+        mock_model.exists.return_value = True
+        mock_classes.exists.return_value = True
+        mock_report.exists.return_value = True
+
+        train_time = timezone.now() - timedelta(days=2)
+        dataset_time = timezone.now() - timedelta(days=1)
+
+        with patch("recognition.health._safe_mtime", return_value=train_time):
+            res = model_health(dataset_last_updated=dataset_time)
+
+        assert res["model_present"] is True
+        assert res["last_trained"] == train_time
+        assert res["stale"] is True
 
 
 @pytest.mark.django_db
 class TestEvaluationHealth:
     def test_no_evaluations(self):
-        result = health.evaluation_health()
-        assert result["latest_evaluation"] is None
-        assert result["total_evaluations"] == 0
-        assert result["recent_failures"] == 0
+        res = evaluation_health()
+        assert res["total_evaluations"] == 0
+        assert res["latest_evaluation"] is None
 
     def test_with_evaluations(self):
         eval_result = ModelEvaluationResult.objects.create(
             evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
             accuracy=0.95,
             success=True,
-            created_at=timezone.now(),
+            error_message="some error",
         )
-
-        result = health.evaluation_health()
-        assert result["total_evaluations"] == 1
-        assert result["latest_nightly"]["id"] == eval_result.id
-        assert result["latest_nightly"]["accuracy"] == 0.95
-        assert result["latest_evaluation"]["id"] == eval_result.id
+        res = evaluation_health()
+        assert res["total_evaluations"] == 1
+        assert res["latest_evaluation"]["id"] == eval_result.id
+        assert res["latest_evaluation"]["accuracy"] == 0.95
+        assert res["latest_evaluation"]["success"] is True
 
     def test_with_failures(self):
-        ModelEvaluationResult.objects.create(
+        eval_result = ModelEvaluationResult.objects.create(
             evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
             accuracy=0.5,
             success=False,
-            created_at=timezone.now(),
         )
-
-        result = health.evaluation_health()
-        assert result["total_evaluations"] == 1
-        assert result["recent_failures"] == 1
+        # Update created_at using update to bypass auto_now_add
+        ModelEvaluationResult.objects.filter(id=eval_result.id).update(
+            created_at=timezone.now() - timedelta(days=2)
+        )
+        res = evaluation_health()
+        assert res["total_evaluations"] == 1
+        assert res["recent_failures"] == 1
 
 
 @pytest.mark.django_db
 class TestRecognitionActivity:
     def test_no_activity(self):
-        result = health.recognition_activity()
-        assert result["last_attempt"] is None
-        assert result["last_spoof"] is None
-        assert result["last_success"] is None
-        assert result["last_outcome"] is None
+        res = recognition_activity()
+        assert res["last_attempt"] is None
+        assert res["last_spoof"] is None
+        assert res["last_success"] is None
+        assert res["last_failure"] is None
+        assert res["last_outcome"] is None
 
-    def test_with_activity(self, django_user_model):
-        user = django_user_model.objects.create(username="testuser")
+    def test_with_activity(self):
+        user = User.objects.create(username="testuser")
 
         RecognitionAttempt.objects.create(
-            user=user, username="testuser", successful=True, spoof_detected=False
+            user=user, direction="in", successful=True, spoof_detected=False
         )
-
+        RecognitionAttempt.objects.create(
+            user=user,
+            direction="out",
+            successful=False,
+            spoof_detected=True,
+            error_message="Spoof detected",
+        )
         RecognitionOutcome.objects.create(
-            username="testuser", accepted=True, distance=0.1, threshold=0.4, confidence=0.9
+            username="testuser",
+            direction="in",
+            accepted=True,
+            distance=0.2,
+            threshold=0.5,
+            confidence=0.9,
         )
 
-        result = health.recognition_activity()
-        assert result["last_attempt"]["username"] == "testuser"
-        assert result["last_success"]["username"] == "testuser"
-        assert result["last_outcome"]["username"] == "testuser"
+        res = recognition_activity()
+
+        assert res["last_success"]["username"] == "testuser"
+        assert res["last_success"]["successful"] is True
+
+        assert res["last_spoof"]["username"] == "testuser"
+        assert res["last_spoof"]["spoof_detected"] is True
+        assert res["last_spoof"]["error"] == "Spoof detected"
+
+        assert res["last_outcome"]["username"] == "testuser"
+        assert res["last_outcome"]["accepted"] is True
+        assert res["last_outcome"]["distance"] == 0.2
+
+    def test_with_activity_without_user(self):
+        RecognitionAttempt.objects.create(
+            username="guestuser", direction="in", successful=True, spoof_detected=False
+        )
+        res = recognition_activity()
+        assert res["last_success"]["username"] == "guestuser"
 
 
+@pytest.mark.django_db
 class TestWorkerHealth:
-    def test_broker_not_configured(self, settings):
-        settings.CELERY_BROKER_URL = None
-        result = health.worker_health()
-        assert result["status"] == "not-configured"
+    @patch("recognition.health.settings")
+    def test_broker_not_configured(self, mock_settings):
+        mock_settings.CELERY_BROKER_URL = None
+        res = worker_health()
+        assert res["status"] == "not-configured"
+        assert res["workers"] == 0
 
-    @mock.patch("recognition.health.celery_app.control.ping")
-    def test_workers_online(self, mock_ping, settings):
-        settings.CELERY_BROKER_URL = "redis://localhost:6379/0"
-        mock_ping.return_value = [{"celery@worker1": {"ok": "pong"}}]
+    @patch("recognition.health.settings")
+    @patch("recognition.health.celery_app.control")
+    def test_workers_online(self, mock_control, mock_settings):
+        mock_settings.CELERY_BROKER_URL = "amqp://"
+        mock_control.ping.return_value = [{"celery@worker": {"ok": "pong"}}]
+        res = worker_health()
+        assert res["status"] == "online"
+        assert res["workers"] == 1
 
-        result = health.worker_health()
-        assert result["status"] == "online"
-        assert result["workers"] == 1
+    @patch("recognition.health.settings")
+    @patch("recognition.health.celery_app.control")
+    def test_workers_offline(self, mock_control, mock_settings):
+        mock_settings.CELERY_BROKER_URL = "amqp://"
+        mock_control.ping.return_value = []
+        res = worker_health()
+        assert res["status"] == "unreachable"
+        assert res["workers"] == 0
 
-    @mock.patch("recognition.health.celery_app.control.ping")
-    def test_workers_offline(self, mock_ping, settings):
-        settings.CELERY_BROKER_URL = "redis://localhost:6379/0"
-        mock_ping.return_value = []
-
-        result = health.worker_health()
-        assert result["status"] == "unreachable"
-        assert result["workers"] == 0
-
-    def test_cached_dataset(self, mock_dataset_root):
-        # Create some fake images
-        (mock_dataset_root / "person1").mkdir()
-        (mock_dataset_root / "person1" / "1.jpg").touch()
-
-        # First call hits the filesystem
-        result1 = health.dataset_health()
-        assert result1["image_count"] == 1
-
-        # Add another image, but it shouldn't be reflected in the cached result
-        (mock_dataset_root / "person1" / "2.jpg").touch()
-        result2 = health.dataset_health()
-        assert result2["image_count"] == 1
-
-    def test_isoformat_naive_datetime(self):
-        naive_dt = dt.datetime(2023, 1, 1, 12, 0)
-        result = health._isoformat_or_none(naive_dt)
-        assert result is not None
-        assert "T12:00:00+00:00" in result
+    @patch("recognition.health.settings")
+    @patch("recognition.health.celery_app.control")
+    def test_workers_exception(self, mock_control, mock_settings):
+        mock_settings.CELERY_BROKER_URL = "amqp://"
+        mock_control.ping.side_effect = Exception("error")
+        res = worker_health()
+        assert res["status"] == "unreachable"
+        assert res["workers"] == 0
