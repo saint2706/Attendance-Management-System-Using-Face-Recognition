@@ -36,11 +36,10 @@ ENV PYTHONUNBUFFERED=1 \
 FROM python-base AS build
 
 # Build tools required for Python packages with native extensions
-# hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
-        build-essential \
-        gcc \
+        build-essential=12.9 \
+        gcc=4:12.2.0-3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
