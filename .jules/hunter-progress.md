@@ -13,3 +13,4 @@
 - `recognition/views.py`: Fixed unused variable `model` and removed `# noqa: F841`.
 - `recognition/views_legacy.py`: Fixed unused variable `model` and removed `# noqa: F841`.
 - `recognition/static/js/main.js`, `recognition/static/js/ui.js`, `recognition/static/js/core/events.js`: Removed `console.log` statements.
+- `recognition/views.py` and `recognition/views_legacy.py`: Fixed failing test `tests/recognition/test_security_ratelimit.py::test_add_photos_view_rate_limit` by returning `redirect("add-photos")` when rate limited in `add_photos` instead of falling through to the POST processing logic.

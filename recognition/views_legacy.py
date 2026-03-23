@@ -2500,7 +2500,7 @@ def add_photos(request):
     # 🛡️ Sentinel: Enforce rate limit to prevent capture job flooding
     if getattr(request, "limited", False):
         messages.error(request, "Too many capture requests. Please wait before retrying.")
-        # Fall through to render page with error message, skipping POST processing below
+        return redirect("add-photos")
 
     task_context: Dict[str, Any] | None = None
     task_id = request.GET.get("task_id")
