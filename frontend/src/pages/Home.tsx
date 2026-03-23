@@ -32,7 +32,7 @@ export const Home = () => {
                         fetchPriority="high"
                         loading="eager"
                         className="hero-image"
-                        aria-hidden="true"
+
                     />
                     <h1 className="hero-title">
                         Smart Attendance System
