@@ -31,3 +31,10 @@
 - Refactored semantic hierarchy in `frontend/src/pages/MarkAttendance.tsx` by upgrading h3/h4 headings to h2.
 
 Tags: `[SEO]`, `[GEO]`
+
+## PR: 🧘 Buddha: [SEO/GEO improvement]
+
+- Synchronized `robots.txt`
+- Removed `aria-hidden` from the LCP image in `Home.tsx` for better SEO
+- Verified JSON-LD validity
+- Updated `llms.txt` to contain precise routing for AI agents
