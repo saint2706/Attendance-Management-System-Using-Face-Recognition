@@ -115,7 +115,9 @@ class ThresholdProfile(models.Model):
     def get_for_site(cls, site_code: str) -> Optional["ThresholdProfile"]:
         """Return the threshold profile applicable for the given site code."""
         if site_code:
-            for profile in cls.objects.all():
+            # Optimize: filter by icontains first to avoid fetching all profiles from the DB
+            profiles = cls.objects.filter(sites__icontains=site_code)
+            for profile in profiles:
                 site_list = [s.strip().lower() for s in profile.sites.split(",") if s.strip()]
                 if site_code.lower() in site_list:
                     return profile
