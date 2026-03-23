@@ -15,7 +15,7 @@ spec:
   resources:
     requests:
       storage: 20Gi
-  # storageClassName: standard  # Uncomment and set for your cloud provider
+# storageClassName: standard
 ---
 # Media file storage (uploaded images, etc.)
 apiVersion: v1
