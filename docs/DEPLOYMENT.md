@@ -206,7 +206,7 @@ Or create a `docker-compose.override.yml` for production:
 # docker-compose.override.yml
 services:
   celery-beat:
-    image: attendance-system:latest
+    image: attendance-system:v1.7.0
     restart: unless-stopped
     command: celery -A attendance_system_facial_recognition beat --loglevel=info
     environment:
