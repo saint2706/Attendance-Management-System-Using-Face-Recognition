@@ -33,7 +33,7 @@ Open a bug report when:
 - You encounter an error message or unexpected behavior
 - The application crashes or produces incorrect results
 
-Use the [Bug Report template](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/new?template=bug_report.yml) to provide all necessary details.
+Use the [Bug Report template](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/new/choose) to provide all necessary details.
 
 ### Feature Request
 
@@ -43,7 +43,7 @@ Open a feature request when:
 - You want to suggest an improvement to existing functionality
 - You need support for a new use case
 
-Use the [Feature Request template](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/new?template=feature_request.yml) to describe your proposal.
+Use the [Feature Request template](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/new/choose) to describe your proposal.
 
 ## Response Times
 
