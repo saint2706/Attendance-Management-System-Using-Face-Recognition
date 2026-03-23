@@ -54,12 +54,11 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir -r requirements.txt
 
-# Copy the necessary backend project directories for asset compilation
-COPY manage.py pyproject.toml pytest.ini ./
-COPY attendance_system_facial_recognition/ ./attendance_system_facial_recognition/
-COPY recognition/ ./recognition/
-COPY users/ ./users/
-COPY src/ ./src/
+# Copy the full project for asset compilation
+COPY . /app
+
+# Remove raw frontend source to prevent bloat in the final image
+RUN rm -rf /app/frontend
 
 # Copy built frontend from Stage 1
 COPY --from=frontend-build --chown=root:root /app/frontend/dist /app/frontend/dist
