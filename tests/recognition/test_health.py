@@ -264,3 +264,12 @@ class TestWorkerHealth:
         res = worker_health()
         assert res["status"] == "unreachable"
         assert res["workers"] == 0
+
+    @patch("pathlib.Path.stat")
+    def test_safe_mtime_valid(self, mock_stat):
+        mock_stat.return_value.st_mtime = 1672531200  # 2023-01-01 00:00:00 UTC
+        res = _safe_mtime(Path("/valid/path"))
+        assert res is not None
+        assert res.year == 2023
+        assert res.month == 1
+        assert res.day == 1

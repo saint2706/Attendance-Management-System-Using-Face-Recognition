@@ -165,7 +165,8 @@ class TestCustomExceptionHandler:
 
         data = response.data
         assert data["title"] == "Custom Error"
-        # It stringifies exc if it can't use anything else, and custom exception doesn't have str so it falls back to APIException str
+        # It stringifies exc if it can't use anything else,
+        # and custom exception doesn't have str so it falls back to APIException str
         # which returns default_detail string or empty
         # wait, we can just check what it falls back to
         assert str(exc) in data["detail"]
