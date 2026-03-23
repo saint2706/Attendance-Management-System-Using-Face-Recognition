@@ -44,7 +44,9 @@ def _get_model_path() -> Path:
     """Get the path for the anti-spoof model."""
     from django.conf import settings
 
-    default_path = Path(getattr(settings, "MEDIA_ROOT", "media")) / "models" / "antispoof_cnn.h5"
+    default_path = (
+        Path(getattr(settings, "MEDIA_ROOT", "media")) / "models" / "antispoof_cnn.tflite"
+    )
     custom_path = getattr(settings, "RECOGNITION_CNN_ANTISPOOF_MODEL_PATH", None)
 
     if custom_path:
@@ -87,7 +89,9 @@ class AntiSpoofCNN:
         if getattr(self, "_initialized", False):
             return
 
-        self._model = None
+        self._interpreter = None
+        self._input_details = None
+        self._output_details = None
         self._model_loaded = False
         self._load_attempted = False
         self._input_size = (224, 224)
@@ -130,7 +134,14 @@ class AntiSpoofCNN:
                 metrics=["accuracy"],
             )
 
-            return model
+            from tensorflow import lite
+
+            # Convert to TFLite and quantize
+            converter = lite.TFLiteConverter.from_keras_model(model)
+            converter.optimizations = [lite.Optimize.DEFAULT]
+            tflite_model = converter.convert()
+
+            return tflite_model
 
         except ImportError as e:
             logger.warning("TensorFlow/Keras not available for CNN anti-spoof: %s", e)
@@ -152,7 +163,7 @@ class AntiSpoofCNN:
             return True
 
         if self._load_attempted:
-            return self._model is not None
+            return self._interpreter is not None
 
         with _model_lock:
             if self._model_loaded:
@@ -164,29 +175,44 @@ class AntiSpoofCNN:
             # Try to load existing model
             if model_path.exists():
                 try:
-                    from tensorflow import keras
+                    from tensorflow import lite
 
-                    self._model = keras.models.load_model(str(model_path))
+                    self._interpreter = lite.Interpreter(model_path=str(model_path))
+                    self._interpreter.allocate_tensors()
+                    self._input_details = self._interpreter.get_input_details()
+                    self._output_details = self._interpreter.get_output_details()
                     self._model_loaded = True
-                    logger.info("Loaded anti-spoof model from %s", model_path)
+                    logger.info("Loaded quantized anti-spoof TFLite model from %s", model_path)
                     return True
                 except Exception as e:
-                    logger.warning("Failed to load model from %s: %s", model_path, e)
+                    logger.warning("Failed to load TFLite model from %s: %s", model_path, e)
 
             # Create new model with ImageNet weights
-            self._model = self._create_model()
-            if self._model is not None:
-                self._model_loaded = True
+            tflite_model_content = self._create_model()
+            if tflite_model_content is not None:
 
                 # Save the model for future use
                 try:
                     os.makedirs(model_path.parent, exist_ok=True)
-                    self._model.save(str(model_path))
-                    logger.info("Saved new anti-spoof model to %s", model_path)
+                    with open(model_path, "wb") as f:
+                        f.write(tflite_model_content)
+                    logger.info("Saved new quantized anti-spoof TFLite model to %s", model_path)
                 except Exception as e:
-                    logger.debug("Could not save model: %s", e)
+                    logger.debug("Could not save TFLite model: %s", e)
 
-                return True
+                # Load the interpreter
+                try:
+                    from tensorflow import lite
+
+                    self._interpreter = lite.Interpreter(model_content=tflite_model_content)
+                    self._interpreter.allocate_tensors()
+                    self._input_details = self._interpreter.get_input_details()
+                    self._output_details = self._interpreter.get_output_details()
+                    self._model_loaded = True
+                    return True
+                except Exception as e:
+                    logger.warning("Failed to load newly created TFLite model: %s", e)
+                    return False
 
             return False
 
@@ -235,7 +261,7 @@ class AntiSpoofCNN:
             threshold = _get_antispoof_threshold()
 
         # Ensure model is loaded
-        if not self.load_model() or self._model is None:
+        if not self.load_model() or self._interpreter is None:
             logger.debug("Anti-spoof model not available, assuming real.")
             return AntiSpoofResult(
                 is_real=True,
@@ -255,10 +281,22 @@ class AntiSpoofCNN:
 
         try:
             # Add batch dimension
-            batch = np.expand_dims(preprocessed, axis=0)
+            batch = np.expand_dims(preprocessed, axis=0).astype(np.float32)
 
-            # Predict
-            prediction = self._model.predict(batch, verbose=0)
+            # Predict using TFLite interpreter
+            with _model_lock:
+                # Ensure input tensor is correctly sized (if dynamic batching)
+                if self._input_details[0]["shape"][0] != 1:
+                    self._interpreter.resize_tensor_input(
+                        self._input_details[0]["index"], batch.shape
+                    )
+                    self._interpreter.allocate_tensors()
+                    self._input_details = self._interpreter.get_input_details()
+
+                self._interpreter.set_tensor(self._input_details[0]["index"], batch)
+                self._interpreter.invoke()
+                prediction = self._interpreter.get_tensor(self._output_details[0]["index"])
+
             real_probability = float(prediction[0][0])
             spoof_probability = 1.0 - real_probability
 
@@ -301,7 +339,7 @@ class AntiSpoofCNN:
             threshold = _get_antispoof_threshold()
 
         # Ensure model is loaded
-        if not self.load_model() or self._model is None:
+        if not self.load_model() or self._interpreter is None:
             logger.debug("Anti-spoof model not available, assuming real for batch.")
             return [
                 AntiSpoofResult(
@@ -339,10 +377,22 @@ class AntiSpoofCNN:
 
         try:
             # Create a single batch for efficient inference
-            batch = np.stack(preprocessed_frames)
+            batch = np.stack(preprocessed_frames).astype(np.float32)
+            batch_size = batch.shape[0]
 
-            # Predict entire batch at once
-            predictions = self._model.predict(batch, verbose=0)
+            # Predict using TFLite interpreter
+            with _model_lock:
+                # Resize input tensor for batching if needed
+                if self._input_details[0]["shape"][0] != batch_size:
+                    self._interpreter.resize_tensor_input(
+                        self._input_details[0]["index"], batch.shape
+                    )
+                    self._interpreter.allocate_tensors()
+                    self._input_details = self._interpreter.get_input_details()
+
+                self._interpreter.set_tensor(self._input_details[0]["index"], batch)
+                self._interpreter.invoke()
+                predictions = self._interpreter.get_tensor(self._output_details[0]["index"])
 
             # Update results for valid frames
             for idx, prediction_val in zip(valid_indices, predictions):
