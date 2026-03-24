@@ -22,7 +22,7 @@ export const Home = () => {
     return (
         <div className="home animate-fade-in">
             {/* Hero Section */}
-            <section className="hero">
+            <section className="hero" aria-labelledby="hero-title">
                 <div className="hero-content">
                     <img
                         src="/icons/icon-512.png"
@@ -34,7 +34,7 @@ export const Home = () => {
                         className="hero-image"
 
                     />
-                    <h1 className="hero-title">
+                    <h1 className="hero-title" id="hero-title">
                         Smart Attendance System
                     </h1>
                     <p className="hero-subtitle">
@@ -61,8 +61,8 @@ export const Home = () => {
             </section>
 
             {/* Features Section */}
-            <section className="features">
-                <h2 className="features-title text-center">Why Choose Our System?</h2>
+            <section className="features" aria-labelledby="features-title">
+                <h2 className="features-title text-center" id="features-title">Why Choose Our System?</h2>
                 <div className="features-grid">
                     <article className="feature-card card card-elevated">
                         <div className="card-body text-center">
@@ -114,10 +114,10 @@ export const Home = () => {
             </section>
 
             {/* Privacy Section */}
-            <section className="privacy-notice card">
+            <section className="privacy-notice card" aria-labelledby="privacy-title">
                 <div className="card-body text-center">
                     <UserCheck size={32} className="feature-icon" aria-hidden="true" />
-                    <h2>Your Privacy Matters</h2>
+                    <h2 id="privacy-title">Your Privacy Matters</h2>
                     <p className="text-muted">
                         By using this system, you consent to the collection and processing of your facial data
                         for attendance purposes only. Your images are encrypted and stored securely.

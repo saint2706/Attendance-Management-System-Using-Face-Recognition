@@ -336,6 +336,8 @@ export const MarkAttendance = () => {
                                 disabled={!stream || isProcessing || countdown !== null}
                                 className="btn btn-primary btn-lg capture-button"
                                 aria-keyshortcuts="Space"
+                                aria-live="polite"
+                                title="Capture & Recognize"
                             >
                                 {isProcessing ? (
                                     <>
