@@ -58,10 +58,10 @@ def test_command_reencrypts_all_artifacts(tmp_path: Path) -> None:
 
     call_command(
         "rotate_encryption_keys",
-        new_data_key=new_data_key.decode(),
-        new_face_key=new_face_key.decode(),
-        data_root=data_root,
-        dataset_root=dataset_root,
+        f"--new-data-key={new_data_key.decode()}",
+        f"--new-face-key={new_face_key.decode()}",
+        f"--data-root={data_root}",
+        f"--dataset-root={dataset_root}",
     )
 
     for encrypted_path, expected_key, legacy_key in [
@@ -93,11 +93,11 @@ def test_command_supports_dry_run(tmp_path: Path) -> None:
     before = dataset_file.read_bytes()
     call_command(
         "rotate_encryption_keys",
-        new_data_key=key.decode(),
-        new_face_key=key.decode(),
-        data_root=data_root,
-        dataset_root=dataset_root,
-        dry_run=True,
+        f"--new-data-key={key.decode()}",
+        f"--new-face-key={key.decode()}",
+        f"--data-root={data_root}",
+        f"--dataset-root={dataset_root}",
+        "--dry-run",
     )
     after = dataset_file.read_bytes()
 
