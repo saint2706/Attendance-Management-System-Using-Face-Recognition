@@ -95,6 +95,15 @@ jobs:
             requirements-dev.txt
             pyproject.toml
 
+      - name: Lint with flake8
+        run: |
+          flake8 --max-line-length=100 --ignore=E203,W503,E501 --exclude=migrations,__pycache__,.venv,venv,frontend,node_modules,staticfiles,dataset .
+
+      - name: Check code formatting
+        run: |
+          black --check --line-length=100 .
+          isort --check-only --profile=black --line-length=100 .
+
       - name: Validate Django project
         run: |
           python manage.py check
@@ -116,15 +125,6 @@ jobs:
           DJANGO_DEBUG: "0"
         run: |
           python manage.py check --deploy
-
-      - name: Lint with flake8
-        run: |
-          flake8 --max-line-length=100 --ignore=E203,W503,E501 --exclude=migrations,__pycache__,.venv,venv,frontend,node_modules,staticfiles,dataset .
-
-      - name: Check code formatting
-        run: |
-          black --check --line-length=100 .
-          isort --check-only --profile=black --line-length=100 .
 
       - name: Run fast tests with coverage (excludes slow, ui, e2e)
         env:
