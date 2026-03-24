@@ -54,7 +54,7 @@ spec:
               command:
                 - sh
                 - -c
-                - celery -A attendance_system_facial_recognition inspect ping -d celery@$HOSTNAME
+                - 'celery -A attendance_system_facial_recognition inspect ping -d celery@$HOSTNAME'
             initialDelaySeconds: 60
             periodSeconds: 30
             timeoutSeconds: 10
@@ -64,7 +64,7 @@ spec:
               command:
                 - sh
                 - -c
-                - celery -A attendance_system_facial_recognition inspect ping -d celery@$HOSTNAME
+                - 'celery -A attendance_system_facial_recognition inspect ping -d celery@$HOSTNAME'
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
