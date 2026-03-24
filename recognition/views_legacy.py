@@ -17,7 +17,6 @@ import json
 import logging
 import math
 import os
-import pickle
 import secrets
 import sys
 import threading
@@ -1257,19 +1256,21 @@ class DatasetEmbeddingCache:
             return None
 
         try:
-            payload = pickle.loads(decrypted_bytes)
-        except pickle.UnpicklingError as exc:  # pragma: no cover - corrupted cache data
+            payload = json.loads(decrypted_bytes.decode("utf-8"))
+        except json.JSONDecodeError as exc:  # pragma: no cover - corrupted cache data
             logger.warning("Failed to deserialize cached embeddings %s: %s", cache_file, exc)
             return None
-        except (
-            EOFError,
-            AttributeError,
-            ImportError,
-        ) as exc:  # pragma: no cover - pickle edge cases
+        except Exception as exc:  # pragma: no cover - fallback edge cases
             logger.warning("Cache deserialization error %s: %s", cache_file, exc)
             return None
 
-        dataset_state = payload.get("dataset_state")
+        # dataset_state comes back from json as a list of lists, so coerce to tuple of tuples
+        raw_state = payload.get("dataset_state")
+        if isinstance(raw_state, list):
+            dataset_state = tuple(tuple(item) for item in raw_state)
+        else:
+            dataset_state = raw_state
+
         dataset_index = payload.get("dataset_index")
         if not isinstance(dataset_state, tuple) or not isinstance(dataset_index, list):
             return None
@@ -1322,13 +1323,21 @@ class DatasetEmbeddingCache:
         cache_file = self._cache_file_path(model_name, detector_backend, enforce_detection)
         try:
             cache_file.parent.mkdir(parents=True, exist_ok=True)
-            # ⚡ Performance: Store numpy arrays directly to avoid O(N) conversion to list
-            # Pickle handles numpy arrays efficiently.
+            payload_index: list[dict] = []
+            for entry in dataset_index:
+                normalized = dict(entry)
+                embedding = normalized.get("embedding")
+                if isinstance(embedding, np.ndarray):
+                    normalized["embedding"] = embedding.astype(float).tolist()
+                elif isinstance(embedding, (list, tuple)):
+                    normalized["embedding"] = [float(value) for value in embedding]
+                payload_index.append(normalized)
+
             payload = {
                 "dataset_state": dataset_state,
-                "dataset_index": dataset_index,
+                "dataset_index": payload_index,
             }
-            serialized = pickle.dumps(payload)
+            serialized = json.dumps(payload).encode("utf-8")
             encrypted = self._encryption.encrypt(serialized)
             cache_file.write_bytes(encrypted)
         except Exception as exc:  # pragma: no cover - defensive programming
@@ -3738,6 +3747,41 @@ def _get_recognition_training_seed() -> int:
 # ========== Views ==========
 
 
+_loaded_model = None
+_loaded_classes = None
+_loaded_model_mtime = None
+
+
+def get_loaded_model():
+    """Returns the globally cached loaded ML model to reduce inference latency."""
+    global _loaded_model, _loaded_classes, _loaded_model_mtime
+
+    import pickle
+
+    model_path = DATA_ROOT / "svc.sav"
+    classes_path = DATA_ROOT / "classes.npy"
+
+    if not model_path.exists() or not classes_path.exists():
+        return None, None
+
+    current_mtime = model_path.stat().st_mtime
+    if _loaded_model is not None and _loaded_model_mtime == current_mtime:
+        return _loaded_model, _loaded_classes
+
+    try:
+        encrypted_model = model_path.read_bytes()
+        _loaded_model = pickle.loads(decrypt_bytes(encrypted_model))
+
+        encrypted_classes = classes_path.read_bytes()
+        _loaded_classes = np.load(io.BytesIO(decrypt_bytes(encrypted_classes)), allow_pickle=True)
+        _loaded_model_mtime = current_mtime
+    except Exception as exc:
+        logger.warning("Failed to load cached ML model: %s", exc)
+        return None, None
+
+    return _loaded_model, _loaded_classes
+
+
 @login_required
 def mark_attendance_view(request, attendance_type):
     """
@@ -3826,29 +3870,12 @@ def mark_attendance_view(request, attendance_type):
         )
 
     # --- Load Model ---
-    try:
-        model_path = DATA_ROOT / "svc.sav"
-        classes_path = DATA_ROOT / "classes.npy"
-        encrypted_model = model_path.read_bytes()
-        model = pickle.loads(decrypt_bytes(encrypted_model))
-
-        encrypted_classes = classes_path.read_bytes()
-        class_names = np.load(io.BytesIO(decrypt_bytes(encrypted_classes)), allow_pickle=True)
-    except FileNotFoundError:
+    model, class_names = get_loaded_model()
+    if model is None or class_names is None:
         messages.error(
             request,
             "Model not found. Please train the model before marking attendance.",
         )
-        return redirect("train")
-    except Exception:
-        logger.exception(
-            "Failed to load the recognition model",
-            extra={
-                "flow": "svc_attendance",
-                "direction": attendance_type,
-            },
-        )
-        messages.error(request, "Failed to load the model. Check logs for details.")
         return redirect("train")
 
     # --- Video Stream ---

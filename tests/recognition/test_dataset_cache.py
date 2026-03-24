@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import json
 import os
-import pickle
 import shutil
 import sys
 import tempfile
@@ -133,11 +133,11 @@ class DatasetEmbeddingCacheTests(TestCase):
         decrypted_payload = helper.decrypt(encrypted_payload)
         self.assertNotEqual(encrypted_payload, decrypted_payload)
 
-        payload = pickle.loads(decrypted_payload)
+        payload = json.loads(decrypted_payload.decode("utf-8"))
         stored_index = payload["dataset_index"]
         self.assertIsInstance(stored_index, list)
-        # ⚡ Optimization: We now store numpy arrays directly in the cache
-        self.assertIsInstance(stored_index[0]["embedding"], np.ndarray)
+        # We now store lists instead of pickle arrays
+        self.assertIsInstance(stored_index[0]["embedding"], list)
 
         views._dataset_embedding_cache._memory_cache.clear()
 
@@ -153,31 +153,35 @@ class DatasetEmbeddingCacheTests(TestCase):
         self.assertIsInstance(restored_embedding, np.ndarray)
         np.testing.assert_allclose(restored_embedding, dataset_index[0]["embedding"])
 
-    def test_backward_compatibility_with_legacy_list_embeddings(self):
-        """Test that legacy cache files with list-based embeddings can still be loaded."""
+    def test_backward_compatibility_with_json_list_state(self):
+        """Test that json cache files load correctly even with list-based states."""
         image_path = self._seed_dataset()
 
         # Get the actual dataset state that will be computed by the cache system
+        # (This is typically a tuple of tuples)
         current_dataset_state = views._dataset_embedding_cache._compute_dataset_state()
 
-        # Create a legacy cache file with embeddings stored as lists (old format)
-        legacy_embedding = [0.3, 0.4, 0.5]  # List instead of numpy array
+        # Convert state to list of lists as it would be represented in raw JSON
+        json_dataset_state = [list(item) for item in current_dataset_state]
+
+        # Create a cache file with embeddings stored as lists
+        legacy_embedding = [0.3, 0.4, 0.5]
         dataset_index = [
             {
                 "identity": str(image_path.relative_to(self.dataset_root)),
-                "embedding": legacy_embedding,  # Store as list (legacy format)
+                "embedding": legacy_embedding,
             }
         ]
 
-        # Manually create a legacy cache file with the correct dataset state
+        # Manually create a JSON cache file with the correct dataset state
         cache_file = views._dataset_embedding_cache._cache_file_path("Facenet", "ssd", True)
         cache_file.parent.mkdir(parents=True, exist_ok=True)
 
         payload = {
-            "dataset_state": current_dataset_state,
+            "dataset_state": json_dataset_state,
             "dataset_index": dataset_index,
         }
-        serialized = pickle.dumps(payload)
+        serialized = json.dumps(payload).encode("utf-8")
         helper = FaceDataEncryption(TEST_FACE_KEY)
         encrypted = helper.encrypt(serialized)
         cache_file.write_bytes(encrypted)
