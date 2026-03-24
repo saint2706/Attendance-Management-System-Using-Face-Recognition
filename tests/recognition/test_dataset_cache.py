@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import json
 import os
-import pickle
 import shutil
 import sys
 import tempfile
@@ -128,7 +128,6 @@ class DatasetEmbeddingCacheTests(TestCase):
         cache_file = views._dataset_embedding_cache._cache_file_path("Facenet", "ssd", True)
         self.assertTrue(cache_file.exists())
 
-        import json
         encrypted_payload = cache_file.read_bytes()
         helper = FaceDataEncryption(TEST_FACE_KEY)
         decrypted_payload = helper.decrypt(encrypted_payload)
@@ -156,7 +155,6 @@ class DatasetEmbeddingCacheTests(TestCase):
 
     def test_backward_compatibility_with_json_list_state(self):
         """Test that json cache files load correctly even with list-based states."""
-        import json
         image_path = self._seed_dataset()
 
         # Get the actual dataset state that will be computed by the cache system
