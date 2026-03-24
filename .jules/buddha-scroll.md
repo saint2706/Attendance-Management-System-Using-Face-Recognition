@@ -38,3 +38,8 @@ Tags: `[SEO]`, `[GEO]`
 - Removed `aria-hidden` from the LCP image in `Home.tsx` for better SEO
 - Verified JSON-LD validity
 - Updated `llms.txt` to contain precise routing for AI agents
+
+## SEO/GEO Optimization: Synchronized Routing List
+- Synchronized the full routing map inside `llms.txt.content`, `frontend/public/llms.txt`, and `recognition/static/llms.txt` so that AI Agents reading these files get a complete mapping of all SPA UI URLs and Django static URLs. This prevents blindspots for Agents.
+
+Tags: `[SEO]`, `[GEO]`

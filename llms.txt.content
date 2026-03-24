@@ -13,6 +13,7 @@
 - /view_attendance_date: View attendance by date
 - /view_attendance_employee: View attendance by employee
 - /view_my_attendance: View personal attendance records
+- /docs: Technical documentation
 - /mark-attendance: Mark attendance in the SPA
 - /attendance: View attendance in the SPA
 - /session: Active attendance session in the SPA
