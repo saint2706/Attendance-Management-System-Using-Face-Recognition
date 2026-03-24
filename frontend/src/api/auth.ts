@@ -80,7 +80,9 @@ export const login = async (credentials: LoginCredentials): Promise<LoginRespons
  */
 export const logout = async (): Promise<void> => {
     try {
-        await apiClient.post('/auth/logout/');
+        // Simple JWT does not have a built-in logout, but usually you'd blacklist the token
+        // In our case, removing the tokens from local storage is sufficient for the client side.
+        // await apiClient.post('/auth/logout/');
     } finally {
         removeToken();
         removeRefreshToken();
@@ -92,7 +94,7 @@ export const logout = async (): Promise<void> => {
  * @returns {Promise<User>} A promise resolving to the user profile.
  */
 export const getCurrentUser = async (): Promise<User> => {
-    const response = await apiClient.get<User>('/auth/me/');
+    const response = await apiClient.get<User>('/users/me/');
     return response.data;
 };
 
@@ -103,7 +105,7 @@ export const getCurrentUser = async (): Promise<User> => {
  */
 export const registerEmployee = async (data: RegisterData): Promise<User> => {
     RegisterDataSchema.parse(data);
-    const response = await apiClient.post<User>('/auth/register/', data);
+    const response = await apiClient.post<User>('/users/', data);
     return response.data;
 };
 
