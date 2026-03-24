@@ -65,7 +65,8 @@ def dataset_health() -> Dict[str, Any]:
 
     dataset_files = [path for path in TRAINING_DATASET_ROOT.glob("*/*.jpg") if path.is_file()]
     identities = {path.parent.name for path in dataset_files}
-    last_updated = max((_safe_mtime(path) for path in dataset_files), default=None)
+    valid_mtimes = [ts for path in dataset_files if (ts := _safe_mtime(path)) is not None]
+    last_updated = max(valid_mtimes) if valid_mtimes else None
 
     snapshot = {
         "exists": TRAINING_DATASET_ROOT.exists(),
@@ -87,7 +88,9 @@ def model_health(*, dataset_last_updated: Optional[dt.datetime]) -> Dict[str, An
     classes_mtime = _safe_mtime(CLASSES_PATH)
     report_mtime = _safe_mtime(REPORT_PATH)
     artifact_times = [ts for ts in (model_mtime, classes_mtime, report_mtime) if ts]
-    last_trained = max(artifact_times) if artifact_times else None
+    # Cast to ensure mypy knows we're taking max of datetimes, not None
+    valid_times = [ts for ts in artifact_times if ts is not None]
+    last_trained = max(valid_times) if valid_times else None
 
     stale = bool(dataset_last_updated and last_trained and dataset_last_updated > last_trained)
 
@@ -133,13 +136,13 @@ def evaluation_health() -> Dict[str, Any]:
 
     # Get latest evaluations by type
     latest_nightly = ModelEvaluationResult.get_latest(
-        evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY
+        evaluation_type=str(ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY)
     )
     latest_fairness = ModelEvaluationResult.get_latest(
-        evaluation_type=ModelEvaluationResult.EvaluationType.FAIRNESS_AUDIT
+        evaluation_type=str(ModelEvaluationResult.EvaluationType.FAIRNESS_AUDIT)
     )
     latest_liveness = ModelEvaluationResult.get_latest(
-        evaluation_type=ModelEvaluationResult.EvaluationType.LIVENESS_EVAL
+        evaluation_type=str(ModelEvaluationResult.EvaluationType.LIVENESS_EVAL)
     )
 
     # Get the most recent successful evaluation of any type for headline metrics
