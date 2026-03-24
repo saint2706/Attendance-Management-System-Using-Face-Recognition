@@ -49,8 +49,8 @@ export const Dashboard = () => {
             </header>
 
             {/* Quick Stats */}
-            <section className="stats-section">
-                <h2 className="section-title">Quick Overview</h2>
+            <section className="stats-section" aria-labelledby="stats-title">
+                <h2 className="section-title" id="stats-title">Quick Overview</h2>
                 <div className="stats-grid">
                     <div className="stat-card card card-elevated">
                         <div className="stat-content">
@@ -85,8 +85,8 @@ export const Dashboard = () => {
             </section>
 
             {/* Admin Actions */}
-            <section className="actions-section">
-                <h2 className="section-title">Admin Actions</h2>
+            <section className="actions-section" aria-labelledby="actions-title">
+                <h2 className="section-title" id="actions-title">Admin Actions</h2>
                 <div className="actions-grid">
                     <Link to="/employees/register" className="action-card card card-elevated" title="Register a new employee">
                         <div className="card-body">

@@ -120,6 +120,7 @@ export const Login = () => {
                         type="submit"
                         className="btn btn-primary btn-lg login-button"
                         disabled={isLoading}
+                        aria-live="polite"
                     >
                         {isLoading ? (
                             <>
