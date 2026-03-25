@@ -79,14 +79,8 @@ export const login = async (credentials: LoginCredentials): Promise<LoginRespons
  * @returns {Promise<void>} A promise that resolves when logout is complete.
  */
 export const logout = async (): Promise<void> => {
-    try {
-        // Simple JWT does not have a built-in logout, but usually you'd blacklist the token
-        // In our case, removing the tokens from local storage is sufficient for the client side.
-        // await apiClient.post('/auth/logout/');
-    } finally {
-        removeToken();
-        removeRefreshToken();
-    }
+    removeToken();
+    removeRefreshToken();
 };
 
 /**
