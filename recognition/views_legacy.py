@@ -2587,12 +2587,12 @@ def _normalize_face_region(
     w = _get_value("w", "width")
     h = _get_value("h", "height")
 
-    if None not in (x, y, w, h):
+    if x is not None and y is not None and w is not None and h is not None:
         return {"x": x, "y": y, "w": w, "h": h}
 
     right = _get_value("right")
     bottom = _get_value("bottom")
-    if None not in (x, right, y, bottom):
+    if x is not None and right is not None and y is not None and bottom is not None:
         width = right - x
         height = bottom - y
         if width > 0 and height > 0:

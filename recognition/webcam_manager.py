@@ -210,10 +210,11 @@ class WebcamManager:
                     self._frame_lock.wait()
                     continue
 
-                remaining = end_time - time.time()
-                if remaining <= 0:
-                    break
-                self._frame_lock.wait(timeout=remaining)
+                if end_time is not None:
+                    remaining = end_time - time.time()
+                    if remaining <= 0:
+                        break
+                    self._frame_lock.wait(timeout=remaining)
 
             if self._latest_frame is None or self._latest_frame_id <= after_frame_id:
                 return None, after_frame_id
