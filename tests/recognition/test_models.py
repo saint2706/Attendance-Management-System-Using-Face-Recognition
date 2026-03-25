@@ -351,11 +351,7 @@ class TestThresholdProfileGetForSiteEdgeCases(TestCase):
 
     def test_get_for_site_matches_partial_but_not_exact(self):
         """Test that get_for_site handles icontains match without exact match."""
-        ThresholdProfile.objects.create(
-            name="site1",
-            distance_threshold=0.4,
-            sites="test_site_1"
-        )
+        ThresholdProfile.objects.create(name="site1", distance_threshold=0.4, sites="test_site_1")
 
         profile = ThresholdProfile.get_for_site("test_site")
         assert profile is None
