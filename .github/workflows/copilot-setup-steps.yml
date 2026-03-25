@@ -1,8 +1,10 @@
+---
 name: "Copilot Setup Steps"
 
-# Automatically run the setup steps when they are changed to allow for easy validation,
-# and allow manual testing through the repository's "Actions" tab
-on:
+# Automatically run the setup steps when they are changed
+# to allow for easy validation, and allow manual testing
+# through the repository's "Actions" tab
+"on":
   workflow_dispatch:
   push:
     paths:
@@ -12,13 +14,14 @@ on:
       - .github/workflows/copilot-setup-steps.yml
 
 jobs:
-  # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
+  # The job MUST be called `copilot-setup-steps` or it will not be
+  # picked up by Copilot.
   copilot-setup-steps:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    # Set the permissions to the lowest permissions possible needed for your steps.
-    # Copilot will be given its own token for its operations.
+    # Set the permissions to the lowest permissions possible needed
+    # for your steps. Copilot will be given its own token for operations.
     permissions:
       contents: read
 
@@ -40,7 +43,8 @@ jobs:
     env:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
-      DJANGO_SECRET_KEY: "dev-secret-long-value-with-more-than-fifty-characters-12345"
+      DJANGO_SECRET_KEY: >-
+        dev-secret-long-value-with-more-than-fifty-characters-12345
       DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
       FACE_DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
       RECOGNITION_HEADLESS: "True"
@@ -66,7 +70,8 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libgl1 libglib2.0-0 libsm6 libxrender1 libxext6
+          sudo apt-get install -y --no-install-recommends \
+            libgl1 libglib2.0-0 libsm6 libxrender1 libxext6
           sudo apt-get clean
 
       - name: Install Python dependencies

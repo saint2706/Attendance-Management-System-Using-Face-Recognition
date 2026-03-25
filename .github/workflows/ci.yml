@@ -1,6 +1,8 @@
+---
+---
 name: Django CI
 
-on:
+"on":
   push:
     branches: ["main"]
     paths:
@@ -71,7 +73,8 @@ jobs:
     env:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
-      DJANGO_SECRET_KEY: "dummy-secret-key-for-testing-which-is-long-enough-for-security-checks-12345"
+      DJANGO_SECRET_KEY: >-
+        dummy-secret-key-for-testing-which-is-long-enough-for-security-checks-12345
       DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
       FACE_DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
       RECOGNITION_HEADLESS: "True"
@@ -97,7 +100,9 @@ jobs:
 
       - name: Lint with flake8
         run: |
-          flake8 --max-line-length=100 --ignore=E203,W503,E501 --exclude=migrations,__pycache__,.venv,venv,frontend,node_modules,staticfiles,dataset .
+          flake8 --max-line-length=100 --ignore=E203,W503,E501 \
+            --exclude=migrations,__pycache__,.venv,venv,frontend/node_modules \
+            .
 
       - name: Check code formatting
         run: |
@@ -130,8 +135,10 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
         run: |
-          pytest -m "not slow and not ui and not e2e" -n auto --maxfail=5 --durations=10 -v \
-            --cov=attendance_system_facial_recognition --cov=recognition --cov=users --cov-report=xml:coverage.xml --cov-report=term-missing
+          pytest -m "not slow and not ui and not e2e" -n auto --maxfail=5 \
+            --durations=10 -v --cov=attendance_system_facial_recognition \
+            --cov=recognition --cov=users --cov-report=xml:coverage.xml \
+            --cov-report=term-missing
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -147,8 +154,11 @@ jobs:
     name: Slow/Integration Tests
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    # Run on main branch push, manual dispatch with run_slow_tests=true, or scheduled
-    if: github.ref == 'refs/heads/main' || github.event.inputs.run_slow_tests == 'true'
+    # Run on main branch push, manual dispatch with run_slow_tests=true,
+    # or scheduled
+    if: >-
+      github.ref == 'refs/heads/main' ||
+      github.event.inputs.run_slow_tests == 'true'
     needs: tests_fast
     strategy:
       fail-fast: true
@@ -171,7 +181,8 @@ jobs:
     env:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
-      DJANGO_SECRET_KEY: "dummy-secret-key-for-testing-which-is-long-enough-for-security-checks-12345"
+      DJANGO_SECRET_KEY: >-
+        dummy-secret-key-for-testing-which-is-long-enough-for-security-checks-12345
       DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
       FACE_DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
       RECOGNITION_HEADLESS: "True"
@@ -207,11 +218,13 @@ jobs:
 
       - name: Smoke test - prepare splits
         run: |
-          python manage.py prepare_splits --seed 42 || echo "Splits preparation skipped (no data)"
+          python manage.py prepare_splits --seed 42 || \
+            echo "Splits preparation skipped (no data)"
 
       - name: Smoke test - eval
         run: |
-          python manage.py eval --seed 42 --n-bootstrap 100 || echo "Eval skipped (no data)"
+          python manage.py eval --seed 42 --n-bootstrap 100 || \
+            echo "Eval skipped (no data)"
 
   # UI tests job - runs on main branch push or manual trigger
   tests_ui:
@@ -219,7 +232,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # Run on main branch push or manual dispatch
-    if: github.ref == 'refs/heads/main' || github.event.inputs.run_slow_tests == 'true'
+    if: >-
+      github.ref == 'refs/heads/main' ||
+      github.event.inputs.run_slow_tests == 'true'
     needs: tests_fast
     strategy:
       fail-fast: true
@@ -242,7 +257,8 @@ jobs:
     env:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
-      DJANGO_SECRET_KEY: "dummy-secret-key-for-testing-which-is-long-enough-for-security-checks-12345"
+      DJANGO_SECRET_KEY: >-
+        dummy-secret-key-for-testing-which-is-long-enough-for-security-checks-12345
       DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
       FACE_DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
       RECOGNITION_HEADLESS: "True"
@@ -269,7 +285,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('requirements-dev.txt') }}
+          key: >-
+            ${{ runner.os }}-playwright-${{ hashFiles('requirements-dev.txt') }}
           restore-keys: |
             ${{ runner.os }}-playwright-
 
