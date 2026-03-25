@@ -13,3 +13,4 @@
 ## Changes made
 - Verified configurations met all the stringent guidelines laid out in memory and boundaries, ensuring scalable, resilient, and secure deployment configurations.
 - The Kustomize outputs rendered cleanly without any syntax or logic errors for base, development, and production overlays.
+- Verified resource limits, probes, and least-privilege security contexts for all manifests.
