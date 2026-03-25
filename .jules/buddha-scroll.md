@@ -43,3 +43,6 @@ Tags: `[SEO]`, `[GEO]`
 - Synchronized the full routing map inside `llms.txt.content`, `frontend/public/llms.txt`, and `recognition/static/llms.txt` so that AI Agents reading these files get a complete mapping of all SPA UI URLs and Django static URLs. This prevents blindspots for Agents.
 
 Tags: `[SEO]`, `[GEO]`
+
+- Updated llms.txt routing paths and synced across static folders.
+- Added Sitemap to robots.txt.
