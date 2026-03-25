@@ -55,7 +55,7 @@ def filter_faces_by_size(
     """
     min_size = getattr(settings, "RECOGNITION_MULTI_FACE_MIN_SIZE", 50)
 
-    filtered = []
+    filtered: list[tuple[Any, dict[str, int] | None]] = []
     for embedding, facial_area in face_embeddings:
         if facial_area is None:
             # No size info, keep i

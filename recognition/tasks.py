@@ -659,7 +659,10 @@ def process_attendance_batch(
                     }
                 )
             else:
-                results.append(outcome)
+                if isinstance(outcome, dict):
+                    results.append(outcome)
+                else:
+                    results.append({"status": "error", "error": "Invalid result format"})
     finally:
         try:
             loop.run_until_complete(loop.shutdown_asyncgens())

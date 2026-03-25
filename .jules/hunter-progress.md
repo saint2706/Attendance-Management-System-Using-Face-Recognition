@@ -14,3 +14,8 @@
 - `recognition/views_legacy.py`: Fixed unused variable `model` and removed `# noqa: F841`.
 - `recognition/static/js/main.js`, `recognition/static/js/ui.js`, `recognition/static/js/core/events.js`: Removed `console.log` statements.
 - `recognition/views.py` and `recognition/views_legacy.py`: Fixed failing test `tests/recognition/test_security_ratelimit.py::test_add_photos_view_rate_limit` by returning `redirect("add-photos")` when rate limited in `add_photos` instead of falling through to the POST processing logic.
+- `mypy.ini`: Added ignore missing imports for all 3rd party modules like pytest, rest_framework, numpy, etc to fix hundreds of mypy import not found errors.
+- `recognition/tasks.py`: Fixed mypy arg-type error in `results.append` where outcome could be an exception, by ensuring it's only appended if it's a dict.
+- `recognition/admin_views.py`: Fixed mypy types by casting len checks to bool and explicitly converting pandas dataframe methods to lists.
+- `recognition/multi_face.py`: Fixed mypy types by adding the correct typing to the `filtered` array (`list[tuple[Any, dict[str, int] | None]]`).
+- `recognition/ablation.py`: Fixed mypy typing by correctly addressing the structure of `match`.
