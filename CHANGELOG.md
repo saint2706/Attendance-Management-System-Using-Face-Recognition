@@ -16,6 +16,7 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 
 ### Fixed (Unreleased)
 
+- Fixed broken bug report and feature request template links in CONTRIBUTING.md
 - Django CI and PostgreSQL test suite linting failures (`7dd47bf`)
 - Flaky concurrent test due to uint8 overflow (`1c518e0`)
 
