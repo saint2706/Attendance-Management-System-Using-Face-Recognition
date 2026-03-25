@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,6 +16,8 @@ export const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    const errorRef = useRef<HTMLDivElement>(null);
 
     const { login } = useAuth();
     const navigate = useNavigate();
@@ -38,6 +40,12 @@ export const Login = () => {
         }
     };
 
+    useEffect(() => {
+        if (error && errorRef.current) {
+            errorRef.current.focus();
+        }
+    }, [error]);
+
     return (
         <div className="login-page animate-fade-in">
             <div className="login-card card card-elevated">
@@ -50,7 +58,7 @@ export const Login = () => {
                 </div>
 
                 {error && (
-                    <div className="login-error" role="alert" id="login-error" aria-live="assertive">
+                    <div className="login-error" role="alert" id="login-error" aria-live="assertive" ref={errorRef} tabIndex={-1}>
                         <AlertCircle size={18} aria-hidden="true" />
                         <span>{error}</span>
                     </div>
@@ -74,7 +82,7 @@ export const Login = () => {
                             autoFocus
                             autoComplete="username"
                             disabled={isLoading}
-                            aria-invalid={!!error}
+                            aria-invalid={Boolean(error)}
                             aria-describedby={error ? "login-error" : undefined}
                         />
                     </div>
@@ -96,7 +104,7 @@ export const Login = () => {
                                 aria-required="true"
                                 autoComplete="current-password"
                                 disabled={isLoading}
-                                aria-invalid={!!error}
+                                aria-invalid={Boolean(error)}
                                 aria-describedby={error ? "login-error" : undefined}
                             />
                             <button
