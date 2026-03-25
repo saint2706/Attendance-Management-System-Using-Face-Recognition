@@ -129,7 +129,7 @@ We aim for a minimum of 60% test coverage. Please ensure that your contributions
 
 ### Bug Reports
 
-When reporting a bug, use the [Bug Report template](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/new?template=bug_report.yml) and include:
+When reporting a bug, use the [Bug Report template](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/new/choose) and include:
 
 - A clear description of the bug
 - Steps to reproduce the behavior
@@ -139,7 +139,7 @@ When reporting a bug, use the [Bug Report template](https://github.com/saint2706
 
 ### Feature Requests
 
-For new feature ideas, use the [Feature Request template](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/new?template=feature_request.yml) and include:
+For new feature ideas, use the [Feature Request template](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/new/choose) and include:
 
 - A clear problem statement
 - Your proposed solution
