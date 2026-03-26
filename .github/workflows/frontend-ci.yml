@@ -1,6 +1,7 @@
+---
 name: Frontend CI
 
-on:
+"on":
   push:
     paths:
       - 'frontend/**'

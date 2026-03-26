@@ -1,6 +1,7 @@
+---
 name: Docker Build and Publish
 
-on:
+"on":
   push:
     branches:
       - main
@@ -81,7 +82,7 @@ jobs:
           tags: |
             # Branch name with short SHA (e.g., main-abc1234)
             type=raw,value={{branch}}-{{sha}},enable={{is_default_branch}}
-            # Semantic versioning from git tags (e.g., v1.2.3 -> 1.2.3, v1.2.3 -> v1.2.3)
+            # Semantic versioning from git tags (e.g., v1.2.3 -> 1.2.3)
             type=semver,pattern={{version}}
             type=semver,pattern=v{{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -157,7 +158,10 @@ jobs:
           path: trivy-sbom.cdx.json
 
       - name: Fail on Trivy vulnerabilities
-        if: github.event_name != 'pull_request' && steps.trivy-scan.outputs.exit-code != '0'
+        if: >-
+          github.event_name != 'pull_request' &&
+          steps.trivy-scan.outputs.exit-code != '0'
         run: |
-          echo "Trivy reported HIGH or CRITICAL vulnerabilities. See trivy-report.sarif for details."
+          echo "Trivy reported HIGH or CRITICAL vulnerabilities."
+          echo "See trivy-report.sarif for details."
           exit 1
