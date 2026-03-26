@@ -261,7 +261,7 @@ pyyaml==6.0.2
     # via -r requirements.txt
 redis==7.3.0
     # via -r requirements.txt
-requests[socks]==2.32.5
+requests[socks]==2.33.0
     # via
     #   deepface
     #   gdown
