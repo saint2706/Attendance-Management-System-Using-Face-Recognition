@@ -354,3 +354,4 @@ wrapt==2.1.2
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
+drf-spectacular==0.29.0
