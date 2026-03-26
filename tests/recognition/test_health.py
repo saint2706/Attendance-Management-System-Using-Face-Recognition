@@ -286,6 +286,20 @@ class TestSafeMtime:
         path.stat.side_effect = FileNotFoundError
         assert _safe_mtime(path) is None
 
+    def test_safe_mtime_success(self):
+        from unittest import mock
+
+        from recognition.health import _safe_mtime
+
+        path = mock.Mock()
+        mock_stat = mock.Mock()
+        mock_stat.st_mtime = 1600000000.0
+        path.stat.return_value = mock_stat
+
+        result = _safe_mtime(path)
+        assert result is not None
+        assert result.timestamp() == 1600000000.0
+
 
 class TestIsoformatOrNone:
     def test_isoformat_or_none_naive(self):

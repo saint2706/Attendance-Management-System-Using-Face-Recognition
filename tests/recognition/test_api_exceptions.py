@@ -100,3 +100,69 @@ class TestCustomExceptionHandler:
         exc = ValueError("Some standard python error")
         response = custom_exception_handler(exc, self.context)
         assert response is None
+
+    def test_api_exception_fallback(self):
+        class WeirdException(exceptions.APIException):
+            pass
+
+        exc = WeirdException()
+        exc.detail = None  # Mess with it so it has no real detail
+
+        # We need to simulate the response that exception_handler would create
+        # But we actually want DRF to create it
+
+        # If we provide a detail=None, DRF usually sets detail=default_detail
+
+        # Let's mock response.data to trigger the `else` case in detail extraction
+        # We'll just patch exception_handler to return a mock response
+        from unittest import mock
+
+        from rest_framework.response import Response
+
+        with mock.patch("recognition.api.exceptions.exception_handler") as mock_handler:
+            mock_resp = mock.MagicMock(spec=Response)
+            mock_resp.status_code = 500
+            # A data type that is not a dict or list to hit the else clause `detail = str(exc)`
+            mock_resp.data = "Some raw string"
+            mock_handler.return_value = mock_resp
+
+            exc_with_default = WeirdException()
+            response = custom_exception_handler(exc_with_default, self.context)
+
+            assert response is not None
+            assert response.data["detail"] == "A server error occurred."
+
+    def test_api_exception_fallback_with_default_detail(self):
+        class WeirdException(exceptions.APIException):
+            default_detail = "This is a default detail."
+
+        exc = WeirdException()
+        exc.detail = None  # Mess with it so it has no real detail
+
+        from unittest import mock
+
+        from rest_framework.response import Response
+
+        with mock.patch("recognition.api.exceptions.exception_handler") as mock_handler:
+            mock_resp = mock.MagicMock(spec=Response)
+            mock_resp.status_code = 500
+            # Empty string for detail to hit the 'not detail' check
+            mock_resp.data = None
+            mock_handler.return_value = mock_resp
+
+            # To test default_detail properly, we construct the object directly and patch str so it looks empty
+            # But the previous mock wasn't working correctly because DRF's exception_handler uses isinstance, and mock breaks it.
+            # Instead, we just pass an object that natively stringifies to empty string!
+            class EmptyStrWeirdException(exceptions.APIException):
+                default_detail = "This is a default detail."
+
+                def __str__(self):
+                    return ""
+
+            exc_empty = EmptyStrWeirdException()
+            exc_empty.detail = None
+
+            response = custom_exception_handler(exc_empty, self.context)
+
+            assert response is not None
+            assert response.data["detail"] == "This is a default detail."
