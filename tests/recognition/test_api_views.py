@@ -175,7 +175,9 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             DeepFace,
             "represent",
-            lambda *args, **kwargs: [{"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}],  # noqa: E501
+            lambda *args, **kwargs: [
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],  # noqa: E501
         )
 
         from recognition import pipeline
@@ -208,7 +210,9 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             DeepFace,
             "represent",
-            lambda *args, **kwargs: [{"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}],  # noqa: E501
+            lambda *args, **kwargs: [
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],  # noqa: E501
         )
 
         from recognition import pipeline
@@ -331,7 +335,9 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             DeepFace,
             "represent",
-            lambda *args, **kwargs: [{"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}],  # noqa: E501
+            lambda *args, **kwargs: [
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],  # noqa: E501
         )
 
         from recognition import pipeline
@@ -371,7 +377,9 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             DeepFace,
             "represent",
-            lambda *args, **kwargs: [{"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}],  # noqa: E501
+            lambda *args, **kwargs: [
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],  # noqa: E501
         )
 
         from recognition import pipeline
@@ -420,7 +428,9 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             DeepFace,
             "represent",
-            lambda *args, **kwargs: [{"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}],  # noqa: E501
+            lambda *args, **kwargs: [
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],  # noqa: E501
         )
 
         from recognition import pipeline
@@ -464,7 +474,9 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             DeepFace,
             "represent",
-            lambda *args, **kwargs: [{"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}],  # noqa: E501
+            lambda *args, **kwargs: [
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],  # noqa: E501
         )
 
         from recognition import pipeline
@@ -516,7 +528,9 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             DeepFace,
             "represent",
-            lambda *args, **kwargs: [{"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}],  # noqa: E501
+            lambda *args, **kwargs: [
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],  # noqa: E501
         )
 
         from recognition import pipeline
