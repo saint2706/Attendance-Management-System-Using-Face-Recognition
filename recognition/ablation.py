@@ -266,7 +266,7 @@ def _run_real_ablation(
             if match is None:
                 y_pred.append("__unknown__")
             else:
-                matched_label, _ = match
+                matched_label = match[0]
                 y_pred.append(matched_label)
 
         except Exception as e:

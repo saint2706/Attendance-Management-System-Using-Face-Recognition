@@ -64,9 +64,9 @@ def evaluation_dashboard(request: HttpRequest) -> HttpResponse:
     figures_dir = reports_dir / "figures"
     if figures_dir.exists():
         figures = ["roc.png", "pr.png", "det.png", "calibration.png"]
-        available_figures = [f for f in figures if (figures_dir / f).exists()]
+        available_figures = [str(f) for f in figures if (figures_dir / f).exists()]
         context["available_figures"] = available_figures
-        context["figures_available"] = len(available_figures) > 0
+        context["figures_available"] = bool(len(available_figures) > 0)
 
     return render(request, "recognition/admin/evaluation_dashboard.html", context)
 
@@ -177,8 +177,8 @@ def failure_analysis(request: HttpRequest) -> HttpResponse:
         fa_df = df[df["failure_type"] == "false_accept"]
         fr_df = df[df["failure_type"] == "false_reject"]
 
-        context["false_accepts"] = fa_df.to_dict("records") if not fa_df.empty else []
-        context["false_rejects"] = fr_df.to_dict("records") if not fr_df.empty else []
+        context["false_accepts"] = list(fa_df.to_dict("records")) if not bool(fa_df.empty) else []
+        context["false_rejects"] = list(fr_df.to_dict("records")) if not bool(fr_df.empty) else []
         context["failures_available"] = True
 
     if subgroup_csv.exists():
