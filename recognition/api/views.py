@@ -1,6 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -63,6 +67,7 @@ class UserViewSet(viewsets.ModelViewSet):
             )
         return User.objects.filter(id=user.id).prefetch_related("groups", "user_permissions")
 
+    @extend_schema(responses={200: UserSerializer})
     @action(detail=False, methods=["get"])
     def me(self, request):
         serializer = self.get_serializer(request.user)
@@ -74,6 +79,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
     ViewSet for viewing attendance records.
     """
 
+    queryset = RecognitionAttempt.objects.none()
     serializer_class = AttendanceRecordSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = PageNumberPagination
@@ -109,7 +115,10 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
 
         return queryset
 
+    @extend_schema(responses={200: StatsSerializer})
     @action(detail=False, methods=["get"])
+    @method_decorator(cache_page(60 * 5))
+    @method_decorator(vary_on_headers("Authorization", "Cookie"))
     def stats(self, request):
         """
         Get dashboard statistics with real check-in/check-out tracking.
@@ -152,6 +161,10 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = StatsSerializer(data)
         return Response(serializer.data)
 
+    @extend_schema(
+        request=RecognitionRequestSerializer,
+        responses={200: OpenApiResponse(description="Successful recognition")},
+    )
     @action(detail=False, methods=["post"], throttle_classes=[AttendanceRateThrottle])
     def mark(self, request):
         """

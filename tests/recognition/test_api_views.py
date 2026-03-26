@@ -195,6 +195,16 @@ class TestAttendanceViewSetMarkEndpoint:
         )
 
         # Mock valid embedding
+        from deepface import DeepFace
+
+        monkeypatch.setattr(
+            DeepFace,
+            "represent",
+            lambda *args, **kwargs: [
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],
+        )
+
         from recognition import pipeline
 
         monkeypatch.setattr(
@@ -310,6 +320,16 @@ class TestAttendanceViewSetMarkEndpoint:
             "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
         )
 
+        from deepface import DeepFace
+
+        monkeypatch.setattr(
+            DeepFace,
+            "represent",
+            lambda *args, **kwargs: [
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],
+        )
+
         from recognition import pipeline
 
         monkeypatch.setattr(
@@ -340,6 +360,16 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr(
             "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+        )
+
+        from deepface import DeepFace
+
+        monkeypatch.setattr(
+            DeepFace,
+            "represent",
+            lambda *args, **kwargs: [
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],
         )
 
         from recognition import pipeline
@@ -383,6 +413,16 @@ class TestAttendanceViewSetMarkEndpoint:
             "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
         )
 
+        from deepface import DeepFace
+
+        monkeypatch.setattr(
+            DeepFace,
+            "represent",
+            lambda *args, **kwargs: [
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],
+        )
+
         from recognition import pipeline
 
         monkeypatch.setattr(
@@ -417,6 +457,16 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr(
             "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+        )
+
+        from deepface import DeepFace
+
+        monkeypatch.setattr(
+            DeepFace,
+            "represent",
+            lambda *args, **kwargs: [
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],
         )
 
         from recognition import pipeline
@@ -461,6 +511,16 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr(
             "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+        )
+
+        from deepface import DeepFace
+
+        monkeypatch.setattr(
+            DeepFace,
+            "represent",
+            lambda *args, **kwargs: [
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],
         )
 
         from recognition import pipeline

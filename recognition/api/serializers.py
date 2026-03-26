@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from users.models import RecognitionAttempt
@@ -26,6 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["is_staff", "is_active"]
 
+    @extend_schema_field(serializers.CharField)
     def get_full_name(self, obj):
         return obj.get_full_name()
 
@@ -76,6 +78,7 @@ class AttendanceRecordSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["created_at", "username"]
 
+    @extend_schema_field(serializers.CharField)
     def get_username(self, obj):
         return obj.username or (obj.user.username if obj.user else "Unknown")
 
