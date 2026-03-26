@@ -145,6 +145,20 @@ class TestAttendanceViewSet:
 
 @pytest.mark.django_db
 class TestAttendanceViewSetMarkEndpoint:
+
+    @pytest.fixture(autouse=True)
+    def mock_deepface_represent(self, monkeypatch):
+        """Mock DeepFace.represent to prevent actual ML inferences during tests."""
+        from deepface import DeepFace
+
+        monkeypatch.setattr(
+            DeepFace,
+            "represent",
+            lambda *args, **kwargs: [
+                {"embedding": [0.0] * 128, "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+            ],
+        )
+
     def test_mark_without_image(self, api_client, admin_user):
         api_client.force_authenticate(user=admin_user)
         url = reverse("attendance-mark")
