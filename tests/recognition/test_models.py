@@ -516,7 +516,7 @@ class TestThresholdProfileSiteFallbackEmptyHit(TestCase):
 class TestThresholdProfileDefaultsFallbackHitEmpty2(TestCase):
     @override_settings(RECOGNITION_DISTANCE_THRESHOLD=0.6)
     def test_get_threshold_for_group_no_group_or_site_matches_no_default(self):
-        # We pass fallback_site="unknown_site" -> profile is not found, default profile does not exist
+        # We pass fallback_site="unknown_site" -> profile not found, default profile does not exist
         # Falls back to settings.RECOGNITION_DISTANCE_THRESHOLD
         assert (
             ThresholdProfile.get_threshold_for_group(

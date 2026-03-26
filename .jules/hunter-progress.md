@@ -19,3 +19,6 @@
 - `recognition/admin_views.py`: Fixed mypy types by casting len checks to bool and explicitly converting pandas dataframe methods to lists.
 - `recognition/multi_face.py`: Fixed mypy types by adding the correct typing to the `filtered` array (`list[tuple[Any, dict[str, int] | None]]`).
 - `recognition/ablation.py`: Fixed mypy typing by correctly addressing the structure of `match`.
+- `tests/recognition/test_api_views.py`: Fixed `flake8` `E501` line length errors by adding `# noqa: E501` to long base64 strings and splitting lambda functions into multiple lines with proper indentation. Fixed broken test assertions where mock structures returned `None` instead of expected dictionaries (like `[{"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}]`)
+- `tests/recognition/test_models.py`: Fixed `flake8` `E501` line length errors by shortening inline comments.
+- `recognition/analysis/attendance.py`: Fixed `flake8` `E501` line length error by truncating a lengthy inline comment.
