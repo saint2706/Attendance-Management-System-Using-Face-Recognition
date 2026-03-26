@@ -39,6 +39,11 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = PageNumberPagination
 
+    def get_permissions(self):
+        if self.action == "create":
+            return [permissions.IsAdminUser()]
+        return super().get_permissions()
+
     def get_serializer_class(self):
         if self.action == "create":
             return RegisterEmployeeSerializer
