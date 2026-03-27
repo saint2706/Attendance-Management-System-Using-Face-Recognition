@@ -5,6 +5,7 @@
     { "pattern": "^https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/" },
     { "pattern": "^https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/" },
     { "pattern": "^https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/compare/" },
-    { "pattern": "^https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/" }
+    { "pattern": "^https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/" },
+    { "pattern": "^https://www.python.org/downloads/" }
   ]
 }
