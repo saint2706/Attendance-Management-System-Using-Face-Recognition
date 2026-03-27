@@ -39,7 +39,7 @@ export const Navbar = () => {
                 </Link>
 
                 <div className="navbar-actions">
-                    <ul className={`navbar-nav ${mobileMenuOpen ? 'open' : ''}`}>
+                    <ul id="mobile-menu" className={`navbar-nav ${mobileMenuOpen ? 'open' : ''}`}>
                         {isAuthenticated ? (
                             <>
                                 <li>
@@ -85,6 +85,7 @@ export const Navbar = () => {
                             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
                             title={mobileMenuOpen ? "Close menu" : "Open menu"}
                             aria-expanded={mobileMenuOpen}
+                            aria-controls="mobile-menu"
                     >
                         {mobileMenuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
                     </button>

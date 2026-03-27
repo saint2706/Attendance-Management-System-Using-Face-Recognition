@@ -9,3 +9,8 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 - Improved focus management on error state to immediately redirect focus to error text utilizing `useRef`, `useEffect` and `tabIndex={-1}`.
 - Kept `aria-hidden="true"` for purely visual, adjacent text describing icons.
 - Updated boolean logic for aria invalid checks to `Boolean(error)`.
+
+## Date: $(date +%Y-%m-%d)
+- Added `aria-expanded` and `aria-controls` to the mobile menu toggle button in `Navbar.tsx` for better screen reader and keyboard support.
+- Implemented a simulated loading skeleton state for the Quick Stats section in `Dashboard.tsx` using the `animate-pulse` utility to provide better feedback to users while data loads.
+- Noted that `aria-live` should not be used for attribute mutations like `aria-label` changing, and redundant `aria-label`s on elements that already contain visible text should be avoided.
