@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import {
     UserPlus,
@@ -20,12 +21,26 @@ import './Dashboard.css';
 export const Dashboard = () => {
     const { user } = useAuth();
 
+    const [isLoadingStats, setIsLoadingStats] = useState(true);
     // Mock stats - in real app, these would come from API
-    const stats = {
-        totalEmployees: 25,
-        presentToday: 18,
-        status: 'Active'
-    };
+    const [stats, setStats] = useState({
+        totalEmployees: 0,
+        presentToday: 0,
+        status: 'Loading...'
+    });
+
+    useEffect(() => {
+        // Simulate API call
+        const timer = setTimeout(() => {
+            setStats({
+                totalEmployees: 25,
+                presentToday: 18,
+                status: 'Active'
+            });
+            setIsLoadingStats(false);
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, []);
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -51,12 +66,16 @@ export const Dashboard = () => {
             {/* Quick Stats */}
             <section className="stats-section" aria-labelledby="stats-title">
                 <h2 className="section-title" id="stats-title">Quick Overview</h2>
-                <div className="stats-grid">
+                <div className="stats-grid" aria-live="polite">
                     <div className="stat-card card card-elevated">
                         <div className="stat-content">
                             <div>
                                 <p className="stat-label">Total Employees</p>
-                                <p className="stat-value">{stats.totalEmployees}</p>
+                                {isLoadingStats ? (
+                                    <div className="animate-pulse h-8 w-16 bg-gray-200 rounded mt-1" />
+                                ) : (
+                                    <p className="stat-value">{stats.totalEmployees}</p>
+                                )}
                             </div>
                             <Users size={32} className="stat-icon" aria-hidden="true" />
                         </div>
@@ -65,7 +84,11 @@ export const Dashboard = () => {
                         <div className="stat-content">
                             <div>
                                 <p className="stat-label">Present Today</p>
-                                <p className="stat-value">{stats.presentToday}</p>
+                                {isLoadingStats ? (
+                                    <div className="animate-pulse h-8 w-16 bg-gray-200 rounded mt-1" />
+                                ) : (
+                                    <p className="stat-value">{stats.presentToday}</p>
+                                )}
                             </div>
                             <UserCheck size={32} className="stat-icon" aria-hidden="true" />
                         </div>
@@ -74,10 +97,14 @@ export const Dashboard = () => {
                         <div className="stat-content">
                             <div>
                                 <p className="stat-label">System Status</p>
-                                <p className="stat-value stat-status">
-                                    <Activity size={20} aria-hidden="true" />
-                                    {stats.status}
-                                </p>
+                                {isLoadingStats ? (
+                                    <div className="animate-pulse h-8 w-24 bg-gray-200 rounded mt-1" />
+                                ) : (
+                                    <p className="stat-value stat-status">
+                                        <Activity size={20} aria-hidden="true" />
+                                        {stats.status}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>
