@@ -21,6 +21,54 @@ export const Home = () => {
 
     return (
         <div className="home animate-fade-in">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@graph": [
+                            {
+                                "@type": "SoftwareApplication",
+                                "name": "Smart Attendance System",
+                                "applicationCategory": "BusinessApplication",
+                                "description": "Automated attendance tracking using face recognition technology"
+                            },
+                            {
+                                "@type": "WebSite",
+                                "name": "Smart Attendance System",
+                                "description": "Automated attendance tracking using face recognition technology",
+                                "url": "https://attendance-system.example.com/",
+                                "potentialAction": {
+                                    "@type": "SearchAction",
+                                    "target": "https://attendance-system.example.com/search?q={search_term_string}",
+                                    "query-input": "required name=search_term_string"
+                                }
+                            },
+                            {
+                                "@type": "FAQPage",
+                                "mainEntity": [
+                                    {
+                                        "@type": "Question",
+                                        "name": "How does the Smart Attendance System work?",
+                                        "acceptedAnswer": {
+                                            "@type": "Answer",
+                                            "text": "The system uses advanced AI-powered face recognition technology to quickly and accurately mark attendance when you scan your face."
+                                        }
+                                    },
+                                    {
+                                        "@type": "Question",
+                                        "name": "Is my biometric data secure?",
+                                        "acceptedAnswer": {
+                                            "@type": "Answer",
+                                            "text": "Yes, your biometric data is encrypted and stored securely with industry-standard protection. We do not share your biometric data with third parties."
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    })
+                }}
+            />
             {/* Hero Section */}
             <section className="hero" aria-labelledby="hero-title">
                 <div className="hero-content">
