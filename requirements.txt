@@ -21,7 +21,7 @@ pandas==3.0.1
 scipy==1.17.1
 prometheus-client==0.24.1
 PyYAML==6.0.2
-cryptography==46.0.5
+cryptography==46.0.6
 psycopg2-binary==2.9.11
 faiss-cpu==1.13.2
 djangorestframework==3.16.1
