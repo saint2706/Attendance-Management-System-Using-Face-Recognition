@@ -97,3 +97,10 @@ class StatsSerializer(serializers.Serializer):
     present_today = serializers.IntegerField()
     checked_out_today = serializers.IntegerField()
     pending_checkout = serializers.IntegerField()
+
+
+class AttendanceFilterSerializer(serializers.Serializer):
+    """Serializer for validating attendance query parameters."""
+
+    start_date = serializers.DateField(required=False)
+    end_date = serializers.DateField(required=False)
