@@ -39,7 +39,7 @@ class UserViewSet(viewsets.ModelViewSet):
     ViewSet for viewing and editing user instances.
     """
 
-    queryset = User.objects.all().order_by("-date_joined")
+    queryset = User.objects.prefetch_related("groups", "user_permissions").order_by("-date_joined")
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = PageNumberPagination

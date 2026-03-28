@@ -26,3 +26,8 @@
 - Found `SetupWizardProgress` model with `user` foreign key, but it was not registered explicitly in Django Admin with `list_select_related`. The `__str__` method explicitly used `self.user.username` resulting in N+1 queries.
 - **Optimization:** Explicitly added `SetupWizardProgress` to `users/admin.py` with `@admin.register(SetupWizardProgress)` and defined `list_select_related = ("user",)`.
 - **Result:** Decreased database hits when viewing `SetupWizardProgress` models in admin interface to a single query.
+
+## Optimization: N+1 query issue in Django Admin Dashboards
+- Found multiple `.count()` queries being executed consecutively against the same queryset in `recognition/admin_views.py` (`liveness_results_dashboard` and `_get_summary_stats`).
+- **Optimization:** Refactored these multiple sequential database queries into single `.aggregate()` calls using `Count("pk", filter=Q(...))` to minimize database roundtrips.
+- **Result:** Decreased query counts significantly on the admin dashboard views.

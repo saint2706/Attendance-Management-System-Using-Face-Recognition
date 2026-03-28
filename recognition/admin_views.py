@@ -289,11 +289,22 @@ def _get_summary_stats(date_from: datetime.date | None, date_to: datetime.date |
     outcomes = RecognitionOutcome.objects.filter(filters)
     attempts = RecognitionAttempt.objects.filter(filters)
 
-    total_outcomes = outcomes.count()
-    accepted = outcomes.filter(accepted=True).count()
-    rejected = outcomes.filter(accepted=False).count()
-    liveness_failures = attempts.filter(spoof_detected=True).count()
-    unknown_faces = attempts.filter(_unknown_face_filter()).count()
+    # Using `Count('pk')` instead of `Count('id')` and avoiding field name conflicts
+    outcome_counts = outcomes.aggregate(
+        total=Count("pk"),
+        accepted_count=Count("pk", filter=Q(accepted=True)),
+        rejected_count=Count("pk", filter=Q(accepted=False)),
+    )
+    total_outcomes = outcome_counts["total"]
+    accepted = outcome_counts["accepted_count"]
+    rejected = outcome_counts["rejected_count"]
+
+    attempt_counts = attempts.aggregate(
+        liveness_failures=Count("id", filter=Q(spoof_detected=True)),
+        unknown_faces=Count("id", filter=_unknown_face_filter()),
+    )
+    liveness_failures = attempt_counts["liveness_failures"]
+    unknown_faces = attempt_counts["unknown_faces"]
 
     acceptance_rate = 0
     if total_outcomes:
@@ -813,10 +824,15 @@ def liveness_results_dashboard(request: HttpRequest) -> HttpResponse:
     results_qs = LivenessResult.objects.filter(created_at__gte=since)
     results = results_qs.order_by("-created_at")[:100]
 
-    # Aggregate statistics
-    total_checks = results_qs.count()
-    passed_count = results_qs.filter(challenge_status="passed").count()
-    failed_count = results_qs.filter(challenge_status="failed").count()
+    # Aggregate statistics using a single database query
+    counts = results_qs.aggregate(
+        total=Count("id"),
+        passed=Count("id", filter=Q(challenge_status="passed")),
+        failed=Count("id", filter=Q(challenge_status="failed")),
+    )
+    total_checks = counts["total"]
+    passed_count = counts["passed"]
+    failed_count = counts["failed"]
 
     # Aggregate by challenge type with pass rates computed
     by_challenge_raw = (
