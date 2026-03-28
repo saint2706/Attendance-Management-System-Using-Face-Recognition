@@ -1,8 +1,23 @@
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 
-from rest_framework.exceptions import APIException
+from rest_framework import status
+from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.views import exception_handler
+
+
+class RecognitionException(ValidationError):
+    """Custom exception to allow 'recognition' root key in tests."""
+
+    def __init__(self, detail, recognition_data=None):
+        super().__init__(detail)
+        self.recognition = recognition_data
+
+
+class RecognitionAPIException(APIException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = "Face recognition failed"
+    default_code = "internal_server_error"
 
 
 def custom_exception_handler(exc, context):
@@ -61,6 +76,10 @@ def custom_exception_handler(exc, context):
         # we can add them here under an "errors" key if it was a validation error.
         if isinstance(exc, APIException) and isinstance(exc.detail, dict):
             custom_data["errors"] = exc.detail
+
+        # Preserve custom root attributes like `recognition`
+        if hasattr(exc, "recognition") and exc.recognition is not None:
+            custom_data["recognition"] = exc.recognition
 
         response.data = custom_data
         response["Content-Type"] = "application/problem+json"

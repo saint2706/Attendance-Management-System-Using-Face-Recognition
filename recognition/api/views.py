@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 
 from recognition.api.serializers import (
+    AttendanceFilterSerializer,
     AttendanceRecordSerializer,
     EmployeeSerializer,
     RecognitionRequestSerializer,
@@ -92,26 +93,17 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(user=user)
 
         # Filter by date range
-        start_date_str = self.request.query_params.get("start_date")
-        end_date_str = self.request.query_params.get("end_date")
+        filter_serializer = AttendanceFilterSerializer(data=self.request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
 
-        import datetime
+        start_date = filter_serializer.validated_data.get("start_date")
+        end_date = filter_serializer.validated_data.get("end_date")
 
-        from rest_framework.exceptions import ValidationError
+        if start_date:
+            queryset = queryset.filter(created_at__date__gte=start_date)
 
-        if start_date_str:
-            try:
-                start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
-                queryset = queryset.filter(created_at__date__gte=start_date)
-            except ValueError:
-                raise ValidationError({"detail": "Invalid start_date format. Expected YYYY-MM-DD."})
-
-        if end_date_str:
-            try:
-                end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
-                queryset = queryset.filter(created_at__date__lte=end_date)
-            except ValueError:
-                raise ValidationError({"detail": "Invalid end_date format. Expected YYYY-MM-DD."})
+        if end_date:
+            queryset = queryset.filter(created_at__date__lte=end_date)
 
         return queryset
 
@@ -182,7 +174,9 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         import cv2
         import numpy as np
         from deepface import DeepFace
+        from rest_framework.exceptions import ValidationError
 
+        from recognition.api.exceptions import RecognitionAPIException, RecognitionException
         from recognition.pipeline import extract_embedding, find_closest_dataset_match
         from recognition.views import (
             _get_face_detection_backend,
@@ -196,19 +190,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         logger = logging.getLogger(__name__)
 
         serializer = RecognitionRequestSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(
-                {
-                    "type": "about:blank",
-                    "title": "Validation Error",
-                    "status": status.HTTP_400_BAD_REQUEST,
-                    "detail": "Invalid request payload.",
-                    "instance": request.path,
-                    "errors": serializer.errors,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                content_type="application/problem+json",
-            )
+        serializer.is_valid(raise_exception=True)
 
         # Get direction (default to check-in)
         direction = serializer.validated_data.get("direction", "in")
@@ -231,30 +213,12 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
             frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
             if frame is None:
-                return Response(
-                    {
-                        "type": "about:blank",
-                        "title": "Validation Error",
-                        "status": status.HTTP_400_BAD_REQUEST,
-                        "detail": "Unable to decode image",
-                        "instance": request.path,
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                    content_type="application/problem+json",
-                )
+                raise ValidationError({"detail": "Unable to decode image"})
         except Exception as e:
+            if isinstance(e, ValidationError):
+                raise
             logger.warning(f"Image decode error: {e}")
-            return Response(
-                {
-                    "type": "about:blank",
-                    "title": "Validation Error",
-                    "status": status.HTTP_400_BAD_REQUEST,
-                    "detail": "Invalid image format",
-                    "instance": request.path,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                content_type="application/problem+json",
-            )
+            raise ValidationError({"detail": "Invalid image format"})
 
         # Get recognition configuration
         model_name = _get_face_recognition_model()
@@ -272,45 +236,21 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
             embedding_vector, facial_area = extract_embedding(representations)
 
             if embedding_vector is None:
-                return Response(
-                    {
-                        "type": "about:blank",
-                        "title": "Validation Error",
-                        "status": status.HTTP_400_BAD_REQUEST,
-                        "detail": "No face detected in the image",
-                        "instance": request.path,
-                        **{"recognition": {"detected": False}},
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                    content_type="application/problem+json",
+                raise RecognitionException(
+                    {"detail": "No face detected in the image"},
+                    recognition_data={"detected": False},
                 )
         except ValueError as e:
             logger.warning(f"Face detection error: {e}")
-            return Response(
-                {
-                    "type": "about:blank",
-                    "title": "Validation Error",
-                    "status": status.HTTP_400_BAD_REQUEST,
-                    "detail": "No face detected in the image",
-                    "instance": request.path,
-                    **{"recognition": {"detected": False}},
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                content_type="application/problem+json",
+            raise RecognitionException(
+                {"detail": "No face detected in the image"},
+                recognition_data={"detected": False},
             )
         except Exception as e:
+            if isinstance(e, RecognitionException):
+                raise
             logger.error(f"Recognition error: {e}")
-            return Response(
-                {
-                    "type": "about:blank",
-                    "title": "Internal Server Error",
-                    "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    "detail": "Face recognition failed",
-                    "instance": request.path,
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                content_type="application/problem+json",
-            )
+            raise RecognitionAPIException({"detail": "Face recognition failed"})
 
         # Find matching identity in dataset
         dataset_index = _load_dataset_embeddings_for_matching(
@@ -318,17 +258,9 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
         if not dataset_index:
-            return Response(
-                {
-                    "type": "about:blank",
-                    "title": "Validation Error",
-                    "status": status.HTTP_400_BAD_REQUEST,
-                    "detail": "No enrolled employees in the system",
-                    "instance": request.path,
-                    **{"recognition": {"detected": True, "matched": False}},
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                content_type="application/problem+json",
+            raise RecognitionException(
+                {"detail": "No enrolled employees in the system"},
+                recognition_data={"detected": True, "matched": False},
             )
 
         # Convert dataset embeddings to proper format
@@ -346,17 +278,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
                 normalized_index.append(normalized_entry)
 
         if not normalized_index:
-            return Response(
-                {
-                    "type": "about:blank",
-                    "title": "Validation Error",
-                    "status": status.HTTP_400_BAD_REQUEST,
-                    "detail": "No valid embeddings available for matching",
-                    "instance": request.path,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                content_type="application/problem+json",
-            )
+            raise ValidationError({"detail": "No valid embeddings available for matching"})
 
         # Find closest match
         from django.conf import settings
@@ -374,7 +296,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
                     "status": status.HTTP_200_OK,
                     "detail": "Face recognized but no match found in database",
                     "instance": request.path,
-                    **{"recognition": {"detected": True, "matched": False}},
+                    "recognition": {"detected": True, "matched": False},
                 },
                 status=status.HTTP_200_OK,
                 content_type="application/problem+json",
@@ -387,23 +309,14 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
 
         threshold = getattr(settings, "DEEPFACE_DISTANCE_THRESHOLD", 0.6)
         if not is_within_distance_threshold(distance, threshold):
-            return Response(
-                {
-                    "type": "about:blank",
-                    "title": "Validation Error",
-                    "status": status.HTTP_400_BAD_REQUEST,
-                    "detail": "Face not recognized with sufficient confidence",
-                    "instance": request.path,
-                    **{
-                        "recognition": {
-                            "detected": True,
-                            "matched": False,
-                            "confidence": (max(0, 1 - distance) if distance else 0),
-                        }
-                    },
+            confidence = max(0, 1 - distance) if distance else 0
+            raise RecognitionException(
+                {"detail": "Face not recognized with sufficient confidence"},
+                recognition_data={
+                    "detected": True,
+                    "matched": False,
+                    "confidence": confidence,
                 },
-                status=status.HTTP_400_BAD_REQUEST,
-                content_type="application/problem+json",
             )
 
         # Calculate confidence (inverse of distance for cosine)
@@ -413,17 +326,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             matched_user = User.objects.get(username=matched_username)
         except User.DoesNotExist:
-            return Response(
-                {
-                    "type": "about:blank",
-                    "title": "Validation Error",
-                    "status": status.HTTP_400_BAD_REQUEST,
-                    "detail": f"User '{matched_username}' not found in database",
-                    "instance": request.path,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                content_type="application/problem+json",
-            )
+            raise ValidationError({"detail": f"User '{matched_username}' not found in database"})
 
         # Record attendance
         now = timezone.now()
