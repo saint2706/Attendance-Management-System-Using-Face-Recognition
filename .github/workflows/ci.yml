@@ -46,11 +46,47 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Lint job - fails fast on formatting and lint errors
+  lint:
+    name: Lint & Formatting
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python Environment
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: ${{ matrix.python-version }}
+          requirements-file: requirements-dev.txt
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+            pyproject.toml
+
+      - name: Lint with flake8
+        run: |
+          flake8 --max-line-length=100 --ignore=E203,W503,E501 \
+            --exclude=migrations,__pycache__,.venv,venv,frontend/node_modules \
+            .
+
+      - name: Check code formatting
+        run: |
+          black --check --line-length=100 .
+          isort --check-only --profile=black --line-length=100 .
+
   # Fast tests job - runs on every push and PR
   tests_fast:
     name: Fast Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    needs: [lint]
     services:
       postgres:
         image: postgres:16.2-alpine
@@ -97,17 +133,6 @@ jobs:
             requirements.txt
             requirements-dev.txt
             pyproject.toml
-
-      - name: Lint with flake8
-        run: |
-          flake8 --max-line-length=100 --ignore=E203,W503,E501 \
-            --exclude=migrations,__pycache__,.venv,venv,frontend/node_modules \
-            .
-
-      - name: Check code formatting
-        run: |
-          black --check --line-length=100 .
-          isort --check-only --profile=black --line-length=100 .
 
       - name: Validate Django project
         run: |
