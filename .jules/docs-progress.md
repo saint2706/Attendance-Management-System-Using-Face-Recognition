@@ -26,3 +26,4 @@
 - **2025-03-08 (Session 2)**: Verified all documentation requirements. No broken links or missing TSDoc comments found. Validated code examples and build output. Resolved missing package error (`@eslint/js`) and dependency issues in frontend by running `pnpm install --frozen-lockfile`. Verified both `pnpm run lint` and `pnpm run build` completed successfully.
 - Fixed broken bug report and feature request template links in `docs/SUPPORT.md`.
 - Fixed broken bug report and feature request template links in `CONTRIBUTING.md`.
+- Added missing TSDoc to `LoginCredentialsSchema` and `RegisterDataSchema` in `frontend/src/api/auth.ts`.

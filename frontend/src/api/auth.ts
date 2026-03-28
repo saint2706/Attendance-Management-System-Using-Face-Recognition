@@ -10,6 +10,10 @@ export interface LoginCredentials {
     password: string;
 }
 
+/**
+ * Zod schema for validating login credentials.
+ * Ensures username and password are provided and meet length requirements.
+ */
 export const LoginCredentialsSchema = z.object({
     username: z.string().min(1, 'Username is required').max(150, 'Username is too long'),
     password: z.string().min(1, 'Password is required'),
@@ -48,6 +52,11 @@ export interface RegisterData {
     lastName?: string;
 }
 
+/**
+ * Zod schema for validating user registration data.
+ * Ensures username, email, and password meet requirements.
+ * Validates the email format and ensures password is at least 8 characters.
+ */
 export const RegisterDataSchema = z.object({
     username: z.string().min(1, 'Username is required').max(150, 'Username is too long'),
     email: z.string().email('Invalid email address'),
