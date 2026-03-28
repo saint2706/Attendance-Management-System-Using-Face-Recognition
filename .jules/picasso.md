@@ -14,3 +14,7 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 - Added `aria-expanded` and `aria-controls` to the mobile menu toggle button in `Navbar.tsx` for better screen reader and keyboard support.
 - Implemented a simulated loading skeleton state for the Quick Stats section in `Dashboard.tsx` using the `animate-pulse` utility to provide better feedback to users while data loads.
 - Noted that `aria-live` should not be used for attribute mutations like `aria-label` changing, and redundant `aria-label`s on elements that already contain visible text should be avoided.
+## UI/UX Improvements
+
+- Replaced broken raster hero image (`/icons/icon-512.png`) with an accessible SVG `ScanFace` icon from Lucide React to gracefully handle missing static assets and match application aesthetics.
+- Replaced hardcoded Tailwind-like classes (`bg-gray-200`) in Dashboard statistics skeletons with a new reusable, theme-aware CSS `.skeleton` class so loading skeletons correctly adjust visibility during dark mode.

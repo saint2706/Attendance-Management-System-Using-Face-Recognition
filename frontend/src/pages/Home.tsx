@@ -7,7 +7,8 @@ import {
     ChartBar,
     Zap,
     UserCheck,
-    LogIn
+    LogIn,
+    ScanFace
 } from 'lucide-react';
 import './Home.css';
 
@@ -24,15 +25,11 @@ export const Home = () => {
             {/* Hero Section */}
             <section className="hero" aria-labelledby="hero-title">
                 <div className="hero-content">
-                    <img
-                        src="/icons/icon-512.png"
-                        alt="Smart Attendance System Logo"
-                        width="128"
-                        height="128"
-                        fetchPriority="high"
-                        loading="eager"
-                        className="hero-image"
-
+                    <ScanFace
+                        size={128}
+                        className="hero-icon mb-md mx-auto"
+                        aria-hidden="true"
+                        style={{ color: 'var(--color-primary)' }}
                     />
                     <h1 className="hero-title" id="hero-title">
                         Smart Attendance System

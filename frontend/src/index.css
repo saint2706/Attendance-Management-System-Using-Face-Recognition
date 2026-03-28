@@ -395,6 +395,10 @@ a:hover {
   animation: pulse 2s infinite;
 }
 
+.skeleton {
+  background-color: var(--color-border);
+}
+
 /* Status badges */
 .badge {
   display: inline-flex;
