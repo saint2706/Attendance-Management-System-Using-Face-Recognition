@@ -66,7 +66,9 @@ def get_score_band(score: float, policy: dict) -> tuple:
     return "reject", bands["reject"], policy["actions"]["reject"]
 
 
-def get_threshold_from_profile(profile_name: str = None, site_code: str = None) -> tuple:
+def get_threshold_from_profile(
+    profile_name: str | None = None, site_code: str | None = None
+) -> tuple:
     """
     Get threshold from a profile name or site code.
 
@@ -104,9 +106,9 @@ def get_threshold_from_profile(profile_name: str = None, site_code: str = None) 
 def predict(
     image_path: Path,
     threshold: float = 0.6,
-    policy_path: Path = None,
-    profile_name: str = None,
-    site_code: str = None,
+    policy_path: Path | None = None,
+    profile_name: str | None = None,
+    site_code: str | None = None,
 ):
     """
     Run prediction on an image and return score, band, and recommended action.

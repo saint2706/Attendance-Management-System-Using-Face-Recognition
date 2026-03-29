@@ -19,7 +19,7 @@ def _normalize_confidence(distance: Optional[float], threshold: Optional[float])
         return None
 
     try:
-        ratio = max(0.0, min(float(distance) / float(threshold), 1.0))
+        ratio = max(0.0, min(float(distance) / float(threshold), 1.0))  # type: ignore
     except (TypeError, ValueError):  # pragma: no cover - defensive
         return None
 

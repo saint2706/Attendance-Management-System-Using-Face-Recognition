@@ -19,3 +19,8 @@
 - `recognition/admin_views.py`: Fixed mypy types by casting len checks to bool and explicitly converting pandas dataframe methods to lists.
 - `recognition/multi_face.py`: Fixed mypy types by adding the correct typing to the `filtered` array (`list[tuple[Any, dict[str, int] | None]]`).
 - `recognition/ablation.py`: Fixed mypy typing by correctly addressing the structure of `match`.
+- `predict_cli.py`: Fixed mypy typing errors for default arguments (`str = None` -> `str | None = None`).
+- `recognition/admin_views.py`: Fixed mypy casting/list conversions for `context` arrays.
+- `tests/recognition/test_pipeline.py`: Fixed mypy type tuple unpacking where `find_closest_dataset_match` intentionally returns `None`.
+- `recognition/models.py`: Fixed mypy typing resolution error when calculating mathematical equation values from potentially `None` threshold values.
+- `attendance_system_facial_recognition/settings/sentry.py`: Fixed mypy indexing dictionary resolution issues mapping specific fields over abstract iterables and removed unused missing imports.
