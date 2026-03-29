@@ -211,6 +211,18 @@ export const MarkAttendance = () => {
 
     return (
         <div className="mark-attendance animate-fade-in">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "WebPage",
+                        "name": "Mark Attendance - Smart Attendance System",
+                        "description": "Mark your time-in or time-out using face recognition.",
+                        "url": "https://attendance-system.example.com/mark-attendance"
+                    })
+                }}
+            />
             <div className="attendance-container">
                 <header className="attendance-header">
                     <Clock size={32} className="header-icon" aria-hidden="true" />

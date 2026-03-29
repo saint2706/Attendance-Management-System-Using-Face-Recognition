@@ -51,6 +51,18 @@ export const Dashboard = () => {
 
     return (
         <div className="dashboard animate-fade-in">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "WebPage",
+                        "name": "Admin Dashboard - Smart Attendance System",
+                        "description": "Admin dashboard for managing the Smart Attendance System.",
+                        "url": "https://attendance-system.example.com/dashboard"
+                    })
+                }}
+            />
             <header className="dashboard-header">
                 <div>
                     <h1 className="dashboard-title">Admin Dashboard</h1>
