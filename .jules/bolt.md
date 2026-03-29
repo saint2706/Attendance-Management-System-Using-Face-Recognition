@@ -31,3 +31,4 @@
 - Found multiple `.count()` queries being executed consecutively against the same queryset in `recognition/admin_views.py` (`liveness_results_dashboard` and `_get_summary_stats`).
 - **Optimization:** Refactored these multiple sequential database queries into single `.aggregate()` calls using `Count("pk", filter=Q(...))` to minimize database roundtrips.
 - **Result:** Decreased query counts significantly on the admin dashboard views.
+- Optimized multiple `.count()` queries in `recognition/scheduled_tasks.py` and `recognition/health.py` into single `.aggregate()` calls using `Count('pk')` to minimize database roundtrips and prevent redundant operations.
