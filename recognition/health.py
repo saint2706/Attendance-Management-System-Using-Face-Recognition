@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 
 from django.conf import settings
 from django.core.cache import cache
+from django.db.models import Count, Q
 from django.utils import timezone
 
 from attendance_system_facial_recognition.celery import app as celery_app
@@ -154,11 +155,14 @@ def evaluation_health() -> Dict[str, Any]:
         trends = latest_any.compute_trend()
 
     # Count total evaluations and recent failures
-    total_evaluations = ModelEvaluationResult.objects.count()
-    recent_failures = ModelEvaluationResult.objects.filter(
-        success=False,
-        created_at__gte=timezone.now() - dt.timedelta(days=7),
-    ).count()
+    counts = ModelEvaluationResult.objects.aggregate(
+        total=Count("id"),
+        recent_failures=Count(
+            "id", filter=Q(success=False, created_at__gte=timezone.now() - dt.timedelta(days=7))
+        ),
+    )
+    total_evaluations = counts["total"]
+    recent_failures = counts["recent_failures"]
 
     # Get evaluation schedule status
     beat_enabled = getattr(settings, "CELERY_BEAT_ENABLED", True)

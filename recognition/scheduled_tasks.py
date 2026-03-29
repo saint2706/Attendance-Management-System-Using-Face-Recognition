@@ -254,7 +254,11 @@ def run_liveness_evaluation(
 
         # Aggregate liveness results
         results = LivenessResult.objects.filter(created_at__gte=since)
-        total_checks = results.count()
+        counts = results.aggregate(
+            total=Count("id"), passed=Count("id", filter=Q(challenge_status="passed"))
+        )
+        total_checks = counts["total"]
+        passed_count = counts["passed"]
 
         if total_checks == 0:
             duration = time.time() - start_time
@@ -277,7 +281,6 @@ def run_liveness_evaluation(
                 "message": f"No liveness checks in the last {days_back} days",
             }
 
-        passed_count = results.filter(challenge_status="passed").count()
         pass_rate = passed_count / total_checks
 
         # Get average confidence for passed checks
