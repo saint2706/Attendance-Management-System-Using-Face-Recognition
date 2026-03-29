@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import os
-from collections.abc import Mapping
 from typing import Any
 
 from django.core.exceptions import ImproperlyConfigured
@@ -38,7 +37,7 @@ def _get_sample_rate(var_name: str, default: float) -> float:
     return value
 
 
-def _scrub_headers(headers: Mapping[str, Any]) -> None:
+def _scrub_headers(headers: dict[str, Any]) -> None:
     """Remove sensitive headers from captured events in-place."""
 
     for header in _SENSITIVE_HEADERS:
@@ -59,7 +58,7 @@ def initialize_sentry() -> None:
         request = event.get("request")
         if isinstance(request, dict):
             headers = request.get("headers")
-            if isinstance(headers, Mapping):
+            if isinstance(headers, dict):
                 _scrub_headers(headers)
         if not send_default_pii:
             event.pop("user", None)

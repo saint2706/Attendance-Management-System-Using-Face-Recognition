@@ -1,6 +1,7 @@
 """Unit tests for the lightweight face-recognition pipeline utilities."""
 
 import math
+from typing import Any
 
 import numpy as np
 import pytest
@@ -211,9 +212,9 @@ def test_find_closest_dataset_match_returns_best_candidate() -> None:
         },
     ]
 
-    username, distance, identity = pipeline.find_closest_dataset_match(
-        probe, dataset, "euclidean_l2"
-    )
+    result = pipeline.find_closest_dataset_match(probe, dataset, "euclidean_l2")
+    assert result is not None
+    username, distance, identity = result
 
     assert username == "bob"
     assert identity == "dataset/bob/1.jpg"
@@ -236,7 +237,7 @@ def test_find_closest_dataset_match_empty_dataset() -> None:
 def test_find_closest_dataset_match_invalid_entries() -> None:
     """Dataset entries without 'embedding' or with non-ndarray embeddings should be ignored."""
     probe = np.array([0.9, 0.1], dtype=float)
-    dataset = [
+    dataset: list[Any] = [
         {"username": "no_embedding"},
         {"username": "bad_embedding", "embedding": [1.0, 0.0]},  # list, not ndarray
         "not_a_mapping",  # completely invalid entry
@@ -247,16 +248,16 @@ def test_find_closest_dataset_match_invalid_entries() -> None:
         },
     ]
 
-    username, distance, identity = pipeline.find_closest_dataset_match(
-        probe, dataset, "euclidean_l2"
-    )
+    result = pipeline.find_closest_dataset_match(probe, dataset, "euclidean_l2")
+    assert result is not None
+    username, distance, identity = result
     assert username == "bob"
 
 
 def test_find_closest_dataset_match_calculation_fails() -> None:
     """When calculate_embedding_distance returns None, the candidate should be skipped."""
     probe = np.array([0.9, 0.1], dtype=float)
-    dataset = [
+    dataset: list[Any] = [
         {
             "username": "alice",
             "embedding": np.zeros(2, dtype=float),  # this will cause cosine distance to return None
@@ -271,7 +272,9 @@ def test_find_closest_dataset_match_calculation_fails() -> None:
         },
     ]
 
-    username, distance, identity = pipeline.find_closest_dataset_match(probe, dataset, "cosine")
+    result = pipeline.find_closest_dataset_match(probe, dataset, "cosine")
+    assert result is not None
+    username, distance, identity = result
     assert username == "charlie"
 
 
@@ -295,8 +298,8 @@ def test_is_within_distance_threshold_handles_edge_cases(
 def test_find_closest_match_faiss_invalid_index() -> None:
     """Invalid FAISS index type should return None."""
     probe = np.array([0.9, 0.1], dtype=float)
-    assert pipeline.find_closest_match_faiss(probe, None) is None
-    assert pipeline.find_closest_match_faiss(probe, "not_faiss_index") is None
+    assert pipeline.find_closest_match_faiss(probe, None) is None  # type: ignore
+    assert pipeline.find_closest_match_faiss(probe, "not_faiss_index") is None  # type: ignore
 
 
 def test_find_closest_match_faiss_empty_probe() -> None:
