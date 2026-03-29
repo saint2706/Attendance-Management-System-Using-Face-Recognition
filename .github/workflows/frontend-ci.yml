@@ -63,6 +63,7 @@ jobs:
           if-no-files-found: ignore
 
   frontend-build:
+    needs: [frontend-lint]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
