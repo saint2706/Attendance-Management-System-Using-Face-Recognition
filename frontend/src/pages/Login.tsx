@@ -48,6 +48,18 @@ export const Login = () => {
 
     return (
         <div className="login-page animate-fade-in">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "WebPage",
+                        "name": "Login - Smart Attendance System",
+                        "description": "Login page for the Smart Attendance System dashboard.",
+                        "url": "https://attendance-system.example.com/login"
+                    })
+                }}
+            />
             <div className="login-card card card-elevated">
                 <div className="login-header">
                     <LogIn size={32} className="login-icon" aria-hidden="true" />
