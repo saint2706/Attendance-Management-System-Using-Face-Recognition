@@ -11,7 +11,7 @@ import {
     Menu,
     X
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './Navbar.css';
 
 /**
@@ -29,6 +29,17 @@ export const Navbar = () => {
         await logout();
         navigate('/');
     };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && mobileMenuOpen) {
+                setMobileMenuOpen(false);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [mobileMenuOpen]);
 
     return (
         <nav className="navbar">

@@ -18,3 +18,5 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 
 - Replaced broken raster hero image (`/icons/icon-512.png`) with an accessible SVG `ScanFace` icon from Lucide React to gracefully handle missing static assets and match application aesthetics.
 - Replaced hardcoded Tailwind-like classes (`bg-gray-200`) in Dashboard statistics skeletons with a new reusable, theme-aware CSS `.skeleton` class so loading skeletons correctly adjust visibility during dark mode.
+## UX Improvements\n- Added `Escape` key accessibility for closing the mobile menu in the Navbar.
+\n- Confirmed `Space` and `Escape` keyboard accessibility is working in MarkAttendance.tsx for capture and reset actions.
