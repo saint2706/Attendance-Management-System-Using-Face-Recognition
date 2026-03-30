@@ -8,6 +8,7 @@ import {
     ChartBar,
     Radio,
     Users,
+    Inbox,
     UserCheck,
     Activity
 } from 'lucide-react';
@@ -78,49 +79,61 @@ export const Dashboard = () => {
             {/* Quick Stats */}
             <section className="stats-section" aria-labelledby="stats-title">
                 <h2 className="section-title" id="stats-title">Quick Overview</h2>
-                <div className="stats-grid" aria-live="polite">
-                    <div className="stat-card card card-elevated">
-                        <div className="stat-content">
-                            <div>
-                                <p className="stat-label">Total Employees</p>
-                                {isLoadingStats ? (
-                                    <div className="animate-pulse h-8 w-16 skeleton rounded mt-1" />
-                                ) : (
-                                    <p className="stat-value">{stats.totalEmployees}</p>
-                                )}
-                            </div>
-                            <Users size={32} className="stat-icon" aria-hidden="true" />
-                        </div>
+                {!isLoadingStats && stats.totalEmployees === 0 ? (
+                    <div className="text-center py-12 w-full card card-elevated" style={{ gridColumn: '1 / -1' }}>
+                        <Inbox size={48} className="mx-auto text-muted mb-sm" aria-hidden="true" />
+                        <h3 className="text-lg font-semibold mb-xs">No employees yet</h3>
+                        <p className="text-muted mb-md">Get started by registering your first employee.</p>
+                        <Link to="/employees/register" className="btn btn-primary">
+                            <UserPlus size={18} aria-hidden="true" />
+                            Register Employee
+                        </Link>
                     </div>
-                    <div className="stat-card card card-elevated stat-success">
-                        <div className="stat-content">
-                            <div>
-                                <p className="stat-label">Present Today</p>
-                                {isLoadingStats ? (
-                                    <div className="animate-pulse h-8 w-16 skeleton rounded mt-1" />
-                                ) : (
-                                    <p className="stat-value">{stats.presentToday}</p>
-                                )}
-                            </div>
-                            <UserCheck size={32} className="stat-icon" aria-hidden="true" />
-                        </div>
-                    </div>
-                    <div className="stat-card card card-elevated stat-info">
-                        <div className="stat-content">
-                            <div>
-                                <p className="stat-label">System Status</p>
-                                {isLoadingStats ? (
-                                    <div className="animate-pulse h-8 w-24 skeleton rounded mt-1" />
-                                ) : (
-                                    <p className="stat-value stat-status">
-                                        <Activity size={20} aria-hidden="true" />
-                                        {stats.status}
-                                    </p>
-                                )}
+                ) : (
+                    <div className="stats-grid" aria-live="polite">
+                        <div className="stat-card card card-elevated">
+                            <div className="stat-content">
+                                <div>
+                                    <p className="stat-label">Total Employees</p>
+                                    {isLoadingStats ? (
+                                        <div className="animate-pulse h-8 w-16 skeleton rounded mt-1" />
+                                    ) : (
+                                        <p className="stat-value">{stats.totalEmployees}</p>
+                                    )}
+                                </div>
+                                <Users size={32} className="stat-icon" aria-hidden="true" />
                             </div>
                         </div>
+                        <div className="stat-card card card-elevated stat-success">
+                            <div className="stat-content">
+                                <div>
+                                    <p className="stat-label">Present Today</p>
+                                    {isLoadingStats ? (
+                                        <div className="animate-pulse h-8 w-16 skeleton rounded mt-1" />
+                                    ) : (
+                                        <p className="stat-value">{stats.presentToday}</p>
+                                    )}
+                                </div>
+                                <UserCheck size={32} className="stat-icon" aria-hidden="true" />
+                            </div>
+                        </div>
+                        <div className="stat-card card card-elevated stat-info">
+                            <div className="stat-content">
+                                <div>
+                                    <p className="stat-label">System Status</p>
+                                    {isLoadingStats ? (
+                                        <div className="animate-pulse h-8 w-24 skeleton rounded mt-1" />
+                                    ) : (
+                                        <p className="stat-value stat-status">
+                                            <Activity size={20} aria-hidden="true" />
+                                            {stats.status}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                )}
             </section>
 
             {/* Admin Actions */}
