@@ -48,6 +48,8 @@ export const Login = () => {
 
     return (
         <div className="login-page animate-fade-in">
+            <title>Login - Smart Attendance System</title>
+            <meta name="description" content="Login page for the Smart Attendance System dashboard." />
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
