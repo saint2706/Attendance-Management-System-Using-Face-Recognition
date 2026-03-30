@@ -180,7 +180,7 @@ mtcnn==1.0.0
     # via deepface
 namex==0.1.0
     # via keras
-numpy==1.26.4
+numpy==2.4.4
     # via
     #   -r requirements.txt
     #   contourpy
