@@ -87,7 +87,12 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = RecognitionAttempt.objects.all().select_related("user").order_by("-created_at")
+        queryset = (
+            RecognitionAttempt.objects.all()
+            .select_related("user")
+            .prefetch_related("user__groups", "user__user_permissions")
+            .order_by("-created_at")
+        )
 
         if not user.is_staff:
             queryset = queryset.filter(user=user)
