@@ -19,9 +19,7 @@ class CustomLoginViewTests(TestCase):
     def setUp(self):
         self.login_url = reverse("login")
         User = get_user_model()
-        self.user = User.objects.create_user(
-            username="testuser_login", password="Testpass123"
-        )
+        self.user = User.objects.create_user(username="testuser_login", password="Testpass123")
 
     def test_login_success(self):
         """Verify successful login."""
@@ -47,6 +45,7 @@ class CustomLoginViewTests(TestCase):
 
         # Reset rate limit for next test by clearing the cache
         from django.core.cache import cache
+
         cache.clear()
 
 
@@ -147,6 +146,7 @@ class SetupWizardTests(TestCase):
     def test_completed_wizard_redirects_to_dashboard(self):
         """Ensure completed wizard redirects to dashboard."""
         from .models import SetupWizardProgress
+
         progress, _ = SetupWizardProgress.objects.get_or_create(user=self.staff_user)
         progress.completed = True
         progress.save()
@@ -158,6 +158,7 @@ class SetupWizardTests(TestCase):
     def test_wizard_redirects_to_current_step(self):
         """Ensure wizard redirects to the current step."""
         from .models import SetupWizardProgress
+
         progress, _ = SetupWizardProgress.objects.get_or_create(user=self.staff_user)
         progress.current_step = SetupWizardProgress.Step.CAMERA_TEST
         progress.save()
@@ -187,14 +188,12 @@ class SetupWizardStep1Tests(TestCase):
     def test_post_step1_valid(self):
         """Ensure valid post saves progress and redirects."""
         self.client.force_login(self.staff_user)
-        response = self.client.post(self.step1_url, {
-            "org_name": "Test Org",
-            "org_timezone": "UTC"
-        })
+        response = self.client.post(self.step1_url, {"org_name": "Test Org", "org_timezone": "UTC"})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("setup-wizard-step2"))
 
         from .models import SetupWizardProgress
+
         progress = SetupWizardProgress.objects.get(user=self.staff_user)
         self.assertEqual(progress.org_name, "Test Org")
         self.assertEqual(progress.current_step, SetupWizardProgress.Step.CAMERA_TEST)
@@ -220,6 +219,7 @@ class SetupWizardStep2Tests(TestCase):
     def test_get_step2_valid(self):
         """Ensure accessing step 2 works when step 1 is done."""
         from .models import SetupWizardProgress
+
         progress, _ = SetupWizardProgress.objects.get_or_create(user=self.staff_user)
         progress.org_name = "Test Org"
         progress.org_timezone = "UTC"
@@ -233,6 +233,7 @@ class SetupWizardStep2Tests(TestCase):
     def test_post_step2_valid(self):
         """Ensure valid post saves progress and redirects."""
         from .models import SetupWizardProgress
+
         progress, _ = SetupWizardProgress.objects.get_or_create(user=self.staff_user)
         progress.org_name = "Test Org"
         progress.org_timezone = "UTC"
@@ -240,10 +241,9 @@ class SetupWizardStep2Tests(TestCase):
         progress.save()
 
         self.client.force_login(self.staff_user)
-        response = self.client.post(self.step2_url, {
-            "camera_tested": True,
-            "liveness_tested": True
-        })
+        response = self.client.post(
+            self.step2_url, {"camera_tested": True, "liveness_tested": True}
+        )
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("setup-wizard-step3"))
@@ -274,6 +274,7 @@ class SetupWizardStep3Tests(TestCase):
     def test_post_step3_create_employee(self):
         """Ensure creating employee in step 3 works."""
         from .models import SetupWizardProgress
+
         progress, _ = SetupWizardProgress.objects.get_or_create(user=self.staff_user)
         progress.org_name = "Test Org"
         progress.org_timezone = "UTC"
@@ -283,14 +284,17 @@ class SetupWizardStep3Tests(TestCase):
         progress.save()
 
         self.client.force_login(self.staff_user)
-        response = self.client.post(self.step3_url, {
-            "create_employee": "true",
-            "username": "wizard_new_user",
-            "password": "NewUserPass123",
-            # The form expects password1 and password2
-            "password1": "NewUserPass123",
-            "password2": "NewUserPass123"
-        })
+        response = self.client.post(
+            self.step3_url,
+            {
+                "create_employee": "true",
+                "username": "wizard_new_user",
+                "password": "NewUserPass123",
+                # The form expects password1 and password2
+                "password1": "NewUserPass123",
+                "password2": "NewUserPass123",
+            },
+        )
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, self.step3_url)
@@ -301,6 +305,7 @@ class SetupWizardStep3Tests(TestCase):
     def test_post_step3_confirm_photos(self):
         """Ensure confirming photos works and redirects to step 4."""
         from .models import SetupWizardProgress
+
         progress, _ = SetupWizardProgress.objects.get_or_create(user=self.staff_user)
         progress.org_name = "Test Org"
         progress.org_timezone = "UTC"
@@ -311,10 +316,9 @@ class SetupWizardStep3Tests(TestCase):
         progress.save()
 
         self.client.force_login(self.staff_user)
-        response = self.client.post(self.step3_url, {
-            "confirm_photos": "true",
-            "photos_captured": True
-        })
+        response = self.client.post(
+            self.step3_url, {"confirm_photos": "true", "photos_captured": True}
+        )
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("setup-wizard-step4"))
@@ -344,6 +348,7 @@ class SetupWizardStep4Tests(TestCase):
     def test_post_step4_continue(self):
         """Ensure continue from step 4 works."""
         from .models import SetupWizardProgress
+
         progress, _ = SetupWizardProgress.objects.get_or_create(user=self.staff_user)
         progress.org_name = "Test Org"
         progress.org_timezone = "UTC"
@@ -356,9 +361,12 @@ class SetupWizardStep4Tests(TestCase):
         progress.save()
 
         self.client.force_login(self.staff_user)
-        response = self.client.post(self.step4_url, {
-            "continue": "true",
-        })
+        response = self.client.post(
+            self.step4_url,
+            {
+                "continue": "true",
+            },
+        )
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("setup-wizard-step5"))
@@ -387,6 +395,7 @@ class SetupWizardStep5Tests(TestCase):
     def test_post_step5_start_checkin_session(self):
         """Ensure finishing step 5 check_in works."""
         from .models import SetupWizardProgress
+
         progress, _ = SetupWizardProgress.objects.get_or_create(user=self.staff_user)
         progress.org_name = "Test Org"
         progress.org_timezone = "UTC"
@@ -399,9 +408,12 @@ class SetupWizardStep5Tests(TestCase):
         progress.save()
 
         self.client.force_login(self.staff_user)
-        response = self.client.post(self.step5_url, {
-            "session_type": "check_in",
-        })
+        response = self.client.post(
+            self.step5_url,
+            {
+                "session_type": "check_in",
+            },
+        )
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("mark-your-attendance"))
@@ -413,6 +425,7 @@ class SetupWizardStep5Tests(TestCase):
     def test_post_step5_start_checkout_session(self):
         """Ensure finishing step 5 check_out works."""
         from .models import SetupWizardProgress
+
         progress, _ = SetupWizardProgress.objects.get_or_create(user=self.staff_user)
         progress.org_name = "Test Org"
         progress.org_timezone = "UTC"
@@ -425,9 +438,12 @@ class SetupWizardStep5Tests(TestCase):
         progress.save()
 
         self.client.force_login(self.staff_user)
-        response = self.client.post(self.step5_url, {
-            "session_type": "check_out",
-        })
+        response = self.client.post(
+            self.step5_url,
+            {
+                "session_type": "check_out",
+            },
+        )
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("mark-your-attendance-out"))
@@ -460,6 +476,7 @@ class SetupWizardSkipAndStatusTests(TestCase):
         self.assertEqual(response.url, reverse("dashboard"))
 
         from .models import SetupWizardProgress
+
         progress = SetupWizardProgress.objects.get(user=self.staff_user)
         self.assertTrue(progress.completed)
 
