@@ -81,7 +81,7 @@ django-ratelimit==4.1.0
     # via -r requirements.txt
 django-silk==5.5.0
     # via -r requirements.txt
-djangorestframework==3.16.1
+djangorestframework==3.17.1
     # via
     #   -r requirements.txt
     #   djangorestframework-simplejwt
