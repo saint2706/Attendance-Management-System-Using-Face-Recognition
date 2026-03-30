@@ -278,7 +278,7 @@ scipy==1.17.1
     #   scikit-learn
 seaborn==0.13.2
     # via -r requirements.txt
-sentry-sdk[django]==2.53.0
+sentry-sdk[django]==2.56.0
     # via -r requirements.txt
 six==1.17.0
     # via
