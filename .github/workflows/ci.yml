@@ -52,7 +52,7 @@ jobs:
     timeout-minutes: 5
     strategy:
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.11", "3.12"]
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -80,6 +80,11 @@ jobs:
           black --check --line-length=100 .
           isort --check-only --profile=black --line-length=100 .
 
+      - name: Lint YAML files
+        run: |
+          pip install yamllint==1.35.1
+          yamllint .github/workflows/
+
   # Fast tests job - runs on every push and PR
   tests_fast:
     name: Fast Tests (Python ${{ matrix.python-version }})
@@ -104,7 +109,7 @@ jobs:
       fail-fast: true
       max-parallel: 4
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.11", "3.12"]
     env:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
@@ -187,7 +192,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.11", "3.12"]
     services:
       postgres:
         image: postgres:16.2-alpine
@@ -263,7 +268,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.11", "3.12"]
     services:
       postgres:
         image: postgres:16.2-alpine
