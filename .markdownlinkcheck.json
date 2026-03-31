@@ -1,11 +1,11 @@
 {
   "ignorePatterns": [
-    { "pattern": "^http://127.0.0.1" },
+    { "pattern": "^http://127\\.0\\.0\\.1" },
     { "pattern": "^http://localhost" },
-    { "pattern": "^https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/" },
-    { "pattern": "^https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/" },
-    { "pattern": "^https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/compare/" },
-    { "pattern": "^https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/" },
-    { "pattern": "^https://www.python.org/downloads/" }
+    { "pattern": "^https://github\\.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/" },
+    { "pattern": "^https://github\\.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/" },
+    { "pattern": "^https://github\\.com/saint2706/Attendance-Management-System-Using-Face-Recognition/compare/" },
+    { "pattern": "^https://github\\.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/" },
+    { "pattern": "^https://www\\.python\\.org/downloads/" }
   ]
 }
