@@ -22,6 +22,8 @@ export const Home = () => {
 
     return (
         <div className="home animate-fade-in">
+            <title>Home - Smart Attendance System</title>
+            <meta name="description" content="Automated attendance tracking using face recognition technology" />
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
