@@ -32,3 +32,8 @@
 - **Optimization:** Refactored these multiple sequential database queries into single `.aggregate()` calls using `Count("pk", filter=Q(...))` to minimize database roundtrips.
 - **Result:** Decreased query counts significantly on the admin dashboard views.
 - Optimized multiple `.count()` queries in `recognition/scheduled_tasks.py` and `recognition/health.py` into single `.aggregate()` calls using `Count('pk')` to minimize database roundtrips and prevent redundant operations.
+
+## Optimization: Memoized React Context Providers
+- Unmemoized object literals in React Context Providers (e.g. `value={{ user, login, logout }}`) cause all consuming components to re-render whenever the provider re-renders, even if the actual context data hasn't changed.
+- **Optimization:** Wrapped the `value` props of `AuthContext.Provider` and `ThemeContext.Provider` with `useMemo` hooks, and wrapped context functions like `login`, `logout`, `setTheme`, and `toggleTheme` with `useCallback`.
+- **Result:** Decreased unnecessary component re-renders across the entire React application by ensuring context consumers only update when the memoized context dependencies change.

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import type { ReactNode } from 'react';
 
 /**
@@ -67,16 +67,29 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
 
-    const setTheme = (newTheme: Theme) => {
+    const setTheme = useCallback((newTheme: Theme) => {
         setThemeState(newTheme);
-    };
+    }, []);
 
-    const toggleTheme = () => {
-        setTheme(resolvedTheme === 'light' ? 'dark' : 'light');
-    };
+    const toggleTheme = useCallback(() => {
+        setThemeState((prevTheme) => {
+            let currentResolved = prevTheme;
+            if (prevTheme === 'system') {
+                currentResolved = getSystemTheme();
+            }
+            return currentResolved === 'light' ? 'dark' : 'light';
+        });
+    }, []);
+
+    const value = useMemo(() => ({
+        theme,
+        resolvedTheme,
+        setTheme,
+        toggleTheme
+    }), [theme, resolvedTheme, setTheme, toggleTheme]);
 
     return (
-        <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme, toggleTheme }}>
+        <ThemeContext.Provider value={value}>
             {children}
         </ThemeContext.Provider>
     );
