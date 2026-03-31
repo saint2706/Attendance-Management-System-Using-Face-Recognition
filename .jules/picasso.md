@@ -20,3 +20,9 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 - Replaced hardcoded Tailwind-like classes (`bg-gray-200`) in Dashboard statistics skeletons with a new reusable, theme-aware CSS `.skeleton` class so loading skeletons correctly adjust visibility during dark mode.
 ## UX Improvements\n- Added `Escape` key accessibility for closing the mobile menu in the Navbar.
 \n- Confirmed `Space` and `Escape` keyboard accessibility is working in MarkAttendance.tsx for capture and reset actions.
+# Picasso UX Improvements
+
+## Dashboard Empty State
+- Added an empty state to `frontend/src/pages/Dashboard.tsx` for when there are no employees registered.
+- Uses the `Inbox` icon with existing design tokens like `.text-center`, `.py-12`, `.text-muted`.
+- Helps provide clear next steps for the admin to register an employee.
