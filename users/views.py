@@ -179,7 +179,9 @@ def setup_wizard_step1(request):
             }
         )
         context["step_title"] = "Organization Details"
-        context["step_description"] = "Let's start by setting up your organization's basic information."
+        context["step_description"] = (
+            "Let's start by setting up your organization's basic information."
+        )
         return render(request, "users/setup_wizard/step1_org_details.html", context, status=429)
 
     progress = _get_or_create_wizard_progress(request.user)
