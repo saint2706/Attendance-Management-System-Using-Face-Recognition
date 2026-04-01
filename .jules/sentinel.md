@@ -48,3 +48,4 @@
 - Use `zod` for parsing and validating inputs on the frontend before interacting with APIs to ensure input constraints like minimum and maximum length are satisfied and fast fail.
 - Added `zod` schema to validate `LoginCredentials` before executing login requests.
 ## 2025-05-24 - Input Validation in Auth API\n**Vulnerability:** The `registerEmployee` function in `frontend/src/api/auth.ts` lacked client-side input validation, which could allow malformed or missing data to be sent to the server.\n**Learning:** Client-side validation using libraries like Zod provides a crucial first layer of defense and improves user experience by failing fast on invalid inputs.\n**Prevention:** Added a Zod schema (`RegisterDataSchema`) to validate user registration data before making API requests, ensuring all required fields are present and meet complexity requirements.
+- **Vulnerability:** Added rate limiting to the setup wizard views to prevent abuse.
