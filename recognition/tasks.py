@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import concurrent.futures
 import io
 import logging
 import pickle
@@ -323,14 +324,20 @@ def train_model_sync(*, initiated_by: str | None = None) -> dict[str, Any]:
     model_name = _get_face_recognition_model()
     detector_backend = _get_face_detection_backend()
 
-    for image_path in image_paths:
+    def _process_image(image_path):
         embedding_array = _get_or_compute_cached_embedding(image_path, model_name, detector_backend)
         if embedding_array is None:
             logger.debug("Skipping image %s because no embedding was produced.", image_path)
-            continue
+            return None, None
+        return embedding_array.tolist(), image_path.parent.name
 
-        embedding_vectors.append(embedding_array.tolist())
-        class_names.append(image_path.parent.name)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = executor.map(_process_image, image_paths)
+
+    for emb, cls_name in results:
+        if emb is not None:
+            embedding_vectors.append(emb)
+            class_names.append(cls_name)
 
     if not embedding_vectors:
         raise TrainingPreconditionError(
