@@ -62,10 +62,10 @@ export const Login = () => {
                     })
                 }}
             />
-            <div className="login-card card card-elevated">
+            <section className="login-card card card-elevated" aria-labelledby="login-title">
                 <div className="login-header">
                     <LogIn size={32} className="login-icon" aria-hidden="true" />
-                    <h1 className="login-title">Welcome Back</h1>
+                    <h1 className="login-title" id="login-title">Welcome Back</h1>
                     <p className="login-subtitle text-muted">
                         Sign in to access your dashboard
                     </p>
@@ -162,7 +162,7 @@ export const Login = () => {
                 <div className="login-footer">
                     <Link to="/" className="text-muted">← Back to Home</Link>
                 </div>
-            </div>
+            </section>
         </div>
     );
 };
