@@ -250,18 +250,15 @@ def annotate_samples(samples: Sequence[SampleEvaluation]) -> List[AnnotatedSampl
 
     for sample in samples:
         username = sample.ground_truth
-        if username not in context_map:
-            default_contexts.setdefault(
-                username,
-                SampleContext(
-                    username=username,
-                    role_bucket="unregistered" if username != UNKNOWN_LABEL else UNKNOWN_LABEL,
-                    site_bucket="unspecified",
-                    source_bucket="unspecified",
-                    lighting_bucket="unknown",
-                ),
+        if username not in context_map and username not in default_contexts:
+            default_contexts[username] = SampleContext(
+                username=username,
+                role_bucket="unregistered" if username != UNKNOWN_LABEL else UNKNOWN_LABEL,
+                site_bucket="unspecified",
+                source_bucket="unspecified",
+                lighting_bucket="unknown",
             )
-        base_context = context_map.get(username, default_contexts[username])
+        base_context = context_map.get(username) or default_contexts[username]
         context = replace(base_context)
         context.lighting_bucket = estimate_lighting_bucket(sample.image_path)
         annotated.append(AnnotatedSample(sample=sample, context=context))
