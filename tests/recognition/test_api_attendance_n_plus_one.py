@@ -17,15 +17,21 @@ def test_attendance_api_query_count():
     client.force_authenticate(user=admin)
 
     # Create 10 attempts
-    for i in range(10):
-        user = User.objects.create_user(username=f"user_{i}", password="password")
-        RecognitionAttempt.objects.create(
-            user=user,
-            username="",  # Force serializer to access obj.user.username
-            direction=Direction.IN,
-            successful=True,
-            source="api",
-        )
+    # Using bulk_create to speed up test execution
+    users = User.objects.bulk_create([User(username=f"user_{i}") for i in range(10)])
+
+    RecognitionAttempt.objects.bulk_create(
+        [
+            RecognitionAttempt(
+                user=users[i],
+                username="",  # Force serializer to access obj.user.username
+                direction=Direction.IN,
+                successful=True,
+                source="api",
+            )
+            for i in range(10)
+        ]
+    )
 
     url = reverse("attendance-list")  # Or whatever the url is for the api ViewSet
 

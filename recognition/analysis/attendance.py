@@ -233,8 +233,8 @@ class AttendanceAnalytics:
         group_memberships = (
             Group.objects.filter(user__id__in=user_ids).values("user__id", "name").order_by("name")
         )
-        # Since a user could be in multiple groups, we keep the first one found (as it's ordered by name)
-        # similar to the previous behavior which used .first()
+        # Since a user could be in multiple groups, we keep the first one found
+        # (as it's ordered by name) similar to the previous behavior which used .first()
         for membership in group_memberships:
             uid = membership["user__id"]
             if uid not in user_departments:

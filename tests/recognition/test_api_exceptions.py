@@ -150,8 +150,9 @@ class TestCustomExceptionHandler:
             mock_resp.data = None
             mock_handler.return_value = mock_resp
 
-            # To test default_detail properly, we construct the object directly and patch str so it looks empty
-            # But the previous mock wasn't working correctly because DRF's exception_handler uses isinstance, and mock breaks it.
+            # To test default_detail properly, we construct the object directly and patch str
+            # so it looks empty. But the previous mock wasn't working correctly because DRF's
+            # exception_handler uses isinstance, and mock breaks it.
             # Instead, we just pass an object that natively stringifies to empty string!
             class EmptyStrWeirdException(exceptions.APIException):
                 default_detail = "This is a default detail."
