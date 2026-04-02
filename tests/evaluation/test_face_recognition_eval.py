@@ -14,7 +14,6 @@ from src.evaluation.face_recognition_eval import (
 )
 
 
-
 @pytest.fixture
 def sample_predictions() -> list[SampleEvaluation]:
     """Return synthetic predictions for metric testing."""
@@ -61,16 +60,19 @@ def test_sample_evaluation_predicted_label():
     assert sample.predicted_label(0.20) == UNKNOWN_LABEL
     assert sample.to_row(0.35)["predicted_label"] == "alice"
 
-def test_evaluation_config_defaults(monkeypatch):
-    from src.evaluation.face_recognition_eval import EvaluationConfig
 
+def test_evaluation_config_defaults(monkeypatch):
     # Mock _recognition_views to return an object with DEFAULT_DISTANCE_THRESHOLD
     import types
+
+    from src.evaluation.face_recognition_eval import EvaluationConfig
+
     mock_views = types.ModuleType("mock_views")
     mock_views.DEFAULT_DISTANCE_THRESHOLD = 0.4
     mock_views.TRAINING_DATASET_ROOT = "/tmp/dataset"
 
     from src.evaluation import face_recognition_eval
+
     monkeypatch.setattr(face_recognition_eval, "_recognition_views", lambda: mock_views)
 
     config = EvaluationConfig()
@@ -81,15 +83,18 @@ def test_evaluation_config_defaults(monkeypatch):
     assert config.threshold is not None
     assert config.threshold_values[0] == pytest.approx(0.2)
 
+
 def test_evaluation_config_validation(monkeypatch):
+    import types
+
     from src.evaluation.face_recognition_eval import EvaluationConfig
 
-    import types
     mock_views = types.ModuleType("mock_views")
     mock_views.DEFAULT_DISTANCE_THRESHOLD = 0.4
     mock_views.TRAINING_DATASET_ROOT = "/tmp/dataset"
 
     from src.evaluation import face_recognition_eval
+
     monkeypatch.setattr(face_recognition_eval, "_recognition_views", lambda: mock_views)
 
     with pytest.raises(ValueError, match="threshold_step must be positive"):
@@ -101,8 +106,10 @@ def test_evaluation_config_validation(monkeypatch):
     with pytest.raises(ValueError, match="limit_samples must be positive when provided"):
         EvaluationConfig(limit_samples=-5)
 
+
 def test_calculate_far_frr_edge_cases():
     from src.evaluation.face_recognition_eval import _calculate_far_frr
+
     # Empty dataset
     far, frr = _calculate_far_frr([], [])
     assert far == 0.0
@@ -122,9 +129,11 @@ def test_calculate_far_frr_edge_cases():
     assert far == 0.0
     assert frr == 0.5
 
+
 def test_compute_basic_metrics_empty():
     with pytest.raises(ValueError, match="No samples provided for metric computation"):
         compute_basic_metrics([], threshold=0.5)
+
 
 def test_resolve_image_paths(tmp_path, monkeypatch):
     from src.evaluation.face_recognition_eval import EvaluationConfig, _resolve_image_paths
@@ -139,10 +148,12 @@ def test_resolve_image_paths(tmp_path, monkeypatch):
 
     # Default fallback to scanning
     import types
+
     mock_views = types.ModuleType("mock_views")
     mock_views.DEFAULT_DISTANCE_THRESHOLD = 0.4
     mock_views.TRAINING_DATASET_ROOT = str(dataset_dir)
     from src.evaluation import face_recognition_eval
+
     monkeypatch.setattr(face_recognition_eval, "_recognition_views", lambda: mock_views)
 
     config = EvaluationConfig(dataset_root=dataset_dir)
@@ -157,11 +168,8 @@ def test_resolve_image_paths(tmp_path, monkeypatch):
     # Split CSV
     csv_path = tmp_path / "split.csv"
     csv_path.write_text(
-        "image_path,split\n"
-        "alice/1.jpg,test\n"
-        "alice/2.png,train\n"
-        "alice/missing.jpg,test\n",
-        encoding="utf-8"
+        "image_path,split\n" "alice/1.jpg,test\n" "alice/2.png,train\n" "alice/missing.jpg,test\n",
+        encoding="utf-8",
     )
     config_csv = EvaluationConfig(dataset_root=dataset_dir, test_split_csv=csv_path)
     paths_csv = _resolve_image_paths(config_csv)
@@ -177,14 +185,16 @@ def test_resolve_image_paths(tmp_path, monkeypatch):
 
 
 def test_save_artifacts(tmp_path, monkeypatch):
+    import types
+
     from src.evaluation.face_recognition_eval import EvaluationConfig, _save_artifacts
 
-    import types
     mock_views = types.ModuleType("mock_views")
     mock_views.DEFAULT_DISTANCE_THRESHOLD = 0.4
     mock_views.TRAINING_DATASET_ROOT = "/tmp/dataset"
 
     from src.evaluation import face_recognition_eval
+
     monkeypatch.setattr(face_recognition_eval, "_recognition_views", lambda: mock_views)
 
     config = EvaluationConfig(reports_dir=tmp_path)
