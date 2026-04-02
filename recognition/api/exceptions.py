@@ -70,7 +70,11 @@ def custom_exception_handler(exc, context):
             if not detail and hasattr(exc, "default_detail"):
                 detail = exc.default_detail
 
-            if status_code == 500 and getattr(exc, "default_code", "") != "internal_server_error" and not detail:
+            if (
+                status_code == 500
+                and getattr(exc, "default_code", "") != "internal_server_error"
+                and not detail
+            ):
                 detail = "An unexpected error occurred."
             elif status_code == 500 and not hasattr(exc, "default_detail") and detail == str(exc):
                 detail = "An unexpected error occurred."
