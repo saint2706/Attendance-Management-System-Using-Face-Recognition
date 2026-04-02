@@ -72,6 +72,11 @@ def test_evaluate_match_blocks_spoof(monkeypatch):
         "_passes_liveness_check",
         lambda frame, face_region=None, frame_history=None: False,
     )
+    monkeypatch.setattr(
+        views,
+        "_passes_liveness_check",
+        lambda frame, face_region=None, frame_history=None: False,
+    )
 
     username, spoofed, region = views._evaluate_recognition_match(frame, match, 0.4)
 
@@ -95,6 +100,11 @@ def test_evaluate_match_accepts_live_face(monkeypatch):
 
     monkeypatch.setattr(
         views_legacy,
+        "_passes_liveness_check",
+        lambda frame, face_region=None, frame_history=None: True,
+    )
+    monkeypatch.setattr(
+        views,
         "_passes_liveness_check",
         lambda frame, face_region=None, frame_history=None: True,
     )
@@ -124,6 +134,11 @@ def test_predict_identity_blocks_spoof(monkeypatch):
         "_passes_liveness_check",
         lambda frame, face_region=None, frame_history=None: False,
     )
+    monkeypatch.setattr(
+        views,
+        "_passes_liveness_check",
+        lambda frame, face_region=None, frame_history=None: False,
+    )
 
     name, spoofed, region = views._predict_identity_from_embedding(
         frame,
@@ -146,6 +161,11 @@ def test_predict_identity_returns_live_name(monkeypatch):
 
     monkeypatch.setattr(
         views_legacy,
+        "_passes_liveness_check",
+        lambda frame, face_region=None, frame_history=None: True,
+    )
+    monkeypatch.setattr(
+        views,
         "_passes_liveness_check",
         lambda frame, face_region=None, frame_history=None: True,
     )

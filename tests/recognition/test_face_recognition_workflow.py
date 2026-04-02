@@ -173,7 +173,7 @@ class TestFaceRecognitionWorkflow:
 
         view = recognition_views.FaceRecognitionAPI.as_view()
         request = self._make_request(user=user)()
-        request.META["HTTP_X_RECOGNITION_SITE"] = "hq"
+        request.META = {"HTTP_X_RECOGNITION_SITE": "hq"}
 
         response = view(request)
         assert response.status_code == 200

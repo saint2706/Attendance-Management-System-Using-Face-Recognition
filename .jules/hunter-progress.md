@@ -24,3 +24,6 @@
 - `tests/recognition/test_pipeline.py`: Fixed mypy type tuple unpacking where `find_closest_dataset_match` intentionally returns `None`.
 - `recognition/models.py`: Fixed mypy typing resolution error when calculating mathematical equation values from potentially `None` threshold values.
 - `attendance_system_facial_recognition/settings/sentry.py`: Fixed mypy indexing dictionary resolution issues mapping specific fields over abstract iterables and removed unused missing imports.
+- `tests/recognition/test_liveness.py`: Fixed Failing test due to using `views_legacy` instead of `views` and setting `_passes_liveness_check` mock.
+- `tests/recognition/test_face_recognition_workflow.py`: Fixed test failing due to using dummy request mock missing `.META` attribute.
+- `users/views.py`: Fixed mypy type error caused by `for step in SetupWizardProgress.Step` not being iterable.
