@@ -132,6 +132,18 @@ class TestCustomExceptionHandler:
             assert response is not None
             assert response.data["detail"] == "A server error occurred."
 
+    def test_recognition_exception_custom_root_key(self):
+        from recognition.api.exceptions import RecognitionException
+
+        exc = RecognitionException("Custom recognition error", recognition_data={"foo": "bar"})
+        response = custom_exception_handler(exc, self.context)
+
+        assert response is not None
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data["detail"] == "Custom recognition error"
+        assert "recognition" in response.data
+        assert response.data["recognition"] == {"foo": "bar"}
+
     def test_api_exception_fallback_with_default_detail(self):
         class WeirdException(exceptions.APIException):
             default_detail = "This is a default detail."
