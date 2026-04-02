@@ -80,9 +80,9 @@ ENV PATH="/venv/bin:$PATH" \
 
 WORKDIR /app
 
-# Create a non-root user for running the application
-RUN groupadd --gid 1000 appgroup \
-    && useradd --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
+# Create a system non-root user for running the application securely
+RUN groupadd --system --gid 1000 appgroup \
+    && useradd --system --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
 
 # Copy virtual environment with installed dependencies
 COPY --from=build /venv /venv

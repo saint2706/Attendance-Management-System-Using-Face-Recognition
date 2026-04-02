@@ -113,3 +113,10 @@ SECURITY.md
 .yamllint
 mypy.ini
 llms.txt.content
+
+# Additional security exclusions for production
+.env.production
+.env.staging
+*.pem
+*.key
+*.cert
