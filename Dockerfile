@@ -84,15 +84,15 @@ WORKDIR /app
 RUN groupadd --gid 1000 appgroup \
     && useradd --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
 
-# Create directories for runtime data and set ownership
-RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
-    && chown -R appuser:appgroup /app
-
 # Copy virtual environment with installed dependencies
-COPY --from=build --chown=appuser:appgroup /venv /venv
+COPY --from=build /venv /venv
 
 # Copy application code and collected static files
-COPY --from=build --chown=appuser:appgroup /app /app
+COPY --from=build /app /app
+
+# Create directories for runtime data and set ownership
+RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
+    && chown -R appuser:appgroup /app/media /app/face_recognition_data /app/staticfiles
 
 # Switch to non-root user
 USER appuser
