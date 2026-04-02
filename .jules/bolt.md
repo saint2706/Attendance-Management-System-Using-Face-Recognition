@@ -37,3 +37,9 @@
 - Unmemoized object literals in React Context Providers (e.g. `value={{ user, login, logout }}`) cause all consuming components to re-render whenever the provider re-renders, even if the actual context data hasn't changed.
 - **Optimization:** Wrapped the `value` props of `AuthContext.Provider` and `ThemeContext.Provider` with `useMemo` hooks, and wrapped context functions like `login`, `logout`, `setTheme`, and `toggleTheme` with `useCallback`.
 - **Result:** Decreased unnecessary component re-renders across the entire React application by ensuring context consumers only update when the memoized context dependencies change.
+## 2025-01-20 - [Real API Integration for Dashboard Stats]
+**Learning:** Dashboard statistics were relying on mocked data with a hardcoded timeout, creating misleading user experience and potential performance issues since actual stats were never loaded.
+**Action:** Replaced the mock data with actual API integration via `getAttendanceStats`. Used dynamic import to optimize bundle size.
+## 2025-01-20 - [Real API Integration for Dashboard Stats]
+**Learning:** Avoid dynamic imports inside `useEffect` for API wrapper functions, as it delays the data fetch and worsens user-facing latency. Also added unmount checks.
+**Action:** Replaced the mock data with actual API integration via `getAttendanceStats`. Used static import.

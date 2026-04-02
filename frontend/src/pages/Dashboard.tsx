@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { getAttendanceStats } from '../api/attendance';
 import {
     UserPlus,
     Camera,
@@ -23,7 +24,6 @@ export const Dashboard = () => {
     const { user } = useAuth();
 
     const [isLoadingStats, setIsLoadingStats] = useState(true);
-    // Mock stats - in real app, these would come from API
     const [stats, setStats] = useState({
         totalEmployees: 0,
         presentToday: 0,
@@ -31,16 +31,31 @@ export const Dashboard = () => {
     });
 
     useEffect(() => {
-        // Simulate API call
-        const timer = setTimeout(() => {
-            setStats({
-                totalEmployees: 25,
-                presentToday: 18,
-                status: 'Active'
-            });
-            setIsLoadingStats(false);
-        }, 1000);
-        return () => clearTimeout(timer);
+        let isMounted = true;
+        const fetchStats = async () => {
+            try {
+                const data = await getAttendanceStats();
+                if (isMounted) {
+                    setStats({
+                        totalEmployees: data.totalEmployees,
+                        presentToday: data.presentToday,
+                        status: 'Active' // We'll assume Active if API responds
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+                if (isMounted) {
+                    setStats(prev => ({ ...prev, status: 'Error loading stats' }));
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoadingStats(false);
+                }
+            }
+        };
+
+        fetchStats();
+        return () => { isMounted = false; };
     }, []);
 
     const getGreeting = () => {
