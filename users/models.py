@@ -250,6 +250,7 @@ class RecognitionAttempt(models.Model):
     username = models.CharField(
         max_length=150,
         blank=True,
+        db_index=True,
         help_text="Username inferred at recognition time (may be empty on failure).",
     )
     direction = models.CharField(
@@ -269,6 +270,7 @@ class RecognitionAttempt(models.Model):
     )
     successful = models.BooleanField(
         default=False,
+        db_index=True,
         help_text="True when the attempt resulted in a successful recognition.",
     )
     spoof_detected = models.BooleanField(

@@ -206,6 +206,7 @@ class LivenessResult(models.Model):
         max_length=32,
         choices=ChallengeType.choices,
         default=ChallengeType.MOTION,
+        db_index=True,
     )
     challenge_status = models.CharField(
         max_length=16,
@@ -269,7 +270,7 @@ class RecognitionOutcome(models.Model):
     """Persisted snapshot of a recognition decision made during attendance flows."""
 
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    username = models.CharField(max_length=150, blank=True)
+    username = models.CharField(max_length=150, blank=True, db_index=True)
     direction = models.CharField(max_length=12, blank=True)
     source = models.CharField(max_length=32, blank=True)
     accepted = models.BooleanField()
