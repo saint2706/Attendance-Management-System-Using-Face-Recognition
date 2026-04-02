@@ -28,3 +28,5 @@
 - Fixed broken bug report and feature request template links in `CONTRIBUTING.md`.
 - Added missing TSDoc to `LoginCredentialsSchema` and `RegisterDataSchema` in `frontend/src/api/auth.ts`.
 - **2025-03-08 (Session 3)**: Fixed `markdown-link-check` configuration by correcting regex escapes for `127.0.0.1` and `github.com` and accurately targeting `issues/new/choose` endpoint. Verified all docs and lint tasks pass completely clean.
+- Fix broken django documentation link in docs/security.md
+- Add missing TSDoc comments to LoginCredentialsSchema and RegisterDataSchema in frontend/src/api/auth.ts

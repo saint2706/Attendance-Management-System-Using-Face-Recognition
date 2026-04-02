@@ -149,10 +149,10 @@ See [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md#encryption-key-rotation) for detaile
 1. Restrict the `/admin/` route using network ACLs or VPN access.
 2. Require staff users to configure strong, unique passwords and enable MFA via your SSO/IdP when possible.
 3. Monitor Django admin logins and audit trails regularly.
-4. Configure `ADMINS` and email backend to receive error notifications in line with Django's [deployment checklist](https://docs.djangoproject.com/en/stable/howto/deployment/checklist/#django-admin-check-deploy).
+4. Configure `ADMINS` and email backend to receive error notifications in line with Django's [deployment checklist](https://docs.djangoproject.com/en/stable/howto/deployment/checklist/).
 
 ## Additional Recommendations
 
-* Review Django's [deployment checklist](https://docs.djangoproject.com/en/stable/howto/deployment/checklist/) before promoting builds.
+* Review Django's [deployment checklist](https://docs.djangoproject.com/en/stable/howto/deployment/checklist/) before promoting builds. (Note: The `python manage.py check --deploy` command is highly recommended as part of your deployment process).
 * Apply security patches promptly and track upstream Django security advisories.
 * Keep dependency lockfiles up to date and run `pip install --require-hashes` or similar controls in CI/CD.
