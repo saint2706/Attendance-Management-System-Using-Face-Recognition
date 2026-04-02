@@ -7,6 +7,7 @@ and that the registration functionality works as expected for authorized users.
 """
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.test import TestCase
 from django.urls import reverse
 
@@ -19,7 +20,8 @@ class CustomLoginViewTests(TestCase):
     def setUp(self):
         self.login_url = reverse("login")
         User = get_user_model()
-        self.user = User.objects.create_user(username="testuser_login", password="Testpass123")
+        hashed_password = make_password("Testpass123")
+        self.user = User.objects.create(username="testuser_login", password=hashed_password)
 
     def test_login_success(self):
         """Verify successful login."""
@@ -58,19 +60,22 @@ class RegisterViewTests(TestCase):
         self.not_authorised_url = reverse("not-authorised")
         self.password = "Testpass123"
         User = get_user_model()
+        hashed_password = make_password(self.password)
 
         # Create a staff user (e.g., a manager) who should have access
-        self.staff_user = User.objects.create_user(
-            username="staff_user", password=self.password, is_staff=True
+        self.staff_user = User.objects.create(
+            username="staff_user", password=hashed_password, is_staff=True
         )
         # Create a superuser who should have access
-        self.superuser = User.objects.create_superuser(
-            username="super_user", email="super@example.com", password=self.password
+        self.superuser = User.objects.create(
+            username="super_user",
+            email="super@example.com",
+            password=hashed_password,
+            is_staff=True,
+            is_superuser=True,
         )
         # Create a regular user who should NOT have access
-        self.regular_user = User.objects.create_user(
-            username="regular_user", password=self.password
-        )
+        self.regular_user = User.objects.create(username="regular_user", password=hashed_password)
 
     def test_staff_user_can_access_register_page(self):
         """Verify that a logged-in staff user can access the registration page."""
@@ -130,12 +135,11 @@ class SetupWizardTests(TestCase):
         self.wizard_url = reverse("setup-wizard")
         self.not_authorised_url = reverse("not-authorised")
         User = get_user_model()
-        self.staff_user = User.objects.create_user(
-            username="wizard_staff", password="Testpass123", is_staff=True
+        hashed_password = make_password("Testpass123")
+        self.staff_user = User.objects.create(
+            username="wizard_staff", password=hashed_password, is_staff=True
         )
-        self.regular_user = User.objects.create_user(
-            username="wizard_regular", password="Testpass123"
-        )
+        self.regular_user = User.objects.create(username="wizard_regular", password=hashed_password)
 
     def test_non_staff_redirected(self):
         """Ensure non-staff users cannot access the wizard."""
@@ -175,8 +179,9 @@ class SetupWizardStep1Tests(TestCase):
     def setUp(self):
         self.step1_url = reverse("setup-wizard-step1")
         User = get_user_model()
-        self.staff_user = User.objects.create_user(
-            username="wizard_staff", password="Testpass123", is_staff=True
+        hashed_password = make_password("Testpass123")
+        self.staff_user = User.objects.create(
+            username="wizard_staff", password=hashed_password, is_staff=True
         )
 
     def test_get_step1(self):
@@ -205,8 +210,9 @@ class SetupWizardStep2Tests(TestCase):
     def setUp(self):
         self.step2_url = reverse("setup-wizard-step2")
         User = get_user_model()
-        self.staff_user = User.objects.create_user(
-            username="wizard_staff", password="Testpass123", is_staff=True
+        hashed_password = make_password("Testpass123")
+        self.staff_user = User.objects.create(
+            username="wizard_staff", password=hashed_password, is_staff=True
         )
 
     def test_get_step2_without_step1_redirects(self):
@@ -260,8 +266,9 @@ class SetupWizardStep3Tests(TestCase):
     def setUp(self):
         self.step3_url = reverse("setup-wizard-step3")
         User = get_user_model()
-        self.staff_user = User.objects.create_user(
-            username="wizard_staff", password="Testpass123", is_staff=True
+        hashed_password = make_password("Testpass123")
+        self.staff_user = User.objects.create(
+            username="wizard_staff", password=hashed_password, is_staff=True
         )
 
     def test_get_step3_without_step2_redirects(self):
@@ -334,8 +341,9 @@ class SetupWizardStep4Tests(TestCase):
     def setUp(self):
         self.step4_url = reverse("setup-wizard-step4")
         User = get_user_model()
-        self.staff_user = User.objects.create_user(
-            username="wizard_staff", password="Testpass123", is_staff=True
+        hashed_password = make_password("Testpass123")
+        self.staff_user = User.objects.create(
+            username="wizard_staff", password=hashed_password, is_staff=True
         )
 
     def test_get_step4_without_step3_redirects(self):
@@ -381,8 +389,9 @@ class SetupWizardStep5Tests(TestCase):
     def setUp(self):
         self.step5_url = reverse("setup-wizard-step5")
         User = get_user_model()
-        self.staff_user = User.objects.create_user(
-            username="wizard_staff", password="Testpass123", is_staff=True
+        hashed_password = make_password("Testpass123")
+        self.staff_user = User.objects.create(
+            username="wizard_staff", password=hashed_password, is_staff=True
         )
 
     def test_get_step5_without_step4_redirects(self):
@@ -460,12 +469,11 @@ class SetupWizardSkipAndStatusTests(TestCase):
         self.skip_url = reverse("setup-wizard-skip")
         self.status_url = reverse("setup-wizard-status")
         User = get_user_model()
-        self.staff_user = User.objects.create_user(
-            username="wizard_staff", password="Testpass123", is_staff=True
+        hashed_password = make_password("Testpass123")
+        self.staff_user = User.objects.create(
+            username="wizard_staff", password=hashed_password, is_staff=True
         )
-        self.regular_user = User.objects.create_user(
-            username="wizard_regular", password="Testpass123"
-        )
+        self.regular_user = User.objects.create(username="wizard_regular", password=hashed_password)
 
     def test_skip_wizard(self):
         """Ensure skipping wizard marks it complete and redirects."""
@@ -503,7 +511,8 @@ class TimeModelTests(TestCase):
     def test_time_str_handles_missing_timestamp(self):
         """The string representation should handle a missing timestamp gracefully."""
 
-        user = get_user_model().objects.create_user(username="time_user", password="Testpass123")
+        hashed_password = make_password("Testpass123")
+        user = get_user_model().objects.create(username="time_user", password=hashed_password)
         time_entry = Time(user=user, time=None, direction=Direction.IN)
 
         self.assertEqual(

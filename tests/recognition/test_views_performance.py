@@ -1,6 +1,7 @@
 import datetime
 from unittest.mock import patch
 
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -15,9 +16,10 @@ def test_n_plus_one_hours_vs_employee_given_date():
     # Setup
     date = timezone.localdate()
     users = []
+    hashed_password = make_password("password")
     # Create 5 users
     for i in range(5):
-        u = User.objects.create_user(username=f"user{i}", password="password")
+        u = User.objects.create(username=f"user{i}", password=hashed_password)
         users.append(u)
         Present.objects.create(user=u, date=date, present=True)
         # Add some time entries
@@ -59,7 +61,8 @@ def test_n_plus_one_hours_vs_employee_given_date():
 @pytest.mark.django_db
 def test_n_plus_one_hours_vs_date_given_employee():
     # Setup
-    user = User.objects.create_user(username="user_date", password="password")
+    hashed_password = make_password("password")
+    user = User.objects.create(username="user_date", password=hashed_password)
     today = timezone.localdate()
     days = 5
 
