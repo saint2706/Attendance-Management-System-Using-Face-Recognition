@@ -98,7 +98,7 @@ export const Dashboard = () => {
                                 <div>
                                     <p className="stat-label">Total Employees</p>
                                     {isLoadingStats ? (
-                                        <div className="animate-pulse h-8 w-16 skeleton rounded mt-1" />
+                                        <div className="animate-pulse h-8 w-16 skeleton rounded mt-1" aria-hidden="true" />
                                     ) : (
                                         <p className="stat-value">{stats.totalEmployees}</p>
                                     )}
@@ -111,7 +111,7 @@ export const Dashboard = () => {
                                 <div>
                                     <p className="stat-label">Present Today</p>
                                     {isLoadingStats ? (
-                                        <div className="animate-pulse h-8 w-16 skeleton rounded mt-1" />
+                                        <div className="animate-pulse h-8 w-16 skeleton rounded mt-1" aria-hidden="true" />
                                     ) : (
                                         <p className="stat-value">{stats.presentToday}</p>
                                     )}
@@ -124,7 +124,7 @@ export const Dashboard = () => {
                                 <div>
                                     <p className="stat-label">System Status</p>
                                     {isLoadingStats ? (
-                                        <div className="animate-pulse h-8 w-24 skeleton rounded mt-1" />
+                                        <div className="animate-pulse h-8 w-24 skeleton rounded mt-1" aria-hidden="true" />
                                     ) : (
                                         <p className="stat-value stat-status">
                                             <Activity size={20} aria-hidden="true" />

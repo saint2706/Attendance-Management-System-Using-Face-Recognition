@@ -158,6 +158,7 @@ def setup_wizard(request):
 
 
 @login_required
+@ratelimit(key="user", rate="10/m", method="POST", block=False)
 def setup_wizard_step1(request):
     """
     Step 1: Organization Details & Time Zone.
@@ -166,6 +167,22 @@ def setup_wizard_step1(request):
     """
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
+
+    if getattr(request, "limited", False):
+        messages.error(request, "Too many attempts. Please try again later.")
+        progress = _get_or_create_wizard_progress(request.user)
+        context = _build_wizard_context(progress)
+        context["form"] = OrgDetailsForm(
+            initial={
+                "org_name": progress.org_name,
+                "org_timezone": progress.org_timezone or "UTC",
+            }
+        )
+        context["step_title"] = "Organization Details"
+        context["step_description"] = (
+            "Let's start by setting up your organization's basic information."
+        )
+        return render(request, "users/setup_wizard/step1_org_details.html", context, status=429)
 
     progress = _get_or_create_wizard_progress(request.user)
 
@@ -198,6 +215,7 @@ def setup_wizard_step1(request):
 
 
 @login_required
+@ratelimit(key="user", rate="10/m", method="POST", block=False)
 def setup_wizard_step2(request):
     """
     Step 2: Camera & Liveness Test.
@@ -206,6 +224,22 @@ def setup_wizard_step2(request):
     """
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
+
+    if getattr(request, "limited", False):
+        messages.error(request, "Too many attempts. Please try again later.")
+        progress = _get_or_create_wizard_progress(request.user)
+        context = _build_wizard_context(progress)
+        context["form"] = CameraTestForm(
+            initial={
+                "camera_tested": progress.camera_tested,
+                "liveness_tested": progress.liveness_tested,
+            }
+        )
+        context["step_title"] = "Camera & Liveness Test"
+        context["step_description"] = (
+            "Test your camera and verify the liveness detection is working properly."
+        )
+        return render(request, "users/setup_wizard/step2_camera_test.html", context, status=429)
 
     progress = _get_or_create_wizard_progress(request.user)
 
@@ -407,6 +441,7 @@ def setup_wizard_step4(request):
 
 
 @login_required
+@ratelimit(key="user", rate="10/m", method="POST", block=False)
 def setup_wizard_step5(request):
     """
     Step 5: Start First Attendance Session.
@@ -415,6 +450,17 @@ def setup_wizard_step5(request):
     """
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("not-authorised")
+
+    if getattr(request, "limited", False):
+        messages.error(request, "Too many attempts. Please try again later.")
+        progress = _get_or_create_wizard_progress(request.user)
+        context = _build_wizard_context(progress)
+        context["form"] = StartSessionForm()
+        context["step_title"] = "Start Attendance Session"
+        context["step_description"] = (
+            "You're all set! Start your first attendance session to complete the setup."
+        )
+        return render(request, "users/setup_wizard/step5_start_session.html", context, status=429)
 
     progress = _get_or_create_wizard_progress(request.user)
 
