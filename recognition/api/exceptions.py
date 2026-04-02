@@ -28,6 +28,18 @@ def custom_exception_handler(exc, context):
     # to get the standard error response.
     response = exception_handler(exc, context)
 
+    # If the exception is not handled by DRF, create a standard 500 response
+    if response is None:
+        from rest_framework.response import Response
+
+        title = "Internal Server Error"
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        detail = "An unexpected error occurred."
+        response = Response(status=status_code)
+    else:
+        title = getattr(exc, "default_code", exc.__class__.__name__)
+        status_code = response.status_code
+
     # Now add the HTTP status code to the response.
     if response is not None:
         if isinstance(exc, Http404):
@@ -39,20 +51,17 @@ def custom_exception_handler(exc, context):
             status_code = 403
             detail = "You do not have permission to perform this action."
         else:
-            title = getattr(exc, "default_code", exc.__class__.__name__)
-            status_code = response.status_code
-
             # DRF validation errors often return a dict or list for detail
-            if isinstance(response.data, dict) and "detail" in response.data:
+            if response.data and isinstance(response.data, dict) and "detail" in response.data:
                 detail = response.data["detail"]
-            elif isinstance(response.data, dict):
+            elif response.data and isinstance(response.data, dict):
                 # Flatten the dictionary if it's a validation error with field errors
                 fields = []
                 for k, v in response.data.items():
                     error_msg = v[0] if isinstance(v, list) else v
                     fields.append(f"{k}: {error_msg}")
                 detail = " ".join(fields)
-            elif isinstance(response.data, list):
+            elif response.data and isinstance(response.data, list):
                 detail = " ".join([str(v) for v in response.data])
             else:
                 detail = str(exc)
@@ -60,6 +69,11 @@ def custom_exception_handler(exc, context):
             # Use default detail if available and detail is empty
             if not detail and hasattr(exc, "default_detail"):
                 detail = exc.default_detail
+
+            if status_code == 500 and getattr(exc, "default_code", "") != "internal_server_error" and not detail:
+                detail = "An unexpected error occurred."
+            elif status_code == 500 and not hasattr(exc, "default_detail") and detail == str(exc):
+                detail = "An unexpected error occurred."
 
         request = context.get("request")
         instance = request.path if request else "unknown"

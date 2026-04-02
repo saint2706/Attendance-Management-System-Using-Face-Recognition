@@ -298,12 +298,12 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
                 {
                     "type": "about:blank",
                     "title": "Match Failed",
-                    "status": status.HTTP_200_OK,
+                    "status": status.HTTP_404_NOT_FOUND,
                     "detail": "Face recognized but no match found in database",
                     "instance": request.path,
                     "recognition": {"detected": True, "matched": False},
                 },
-                status=status.HTTP_200_OK,
+                status=status.HTTP_404_NOT_FOUND,
                 content_type="application/problem+json",
             )
 
