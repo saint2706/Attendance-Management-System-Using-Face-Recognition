@@ -272,6 +272,8 @@ rich==14.3.3
     # via keras
 scikit-learn==1.8.0
     # via -r requirements.txt
+skops==0.13.0
+    # via -r requirements.txt
 scipy==1.17.1
     # via
     #   -r requirements.txt

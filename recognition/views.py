@@ -3566,7 +3566,7 @@ def get_loaded_model():
     """Returns the globally cached loaded ML model to reduce inference latency."""
     global _loaded_model, _loaded_classes, _loaded_model_mtime
 
-    import pickle
+    import skops.io as sio
 
     model_path = DATA_ROOT / "svc.sav"
     classes_path = DATA_ROOT / "classes.npy"
@@ -3580,10 +3580,24 @@ def get_loaded_model():
 
     try:
         encrypted_model = model_path.read_bytes()
-        _loaded_model = pickle.loads(decrypt_bytes(encrypted_model))
+        decrypted_model = decrypt_bytes(encrypted_model)
+        try:
+            _loaded_model = sio.loads(decrypted_model, trusted=True)
+        except Exception:
+            # Fallback for older models saved with pickle directly
+            import pickle
+
+            _loaded_model = pickle.loads(decrypted_model)
+            logger.info("Loaded legacy model using pickle fallback.")
 
         encrypted_classes = classes_path.read_bytes()
-        _loaded_classes = np.load(io.BytesIO(decrypt_bytes(encrypted_classes)), allow_pickle=True)
+        decrypted_classes = decrypt_bytes(encrypted_classes)
+        try:
+            _loaded_classes = np.load(io.BytesIO(decrypted_classes), allow_pickle=False)
+        except ValueError:
+            # Fallback for older classes saved with allow_pickle=True or object dtype
+            _loaded_classes = np.load(io.BytesIO(decrypted_classes), allow_pickle=True)
+            logger.info("Loaded legacy classes using allow_pickle fallback.")
         _loaded_model_mtime = current_mtime
     except Exception as exc:
         logger.warning("Failed to load cached ML model: %s", exc)

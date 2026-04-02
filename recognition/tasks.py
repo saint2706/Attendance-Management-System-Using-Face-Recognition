@@ -6,7 +6,6 @@ import asyncio
 import concurrent.futures
 import io
 import logging
-import pickle
 import time
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
@@ -17,6 +16,7 @@ from django.core.cache import cache
 import cv2
 import imutils
 import numpy as np
+import skops.io as sio
 from asgiref.sync import sync_to_async
 from celery import shared_task
 from imutils.video import VideoStream
@@ -147,7 +147,7 @@ def _load_existing_model() -> SGDClassifier | None:
     try:
         encrypted_model = MODEL_PATH.read_bytes()
         decrypted_model = decrypt_bytes(encrypted_model)
-        model = pickle.loads(decrypted_model)
+        model = sio.loads(decrypted_model, trusted=True)
     except FileNotFoundError:
         return None
     except Exception as exc:  # pragma: no cover - defensive programming
@@ -188,7 +188,7 @@ def _persist_model(classifier: SGDClassifier, classes: np.ndarray) -> None:
 
     DATA_ROOT.mkdir(parents=True, exist_ok=True)
 
-    model_bytes = pickle.dumps(classifier)
+    model_bytes = sio.dumps(classifier)
     MODEL_PATH.write_bytes(encrypt_bytes(model_bytes))
 
     buffer = io.BytesIO()
@@ -378,7 +378,7 @@ def train_model_sync(*, initiated_by: str | None = None) -> dict[str, Any]:
     DATA_ROOT.mkdir(parents=True, exist_ok=True)
 
     model_path = DATA_ROOT / "svc.sav"
-    model_bytes = pickle.dumps(model)
+    model_bytes = sio.dumps(model)
     model_path.write_bytes(encrypt_bytes(model_bytes))
 
     classes_path = DATA_ROOT / "classes.npy"

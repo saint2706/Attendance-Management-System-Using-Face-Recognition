@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import io
 import os
-import pickle
 import shutil
 import sys
 from typing import List
@@ -16,6 +15,7 @@ from django.test import RequestFactory, TestCase, override_settings
 
 import numpy as np
 import pytest
+import skops.io as sio
 from cryptography.fernet import Fernet
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "attendance_system_facial_recognition.settings")
@@ -203,13 +203,13 @@ class EncryptionWorkflowTests(TestCase):
         encrypted_model = model_path.read_bytes()
         decrypted_model = decrypt_bytes(encrypted_model)
         self.assertNotEqual(encrypted_model, decrypted_model)
-        loaded_model = pickle.loads(decrypted_model)
+        loaded_model = sio.loads(decrypted_model, trusted=True)
         self.assertIsInstance(loaded_model, DummyModel)
 
         encrypted_classes = classes_path.read_bytes()
         decrypted_classes = decrypt_bytes(encrypted_classes)
         self.assertNotEqual(encrypted_classes, decrypted_classes)
-        class_names = np.load(io.BytesIO(decrypted_classes), allow_pickle=True)
+        class_names = np.load(io.BytesIO(decrypted_classes), allow_pickle=False)
         self.assertListEqual(class_names.tolist(), ["alice", "bob"])
 
         mock_get_embedding.reset_mock()

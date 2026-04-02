@@ -268,7 +268,7 @@ class FAISSIndex:
         np.savez_compressed(
             buffer,
             index_bytes=index_bytes,
-            labels=np.array(self._labels, dtype=object),
+            labels=np.array(self._labels, dtype=str),
             dimension=np.array([self.dimension]),
         )
 
@@ -300,10 +300,16 @@ class FAISSIndex:
             decrypted = decrypt_bytes(encrypted)
 
             buffer = io.BytesIO(decrypted)
-            data = np.load(buffer, allow_pickle=True)
+            try:
+                data = np.load(buffer, allow_pickle=False)
+                labels = data["labels"].tolist()
+            except ValueError:
+                # Fallback for legacy format saved with allow_pickle=True
+                buffer.seek(0)
+                data = np.load(buffer, allow_pickle=True)
+                labels = data["labels"].tolist()
 
             index_bytes = data["index_bytes"]
-            labels = data["labels"].tolist()
             dimension = int(data["dimension"][0])
 
         except Exception as exc:
