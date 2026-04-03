@@ -110,7 +110,6 @@ def run_single_ablation(
         Dictionary containing ablation results
     """
     set_global_seed(random_state)
-    np.random.seed(random_state)
 
     n_samples = len(labels)
 
@@ -133,6 +132,8 @@ def _run_synthetic_ablation(
 
     Simulates expected performance variations based on configuration parameters.
     """
+    rng = np.random.default_rng(random_state)
+
     # Simulate performance variations based on config
     base_accuracy = 0.85
 
@@ -157,12 +158,12 @@ def _run_synthetic_ablation(
         base_accuracy += 0.01
 
     # Add some noise
-    base_accuracy += np.random.normal(0, 0.01)
+    base_accuracy += rng.normal(0, 0.01)
     base_accuracy = np.clip(base_accuracy, 0.0, 1.0)
 
     # Simulate predictions
     y_true = np.array([1 if i % 2 == 0 else 0 for i in range(n_samples)])
-    y_pred = (np.random.rand(n_samples) < base_accuracy).astype(int)
+    y_pred = (rng.random(n_samples) < base_accuracy).astype(int)
 
     accuracy = accuracy_score(y_true, y_pred)
     f1 = f1_score(y_true, y_pred, average="weighted", zero_division=0)

@@ -201,7 +201,7 @@ def bootstrap_confidence_intervals(
     Returns:
         Dictionary with metrics and their confidence intervals
     """
-    np.random.seed(random_state)
+    rng = np.random.default_rng(random_state)
 
     n_samples = len(y_true)
     auc_scores = []
@@ -210,7 +210,7 @@ def bootstrap_confidence_intervals(
 
     for _ in range(n_bootstrap):
         # Sample with replacement
-        indices = np.random.choice(n_samples, size=n_samples, replace=True)
+        indices = rng.choice(n_samples, size=n_samples, replace=True)
         y_true_boot = y_true[indices]
         y_scores_boot = y_scores[indices]
 

@@ -14,8 +14,6 @@ class FailureAnalysisTest(TestCase):
 
     def setUp(self):
         """Create synthetic test data."""
-        np.random.seed(42)
-
         # Create predictions with some errors
         self.y_true = np.array([1, 1, 1, 1, 1, 0, 0, 0, 0, 0])
         self.y_pred = np.array([1, 1, 1, 0, 0, 0, 0, 0, 1, 1])  # 4 errors
@@ -55,9 +53,10 @@ class FailureAnalysisTest(TestCase):
     def test_analyze_failures_top_n_limit(self):
         """Test that top_n parameter limits results."""
         # Create more errors
+        rng = np.random.default_rng(42)
         y_true = np.array([1] * 20 + [0] * 20)
         y_pred = np.array([0] * 20 + [1] * 20)  # All wrong
-        y_scores = np.random.rand(40)
+        y_scores = rng.random(40)
 
         fa_df, fr_df = analyze_failures(y_true, y_pred, y_scores, top_n=5)
 
