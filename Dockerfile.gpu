@@ -125,8 +125,8 @@ ENV PATH="/venv/bin:$PATH" \
 WORKDIR /app
 
 # Create non-root user
-RUN groupadd --gid 1000 appgroup \
-    && useradd --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
+RUN groupadd --system --gid 1000 appgroup \
+    && useradd --system --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
 
 # Copy virtual environment and application
 COPY --from=build /venv /venv
