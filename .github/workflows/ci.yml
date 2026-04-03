@@ -50,9 +50,6 @@ jobs:
     name: Lint & Formatting
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    strategy:
-      matrix:
-        python-version: ["3.12"]
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -62,7 +59,7 @@ jobs:
       - name: Setup Python Environment
         uses: ./.github/actions/setup-python-env
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
           requirements-file: requirements-dev.txt
           cache-dependency-path: |
             requirements.txt
