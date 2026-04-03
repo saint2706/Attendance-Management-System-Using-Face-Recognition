@@ -5,3 +5,4 @@ Disallow: /api/
 Allow: /
 
 Sitemap: https://attendance-system.example.com/sitemap.xml
+Allow: /llms.txt

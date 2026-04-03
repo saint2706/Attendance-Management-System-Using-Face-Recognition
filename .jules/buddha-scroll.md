@@ -10,3 +10,5 @@
 - `[SEO]`: Added React 19 Document Metadata (`<title>` and `<meta name="description">`) to `Home`, `Dashboard`, `Login`, and `MarkAttendance` SPA components to enable dynamic SEO routing.
 - [SEO] Added twitter:image to index.html
 - [GEO] Enhanced llms.txt with descriptive site context
+- [GEO] Added `Allow: /llms.txt` to `robots.txt` to make AI manifest discoverable
+- [SEO] Updated `Home.tsx`, `Dashboard.tsx`, and `Login.tsx` to use semantic `<main>` elements instead of generic `<div>` wrappers for better accessibility and SEO
