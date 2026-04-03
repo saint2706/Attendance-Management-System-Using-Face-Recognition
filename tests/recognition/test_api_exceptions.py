@@ -95,11 +95,17 @@ class TestCustomExceptionHandler:
         assert response.data["instance"] == "unknown"
 
     def test_unhandled_exception(self):
-        # DRF's default exception handler returns None for non-API exceptions
-        # So custom_exception_handler should return None as well
         exc = ValueError("Some standard python error")
         response = custom_exception_handler(exc, self.context)
-        assert response is None
+
+        assert response is not None
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.data["type"] == "about:blank"
+        assert response.data["title"] == "Internal Server Error"
+        assert response.data["status"] == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.data["detail"] == "An unexpected error occurred."
+        assert response.data["instance"] == "/api/v1/test/"
+        assert response["Content-Type"] == "application/problem+json"
 
     def test_api_exception_fallback(self):
         class WeirdException(exceptions.APIException):
@@ -150,8 +156,9 @@ class TestCustomExceptionHandler:
             mock_resp.data = None
             mock_handler.return_value = mock_resp
 
-            # To test default_detail properly, we construct the object directly and patch str so it looks empty
-            # But the previous mock wasn't working correctly because DRF's exception_handler uses isinstance, and mock breaks it.
+            # To test default_detail properly, we construct the object directly and patch str so
+            # it looks empty. But the previous mock wasn't working correctly because DRF's
+            # exception_handler uses isinstance, and mock breaks it.
             # Instead, we just pass an object that natively stringifies to empty string!
             class EmptyStrWeirdException(exceptions.APIException):
                 default_detail = "This is a default detail."
