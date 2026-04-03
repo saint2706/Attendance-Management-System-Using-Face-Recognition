@@ -23,7 +23,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center" style={{ minHeight: '60vh' }} role="status" aria-live="polite">
+      <div className="flex flex-col items-center justify-center" style={{ minHeight: '60vh' }} role="status" aria-live="polite" aria-busy="true">
         <Loader2 size={48} className="animate-spin mb-md" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
         <div className="animate-pulse text-muted">Loading...</div>
       </div>
@@ -50,7 +50,7 @@ const AppContent = () => {
       <Navbar />
       <main id="main-content" className="container" style={{ paddingTop: 'var(--spacing-lg)', paddingBottom: 'var(--spacing-xl)' }} tabIndex={-1}>
         <Suspense fallback={
-          <div className="flex flex-col items-center justify-center" style={{ minHeight: '60vh' }} role="status" aria-live="polite">
+          <div className="flex flex-col items-center justify-center" style={{ minHeight: '60vh' }} role="status" aria-live="polite" aria-busy="true">
             <Loader2 size={48} className="animate-spin mb-md" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
             <div className="animate-pulse text-muted">Loading...</div>
           </div>

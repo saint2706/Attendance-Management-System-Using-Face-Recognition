@@ -28,3 +28,5 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 - Helps provide clear next steps for the admin to register an employee.
 - Improved accessibility of the .skip-link element by changing its state styling from `:focus` to `:focus-visible` to better support keyboard navigation
 - Improved accessibility on icon-only toggle buttons in Login and Navbar components by using static `aria-label`s alongside stateful attributes like `aria-pressed` rather than dynamically mutating the `aria-label`. Screen readers handle this pattern much better.
+- Added `.input:disabled` styling to `index.css` to improve visual feedback when form inputs are disabled during loading states.
+- Added `aria-busy="true"` to full-page loading indicators in `App.tsx` to properly inform screen readers when content is dynamically loading.
