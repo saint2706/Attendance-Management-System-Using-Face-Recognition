@@ -1,9 +1,13 @@
+import logging
+
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 
 from rest_framework import status
 from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.views import exception_handler
+
+logger = logging.getLogger(__name__)
 
 
 class RecognitionException(ValidationError):
@@ -27,6 +31,18 @@ def custom_exception_handler(exc, context):
     # Call REST framework's default exception handler first,
     # to get the standard error response.
     response = exception_handler(exc, context)
+
+    from rest_framework.response import Response
+
+    if response is None:
+        # Non-DRF standard exceptions are not handled by DRF's exception_handler.
+        # Log the exception to ensure we don't swallow tracebacks for internal server errors.
+        logger.exception("Unhandled API Exception: %s", str(exc))
+        # Fallback to an internal server error to prevent leaking raw errors.
+        response = Response(
+            {"detail": "An unexpected error occurred."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
     # Now add the HTTP status code to the response.
     if response is not None:
