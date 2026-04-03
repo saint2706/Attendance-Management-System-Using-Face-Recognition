@@ -83,5 +83,30 @@ def custom_exception_handler(exc, context):
 
         response.data = custom_data
         response["Content-Type"] = "application/problem+json"
+    else:
+        # Intercept non-DRF standard exceptions
+        import logging
+
+        from rest_framework.response import Response
+
+        logger = logging.getLogger(__name__)
+        logger.exception("Unhandled exception in API")
+
+        request = context.get("request")
+        instance = request.path if request else "unknown"
+
+        custom_data = {
+            "type": "about:blank",
+            "title": "Internal Server Error",
+            "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "detail": "An unexpected error occurred.",
+            "instance": instance,
+        }
+
+        response = Response(
+            custom_data,
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content_type="application/problem+json",
+        )
 
     return response
