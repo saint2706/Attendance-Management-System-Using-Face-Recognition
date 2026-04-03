@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.test import Client, override_settings
 from django.urls import reverse
@@ -222,10 +224,12 @@ def test_successful_login_under_rate_limit(client, test_user):
 
 @pytest.mark.django_db
 @override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
-def test_different_usernames_have_separate_limits(db):
+@patch("django_ratelimit.core.time.time", return_value=1600000000.0)
+def test_different_usernames_have_separate_limits(mock_time, db):
     """
     Test that rate limits are applied per username, not globally.
     Different usernames should have separate rate limit counters.
+    Mock time to prevent minute-boundary crossing flakiness in CI.
     """
     User = get_user_model()
     User.objects.create_user(username="user1", password="password1")

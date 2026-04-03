@@ -1,8 +1,11 @@
+import logging
+
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 
 from rest_framework import status
 from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
 
@@ -85,10 +88,6 @@ def custom_exception_handler(exc, context):
         response["Content-Type"] = "application/problem+json"
     else:
         # Intercept non-DRF standard exceptions
-        import logging
-
-        from rest_framework.response import Response
-
         logger = logging.getLogger(__name__)
         logger.exception("Unhandled exception in API")
 
