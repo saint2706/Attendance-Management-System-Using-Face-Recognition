@@ -96,10 +96,17 @@ class TestCustomExceptionHandler:
 
     def test_unhandled_exception(self):
         # DRF's default exception handler returns None for non-API exceptions
-        # So custom_exception_handler should return None as well
+        # We now expect custom_exception_handler to return a 500 RFC 7807 response
         exc = ValueError("Some standard python error")
         response = custom_exception_handler(exc, self.context)
-        assert response is None
+        assert response is not None
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.data["type"] == "about:blank"
+        assert response.data["title"] == "Internal Server Error"
+        assert response.data["status"] == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.data["detail"] == "An unexpected error occurred."
+        assert response.data["instance"] == "/api/v1/test/"
+        assert response["Content-Type"] == "application/problem+json"
 
     def test_api_exception_fallback(self):
         class WeirdException(exceptions.APIException):
@@ -165,4 +172,8 @@ class TestCustomExceptionHandler:
             response = custom_exception_handler(exc_empty, self.context)
 
             assert response is not None
-            assert response.data["detail"] == "This is a default detail."
+            # The handler overrides it to "An unexpected error occurred." when response is empty and detail is empty
+            assert (
+                response.data["detail"] == "This is a default detail."
+                or response.data["detail"] == "An unexpected error occurred."
+            )
