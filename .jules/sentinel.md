@@ -49,3 +49,8 @@
 - Added `zod` schema to validate `LoginCredentials` before executing login requests.
 ## 2025-05-24 - Input Validation in Auth API\n**Vulnerability:** The `registerEmployee` function in `frontend/src/api/auth.ts` lacked client-side input validation, which could allow malformed or missing data to be sent to the server.\n**Learning:** Client-side validation using libraries like Zod provides a crucial first layer of defense and improves user experience by failing fast on invalid inputs.\n**Prevention:** Added a Zod schema (`RegisterDataSchema`) to validate user registration data before making API requests, ensuring all required fields are present and meet complexity requirements.
 - **Vulnerability:** Added rate limiting to the setup wizard views to prevent abuse.
+
+## 2026-04-03 - Vulnerable Dependency: picomatch
+**Vulnerability:** The `picomatch` package in the frontend dependencies had a high severity ReDoS vulnerability via extglob quantifiers (CVE-2024-XXXX) and a moderate Method Injection vulnerability (CVE-2024-XXXX).
+**Learning:** Outdated dependencies in the Node.js ecosystem, particularly deep in the tree or in build tools, can expose the application or build environment to denial-of-service and code injection risks. Regular audits (`pnpm audit`) are essential.
+**Prevention:** Updated `picomatch` to a patched version (4.0.4) using `pnpm install picomatch@4.0.4`.
