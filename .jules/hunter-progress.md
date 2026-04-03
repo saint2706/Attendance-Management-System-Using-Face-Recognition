@@ -24,3 +24,7 @@
 - `tests/recognition/test_pipeline.py`: Fixed mypy type tuple unpacking where `find_closest_dataset_match` intentionally returns `None`.
 - `recognition/models.py`: Fixed mypy typing resolution error when calculating mathematical equation values from potentially `None` threshold values.
 - `attendance_system_facial_recognition/settings/sentry.py`: Fixed mypy indexing dictionary resolution issues mapping specific fields over abstract iterables and removed unused missing imports.
+- `requirements.frozen.txt`: Fixed conflicting version of tensorflow dependencies.
+- `tests/recognition/test_face_recognition_workflow.py`: Fixed missing `.META` dictionary object on `RequestFactory` mock.
+- `tests/recognition/test_liveness.py`: Fixed method-assign mypy issues by using `setattr`.
+- `users/views.py`: Fixed mypy `__iter__` list casting issues for Enums.

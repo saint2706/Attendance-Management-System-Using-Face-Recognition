@@ -15,16 +15,16 @@ if not django.apps.apps.ready:
     django.setup()
 
 _fake_cv2 = ModuleType("cv2")
-_fake_cv2.FONT_HERSHEY_SIMPLEX = 0
-_fake_cv2.INTER_AREA = 0
-_fake_cv2.MORPH_RECT = 0
-_fake_cv2.rectangle = lambda *args, **kwargs: None
-_fake_cv2.putText = lambda *args, **kwargs: None
-_fake_cv2.resize = lambda image, dim, interpolation=None: image
-_fake_cv2.imshow = lambda *args, **kwargs: None
-_fake_cv2.waitKey = lambda *args, **kwargs: 0
-_fake_cv2.destroyAllWindows = lambda *args, **kwargs: None
-_fake_cv2.__getattr__ = lambda name: 0
+setattr(_fake_cv2, "FONT_HERSHEY_SIMPLEX", 0)
+setattr(_fake_cv2, "INTER_AREA", 0)
+setattr(_fake_cv2, "MORPH_RECT", 0)
+setattr(_fake_cv2, "rectangle", lambda *args, **kwargs: None)
+setattr(_fake_cv2, "putText", lambda *args, **kwargs: None)
+setattr(_fake_cv2, "resize", lambda image, dim, interpolation=None: image)
+setattr(_fake_cv2, "imshow", lambda *args, **kwargs: None)
+setattr(_fake_cv2, "waitKey", lambda *args, **kwargs: 0)
+setattr(_fake_cv2, "destroyAllWindows", lambda *args, **kwargs: None)
+setattr(_fake_cv2, "__getattr__", lambda name: 0)
 sys.modules.setdefault("cv2", _fake_cv2)
 
 from recognition import views  # noqa: E402

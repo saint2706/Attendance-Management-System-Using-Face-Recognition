@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import threading
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
@@ -36,10 +36,10 @@ class TestFaceRecognitionWorkflow:
     def teardown_method(self) -> None:
         webcam_module.reset_webcam_manager()
 
-    def _make_request(self, user=None) -> Callable[[], object]:
+    def _make_request(self, user=None) -> Callable[[], Any]:
         """Return a callable creating POST requests for the API view."""
 
-        def _builder() -> object:
+        def _builder() -> Any:
             payload = json.dumps({"embedding": [0.1, 0.2, 0.3]})
             request = self.factory.post(
                 "/api/face-recognition/",
