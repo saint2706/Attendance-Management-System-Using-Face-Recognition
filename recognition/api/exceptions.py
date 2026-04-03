@@ -28,6 +28,17 @@ def custom_exception_handler(exc, context):
     # to get the standard error response.
     response = exception_handler(exc, context)
 
+    # Intercept non-DRF standard exceptions that return None
+    if response is None:
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.error("Unhandled exception", exc_info=exc)
+
+        from rest_framework.response import Response
+
+        response = Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     # Now add the HTTP status code to the response.
     if response is not None:
         if isinstance(exc, Http404):
@@ -55,11 +66,17 @@ def custom_exception_handler(exc, context):
             elif isinstance(response.data, list):
                 detail = " ".join([str(v) for v in response.data])
             else:
-                detail = str(exc)
+                # If we fabricated the response for a non-DRF exception
+                if getattr(response, "data", None) is None:
+                    detail = ""
+                else:
+                    detail = str(exc)
 
             # Use default detail if available and detail is empty
             if not detail and hasattr(exc, "default_detail"):
                 detail = exc.default_detail
+            elif not detail:
+                detail = "An unexpected error occurred."
 
         request = context.get("request")
         instance = request.path if request else "unknown"
