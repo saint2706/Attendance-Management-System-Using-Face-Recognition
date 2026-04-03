@@ -24,9 +24,32 @@ def custom_exception_handler(exc, context):
     """
     Custom exception handler that returns RFC 7807 (Problem Details) format.
     """
+    from rest_framework.response import Response
+
     # Call REST framework's default exception handler first,
     # to get the standard error response.
     response = exception_handler(exc, context)
+
+    if response is None:
+        # Non-DRF exception. We must return a 500 response in Problem Details format
+        # without leaking the raw error details.
+        request = context.get("request")
+        instance = request.path if request else "unknown"
+        response = Response(
+            {
+                "type": "about:blank",
+                "title": "Internal Server Error",
+                "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
+                "detail": "An unexpected error occurred.",
+                "instance": instance,
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content_type="application/problem+json",
+        )
+        # Content-Type must be set specifically on the response object headers
+        # to ensure it overrides standard content negotiation when returned.
+        response["Content-Type"] = "application/problem+json"
+        return response
 
     # Now add the HTTP status code to the response.
     if response is not None:
