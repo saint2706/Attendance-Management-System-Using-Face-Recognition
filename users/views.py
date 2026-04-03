@@ -119,7 +119,7 @@ def _build_wizard_context(progress: SetupWizardProgress) -> dict[str, Any]:
             "name": step.label,
             "status": progress.get_step_status(step.value),
         }
-        for step in SetupWizardProgress.Step
+        for step in list(SetupWizardProgress.Step)
     ]
     return {
         "progress": progress,
