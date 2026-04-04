@@ -101,7 +101,6 @@ docker-compose.gpu.yml
 
 # Additional exclusions for image size reduction
 requirements-dev.txt
-requirements.frozen.txt
 CHANGELOG.md
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
