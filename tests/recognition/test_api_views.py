@@ -569,3 +569,41 @@ class TestAttendanceViewSetMarkEndpoint:
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "success"
+
+    def test_attendance_mark_invalid_image_rfc7807(self, api_client, admin_user):
+        api_client.force_authenticate(user=admin_user)
+        url = reverse("attendance-mark")
+        response = api_client.post(url, {"image": "not-base64-or-invalid"})
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data["type"] == "about:blank"
+        assert response.data["status"] == status.HTTP_400_BAD_REQUEST
+        assert "Invalid image format" in response.data["detail"]
+        assert response.data["instance"] == url
+        assert response.content_type == "application/problem+json"
+
+    def test_attendance_mark_missing_field_rfc7807(self, api_client, admin_user):
+        api_client.force_authenticate(user=admin_user)
+        url = reverse("attendance-mark")
+        response = api_client.post(url, {})  # Missing 'image'
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data["type"] == "about:blank"
+        assert response.data["status"] == status.HTTP_400_BAD_REQUEST
+        assert "image: This field is required." in response.data["detail"]
+        assert "errors" in response.data
+        assert response.data["instance"] == url
+        assert response.content_type == "application/problem+json"
+
+    def test_attendance_filter_invalid_date_rfc7807(self, api_client, admin_user):
+        api_client.force_authenticate(user=admin_user)
+        url = reverse("attendance-list")
+        response = api_client.get(url, {"start_date": "not-a-date"})
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data["type"] == "about:blank"
+        assert response.data["status"] == status.HTTP_400_BAD_REQUEST
+        assert "start_date" in response.data["detail"]
+        assert "errors" in response.data
+        assert response.data["instance"] == url
+        assert response.content_type == "application/problem+json"
