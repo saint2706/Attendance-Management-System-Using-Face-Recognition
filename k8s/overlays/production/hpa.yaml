@@ -71,3 +71,7 @@ spec:
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 600
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60

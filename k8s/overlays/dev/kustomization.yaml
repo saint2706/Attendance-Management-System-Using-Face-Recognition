@@ -68,4 +68,4 @@ patches:
 images:
   - name: attendance-system
     newName: attendance-system
-    newTag: dev
+    newTag: v1.7.0-dev
