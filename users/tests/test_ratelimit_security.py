@@ -188,7 +188,9 @@ def test_distributed_brute_force_prevention(test_user):
     # 6th attempt from yet another IP should be rate limited due to username limit
     client = Client()
     response = client.post(
-        url, {"username": "testuser", "password": "wrongpassword6"}, REMOTE_ADDR="192.168.1.100"
+        url,
+        {"username": "testuser", "password": "wrongpassword6"},
+        REMOTE_ADDR="192.168.1.100",  # nosec B105
     )
     assert response.status_code == 429
     assert b"Too many login attempts" in response.content
@@ -207,11 +209,15 @@ def test_successful_login_under_rate_limit(client, test_user):
 
     # Make a few failed attempts (under the limit)
     for i in range(3):
-        response = client.post(url, {"username": "testuser", "password": "wrongpassword"})
+        response = client.post(
+            url, {"username": "testuser", "password": "wrongpassword"}
+        )  # nosec B105
         assert response.status_code in [200, 302]
 
     # Successful login should still work
-    response = client.post(url, {"username": "testuser", "password": "testpassword123"})
+    response = client.post(
+        url, {"username": "testuser", "password": "testpassword123"}
+    )  # nosec B105
     # Successful login should redirect
     assert response.status_code == 302
 
@@ -228,8 +234,8 @@ def test_different_usernames_have_separate_limits(db):
     Different usernames should have separate rate limit counters.
     """
     User = get_user_model()
-    User.objects.create_user(username="user1", password="password1")
-    User.objects.create_user(username="user2", password="password2")
+    User.objects.create_user(username="user1", password="password1")  # nosec B106
+    User.objects.create_user(username="user2", password="password2")  # nosec B106
 
     url = reverse("login")
 
@@ -237,7 +243,9 @@ def test_different_usernames_have_separate_limits(db):
     for i in range(5):
         client = Client()
         response = client.post(
-            url, {"username": "user1", "password": "wrongpassword"}, REMOTE_ADDR=f"10.0.0.{i + 1}"
+            url,
+            {"username": "user1", "password": "wrongpassword"},
+            REMOTE_ADDR=f"10.0.0.{i + 1}",  # nosec B105
         )
         assert response.status_code in [200, 302]
 
@@ -245,7 +253,9 @@ def test_different_usernames_have_separate_limits(db):
     for i in range(3):
         client = Client()
         response = client.post(
-            url, {"username": "user2", "password": "wrongpassword"}, REMOTE_ADDR=f"10.0.1.{i + 1}"
+            url,
+            {"username": "user2", "password": "wrongpassword"},
+            REMOTE_ADDR=f"10.0.1.{i + 1}",  # nosec B105
         )
         assert response.status_code in [200, 302]
         if response.status_code == 200:
@@ -254,7 +264,9 @@ def test_different_usernames_have_separate_limits(db):
     # But user1 should be rate limited on next attempt (even from a new IP)
     client = Client()
     response = client.post(
-        url, {"username": "user1", "password": "wrongpassword"}, REMOTE_ADDR="10.0.0.100"
+        url,
+        {"username": "user1", "password": "wrongpassword"},
+        REMOTE_ADDR="10.0.0.100",  # nosec B105
     )
     assert response.status_code == 429
     assert b"Too many login attempts" in response.content
