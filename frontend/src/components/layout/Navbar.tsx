@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
@@ -54,10 +54,10 @@ export const Navbar = () => {
                         {isAuthenticated ? (
                             <>
                                 <li>
-                                    <Link to="/dashboard" className="nav-link">
+                                    <NavLink to="/dashboard" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
                                         <LayoutDashboard size={18} aria-hidden="true" />
                                         <span>Dashboard</span>
-                                    </Link>
+                                    </NavLink>
                                 </li>
                                 <li>
                                     <button onClick={handleLogout} className="nav-link nav-button" title="Logout">
@@ -73,10 +73,10 @@ export const Navbar = () => {
                             </>
                         ) : (
                             <li>
-                                <Link to="/login" className="nav-link">
+                                <NavLink to="/login" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
                                         <LogIn size={18} aria-hidden="true" />
                                     <span>Login</span>
-                                </Link>
+                                </NavLink>
                             </li>
                         )}
                     </ul>
