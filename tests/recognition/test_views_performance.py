@@ -1,6 +1,7 @@
 import datetime
 from unittest.mock import patch
 
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -14,17 +15,27 @@ from users.models import Direction, Present, Time
 def test_n_plus_one_hours_vs_employee_given_date():
     # Setup
     date = timezone.localdate()
-    users = []
+
+    # ⚡ Bolt: Optimize setup by hashing password once and using bulk_create
+    hashed_pw = make_password("password")
+    users_to_create = [User(username=f"user{i}", password=hashed_pw) for i in range(5)]
+    User.objects.bulk_create(users_to_create)
+    users = list(User.objects.filter(username__startswith="user").order_by("username"))
+
+    presents_to_create = []
+    times_to_create = []
+
     # Create 5 users
-    for i in range(5):
-        u = User.objects.create_user(username=f"user{i}", password="password")
-        users.append(u)
-        Present.objects.create(user=u, date=date, present=True)
+    for u in users:
+        presents_to_create.append(Present(user=u, date=date, present=True))
         # Add some time entries
         t1 = timezone.now()
         t2 = t1 + datetime.timedelta(hours=8)
-        Time.objects.create(user=u, date=date, time=t1, direction=Direction.IN)
-        Time.objects.create(user=u, date=date, time=t2, direction=Direction.OUT)
+        times_to_create.append(Time(user=u, date=date, time=t1, direction=Direction.IN))
+        times_to_create.append(Time(user=u, date=date, time=t2, direction=Direction.OUT))
+
+    Present.objects.bulk_create(presents_to_create)
+    Time.objects.bulk_create(times_to_create)
 
     present_qs = Present.objects.filter(date=date)
     time_qs = Time.objects.filter(date=date)
@@ -59,17 +70,26 @@ def test_n_plus_one_hours_vs_employee_given_date():
 @pytest.mark.django_db
 def test_n_plus_one_hours_vs_date_given_employee():
     # Setup
-    user = User.objects.create_user(username="user_date", password="password")
+    # ⚡ Bolt: Optimize setup by hashing password once
+    hashed_pw = make_password("password")
+    user = User.objects.create(username="user_date", password=hashed_pw)
     today = timezone.localdate()
     days = 5
 
+    # ⚡ Bolt: Use bulk_create for test objects
+    presents_to_create = []
+    times_to_create = []
+
     for i in range(days):
         d = today - datetime.timedelta(days=i)
-        Present.objects.create(user=user, date=d, present=True)
+        presents_to_create.append(Present(user=user, date=d, present=True))
         t1 = timezone.now()
         t2 = t1 + datetime.timedelta(hours=8)
-        Time.objects.create(user=user, date=d, time=t1, direction=Direction.IN)
-        Time.objects.create(user=user, date=d, time=t2, direction=Direction.OUT)
+        times_to_create.append(Time(user=user, date=d, time=t1, direction=Direction.IN))
+        times_to_create.append(Time(user=user, date=d, time=t2, direction=Direction.OUT))
+
+    Present.objects.bulk_create(presents_to_create)
+    Time.objects.bulk_create(times_to_create)
 
     present_qs = Present.objects.filter(user=user)
     time_qs = Time.objects.filter(user=user)

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
@@ -12,20 +13,31 @@ from users.models import Direction, RecognitionAttempt
 @pytest.mark.django_db
 def test_attendance_api_query_count():
     User = get_user_model()
-    admin = User.objects.create_superuser(username="admin", password="password")
+    # ⚡ Bolt: Optimize setup by hashing password once
+    hashed_pw = make_password("password")
+    admin = User.objects.create(
+        username="admin", password=hashed_pw, is_superuser=True, is_staff=True
+    )
     client = APIClient()
     client.force_authenticate(user=admin)
 
+    # ⚡ Bolt: Use bulk_create for test objects to optimize test speed
+    users_to_create = [User(username=f"user_{i}", password=hashed_pw) for i in range(10)]
+    User.objects.bulk_create(users_to_create)
+    created_users = User.objects.filter(username__startswith="user_")
+
     # Create 10 attempts
-    for i in range(10):
-        user = User.objects.create_user(username=f"user_{i}", password="password")
-        RecognitionAttempt.objects.create(
+    attempts_to_create = [
+        RecognitionAttempt(
             user=user,
             username="",  # Force serializer to access obj.user.username
             direction=Direction.IN,
             successful=True,
             source="api",
         )
+        for user in created_users
+    ]
+    RecognitionAttempt.objects.bulk_create(attempts_to_create)
 
     url = reverse("attendance-list")  # Or whatever the url is for the api ViewSet
 

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
@@ -10,23 +11,33 @@ from users.models import Direction, RecognitionAttempt
 
 @pytest.mark.django_db
 def test_attendance_session_feed_query_count(client):
-    admin = get_user_model().objects.create_user(
+    User = get_user_model()
+    # ⚡ Bolt: Optimize setup by hashing password once
+    hashed_pw = make_password("password")
+    admin = User.objects.create(
         username="admin",
-        password="password",
+        password=hashed_pw,
         is_staff=True,
     )
     client.force_login(admin)
 
-    # Create multiple users and attempts with EMPTY username but LINKED user
-    for i in range(10):
-        user = get_user_model().objects.create_user(username=f"user_{i}", password="password")
-        RecognitionAttempt.objects.create(
+    # ⚡ Bolt: Use bulk_create for test objects to optimize test speed
+    users_to_create = [User(username=f"user_{i}", password=hashed_pw) for i in range(10)]
+    User.objects.bulk_create(users_to_create)
+    created_users = User.objects.filter(username__startswith="user_")
+
+    # Create multiple attempts with EMPTY username but LINKED user
+    attempts_to_create = [
+        RecognitionAttempt(
             user=user,
             username="",  # Force fallback to user.username
             direction=Direction.IN,
             successful=True,
             source="webcam",
         )
+        for user in created_users
+    ]
+    RecognitionAttempt.objects.bulk_create(attempts_to_create)
 
     url = reverse("attendance-session-feed")
 
@@ -57,25 +68,36 @@ def test_attendance_session_feed_query_count(client):
 @pytest.mark.django_db
 def test_attendance_session_feed_query_count_mixed_scenarios(client):
     """Test query count with mixed scenarios: some with username, some without."""
-    admin = get_user_model().objects.create_user(
+    User = get_user_model()
+    # ⚡ Bolt: Optimize setup by hashing password once
+    hashed_pw = make_password("password")
+    admin = User.objects.create(
         username="admin",
-        password="password",
+        password=hashed_pw,
         is_staff=True,
     )
     client.force_login(admin)
 
+    # ⚡ Bolt: Use bulk_create for test objects to optimize test speed
+    users_to_create = [User(username=f"user_{i}", password=hashed_pw) for i in range(10)]
+    User.objects.bulk_create(users_to_create)
+    created_users = list(User.objects.filter(username__startswith="user_").order_by("username"))
+
     # Create mixed scenarios
-    for i in range(10):
-        user = get_user_model().objects.create_user(username=f"user_{i}", password="password")
+    attempts_to_create = []
+    for i, user in enumerate(created_users):
         # Alternate between populated username and empty username
         username = f"custom_username_{i}" if i % 2 == 0 else ""
-        RecognitionAttempt.objects.create(
-            user=user,
-            username=username,
-            direction=Direction.IN,
-            successful=True,
-            source="webcam",
+        attempts_to_create.append(
+            RecognitionAttempt(
+                user=user,
+                username=username,
+                direction=Direction.IN,
+                successful=True,
+                source="webcam",
+            )
         )
+    RecognitionAttempt.objects.bulk_create(attempts_to_create)
 
     url = reverse("attendance-session-feed")
 
