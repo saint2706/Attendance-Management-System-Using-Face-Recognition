@@ -3,6 +3,10 @@ name: Close All Pull Requests
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   close-prs:
     runs-on: ubuntu-latest
