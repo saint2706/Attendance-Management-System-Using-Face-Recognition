@@ -114,6 +114,7 @@ jobs:
         dummy-secret-key-for-testing-which-is-long-enough-for-security-checks-12345
       DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
       FACE_DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
+      RECOGNITION_JWT_SECRET: "dummy-jwt-secret-for-testing"
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -211,6 +212,7 @@ jobs:
         dummy-secret-key-for-testing-which-is-long-enough-for-security-checks-12345
       DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
       FACE_DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
+      RECOGNITION_JWT_SECRET: "dummy-jwt-secret-for-testing"
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -287,6 +289,7 @@ jobs:
         dummy-secret-key-for-testing-which-is-long-enough-for-security-checks-12345
       DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
       FACE_DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
+      RECOGNITION_JWT_SECRET: "dummy-jwt-secret-for-testing"
       RECOGNITION_HEADLESS: "True"
       DATABASE_URL: "postgresql://ams:ams@localhost:5432/ams"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
