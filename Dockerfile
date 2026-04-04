@@ -49,7 +49,7 @@ RUN python -m venv /venv
 ENV PATH="/venv/bin:$PATH"
 
 # Leverage Docker layer caching for dependency installation
-COPY requirements.txt ./
+COPY requirements.frozen.txt ./requirements.txt
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir -r requirements.txt
