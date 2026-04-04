@@ -70,6 +70,7 @@ RUN DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.product
     DJANGO_ALLOWED_HOSTS=localhost \
     DATA_ENCRYPTION_KEY=ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE= \
     FACE_DATA_ENCRYPTION_KEY=ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE= \
+    RECOGNITION_JWT_SECRET=dummy-jwt-secret-for-build \
     python manage.py collectstatic --noinput
 
 FROM python-base AS runtime

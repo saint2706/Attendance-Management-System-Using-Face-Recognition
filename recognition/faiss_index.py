@@ -263,12 +263,14 @@ class FAISSIndex:
         # Serialize index to bytes
         index_bytes = faiss.serialize_index(self._index)
 
+        import json
+
         # Create payload with labels
         buffer = io.BytesIO()
         np.savez_compressed(
             buffer,
             index_bytes=index_bytes,
-            labels=np.array(self._labels, dtype=object),
+            labels_json=json.dumps(self._labels).encode("utf-8"),
             dimension=np.array([self.dimension]),
         )
 
@@ -299,11 +301,13 @@ class FAISSIndex:
             encrypted = path.read_bytes()
             decrypted = decrypt_bytes(encrypted)
 
+            import json
+
             buffer = io.BytesIO(decrypted)
-            data = np.load(buffer, allow_pickle=True)
+            data = np.load(buffer, allow_pickle=False)
 
             index_bytes = data["index_bytes"]
-            labels = data["labels"].tolist()
+            labels = json.loads(data["labels_json"].tobytes().decode("utf-8"))
             dimension = int(data["dimension"][0])
 
         except Exception as exc:

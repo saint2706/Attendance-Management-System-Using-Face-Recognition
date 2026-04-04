@@ -888,11 +888,15 @@ SIMPLE_JWT = {
 }
 
 # --- CORS Configuration ---
-# For development, we allow localhost:5173 (Vite default)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
+CORS_ALLOWED_ORIGINS = []
+if DEBUG:
+    # For development, we allow localhost:5173 (Vite default)
+    CORS_ALLOWED_ORIGINS.extend(
+        [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        ]
+    )
 CORS_ALLOW_CREDENTIALS = True
 
 RECOGNITION_MULTI_FACE_ENABLED = _get_bool_env("RECOGNITION_MULTI_FACE_ENABLED", default=False)
@@ -934,6 +938,13 @@ else:
 RECOGNITION_JWT_SECRET = os.environ.get("RECOGNITION_JWT_SECRET", "")
 RECOGNITION_JWT_ISSUER = os.environ.get("RECOGNITION_JWT_ISSUER")
 RECOGNITION_JWT_AUDIENCE = os.environ.get("RECOGNITION_JWT_AUDIENCE")
+
+if not DEBUG and not TESTING:
+    if not RECOGNITION_JWT_SECRET:
+        raise ImproperlyConfigured(
+            "RECOGNITION_JWT_SECRET environment variable is missing or empty. "
+            "This is required for secure JWT authentication in production."
+        )
 
 RECOGNITION_CAMERA_START_ALERT_SECONDS = _get_float_env(
     "RECOGNITION_CAMERA_START_ALERT_SECONDS",

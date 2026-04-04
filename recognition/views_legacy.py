@@ -3756,10 +3756,14 @@ def get_loaded_model():
     """Returns the globally cached loaded ML model to reduce inference latency."""
     global _loaded_model, _loaded_classes, _loaded_model_mtime
 
-    import pickle
+    import joblib
 
     model_path = DATA_ROOT / "svc.sav"
-    classes_path = DATA_ROOT / "classes.npy"
+    classes_path = DATA_ROOT / "classes.json"
+
+    # Fallback to classes.npy if classes.json doesn't exist yet (backward compatibility)
+    if not classes_path.exists():
+        classes_path = DATA_ROOT / "classes.npy"
 
     if not model_path.exists() or not classes_path.exists():
         return None, None
@@ -3770,10 +3774,16 @@ def get_loaded_model():
 
     try:
         encrypted_model = model_path.read_bytes()
-        _loaded_model = pickle.loads(decrypt_bytes(encrypted_model))
+        _loaded_model = joblib.load(io.BytesIO(decrypt_bytes(encrypted_model)))
 
         encrypted_classes = classes_path.read_bytes()
-        _loaded_classes = np.load(io.BytesIO(decrypt_bytes(encrypted_classes)), allow_pickle=True)
+        decrypted_classes = decrypt_bytes(encrypted_classes)
+        if classes_path.suffix == ".json":
+            import json
+
+            _loaded_classes = np.array(json.loads(decrypted_classes.decode("utf-8")))
+        else:
+            _loaded_classes = np.load(io.BytesIO(decrypted_classes), allow_pickle=True)
         _loaded_model_mtime = current_mtime
     except Exception as exc:
         logger.warning("Failed to load cached ML model: %s", exc)
