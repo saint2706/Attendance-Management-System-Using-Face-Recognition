@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getAttendanceStats } from '../api/attendance';
 import {
@@ -11,7 +11,9 @@ import {
     Users,
     Inbox,
     UserCheck,
-    Activity
+    Activity,
+    AlertTriangle,
+    RefreshCw
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -29,34 +31,30 @@ export const Dashboard = () => {
         presentToday: 0,
         status: 'Loading...'
     });
+    const [hasError, setHasError] = useState(false);
+
+    const fetchStats = useCallback(async () => {
+        setIsLoadingStats(true);
+        setHasError(false);
+        try {
+            const data = await getAttendanceStats();
+            setStats({
+                totalEmployees: data.totalEmployees,
+                presentToday: data.presentToday,
+                status: 'Active' // We'll assume Active if API responds
+            });
+        } catch (error) {
+            console.error('Failed to load stats:', error);
+            setHasError(true);
+            setStats(prev => ({ ...prev, status: 'Error loading stats' }));
+        } finally {
+            setIsLoadingStats(false);
+        }
+    }, []);
 
     useEffect(() => {
-        let isMounted = true;
-        const fetchStats = async () => {
-            try {
-                const data = await getAttendanceStats();
-                if (isMounted) {
-                    setStats({
-                        totalEmployees: data.totalEmployees,
-                        presentToday: data.presentToday,
-                        status: 'Active' // We'll assume Active if API responds
-                    });
-                }
-            } catch (error) {
-                console.error('Failed to load stats:', error);
-                if (isMounted) {
-                    setStats(prev => ({ ...prev, status: 'Error loading stats' }));
-                }
-            } finally {
-                if (isMounted) {
-                    setIsLoadingStats(false);
-                }
-            }
-        };
-
         fetchStats();
-        return () => { isMounted = false; };
-    }, []);
+    }, [fetchStats]);
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -96,7 +94,17 @@ export const Dashboard = () => {
             {/* Quick Stats */}
             <section className="stats-section" aria-labelledby="stats-title">
                 <h2 className="section-title" id="stats-title">Quick Overview</h2>
-                {!isLoadingStats && stats.totalEmployees === 0 ? (
+                {hasError ? (
+                    <div className="text-center py-12 w-full card card-elevated" style={{ gridColumn: '1 / -1' }}>
+                        <AlertTriangle size={48} className="mx-auto text-warning mb-sm" aria-hidden="true" />
+                        <h3 className="text-lg font-semibold mb-xs">Failed to load statistics</h3>
+                        <p className="text-muted mb-md">We couldn't retrieve the latest dashboard data.</p>
+                        <button onClick={fetchStats} className="btn btn-secondary">
+                            <RefreshCw size={18} aria-hidden="true" />
+                            Try Again
+                        </button>
+                    </div>
+                ) : !isLoadingStats && stats.totalEmployees === 0 ? (
                     <div className="text-center py-12 w-full card card-elevated" style={{ gridColumn: '1 / -1' }}>
                         <Inbox size={48} className="mx-auto text-muted mb-sm" aria-hidden="true" />
                         <h3 className="text-lg font-semibold mb-xs">No employees yet</h3>

@@ -28,3 +28,7 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 - Helps provide clear next steps for the admin to register an employee.
 - Improved accessibility of the .skip-link element by changing its state styling from `:focus` to `:focus-visible` to better support keyboard navigation
 - Improved accessibility on icon-only toggle buttons in Login and Navbar components by using static `aria-label`s alongside stateful attributes like `aria-pressed` rather than dynamically mutating the `aria-label`. Screen readers handle this pattern much better.
+
+## Navigation & Dashboard Error State UX Polish
+- Converted `Link` components in main navigation to `NavLink` from `react-router-dom` to automatically apply `aria-current="page"` and an `active` class to the current route. Styled the active class for clear visual feedback.
+- Separated the API error state from the empty state in the Dashboard. Previously, API failures defaulted to 0 employees, triggering the "No employees yet" state incorrectly. Now, failures display a distinct error card with an actionable "Try Again" button, improving progressive disclosure and recovery options.
