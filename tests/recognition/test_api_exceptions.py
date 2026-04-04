@@ -24,7 +24,7 @@ class TestCustomExceptionHandler:
         assert response.data["status"] == status.HTTP_404_NOT_FOUND
         assert response.data["detail"] == "Not found."
         assert response.data["instance"] == "/api/v1/test/"
-        assert response["Content-Type"] == "application/problem+json"
+        assert response.content_type == "application/problem+json"
 
     def test_permission_denied_handled_correctly(self):
         exc = PermissionDenied()
@@ -37,7 +37,7 @@ class TestCustomExceptionHandler:
         assert response.data["status"] == status.HTTP_403_FORBIDDEN
         assert response.data["detail"] == "You do not have permission to perform this action."
         assert response.data["instance"] == "/api/v1/test/"
-        assert response["Content-Type"] == "application/problem+json"
+        assert response.content_type == "application/problem+json"
 
     def test_api_exception_with_string_detail(self):
         exc = exceptions.APIException("A server error occurred.")
@@ -106,7 +106,7 @@ class TestCustomExceptionHandler:
         assert response.data["status"] == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert response.data["detail"] == "An unexpected error occurred."
         assert response.data["instance"] == "/api/v1/test/"
-        assert response["Content-Type"] == "application/problem+json"
+        assert response.content_type == "application/problem+json"
 
     def test_api_exception_fallback(self):
         class WeirdException(exceptions.APIException):

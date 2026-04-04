@@ -98,6 +98,6 @@ def custom_exception_handler(exc, context):
             custom_data["recognition"] = exc.recognition
 
         response.data = custom_data
-        response["Content-Type"] = "application/problem+json"
+        response.content_type = "application/problem+json"
 
     return response
