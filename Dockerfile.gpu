@@ -78,7 +78,7 @@ RUN python -m venv /venv
 ENV PATH="/venv/bin:$PATH"
 
 # Install GPU-accelerated packages
-COPY requirements.txt ./
+COPY requirements.frozen.txt ./requirements.txt
 
 # Create GPU-specific requirements and install
 # We use faiss-gpu instead of faiss-cpu
