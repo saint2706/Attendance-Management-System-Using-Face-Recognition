@@ -3,6 +3,9 @@
 # GPU-accelerated Dockerfile for DeepFace/TensorFlow
 # Requires: nvidia-container-toolkit and NVIDIA GPU driver on host
 
+# Build Arguments:
+# CUDA_VERSION: Specifies the CUDA base image version for GPU acceleration.
+# PYTHON_VERSION: Specifies the target Python version to install via deadsnakes PPA.
 ARG CUDA_VERSION=12.3.2
 ARG PYTHON_VERSION=3.12
 
@@ -106,7 +109,8 @@ RUN DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.product
     DATA_ENCRYPTION_KEY=ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE= \
     FACE_DATA_ENCRYPTION_KEY=ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE= \
     RECOGNITION_JWT_SECRET=dummy-jwt-secret-for-build \
-    python manage.py collectstatic --noinput
+    python manage.py collectstatic --noinput \
+    && rm -rf /app/frontend
 
 # =============================================================================
 # Stage 4: Production runtime

@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1
 
+# Build Arguments:
+# PYTHON_VERSION: Specifies the exact Python version for the base image to ensure reproducible builds.
 ARG PYTHON_VERSION=3.12.2
 
 # =============================================================================
@@ -71,7 +73,8 @@ RUN DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.product
     DATA_ENCRYPTION_KEY=ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE= \
     FACE_DATA_ENCRYPTION_KEY=ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE= \
     RECOGNITION_JWT_SECRET=dummy-jwt-secret-for-build \
-    python manage.py collectstatic --noinput
+    python manage.py collectstatic --noinput \
+    && rm -rf /app/frontend
 
 FROM python-base AS runtime
 
