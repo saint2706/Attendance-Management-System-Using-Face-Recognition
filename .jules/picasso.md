@@ -32,3 +32,5 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 ## Navigation & Dashboard Error State UX Polish
 - Converted `Link` components in main navigation to `NavLink` from `react-router-dom` to automatically apply `aria-current="page"` and an `active` class to the current route. Styled the active class for clear visual feedback.
 - Separated the API error state from the empty state in the Dashboard. Previously, API failures defaulted to 0 employees, triggering the "No employees yet" state incorrectly. Now, failures display a distinct error card with an actionable "Try Again" button, improving progressive disclosure and recovery options.
+
+- Added `title` attributes to buttons and links in the application that had visible text but could benefit from a tooltip on hover and focus. For instance, added `title="Return to home page"` on the "Back to Home" link in `Login.tsx` and `title="Retry fetching statistics"` on the "Try Again" button in `Dashboard.tsx`.

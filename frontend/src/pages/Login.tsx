@@ -160,7 +160,7 @@ export const Login = () => {
                 </form>
 
                 <div className="login-footer">
-                    <Link to="/" className="text-muted">← Back to Home</Link>
+                    <Link to="/" className="text-muted" title="Return to home page">← Back to Home</Link>
                 </div>
             </div>
         </div>

@@ -99,7 +99,7 @@ export const Dashboard = () => {
                         <AlertTriangle size={48} className="mx-auto text-warning mb-sm" aria-hidden="true" />
                         <h3 className="text-lg font-semibold mb-xs">Failed to load statistics</h3>
                         <p className="text-muted mb-md">We couldn't retrieve the latest dashboard data.</p>
-                        <button onClick={fetchStats} className="btn btn-secondary">
+                        <button onClick={fetchStats} className="btn btn-secondary" title="Retry fetching statistics">
                             <RefreshCw size={18} aria-hidden="true" />
                             Try Again
                         </button>
