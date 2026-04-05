@@ -37,7 +37,7 @@ def custom_exception_handler(exc, context):
     if response is None:
         # Non-DRF standard exceptions are not handled by DRF's exception_handler.
         # Log the exception to ensure we don't swallow tracebacks for internal server errors.
-        logger.exception("Unhandled API Exception: %s", str(exc))
+        logger.error("Unhandled API Exception: %s", str(exc), exc_info=exc)
         # Fallback to an internal server error to prevent leaking raw errors.
         response = Response(
             {"detail": "An unexpected error occurred."},

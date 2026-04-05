@@ -294,7 +294,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
         if match_result is None:
-            return Response(
+            response = Response(
                 {
                     "type": "about:blank",
                     "title": "Match Failed",
@@ -304,8 +304,9 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
                     "recognition": {"detected": True, "matched": False},
                 },
                 status=status.HTTP_200_OK,
-                content_type="application/problem+json",
             )
+            response.content_type = "application/problem+json"
+            return response
 
         matched_username, distance, _ = match_result
 
