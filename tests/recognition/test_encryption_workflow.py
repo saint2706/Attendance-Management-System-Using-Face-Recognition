@@ -203,7 +203,7 @@ class EncryptionWorkflowTests(TestCase):
         encrypted_model = model_path.read_bytes()
         decrypted_model = decrypt_bytes(encrypted_model)
         self.assertNotEqual(encrypted_model, decrypted_model)
-        loaded_model = pickle.loads(decrypted_model)
+        loaded_model = pickle.loads(decrypted_model)  # nosec B301 - testing serialization
         self.assertIsInstance(loaded_model, DummyModel)
 
         encrypted_classes = classes_path.read_bytes()

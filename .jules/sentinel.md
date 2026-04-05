@@ -54,3 +54,5 @@
 **Vulnerability:** The `picomatch` package in the frontend dependencies had a high severity ReDoS vulnerability via extglob quantifiers (CVE-2024-XXXX) and a moderate Method Injection vulnerability (CVE-2024-XXXX).
 **Learning:** Outdated dependencies in the Node.js ecosystem, particularly deep in the tree or in build tools, can expose the application or build environment to denial-of-service and code injection risks. Regular audits (`pnpm audit`) are essential.
 **Prevention:** Updated `picomatch` to a patched version (4.0.4) using `pnpm install picomatch@4.0.4`.
+- Resolved Bandit B108 warnings by removing absolute `/tmp/` references in test paths.
+- Explicitly whitelisted intentional serialization mechanisms in `tests/recognition/test_encryption_workflow.py` with `# nosec B301` to satisfy SAST checks.

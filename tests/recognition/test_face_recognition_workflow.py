@@ -63,7 +63,7 @@ class TestFaceRecognitionWorkflow:
             lambda *args, **kwargs: expected_embedding,
         )
 
-        encoding = tasks.compute_face_encoding(Path("/tmp/fake-image.jpg"))
+        encoding = tasks.compute_face_encoding(Path("fake-image.jpg"))
 
         assert isinstance(encoding, np.ndarray)
         assert encoding.dtype == np.float64
