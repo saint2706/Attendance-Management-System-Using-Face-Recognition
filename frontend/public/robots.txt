@@ -5,3 +5,4 @@ Disallow: /api/
 Allow: /
 
 Sitemap: https://attendance-system.example.com/sitemap.xml
+Host: https://attendance-system.example.com
