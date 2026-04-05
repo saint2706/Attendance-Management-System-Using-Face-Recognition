@@ -43,3 +43,8 @@
 ## 2025-01-20 - [Real API Integration for Dashboard Stats]
 **Learning:** Avoid dynamic imports inside `useEffect` for API wrapper functions, as it delays the data fetch and worsens user-facing latency. Also added unmount checks.
 **Action:** Replaced the mock data with actual API integration via `getAttendanceStats`. Used static import.
+
+## AttendanceViewSet Query Optimization
+* **Issue:** `AttendanceViewSet` was executing two unnecessary database queries per request by using `.prefetch_related("user__groups", "user__user_permissions")`. The `AttendanceRecordSerializer` does not serialize any user group or permission data, making these queries entirely redundant.
+* **Fix:** Removed the `prefetch_related` call from the `queryset` definition in `recognition/api/views.py`.
+* **Impact:** Reduced the number of database queries per API request from 4 to 2 (a 50% reduction in query volume), improving backend response time and database efficiency. Verified with `test_attendance_api_query_count`.
