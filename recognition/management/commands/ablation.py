@@ -8,7 +8,6 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from recognition.ablation import run_ablation_study
-from src.common.seeding import set_global_seed
 
 
 class Command(BaseCommand):
@@ -23,7 +22,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        set_global_seed(options["seed"])
 
         self.stdout.write("Running ablation experiments...")
 

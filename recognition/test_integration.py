@@ -11,7 +11,6 @@ from pathlib import Path
 from django.test import TestCase
 
 from recognition.data_splits import create_stratified_splits, save_split_summary_json
-from src.common.seeding import set_global_seed
 
 
 class IntegrationTest(TestCase):
@@ -19,7 +18,6 @@ class IntegrationTest(TestCase):
 
     def setUp(self):
         """Set up test environment."""
-        set_global_seed(42)
         self.temp_dir = tempfile.mkdtemp()
 
     def test_reproducibility_workflow(self):
@@ -37,10 +35,8 @@ class IntegrationTest(TestCase):
         image_paths = list(data_root.glob("*/*.jpg"))
 
         # Run split generation twice with same seed
-        set_global_seed(42)
         train1, val1, test1, info1 = create_stratified_splits(image_paths, random_state=42)
 
-        set_global_seed(42)
         train2, val2, test2, info2 = create_stratified_splits(image_paths, random_state=42)
 
         # Results should be identical
@@ -81,26 +77,6 @@ class IntegrationTest(TestCase):
         self.assertEqual(split_info["total_images"], loaded_info["total_images"])
         self.assertEqual(split_info["total_persons"], loaded_info["total_persons"])
         self.assertEqual(split_info["random_state"], loaded_info["random_state"])
-
-    def test_seeding_consistency(self):
-        """Test that seeding produces consistent random numbers."""
-        import random
-
-        import numpy as np
-
-        # First run
-        set_global_seed(123)
-        random1 = random.random()
-        numpy1 = np.random.rand()
-
-        # Second run with same seed
-        set_global_seed(123)
-        random2 = random.random()
-        numpy2 = np.random.rand()
-
-        # Should be identical
-        self.assertEqual(random1, random2)
-        self.assertEqual(numpy1, numpy2)
 
     def test_policy_yaml_loadable(self):
         """Test that policy configuration is valid YAML."""

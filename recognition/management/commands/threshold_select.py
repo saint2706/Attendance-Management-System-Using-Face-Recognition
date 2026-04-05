@@ -11,7 +11,6 @@ from django.core.management.base import BaseCommand
 import numpy as np
 
 from recognition.evaluation.metrics import calculate_eer, find_optimal_threshold
-from src.common.seeding import set_global_seed
 
 
 class Command(BaseCommand):
@@ -39,21 +38,20 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        set_global_seed(options["seed"])
 
         self.stdout.write("Selecting optimal threshold on validation set...")
 
         # Generate synthetic validation data
         # In production, this would load actual validation set predictions
-        np.random.seed(options["seed"])
+        rng = np.random.default_rng(options["seed"])
         n_val = 150
 
         y_true = np.array([1] * 75 + [0] * 75)
-        y_scores_genuine = np.random.beta(8, 2, 75)
-        y_scores_impostor = np.random.beta(2, 8, 75)
+        y_scores_genuine = rng.beta(8, 2, 75)
+        y_scores_impostor = rng.beta(2, 8, 75)
         y_scores = np.concatenate([y_scores_genuine, y_scores_impostor])
 
-        shuffle_idx = np.random.permutation(n_val)
+        shuffle_idx = rng.permutation(n_val)
         y_true = y_true[shuffle_idx]
         y_scores = y_scores[shuffle_idx]
 
