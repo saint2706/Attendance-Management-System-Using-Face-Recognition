@@ -71,7 +71,11 @@ def custom_exception_handler(exc, context):
             elif isinstance(response.data, list):
                 detail = " ".join([str(v) for v in response.data])
             else:
-                detail = str(response.data) if response.data is not None else "An unexpected error occurred."
+                detail = (
+                    str(response.data)
+                    if response.data is not None
+                    else "An unexpected error occurred."
+                )
 
             # Use default detail if available and detail is empty
             if not detail and hasattr(exc, "default_detail"):
