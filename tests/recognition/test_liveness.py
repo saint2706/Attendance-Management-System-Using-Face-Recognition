@@ -58,7 +58,7 @@ def test_evaluate_match_blocks_spoof(monkeypatch):
     frame = np.zeros((10, 10, 3), dtype=np.uint8)
     match = pd.Series(
         {
-            "identity": "/tmp/train/alice/1.jpg",
+            "identity": "train/alice/1.jpg",
             "distance": 0.2,
             "source_x": 5,
             "source_y": 6,
@@ -84,7 +84,7 @@ def test_evaluate_match_accepts_live_face(monkeypatch):
     frame = np.zeros((10, 10, 3), dtype=np.uint8)
     match = pd.Series(
         {
-            "identity": "/tmp/train/bob/1.jpg",
+            "identity": "train/bob/1.jpg",
             "distance": 0.1,
             "source_x": 2,
             "source_y": 3,
