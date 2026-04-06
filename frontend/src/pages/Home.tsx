@@ -89,16 +89,16 @@ export const Home = () => {
                         Fast, secure, and accurate.
                     </p>
                     <div className="hero-actions">
-                        <Link to="/mark-attendance" className="btn btn-primary btn-lg">
+                        <Link to="/mark-attendance" className="btn btn-primary btn-lg" title="Start camera to mark time-in">
                             <Clock size={20} aria-hidden="true" />
                             Mark Time-In
                         </Link>
-                        <Link to="/mark-attendance?direction=out" className="btn btn-secondary btn-lg">
+                        <Link to="/mark-attendance?direction=out" className="btn btn-secondary btn-lg" title="Start camera to mark time-out">
                             <ArrowRight size={20} aria-hidden="true" />
                             Mark Time-Out
                         </Link>
                         {!isAuthenticated && (
-                            <Link to="/login" className="btn btn-secondary btn-lg">
+                            <Link to="/login" className="btn btn-secondary btn-lg" title="Sign in to admin dashboard">
                                 <LogIn size={20} aria-hidden="true" />
                                 Dashboard Login
                             </Link>
