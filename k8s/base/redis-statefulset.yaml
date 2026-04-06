@@ -23,7 +23,7 @@ spec:
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
+        runAsUser: 999
         runAsGroup: 1000
         fsGroup: 1000
       containers:
