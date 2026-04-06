@@ -53,6 +53,7 @@ class Present(models.Model):
         indexes = [
             models.Index(fields=["user", "date"], name="users_present_user_date_idx"),
             models.Index(fields=["date", "user"], name="users_present_date_user_idx"),
+            models.Index(fields=["date", "present"], name="users_present_date_present_idx"),
         ]
 
     def __str__(self):

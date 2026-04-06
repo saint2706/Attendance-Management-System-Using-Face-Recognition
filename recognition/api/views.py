@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -105,10 +107,16 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         end_date = filter_serializer.validated_data.get("end_date")
 
         if start_date:
-            queryset = queryset.filter(created_at__date__gte=start_date)
+            start_datetime = timezone.make_aware(
+                datetime.datetime.combine(start_date, datetime.time.min)
+            )
+            queryset = queryset.filter(created_at__gte=start_datetime)
 
         if end_date:
-            queryset = queryset.filter(created_at__date__lte=end_date)
+            end_datetime = timezone.make_aware(
+                datetime.datetime.combine(end_date, datetime.time.max)
+            )
+            queryset = queryset.filter(created_at__lte=end_datetime)
 
         return queryset
 
@@ -128,9 +136,14 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         today = timezone.now().date()
         total_employees = User.objects.filter(is_active=True).count()
 
+        today_start = timezone.make_aware(datetime.datetime.combine(today, datetime.time.min))
+        today_end = timezone.make_aware(datetime.datetime.combine(today, datetime.time.max))
+
         # Single query to get all successful attempts for today
         attempts_today = (
-            RecognitionAttempt.objects.filter(created_at__date=today, successful=True)
+            RecognitionAttempt.objects.filter(
+                created_at__range=(today_start, today_end), successful=True
+            )
             .values_list("user_id", "direction")
             .distinct()
         )
