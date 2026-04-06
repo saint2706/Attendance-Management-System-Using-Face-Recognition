@@ -240,7 +240,7 @@ export const MarkAttendance = () => {
                         <div className="camera-error" role="alert" aria-live="assertive">
                             <CameraOff size={48} aria-hidden="true" />
                             <p>{error}</p>
-                            <button onClick={startCamera} className="btn btn-primary">
+                            <button onClick={startCamera} className="btn btn-primary" title="Retry connecting to camera">
                                 <RefreshCw size={18} aria-hidden="true" />
                                 Retry
                             </button>
@@ -382,6 +382,7 @@ export const MarkAttendance = () => {
                                         <button
                                             onClick={() => navigate('/')}
                                             className="btn btn-secondary btn-lg"
+                                            title="Return to the home page"
                                         >
                                             <Home size={20} aria-hidden="true" />
                                             Return Home
@@ -390,6 +391,7 @@ export const MarkAttendance = () => {
                                             onClick={resetAttempt}
                                             className="btn btn-primary btn-lg"
                                             aria-keyshortcuts="Escape"
+                                            title="Reset to mark another attendance"
                                         >
                                             <UserCheck size={20} aria-hidden="true" />
                                             Mark Another
@@ -400,6 +402,7 @@ export const MarkAttendance = () => {
                                         onClick={resetAttempt}
                                         className="btn btn-secondary btn-lg"
                                         aria-keyshortcuts="Escape"
+                                        title="Reset and try scanning again"
                                     >
                                         <RefreshCw size={20} aria-hidden="true" />
                                         Try Again
