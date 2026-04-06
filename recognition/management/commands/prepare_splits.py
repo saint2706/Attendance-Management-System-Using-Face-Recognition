@@ -12,7 +12,6 @@ from recognition.data_splits import (
     save_split_summary_json,
     save_splits_to_csv,
 )
-from src.common.seeding import set_global_seed
 
 
 class Command(BaseCommand):
@@ -45,7 +44,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        set_global_seed(options["seed"])
 
         self.stdout.write("Preparing dataset splits...")
 

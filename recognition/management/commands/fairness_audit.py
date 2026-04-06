@@ -4,7 +4,6 @@ from pathlib import Path
 
 from django.core.management.base import BaseCommand
 
-from src.common.seeding import set_global_seed
 from src.evaluation.fairness import (
     FairnessAuditConfig,
     compute_threshold_recommendations,
@@ -67,7 +66,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        set_global_seed(options["seed"])
 
         self.stdout.write("Running fairness & robustness audit...")
         config = FairnessAuditConfig(

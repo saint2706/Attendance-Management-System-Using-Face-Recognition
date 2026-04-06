@@ -147,13 +147,10 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     _patch_dataset_root(dataset_root)
 
-    from src.common.seeding import set_global_seed
     from src.evaluation.face_recognition_eval import (
         EvaluationConfig,
         run_face_recognition_evaluation,
     )
-
-    set_global_seed(args.seed)
 
     print("=== Attendance sample reproducibility run ===")
     print(f"Dataset root : {dataset_root}")

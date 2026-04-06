@@ -15,8 +15,6 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score
 
-from src.common.seeding import set_global_seed
-
 
 class AblationConfig:
     """Configuration for a single ablation experiment."""
@@ -109,7 +107,6 @@ def run_single_ablation(
     Returns:
         Dictionary containing ablation results
     """
-    set_global_seed(random_state)
 
     n_samples = len(labels)
 
@@ -314,7 +311,6 @@ def run_ablation_study(
     Returns:
         DataFrame containing all ablation results
     """
-    set_global_seed(random_state)
 
     configs = generate_ablation_configs()
     results = []
