@@ -13,7 +13,6 @@ pytestmark = [
     pytest.mark.ui,
     pytest.mark.e2e,
     pytest.mark.django_db(transaction=True),
-    pytest.mark.xfail(reason="React frontend routes not available in test environment"),
 ]
 
 

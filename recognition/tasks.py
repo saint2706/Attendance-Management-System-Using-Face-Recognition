@@ -386,7 +386,7 @@ def train_model_sync(*, initiated_by: str | None = None) -> dict[str, Any]:
     import json
 
     classes_path = DATA_ROOT / "classes.json"
-    classes_path.write_bytes(encrypt_bytes(json.dumps(unique_classes.tolist()).encode("utf-8")))
+    classes_path.write_bytes(encrypt_bytes(json.dumps(list(unique_classes)).encode("utf-8")))
 
     report_path = DATA_ROOT / "classification_report.txt"
     with report_path.open("w") as handle:

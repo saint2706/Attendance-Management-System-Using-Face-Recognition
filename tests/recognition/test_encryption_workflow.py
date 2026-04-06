@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import io
 import os
-import pickle
 import shutil
 import sys
 from typing import List
@@ -196,21 +195,25 @@ class EncryptionWorkflowTests(TestCase):
         self.assertIn("accuracy", result)
 
         model_path = self.data_root / "svc.sav"
-        classes_path = self.data_root / "classes.npy"
+        classes_path = self.data_root / "classes.json"
         self.assertTrue(model_path.exists())
         self.assertTrue(classes_path.exists())
 
         encrypted_model = model_path.read_bytes()
         decrypted_model = decrypt_bytes(encrypted_model)
         self.assertNotEqual(encrypted_model, decrypted_model)
-        loaded_model = pickle.loads(decrypted_model)
+        import joblib
+
+        loaded_model = joblib.load(io.BytesIO(decrypted_model))
         self.assertIsInstance(loaded_model, DummyModel)
 
         encrypted_classes = classes_path.read_bytes()
         decrypted_classes = decrypt_bytes(encrypted_classes)
         self.assertNotEqual(encrypted_classes, decrypted_classes)
-        class_names = np.load(io.BytesIO(decrypted_classes), allow_pickle=True)
-        self.assertListEqual(class_names.tolist(), ["alice", "bob"])
+        import json
+
+        loaded_classes = json.loads(decrypted_classes.decode("utf-8"))
+        self.assertEqual(loaded_classes, ["alice", "bob"])
 
         mock_get_embedding.reset_mock()
         mock_deepface.represent.reset_mock()
