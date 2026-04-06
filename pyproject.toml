@@ -14,7 +14,7 @@ readme = "README.md"
 license = {text = "MIT"}
 
 dependencies = [
-    "Django==6.0",
+    "Django==6.0.3",
     "django-crispy-forms==2.6",
     "dj-database-url==3.1.2",
     "crispy-bootstrap5==2025.6",
