@@ -54,11 +54,13 @@ COPY requirements.frozen.txt ./requirements.txt
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir -r requirements.txt
 
-# Copy the full project for asset compilation
-COPY . /app
-
-# Remove raw frontend source to prevent bloat in the final image
-RUN rm -rf /app/frontend
+# Copy backend directories explicitly to prevent copying raw frontend source and avoid intermediate layer bloat
+COPY attendance_system_facial_recognition /app/attendance_system_facial_recognition
+COPY configs /app/configs
+COPY recognition /app/recognition
+COPY users /app/users
+COPY src /app/src
+COPY manage.py /app/manage.py
 
 # Copy built frontend from Stage 1
 COPY --from=frontend-build --chown=root:root /app/frontend/dist /app/frontend/dist
