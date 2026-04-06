@@ -112,3 +112,6 @@ SECURITY.md
 .yamllint
 mypy.ini
 llms.txt.content
+*.tar.gz
+*.log
+.env.example
