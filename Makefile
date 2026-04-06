@@ -37,25 +37,25 @@ format:
 # Run fast tests (default - excludes slow, ui, and e2e tests)
 test-fast:
 	@echo "Running fast tests..."
-	pytest -m "not slow and not ui and not e2e" --maxfail=5 --durations=10 -v
+	python -m pytest -m "not slow and not ui and not e2e" --maxfail=5 --durations=10 -v
 	@echo "Fast tests complete."
 
 # Run slow and integration tests
 test-slow:
 	@echo "Running slow and integration tests..."
-	pytest -m "slow or integration" --no-cov -v
+	python -m pytest -m "slow or integration" --no-cov -v
 	@echo "Slow tests complete."
 
 # Run UI/E2E tests
 test-ui:
 	@echo "Running UI/E2E tests..."
-	pytest -m "ui or e2e" --no-cov -v tests/ui
+	python -m pytest -m "ui or e2e" --no-cov -v tests/ui
 	@echo "UI tests complete."
 
 # Run all tests including slow and e2e (full suite)
 test-all:
 	@echo "Running all tests..."
-	pytest -m "" --cov=. --cov-report=html --cov-report=term-missing --cov-report=xml --cov-fail-under=60 -v
+	python -m pytest -m "" --cov=. --cov-report=html --cov-report=term-missing --cov-report=xml --cov-fail-under=60 -v
 	@echo "All tests complete."
 
 # Run tests with coverage (alias for test-all)
