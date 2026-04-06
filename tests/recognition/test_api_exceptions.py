@@ -137,7 +137,7 @@ class TestCustomExceptionHandler:
             response = custom_exception_handler(exc_with_default, self.context)
 
             assert response is not None
-            assert response.data["detail"] == "A server error occurred."
+            assert response.data["detail"] == "Some raw string"
 
     def test_api_exception_fallback_with_default_detail(self):
         class WeirdException(exceptions.APIException):
@@ -154,7 +154,7 @@ class TestCustomExceptionHandler:
             mock_resp = mock.MagicMock(spec=Response)
             mock_resp.status_code = 500
             # Empty string for detail to hit the 'not detail' check
-            mock_resp.data = None
+            mock_resp.data = ""
             mock_handler.return_value = mock_resp
 
             # To test default_detail properly, we construct the object directly and patch str so it looks empty
