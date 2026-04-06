@@ -327,7 +327,7 @@ typing-extensions==4.15.0
     #   grpcio
     #   optree
     #   tensorflow
-tzdata==2025.3
+tzdata==2026.1
     # via kombu
 tzlocal==5.3.1
     # via celery
