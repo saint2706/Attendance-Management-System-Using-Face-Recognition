@@ -89,7 +89,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         user = self.request.user
         queryset = (
             RecognitionAttempt.objects.all()
-            .select_related("user")
+            .select_related("user", "present_record", "time_record")
             .prefetch_related("user__groups", "user__user_permissions")
             .order_by("-created_at")
         )
