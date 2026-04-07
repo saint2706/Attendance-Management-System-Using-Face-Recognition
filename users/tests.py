@@ -68,12 +68,14 @@ class RegisterViewTests(TestCase):
         )
         # Create a superuser who should have access
         self.superuser = User.objects.create(
-            username="super_user", email="super@example.com", password=hashed_password, is_superuser=True, is_staff=True
+            username="super_user",
+            email="super@example.com",
+            password=hashed_password,
+            is_superuser=True,
+            is_staff=True,
         )
         # Create a regular user who should NOT have access
-        self.regular_user = User.objects.create(
-            username="regular_user", password=hashed_password
-        )
+        self.regular_user = User.objects.create(username="regular_user", password=hashed_password)
 
     def test_staff_user_can_access_register_page(self):
         """Verify that a logged-in staff user can access the registration page."""
@@ -137,9 +139,7 @@ class SetupWizardTests(TestCase):
         self.staff_user = User.objects.create(
             username="wizard_staff", password=hashed_password, is_staff=True
         )
-        self.regular_user = User.objects.create(
-            username="wizard_regular", password=hashed_password
-        )
+        self.regular_user = User.objects.create(username="wizard_regular", password=hashed_password)
 
     def test_non_staff_redirected(self):
         """Ensure non-staff users cannot access the wizard."""
@@ -472,9 +472,7 @@ class SetupWizardSkipAndStatusTests(TestCase):
         self.staff_user = User.objects.create(
             username="wizard_staff", password=hashed_password, is_staff=True
         )
-        self.regular_user = User.objects.create(
-            username="wizard_regular", password=hashed_password
-        )
+        self.regular_user = User.objects.create(username="wizard_regular", password=hashed_password)
 
     def test_skip_wizard(self):
         """Ensure skipping wizard marks it complete and redirects."""
