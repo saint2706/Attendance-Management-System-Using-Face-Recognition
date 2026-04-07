@@ -8,7 +8,7 @@ resources:
   - namespace.yaml
   - networkpolicy.yaml
   - configmap.yaml
-  - secret.yaml
+  - sealed-secret.yaml
   - pvc.yaml
   - postgres-statefulset.yaml
   - redis-statefulset.yaml
