@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.test import Client, override_settings
 from django.urls import reverse
 
@@ -26,16 +27,18 @@ def test_user(db):
 
     with override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"]):
         User = get_user_model()
-        return User.objects.create_user(
-            username="testuser", password="testpassword123", email="testuser@example.com"
+        hashed_password = make_password("testpassword123")
+        return User.objects.create(
+            username="testuser", password=hashed_password, email="testuser@example.com"
         )
 
 
 @pytest.mark.django_db
 def test_register_rate_limit_fix(client):
     User = get_user_model()
-    staff_user = User.objects.create_user(
-        username="staff_limit_2", password="password", is_staff=True
+    hashed_password = make_password("password")
+    staff_user = User.objects.create(
+        username="staff_limit_2", password=hashed_password, is_staff=True
     )
     client.force_login(staff_user)
     url = reverse("register")
@@ -54,7 +57,8 @@ def test_register_rate_limit_fix(client):
 @pytest.mark.django_db
 def test_wizard_step3_rate_limit(client):
     User = get_user_model()
-    staff_user = User.objects.create_user(username="staff_wiz3", password="password", is_staff=True)
+    hashed_password = make_password("password")
+    staff_user = User.objects.create(username="staff_wiz3", password=hashed_password, is_staff=True)
     # Setup prerequisite state
     SetupWizardProgress.objects.create(
         user=staff_user,
@@ -84,7 +88,8 @@ def test_wizard_step3_rate_limit(client):
 @pytest.mark.django_db
 def test_wizard_step4_rate_limit(client):
     User = get_user_model()
-    staff_user = User.objects.create_user(username="staff_wiz", password="password", is_staff=True)
+    hashed_password = make_password("password")
+    staff_user = User.objects.create(username="staff_wiz", password=hashed_password, is_staff=True)
     # Setup prerequisite state
     SetupWizardProgress.objects.create(
         user=staff_user,
@@ -234,8 +239,10 @@ def test_different_usernames_have_separate_limits(db):
     Different usernames should have separate rate limit counters.
     """
     User = get_user_model()
-    User.objects.create_user(username="user1", password="password1")  # nosec B106
-    User.objects.create_user(username="user2", password="password2")  # nosec B106
+    hashed_password_1 = make_password("password1")
+    hashed_password_2 = make_password("password2")
+    User.objects.create(username="user1", password=hashed_password_1)  # nosec B106
+    User.objects.create(username="user2", password=hashed_password_2)  # nosec B106
 
     url = reverse("login")
 
