@@ -11,3 +11,5 @@
 - [SEO] Added twitter:image to index.html
 - [GEO] Enhanced llms.txt with descriptive site context
 - [GEO] Updated frontend/public/robots.txt to explicitly allow /llms.txt for AI discoverability.
+- [GEO] Added root `llms.txt` file for repository AI agents based on `llms.txt.content`.
+- [SEO] Verified frontend semantic structure and JSON-LD markup.
