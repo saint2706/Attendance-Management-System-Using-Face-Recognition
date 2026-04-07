@@ -34,3 +34,9 @@ data:
   # TensorFlow settings (for GPU deployments)
   TF_CPP_MIN_LOG_LEVEL: "2"
   TF_FORCE_GPU_ALLOW_GROWTH: "true"
+
+  # Redis config
+  redis.conf: |
+    appendonly yes
+    maxmemory 256mb
+    maxmemory-policy volatile-lru

@@ -26,6 +26,8 @@ spec:
         runAsUser: 999
         runAsGroup: 1000
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: redis
           image: redis:7.2.13-alpine
@@ -36,12 +38,7 @@ spec:
               protocol: TCP
           command:
             - redis-server
-            - --appendonly
-            - "yes"
-            - --maxmemory
-            - "256mb"
-            - --maxmemory-policy
-            - "volatile-lru"
+            - /usr/local/etc/redis/redis.conf
           resources:
             requests:
               memory: "128Mi"
@@ -76,9 +73,17 @@ spec:
           volumeMounts:
             - name: redis-data
               mountPath: /data
+            - name: redis-config
+              mountPath: /usr/local/etc/redis
             - name: tmp
               mountPath: /tmp
       volumes:
+        - name: redis-config
+          configMap:
+            name: attendance-config
+            items:
+              - key: redis.conf
+                path: redis.conf
         - name: tmp
           emptyDir: {}
   volumeClaimTemplates:
