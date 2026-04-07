@@ -94,6 +94,9 @@ export const Dashboard = () => {
             {/* Quick Stats */}
             <section className="stats-section" aria-labelledby="stats-title">
                 <h2 className="section-title" id="stats-title">Quick Overview</h2>
+                <div className="sr-only" role="status" aria-live="polite">
+                    {isLoadingStats ? "Loading statistics..." : ""}
+                </div>
                 {hasError ? (
                     <div className="text-center py-12 w-full card card-elevated" style={{ gridColumn: '1 / -1' }}>
                         <AlertTriangle size={48} className="mx-auto text-warning mb-sm" aria-hidden="true" />

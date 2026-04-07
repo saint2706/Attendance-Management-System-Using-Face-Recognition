@@ -102,6 +102,12 @@ a:hover {
   color: var(--color-primary-hover);
 }
 
+a:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -397,6 +403,19 @@ a:hover {
 
 .skeleton {
   background-color: var(--color-border);
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* Status badges */
