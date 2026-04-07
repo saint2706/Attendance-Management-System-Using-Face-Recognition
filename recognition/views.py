@@ -823,6 +823,7 @@ class FaceRecognitionAPI(View):
                     model_name=model_name,
                     detector_backend=detector_backend,
                     enforce_detection=enforce_detection,
+                    align=False,
                 )
             except ValueError as exc:
                 # DeepFace raises ValueError when no face is detected or invalid input provided
@@ -1540,6 +1541,7 @@ def _get_or_compute_cached_embedding(
             model_name=model_name,
             detector_backend=detector_backend,
             enforce_detection=enforce_detection,
+            align=False,
         )
     except Exception as exc:
         logger.debug("Failed to generate embedding for %s: %s", image_path, exc)
@@ -2945,6 +2947,7 @@ def _mark_attendance(request, check_in: bool):
                         model_name=model_name,
                         detector_backend=detector_backend,
                         enforce_detection=enforce_detection,
+                        align=False,
                     )
                     inference_duration = time.perf_counter() - inference_start
                     if not model_warmed_up:
@@ -3760,6 +3763,7 @@ def mark_attendance_view(request, attendance_type):
                         model_name=model_name,
                         detector_backend=detector_backend,
                         enforce_detection=enforce_detection,
+                        align=False,
                     )
 
                     # Normalize and safely extract the first embedding + facial_area
