@@ -450,6 +450,7 @@ def profile_model_performance(
                 model_name=model_name,
                 detector_backend=detector_backend,
                 enforce_detection=False,
+                align=False,
             )
 
             elapsed_ms = (time.perf_counter() - start_time) * 1000

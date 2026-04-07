@@ -39,7 +39,8 @@ def your_view(request):
     representations = DeepFace.represent(
         img_path=frame,
         model_name="Facenet",
-        detector_backend="ssd"
+        detector_backend="ssd",
+        align=False
     )
 
     # Process automatically (handles both single and multi mode)

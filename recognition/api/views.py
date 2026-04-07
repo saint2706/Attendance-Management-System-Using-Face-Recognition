@@ -250,6 +250,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
                 model_name=model_name,
                 detector_backend=detector_backend,
                 enforce_detection=enforce_detection,
+                align=False,
             )
             embedding_vector, facial_area = extract_embedding(representations)
 
