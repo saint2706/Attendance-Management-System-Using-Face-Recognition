@@ -69,7 +69,7 @@ export const Home = () => {
                                 ]
                             }
                         ]
-                    })
+                    }).replace(/</g, '\\u003c')
                 }}
             />
             {/* Hero Section */}

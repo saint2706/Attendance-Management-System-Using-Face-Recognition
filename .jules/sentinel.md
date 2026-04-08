@@ -54,3 +54,10 @@
 **Vulnerability:** The `picomatch` package in the frontend dependencies had a high severity ReDoS vulnerability via extglob quantifiers (CVE-2024-XXXX) and a moderate Method Injection vulnerability (CVE-2024-XXXX).
 **Learning:** Outdated dependencies in the Node.js ecosystem, particularly deep in the tree or in build tools, can expose the application or build environment to denial-of-service and code injection risks. Regular audits (`pnpm audit`) are essential.
 **Prevention:** Updated `picomatch` to a patched version (4.0.4) using `pnpm install picomatch@4.0.4`.
+
+
+## 2026-05-24 - JSON-LD XSS Remediation in React Components
+
+**Vulnerability:** The React frontend was using `dangerouslySetInnerHTML={{ __html: JSON.stringify(...) }}` to inject JSON-LD `<script>` tags in `Home.tsx`, `Login.tsx`, `Dashboard.tsx`, and `MarkAttendance.tsx`. `JSON.stringify` does not escape `<` or `>` characters. If user input were ever included in these JSON objects, a malicious user could inject `</script><script>alert(1)</script>`, which the browser would parse and execute, leading to a DOM XSS vulnerability. Note that simply changing `dangerouslySetInnerHTML` to use React's native child string rendering for `<script>` tags does not solve this issue (as React does not HTML-escape `<script>` children either) and actually makes the sink less visible to static analysis tools like ESLint.
+**Learning:** When embedding JSON inside a `<script>` tag, the `<` characters must be explicitly escaped to prevent closing the script tag prematurely. Furthermore, it is better to retain `dangerouslySetInnerHTML` for this specific use case because it flags the data sink for security linting (`react/no-danger`), ensuring developers remain aware of the need for manual sanitization.
+**Prevention:** Maintained the use of `dangerouslySetInnerHTML` to keep the sink visible to static analysis, but sanitized the JSON output by replacing all instances of `<` with `\u003c` (i.e., `JSON.stringify(...).replace(/</g, '\\u003c')`).

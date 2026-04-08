@@ -220,9 +220,9 @@ export const MarkAttendance = () => {
                         "@context": "https://schema.org",
                         "@type": "WebPage",
                         "name": "Mark Attendance - Smart Attendance System",
-                        "description": "Mark your time-in or time-out using face recognition.",
+                        "description": "Mark your attendance securely using face recognition.",
                         "url": "https://attendance-system.example.com/mark-attendance"
-                    })
+                    }).replace(/</g, '\\u003c')
                 }}
             />
             <div className="attendance-container">

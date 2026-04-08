@@ -59,7 +59,7 @@ export const Login = () => {
                         "name": "Login - Smart Attendance System",
                         "description": "Login page for the Smart Attendance System dashboard.",
                         "url": "https://attendance-system.example.com/login"
-                    })
+                    }).replace(/</g, '\\u003c')
                 }}
             />
             <div className="login-card card card-elevated">
