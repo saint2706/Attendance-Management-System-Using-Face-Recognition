@@ -64,7 +64,7 @@ export const Dashboard = () => {
     };
 
     return (
-        <div className="dashboard animate-fade-in">
+        <main className="dashboard animate-fade-in">
             <title>Dashboard - Smart Attendance System</title>
             <meta name="description" content="Admin dashboard for managing the Smart Attendance System." />
             <script
@@ -216,6 +216,6 @@ export const Dashboard = () => {
                     </Link>
                 </div>
             </section>
-        </div>
+        </main>
     );
 };

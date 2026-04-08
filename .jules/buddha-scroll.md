@@ -11,3 +11,4 @@
 - [SEO] Added twitter:image to index.html
 - [GEO] Enhanced llms.txt with descriptive site context
 - [GEO] Updated frontend/public/robots.txt to explicitly allow /llms.txt for AI discoverability.
+- [GEO] Improved semantic HTML structure by converting root `div` components to `<main>` tags in `Home.tsx`, `Dashboard.tsx`, `Login.tsx`, and `MarkAttendance.tsx` to enhance SEO and AI vector friendliness.

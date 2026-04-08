@@ -47,7 +47,7 @@ export const Login = () => {
     }, [error]);
 
     return (
-        <div className="login-page animate-fade-in">
+        <main className="login-page animate-fade-in">
             <title>Login - Smart Attendance System</title>
             <meta name="description" content="Login page for the Smart Attendance System dashboard." />
             <script
@@ -163,6 +163,6 @@ export const Login = () => {
                     <Link to="/" className="text-muted">← Back to Home</Link>
                 </div>
             </div>
-        </div>
+        </main>
     );
 };

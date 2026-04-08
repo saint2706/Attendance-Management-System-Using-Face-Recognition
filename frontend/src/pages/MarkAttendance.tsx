@@ -210,7 +210,7 @@ export const MarkAttendance = () => {
     }, []);
 
     return (
-        <div className="mark-attendance animate-fade-in">
+        <main className="mark-attendance animate-fade-in">
             <title>Mark Attendance - Smart Attendance System</title>
             <meta name="description" content="Mark your time-in or time-out using face recognition." />
             <script
@@ -431,6 +431,6 @@ export const MarkAttendance = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     );
 };

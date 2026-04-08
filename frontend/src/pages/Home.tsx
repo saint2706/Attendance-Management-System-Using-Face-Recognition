@@ -21,7 +21,7 @@ export const Home = () => {
     const { isAuthenticated } = useAuth();
 
     return (
-        <div className="home animate-fade-in">
+        <main className="home animate-fade-in">
             <title>Home - Smart Attendance System</title>
             <meta name="description" content="Automated attendance tracking using face recognition technology" />
             <script
@@ -172,6 +172,6 @@ export const Home = () => {
                     </p>
                 </div>
             </section>
-        </div>
+        </main>
     );
 };
