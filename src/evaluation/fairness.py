@@ -261,7 +261,9 @@ def annotate_samples(samples: Sequence[SampleEvaluation]) -> List[AnnotatedSampl
                     lighting_bucket="unknown",
                 ),
             )
-        base_context = context_map[username] if username in context_map else default_contexts[username]
+        base_context = (
+            context_map[username] if username in context_map else default_contexts[username]
+        )
         context = replace(base_context)
         context.lighting_bucket = estimate_lighting_bucket(sample.image_path)
         annotated.append(AnnotatedSample(sample=sample, context=context))
