@@ -6,6 +6,8 @@
     { "pattern": "^https://github\\.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/" },
     { "pattern": "^https://github\\.com/saint2706/Attendance-Management-System-Using-Face-Recognition/compare/" },
     { "pattern": "^https://github\\.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/" },
-    { "pattern": "^https://www\\.python\\.org/downloads/" }
+    { "pattern": "^https://www\\.python\\.org/downloads/" },
+    { "pattern": "^https://docs\\.pytest\\.org/" },
+    { "pattern": "^https://playwright\\.dev/" }
   ]
 }
