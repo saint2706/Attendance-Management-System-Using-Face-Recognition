@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1
 
+# Build argument: PYTHON_VERSION specifies the base Python runtime version
+# Default is 3.12.2 to match development environment and testing
 ARG PYTHON_VERSION=3.12.2
 
 # =============================================================================
@@ -66,6 +68,8 @@ COPY manage.py /app/manage.py
 COPY --from=frontend-build --chown=root:root /app/frontend/dist /app/frontend/dist
 
 # Collect static files using production configuration during the build stage
+# We set dummy keys because collectstatic requires settings to load without crashing
+# The chained 'rm -rf /app/frontend' removes temporary source files to prevent intermediate layer bloat
 RUN DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production \
     DJANGO_DEBUG=0 \
     DJANGO_SECRET_KEY=dummy-secret-key-for-build \
