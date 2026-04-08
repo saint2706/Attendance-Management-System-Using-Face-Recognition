@@ -76,7 +76,7 @@ export const Dashboard = () => {
                         "name": "Admin Dashboard - Smart Attendance System",
                         "description": "Admin dashboard for managing the Smart Attendance System.",
                         "url": "https://attendance-system.example.com/dashboard"
-                    })
+                    }).replace(/</g, '\\u003c')
                 }}
             />
             <header className="dashboard-header">
