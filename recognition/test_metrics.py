@@ -19,19 +19,19 @@ class MetricsTest(TestCase):
 
     def setUp(self):
         """Create synthetic evaluation data."""
-        np.random.seed(42)
+        rng = np.random.default_rng(42)
         n = 100
 
         # Create binary labels
         self.y_true = np.array([1] * 50 + [0] * 50)
 
         # Create scores (genuine pairs have higher scores)
-        scores_genuine = np.random.beta(8, 2, 50)
-        scores_impostor = np.random.beta(2, 8, 50)
+        scores_genuine = rng.beta(8, 2, 50)
+        scores_impostor = rng.beta(2, 8, 50)
         self.y_scores = np.concatenate([scores_genuine, scores_impostor])
 
         # Shuffle
-        shuffle_idx = np.random.permutation(n)
+        shuffle_idx = rng.permutation(n)
         self.y_true = self.y_true[shuffle_idx]
         self.y_scores = self.y_scores[shuffle_idx]
 
