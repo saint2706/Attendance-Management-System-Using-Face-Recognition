@@ -77,14 +77,21 @@ class TestPlotSecurity:
     def test_hours_vs_date_returns_base64(self):
         """Verify hours_vs_date_given_employee returns Base64 data URI."""
         # Setup test data
-        user = User.objects.create_user(username="testuser", password="password")
+        from django.contrib.auth.hashers import make_password
+
+        hashed_password = make_password("password")
+        user = User.objects.create(username="testuser", password=hashed_password)
         date = timezone.localdate()
 
         Present.objects.create(user=user, date=date, present=True)
         t1 = timezone.now()
         t2 = t1 + datetime.timedelta(hours=8)
-        Time.objects.create(user=user, date=date, time=t1, direction=Direction.IN)
-        Time.objects.create(user=user, date=date, time=t2, direction=Direction.OUT)
+        Time.objects.bulk_create(
+            [
+                Time(user=user, date=date, time=t1, direction=Direction.IN),
+                Time(user=user, date=date, time=t2, direction=Direction.OUT),
+            ]
+        )
 
         present_qs = Present.objects.filter(user=user)
         time_qs = Time.objects.filter(user=user)
@@ -103,14 +110,21 @@ class TestPlotSecurity:
     def test_hours_vs_employee_returns_base64(self):
         """Verify hours_vs_employee_given_date returns Base64 data URI."""
         # Setup test data
-        user = User.objects.create_user(username="testuser2", password="password")
+        from django.contrib.auth.hashers import make_password
+
+        hashed_password = make_password("password")
+        user = User.objects.create(username="testuser2", password=hashed_password)
         date = timezone.localdate()
 
         Present.objects.create(user=user, date=date, present=True)
         t1 = timezone.now()
         t2 = t1 + datetime.timedelta(hours=8)
-        Time.objects.create(user=user, date=date, time=t1, direction=Direction.IN)
-        Time.objects.create(user=user, date=date, time=t2, direction=Direction.OUT)
+        Time.objects.bulk_create(
+            [
+                Time(user=user, date=date, time=t1, direction=Direction.IN),
+                Time(user=user, date=date, time=t2, direction=Direction.OUT),
+            ]
+        )
 
         present_qs = Present.objects.filter(date=date)
         time_qs = Time.objects.filter(date=date)
@@ -129,14 +143,21 @@ class TestPlotSecurity:
     def test_no_media_directory_access(self, tmp_path):
         """Verify plotting functions do not access media directory."""
         # Setup test data
-        user = User.objects.create_user(username="testuser3", password="password")
+        from django.contrib.auth.hashers import make_password
+
+        hashed_password = make_password("password")
+        user = User.objects.create(username="testuser3", password=hashed_password)
         date = timezone.localdate()
 
         Present.objects.create(user=user, date=date, present=True)
         t1 = timezone.now()
         t2 = t1 + datetime.timedelta(hours=8)
-        Time.objects.create(user=user, date=date, time=t1, direction=Direction.IN)
-        Time.objects.create(user=user, date=date, time=t2, direction=Direction.OUT)
+        Time.objects.bulk_create(
+            [
+                Time(user=user, date=date, time=t1, direction=Direction.IN),
+                Time(user=user, date=date, time=t2, direction=Direction.OUT),
+            ]
+        )
 
         present_qs = Present.objects.filter(user=user)
         time_qs = Time.objects.filter(user=user)
@@ -162,16 +183,28 @@ class TestPlotSecurity:
     def test_concurrent_plotting_no_race_condition(self):
         """Verify that concurrent plotting operations don't interfere with each other."""
         # Setup test data for two users
-        user1 = User.objects.create_user(username="user1", password="password")
-        user2 = User.objects.create_user(username="user2", password="password")
+        from django.contrib.auth.hashers import make_password
+
+        hashed_password = make_password("password")
+        users = [
+            User(username="user1", password=hashed_password),
+            User(username="user2", password=hashed_password),
+        ]
+        created_users = User.objects.bulk_create(users)
+        user1 = created_users[0]
+        user2 = created_users[1]
         date = timezone.localdate()
 
-        for user in [user1, user2]:
-            Present.objects.create(user=user, date=date, present=True)
-            t1 = timezone.now()
-            t2 = t1 + datetime.timedelta(hours=8)
-            Time.objects.create(user=user, date=date, time=t1, direction=Direction.IN)
-            Time.objects.create(user=user, date=date, time=t2, direction=Direction.OUT)
+        presents = [Present(user=u, date=date, present=True) for u in created_users]
+        Present.objects.bulk_create(presents)
+
+        times = []
+        t1 = timezone.now()
+        t2 = t1 + datetime.timedelta(hours=8)
+        for u in created_users:
+            times.append(Time(user=u, date=date, time=t1, direction=Direction.IN))
+            times.append(Time(user=u, date=date, time=t2, direction=Direction.OUT))
+        Time.objects.bulk_create(times)
 
         present_qs1 = Present.objects.filter(user=user1)
         time_qs1 = Time.objects.filter(user=user1)

@@ -20,12 +20,20 @@ def api_client():
 
 @pytest.fixture
 def admin_user():
-    return User.objects.create_superuser(username="admin", password="password")
+    from django.contrib.auth.hashers import make_password
+
+    hashed_password = make_password("password")
+    return User.objects.create(
+        username="admin", password=hashed_password, is_staff=True, is_superuser=True
+    )
 
 
 @pytest.fixture
 def normal_user():
-    return User.objects.create_user(username="normal", password="password")
+    from django.contrib.auth.hashers import make_password
+
+    hashed_password = make_password("password")
+    return User.objects.create(username="normal", password=hashed_password)
 
 
 @pytest.mark.django_db
