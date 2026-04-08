@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getAttendanceStats } from '../api/attendance';
+import { useQuery } from '@tanstack/react-query';
 import {
     UserPlus,
     Camera,
@@ -25,36 +25,25 @@ import './Dashboard.css';
 export const Dashboard = () => {
     const { user } = useAuth();
 
-    const [isLoadingStats, setIsLoadingStats] = useState(true);
-    const [stats, setStats] = useState({
-        totalEmployees: 0,
-        presentToday: 0,
-        status: 'Loading...'
+    // ⚡ Bolt: Implemented React Query to cache expensive API calls for dashboard stats.
+    // This reduces redundant network requests and prevents unnecessary re-renders
+    // when navigating back and forth to the dashboard.
+    const {
+        data,
+        isFetching: isLoadingStats, // use isFetching to show loading state during manual refetch
+        isError: hasError,
+        refetch: fetchStats,
+    } = useQuery({
+        queryKey: ['attendanceStats'],
+        queryFn: getAttendanceStats,
+        staleTime: 5 * 60 * 1000, // 5 minutes cache to prevent rapid refetching
     });
-    const [hasError, setHasError] = useState(false);
 
-    const fetchStats = useCallback(async () => {
-        setIsLoadingStats(true);
-        setHasError(false);
-        try {
-            const data = await getAttendanceStats();
-            setStats({
-                totalEmployees: data.totalEmployees,
-                presentToday: data.presentToday,
-                status: 'Active' // We'll assume Active if API responds
-            });
-        } catch (error) {
-            console.error('Failed to load stats:', error);
-            setHasError(true);
-            setStats(prev => ({ ...prev, status: 'Error loading stats' }));
-        } finally {
-            setIsLoadingStats(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchStats();
-    }, [fetchStats]);
+    const stats = {
+        totalEmployees: data?.totalEmployees ?? 0,
+        presentToday: data?.presentToday ?? 0,
+        status: hasError ? 'Error loading stats' : (isLoadingStats ? 'Loading...' : 'Active')
+    };
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -99,7 +88,7 @@ export const Dashboard = () => {
                         <AlertTriangle size={48} className="mx-auto text-warning mb-sm" aria-hidden="true" />
                         <h3 className="text-lg font-semibold mb-xs">Failed to load statistics</h3>
                         <p className="text-muted mb-md">We couldn't retrieve the latest dashboard data.</p>
-                        <button onClick={fetchStats} className="btn btn-secondary" title="Retry loading statistics">
+                        <button onClick={() => fetchStats()} className="btn btn-secondary" title="Retry loading statistics">
                             <RefreshCw size={18} aria-hidden="true" />
                             Try Again
                         </button>
