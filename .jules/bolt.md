@@ -43,3 +43,8 @@
 ## 2025-01-20 - [Real API Integration for Dashboard Stats]
 **Learning:** Avoid dynamic imports inside `useEffect` for API wrapper functions, as it delays the data fetch and worsens user-facing latency. Also added unmount checks.
 **Action:** Replaced the mock data with actual API integration via `getAttendanceStats`. Used static import.
+
+## Optimization: Dashboard Stats API Caching
+- **Problem**: The dashboard was calling `getAttendanceStats` on every render, which is an expensive API call querying the database for all attendance records for the day.
+- **Optimization**: Implemented `@tanstack/react-query` to cache the dashboard stats API call. Wrapped the application with `QueryClientProvider` and used `useQuery` in `Dashboard.tsx` with a `staleTime` of 5 minutes.
+- **Result**: Reduced redundant network requests when navigating back and forth to the dashboard. The dashboard now loads instantly on subsequent visits within the 5-minute cache window, significantly reducing backend load and improving perceived performance.
