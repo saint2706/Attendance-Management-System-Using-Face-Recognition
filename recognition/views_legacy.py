@@ -3544,9 +3544,11 @@ def view_attendance_employee(request):
                 time_qs = Time.objects.filter(
                     user=user, date__gte=date_from, date__lte=date_to
                 ).order_by("-date")
-                present_qs = Present.objects.filter(
-                    user=user, date__gte=date_from, date__lte=date_to
-                ).order_by("-date")
+                present_qs = (
+                    Present.objects.filter(user=user, date__gte=date_from, date__lte=date_to)
+                    .select_related("user")
+                    .order_by("-date")
+                )
 
                 if present_qs.exists():
                     qs, chart_url = hours_vs_date_given_employee(present_qs, time_qs)
@@ -3589,9 +3591,11 @@ def view_my_attendance_employee_login(request):
             time_qs = Time.objects.filter(
                 user=user, date__gte=date_from, date__lte=date_to
             ).order_by("-date")
-            present_qs = Present.objects.filter(
-                user=user, date__gte=date_from, date__lte=date_to
-            ).order_by("-date")
+            present_qs = (
+                Present.objects.filter(user=user, date__gte=date_from, date__lte=date_to)
+                .select_related("user")
+                .order_by("-date")
+            )
 
             if present_qs.exists():
                 qs, chart_url = hours_vs_date_given_employee(present_qs, time_qs)
