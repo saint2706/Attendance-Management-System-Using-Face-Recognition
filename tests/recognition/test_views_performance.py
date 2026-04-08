@@ -14,17 +14,23 @@ from users.models import Direction, Present, Time
 def test_n_plus_one_hours_vs_employee_given_date():
     # Setup
     date = timezone.localdate()
-    users = []
-    # Create 5 users
-    for i in range(5):
-        u = User.objects.create_user(username=f"user{i}", password="password")
-        users.append(u)
-        Present.objects.create(user=u, date=date, present=True)
-        # Add some time entries
-        t1 = timezone.now()
-        t2 = t1 + datetime.timedelta(hours=8)
-        Time.objects.create(user=u, date=date, time=t1, direction=Direction.IN)
-        Time.objects.create(user=u, date=date, time=t2, direction=Direction.OUT)
+
+    from django.contrib.auth.hashers import make_password
+
+    hashed_password = make_password("password")
+    users = [User(username=f"user{i}", password=hashed_password) for i in range(5)]
+    created_users = User.objects.bulk_create(users)
+
+    presents = [Present(user=u, date=date, present=True) for u in created_users]
+    Present.objects.bulk_create(presents)
+
+    times = []
+    t1 = timezone.now()
+    t2 = t1 + datetime.timedelta(hours=8)
+    for u in created_users:
+        times.append(Time(user=u, date=date, time=t1, direction=Direction.IN))
+        times.append(Time(user=u, date=date, time=t2, direction=Direction.OUT))
+    Time.objects.bulk_create(times)
 
     present_qs = Present.objects.filter(date=date)
     time_qs = Time.objects.filter(date=date)
@@ -59,17 +65,26 @@ def test_n_plus_one_hours_vs_employee_given_date():
 @pytest.mark.django_db
 def test_n_plus_one_hours_vs_date_given_employee():
     # Setup
-    user = User.objects.create_user(username="user_date", password="password")
+    from django.contrib.auth.hashers import make_password
+
+    hashed_password = make_password("password")
+    user = User.objects.create(username="user_date", password=hashed_password)
     today = timezone.localdate()
     days = 5
 
+    presents = []
+    times = []
+    t1 = timezone.now()
+    t2 = t1 + datetime.timedelta(hours=8)
+
     for i in range(days):
         d = today - datetime.timedelta(days=i)
-        Present.objects.create(user=user, date=d, present=True)
-        t1 = timezone.now()
-        t2 = t1 + datetime.timedelta(hours=8)
-        Time.objects.create(user=user, date=d, time=t1, direction=Direction.IN)
-        Time.objects.create(user=user, date=d, time=t2, direction=Direction.OUT)
+        presents.append(Present(user=user, date=d, present=True))
+        times.append(Time(user=user, date=d, time=t1, direction=Direction.IN))
+        times.append(Time(user=user, date=d, time=t2, direction=Direction.OUT))
+
+    Present.objects.bulk_create(presents)
+    Time.objects.bulk_create(times)
 
     present_qs = Present.objects.filter(user=user)
     time_qs = Time.objects.filter(user=user)
