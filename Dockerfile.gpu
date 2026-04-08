@@ -3,6 +3,9 @@
 # GPU-accelerated Dockerfile for DeepFace/TensorFlow
 # Requires: nvidia-container-toolkit and NVIDIA GPU driver on host
 
+# Build arguments:
+# CUDA_VERSION: The NVIDIA CUDA version for the base image
+# PYTHON_VERSION: The Python runtime version to install in the CUDA base
 ARG CUDA_VERSION=12.3.2
 ARG PYTHON_VERSION=3.12
 
