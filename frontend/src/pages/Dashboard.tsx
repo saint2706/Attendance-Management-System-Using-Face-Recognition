@@ -13,7 +13,8 @@ import {
     UserCheck,
     Activity,
     AlertTriangle,
-    RefreshCw
+    RefreshCw,
+    Loader2
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -88,9 +89,13 @@ export const Dashboard = () => {
                         <AlertTriangle size={48} className="mx-auto text-warning mb-sm" aria-hidden="true" />
                         <h3 className="text-lg font-semibold mb-xs">Failed to load statistics</h3>
                         <p className="text-muted mb-md">We couldn't retrieve the latest dashboard data.</p>
-                        <button onClick={() => fetchStats()} className="btn btn-secondary" title="Retry loading statistics">
-                            <RefreshCw size={18} aria-hidden="true" />
-                            Try Again
+                        <button onClick={() => fetchStats()} className="btn btn-secondary" title="Retry loading statistics" disabled={isLoadingStats}>
+                            {isLoadingStats ? (
+                                <Loader2 size={18} className="animate-spin" aria-hidden="true" />
+                            ) : (
+                                <RefreshCw size={18} aria-hidden="true" />
+                            )}
+                            {isLoadingStats ? 'Retrying...' : 'Try Again'}
                         </button>
                     </div>
                 ) : !isLoadingStats && stats.totalEmployees === 0 ? (
