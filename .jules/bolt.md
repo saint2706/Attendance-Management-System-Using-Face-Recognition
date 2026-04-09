@@ -48,3 +48,11 @@
 - **Problem**: The dashboard was calling `getAttendanceStats` on every render, which is an expensive API call querying the database for all attendance records for the day.
 - **Optimization**: Implemented `@tanstack/react-query` to cache the dashboard stats API call. Wrapped the application with `QueryClientProvider` and used `useQuery` in `Dashboard.tsx` with a `staleTime` of 5 minutes.
 - **Result**: Reduced redundant network requests when navigating back and forth to the dashboard. The dashboard now loads instantly on subsequent visits within the 5-minute cache window, significantly reducing backend load and improving perceived performance.
+## Optimization: Dashboard API Path Correction
+- **Problem**: The `getAttendanceStats` API function in `frontend/src/api/attendance.ts` was pointing to `/dashboard/stats/` instead of `/attendance/stats/`.
+- **Optimization**: Corrected the endpoint URL to `/attendance/stats/` which is the correct URL for the AttendanceViewSet.
+- **Result**: Reduced 404 errors and correctly mapped the frontend to the backend endpoint.
+## Optimization: Dashboard React Memoization
+- **Problem**: Admin Action cards were rerendering unnecessarily on Dashboard state changes.
+- **Optimization**: Extracted `ActionCard` component in `frontend/src/components/ActionCard.tsx` and memoized it using `React.memo()`. Replaced inline `Link` tags in `frontend/src/pages/Dashboard.tsx` with `ActionCard` to improve React rendering efficiency.
+- **Result**: Reduced React rerenders in Dashboard.
