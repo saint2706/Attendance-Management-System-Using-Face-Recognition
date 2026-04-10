@@ -3,5 +3,6 @@ Disallow: /admin/
 Disallow: /django-admin/
 Disallow: /api/
 Allow: /
+Allow: /llms.txt
 
 Sitemap: https://attendance-system.example.com/sitemap.xml

@@ -81,7 +81,7 @@ export const Home = () => {
                         aria-hidden="true"
                         style={{ color: 'var(--color-primary)' }}
                     />
-                    <h1 className="hero-title" id="hero-title">
+                    <h1 className="hero-title" id="hero-title" itemProp="name">
                         Smart Attendance System
                     </h1>
                     <p className="hero-subtitle">
