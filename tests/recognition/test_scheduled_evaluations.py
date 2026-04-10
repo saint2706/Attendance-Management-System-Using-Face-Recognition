@@ -5,6 +5,8 @@ from __future__ import annotations
 import datetime as dt
 from unittest.mock import patch
 
+from django.contrib.auth.hashers import make_password
+
 import pytest
 
 from recognition import health
@@ -347,9 +349,9 @@ class TestSystemHealthDashboardWithEvaluation:
         """The system health dashboard should include evaluation state."""
         from recognition import monitoring
 
-        admin = django_user_model.objects.create_user(
+        admin = django_user_model.objects.create(
             username="admin",
-            password="AdminPass!234",
+            password=make_password("AdminPass!234"),
             is_staff=True,
         )
         client.force_login(admin)

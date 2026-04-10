@@ -1,6 +1,7 @@
 """Tests for attendance-related database indexes and query patterns."""
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.db import connection
 from django.utils import timezone
 
@@ -21,7 +22,9 @@ def _collect_index_names(model) -> set[str]:
 def test_present_lookups_by_user_and_date_succeed():
     """Filtering present records by user and date should return expected rows."""
 
-    user = get_user_model().objects.create_user(username="present-user", password="password123")
+    user = get_user_model().objects.create(
+        username="present-user", password=make_password("password123")
+    )
     today = timezone.localdate()
 
     Present.objects.create(user=user, date=today, present=True)
@@ -35,7 +38,9 @@ def test_present_lookups_by_user_and_date_succeed():
 def test_time_lookups_by_user_and_date_succeed():
     """Filtering time records by user and date should return expected rows."""
 
-    user = get_user_model().objects.create_user(username="time-user", password="password123")
+    user = get_user_model().objects.create(
+        username="time-user", password=make_password("password123")
+    )
     now = timezone.now()
     event_date = now.date()
 

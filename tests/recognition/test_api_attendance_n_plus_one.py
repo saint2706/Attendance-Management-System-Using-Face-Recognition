@@ -13,7 +13,9 @@ from users.models import Direction, RecognitionAttempt
 @pytest.mark.django_db
 def test_attendance_api_query_count():
     User = get_user_model()
-    admin = User.objects.create_superuser(username="admin", password="password")
+    admin = User.objects.create(
+        username="admin", password=make_password("password"), is_staff=True, is_superuser=True
+    )
     client = APIClient()
     client.force_authenticate(user=admin)
 

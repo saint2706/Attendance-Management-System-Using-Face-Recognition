@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Iterable, List
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.contrib.messages import get_messages
 from django.test import override_settings
 from django.urls import reverse
@@ -24,8 +25,8 @@ pytestmark = [pytest.mark.django_db, pytest.mark.attendance_flows]
 def _create_admin_user() -> Any:
     """Return a staff user suitable for exercising admin-only flows."""
 
-    return get_user_model().objects.create_user(
-        username="admin", password="AdminPass!234", is_staff=True
+    return get_user_model().objects.create(
+        username="admin", password=make_password("AdminPass!234"), is_staff=True
     )
 
 
@@ -56,7 +57,9 @@ def test_add_photos_creates_dataset_for_existing_user(client, monkeypatch):
     """Posting to the Add Photos view should trigger dataset creation."""
 
     admin = _create_admin_user()
-    employee = get_user_model().objects.create_user(username="face-user", password="SomePass!234")
+    employee = get_user_model().objects.create(
+        username="face-user", password=make_password("SomePass!234")
+    )
     client.force_login(admin)
 
     created_for: Dict[str, str] = {}
@@ -121,8 +124,8 @@ class _StubWebcamManager:
 def test_mark_attendance_records_successful_check_in(client, django_user_model, monkeypatch):
     """Successful recognition should enqueue a check-in record for processing."""
 
-    employee = django_user_model.objects.create_user(
-        username="recognised-user", password="Password!234"
+    employee = django_user_model.objects.create(
+        username="recognised-user", password=make_password("Password!234")
     )
     client.force_login(employee)
 
@@ -195,8 +198,8 @@ def test_admin_can_view_attendance_by_date(client, monkeypatch):
     """Admin attendance reports should surface annotated attendance data."""
 
     admin = _create_admin_user()
-    employee = get_user_model().objects.create_user(
-        username="report-user", password="ReportPass!234"
+    employee = get_user_model().objects.create(
+        username="report-user", password=make_password("ReportPass!234")
     )
     client.force_login(admin)
 
@@ -253,8 +256,8 @@ def test_attendance_dashboard_shows_summary_metrics(client, monkeypatch):
 def test_registration_training_and_attendance_flow(client, django_user_model, monkeypatch):
     """A staff user can register, trigger training, and mark attendance successfully."""
 
-    admin = django_user_model.objects.create_user(
-        username="admin-flow", password="AdminPass!234", is_staff=True
+    admin = django_user_model.objects.create(
+        username="admin-flow", password=make_password("AdminPass!234"), is_staff=True
     )
     client.force_login(admin)
 
@@ -393,8 +396,8 @@ def test_registration_training_and_attendance_flow(client, django_user_model, mo
 def test_liveness_failure_blocks_attendance(client, django_user_model, monkeypatch):
     """Spoofed faces should not be queued for attendance updates."""
 
-    employee = django_user_model.objects.create_user(
-        username="liveness-user", password="Password!234"
+    employee = django_user_model.objects.create(
+        username="liveness-user", password=make_password("Password!234")
     )
     client.force_login(employee)
 
@@ -460,8 +463,8 @@ def test_liveness_failure_blocks_attendance(client, django_user_model, monkeypat
 def test_unknown_face_does_not_create_attendance_records(client, django_user_model, monkeypatch):
     """High-distance matches should be ignored and not create attendance records."""
 
-    employee = django_user_model.objects.create_user(
-        username="unknown-face", password="Password!234"
+    employee = django_user_model.objects.create(
+        username="unknown-face", password=make_password("Password!234")
     )
     client.force_login(employee)
 
@@ -525,7 +528,9 @@ def test_unknown_face_does_not_create_attendance_records(client, django_user_mod
 def test_missing_training_data_short_circuits_attendance(client, django_user_model, monkeypatch):
     """The attendance flow should guide users when no encrypted dataset is present."""
 
-    employee = django_user_model.objects.create_user(username="no-dataset", password="Password!234")
+    employee = django_user_model.objects.create(
+        username="no-dataset", password=make_password("Password!234")
+    )
     client.force_login(employee)
 
     # Patch at the location where functions are used (views_legacy), not where exported (views)

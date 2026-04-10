@@ -3,6 +3,7 @@ import sys
 from unittest.mock import MagicMock, patch
 
 import django
+from django.contrib.auth.hashers import make_password
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.urls import reverse
@@ -44,7 +45,7 @@ def _exercise_rate_limit(client, settings, url_name: str) -> tuple[int, int]:
 
 
 def test_mark_attendance_in_rate_limit_blocks_after_threshold(client, django_user_model, settings):
-    user = django_user_model.objects.create_user("rate", password="password")
+    user = django_user_model.objects.create(username="rate", password=make_password("password"))
     client.force_login(user)
 
     call_count, status_code = _exercise_rate_limit(client, settings, "mark-your-attendance")
@@ -54,7 +55,7 @@ def test_mark_attendance_in_rate_limit_blocks_after_threshold(client, django_use
 
 
 def test_mark_attendance_out_rate_limit_blocks_after_threshold(client, django_user_model, settings):
-    user = django_user_model.objects.create_user("rate-out", password="password")
+    user = django_user_model.objects.create(username="rate-out", password=make_password("password"))
     client.force_login(user)
 
     call_count, status_code = _exercise_rate_limit(client, settings, "mark-your-attendance-out")

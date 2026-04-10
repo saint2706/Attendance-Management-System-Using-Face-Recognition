@@ -1,5 +1,6 @@
 import os
 
+from django.contrib.auth.hashers import make_password
 from django.utils import timezone
 
 import pytest
@@ -23,7 +24,7 @@ pytestmark = [pytest.mark.slow, pytest.mark.integration]
 def test_process_attendance_batch_creates_records(settings, django_user_model):
     settings.CELERY_TASK_ALWAYS_EAGER = True
     username = "celery-user"
-    user = django_user_model.objects.create_user(username=username, password="pass1234")
+    user = django_user_model.objects.create(username=username, password=make_password("pass1234"))
 
     attempt_in = RecognitionAttempt.objects.create(
         username=username,

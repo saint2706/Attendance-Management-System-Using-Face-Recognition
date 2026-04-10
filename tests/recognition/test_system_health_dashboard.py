@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import os
 
+from django.contrib.auth.hashers import make_password
 from django.core.cache import cache
 from django.urls import reverse
 
@@ -70,7 +71,9 @@ def test_health_helpers_report_dataset_and_model(tmp_path, monkeypatch):
 def test_recognition_activity_captures_attempts(django_user_model):
     """Recognition activity should expose last attempts and outcomes."""
 
-    user = django_user_model.objects.create_user(username="activity-user", password="Password!234")
+    user = django_user_model.objects.create(
+        username="activity-user", password=make_password("Password!234")
+    )
 
     RecognitionAttempt.objects.create(
         username=user.username,
@@ -98,9 +101,9 @@ def test_recognition_activity_captures_attempts(django_user_model):
 def test_system_health_dashboard_context(client, django_user_model, monkeypatch):
     """The admin dashboard should expose dataset, model, worker, and activity state."""
 
-    admin = django_user_model.objects.create_user(
+    admin = django_user_model.objects.create(
         username="admin",
-        password="AdminPass!234",
+        password=make_password("AdminPass!234"),
         is_staff=True,
     )
     client.force_login(admin)

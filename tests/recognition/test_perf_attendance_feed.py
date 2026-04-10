@@ -11,9 +11,9 @@ from users.models import Direction, RecognitionAttempt
 
 @pytest.mark.django_db
 def test_attendance_session_feed_query_count(client):
-    admin = get_user_model().objects.create_user(
+    admin = get_user_model().objects.create(
         username="admin",
-        password="password",
+        password=make_password("password"),
         is_staff=True,
     )
     client.force_login(admin)
@@ -65,9 +65,9 @@ def test_attendance_session_feed_query_count(client):
 @pytest.mark.django_db
 def test_attendance_session_feed_query_count_mixed_scenarios(client):
     """Test query count with mixed scenarios: some with username, some without."""
-    admin = get_user_model().objects.create_user(
+    admin = get_user_model().objects.create(
         username="admin",
-        password="password",
+        password=make_password("password"),
         is_staff=True,
     )
     client.force_login(admin)

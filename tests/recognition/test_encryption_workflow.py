@@ -182,8 +182,8 @@ class EncryptionWorkflowTests(TestCase):
         model_instance = DummyModel()
         mock_svc.return_value = model_instance
 
-        staff_user = User.objects.create_user(
-            "admin", "admin@example.com", "password", is_staff=True
+        staff_user = User.objects.create(
+            username="admin", email="admin@example.com", password="password", is_staff=True
         )
         request = self.factory.get("/train/")
         request.user = staff_user

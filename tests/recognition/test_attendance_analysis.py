@@ -15,7 +15,9 @@ import django  # noqa: E402
 if not django.apps.apps.ready:
     django.setup()
 
+
 from django.contrib.auth import get_user_model  # noqa: E402
+from django.contrib.auth.hashers import make_password  # noqa: E402
 from django.contrib.auth.models import Group  # noqa: E402
 
 from recognition.analysis import AttendanceAnalytics  # noqa: E402
@@ -35,7 +37,7 @@ User = get_user_model()
 @pytest.mark.django_db
 def test_get_daily_trends_with_breaks_and_filters():
     analytics = AttendanceAnalytics()
-    user = User.objects.create_user("alice", password="test1234")
+    user = User.objects.create(username="alice", password=make_password("test1234"))
 
     day1 = datetime.date(2024, 1, 2)
     day2 = datetime.date(2024, 1, 3)
@@ -112,9 +114,9 @@ def test_get_department_summary_handles_unassigned_department():
     analytics = AttendanceAnalytics()
     group = Group.objects.create(name="Sales")
 
-    sales_user = User.objects.create_user("bob", password="pass1234")
+    sales_user = User.objects.create(username="bob", password=make_password("pass1234"))
     sales_user.groups.add(group)
-    other_user = User.objects.create_user("charlie", password="pass1234")
+    other_user = User.objects.create(username="charlie", password=make_password("pass1234"))
 
     Present.objects.create(user=sales_user, date=datetime.date(2024, 2, 1), present=True)
     Present.objects.create(user=sales_user, date=datetime.date(2024, 2, 2), present=False)
@@ -141,7 +143,7 @@ def test_get_department_summary_handles_unassigned_department():
 @pytest.mark.django_db
 def test_get_attendance_prediction_with_and_without_history():
     analytics = AttendanceAnalytics()
-    user = User.objects.create_user("dana", password="pass1234")
+    user = User.objects.create(username="dana", password=make_password("pass1234"))
 
     empty_prediction = analytics.get_attendance_prediction(employee_id=user.id)
     assert empty_prediction["prediction"] is None
