@@ -240,9 +240,13 @@ export const MarkAttendance = () => {
                         <div className="camera-error" role="alert" aria-live="assertive">
                             <CameraOff size={48} aria-hidden="true" />
                             <p>{error}</p>
-                            <button onClick={startCamera} className="btn btn-primary" title="Retry connecting to camera">
-                                <RefreshCw size={18} aria-hidden="true" />
-                                Retry
+                            <button onClick={startCamera} className="btn btn-primary" title="Retry connecting to camera" disabled={isInitializing}>
+                                {isInitializing ? (
+                                    <Loader2 size={18} className="animate-spin" aria-hidden="true" />
+                                ) : (
+                                    <RefreshCw size={18} aria-hidden="true" />
+                                )}
+                                {isInitializing ? 'Retrying...' : 'Retry'}
                             </button>
                         </div>
                     ) : (

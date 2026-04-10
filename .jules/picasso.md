@@ -36,3 +36,4 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 - Added explicit `title` tooltips to the main call-to-action buttons in `Home.tsx` ("Mark Time-In", "Mark Time-Out", "Dashboard Login") to provide additional context.
 - Added `title` tooltips to the "Return Home", "Mark Another", "Try Again", and "Retry" action buttons in the `MarkAttendance.tsx` page to improve intent clarity.
 - Added descriptive `title` tooltips to the "Try Again" error state button and the "Register Employee" empty state link in the `Dashboard.tsx` view for better usability.
+* When adding a loading indicator, be sure to use `lucide-react`'s `Loader2` and make sure it is imported properly. It's common to miss the import when inserting the element. Always check lint and build to verify.
