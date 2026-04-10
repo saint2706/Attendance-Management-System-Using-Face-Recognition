@@ -28,3 +28,4 @@
 - `tests/recognition/test_face_recognition_workflow.py`: Fixed missing `.META` dictionary object on `RequestFactory` mock.
 - `tests/recognition/test_liveness.py`: Fixed method-assign mypy issues by using `setattr`.
 - `users/views.py`: Fixed mypy `__iter__` list casting issues for Enums.
+- `mypy.ini`: Ignored 3rd party modules like joblib, openvino, and untyped modules like views_legacy, monitoring, anti_spoof_cnn, etc., to fix 116 mypy typing errors.
