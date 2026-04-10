@@ -71,7 +71,7 @@ export const getAttendanceRecords = async (params?: {
  * @returns {Promise<AttendanceStats>} A promise resolving to the attendance statistics.
  */
 export const getAttendanceStats = async (): Promise<AttendanceStats> => {
-    const response = await apiClient.get<AttendanceStats>('/dashboard/stats/');
+    const response = await apiClient.get<AttendanceStats>('/attendance/stats/');
     return response.data;
 };
 

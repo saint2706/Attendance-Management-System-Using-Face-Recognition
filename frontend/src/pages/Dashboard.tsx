@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { ActionCard } from '../components/ActionCard';
+
 import { useAuth } from '../contexts/AuthContext';
 import { getAttendanceStats } from '../api/attendance';
 import { useQuery } from '@tanstack/react-query';
@@ -159,55 +161,11 @@ export const Dashboard = () => {
             <section className="actions-section" aria-labelledby="actions-title">
                 <h2 className="section-title" id="actions-title">Admin Actions</h2>
                 <div className="actions-grid">
-                    <Link to="/employees/register" className="action-card card card-elevated" title="Register a new employee">
-                        <div className="card-body">
-                            <UserPlus size={32} className="action-icon" aria-hidden="true" />
-                            <h3>Register Employee</h3>
-                            <p className="text-muted text-sm">
-                                Add a new employee to the system
-                            </p>
-                        </div>
-                    </Link>
-
-                    <Link to="/add-photos" className="action-card card card-elevated" title="Capture photos for face recognition">
-                        <div className="card-body">
-                            <Camera size={32} className="action-icon" aria-hidden="true" />
-                            <h3>Add Photos</h3>
-                            <p className="text-muted text-sm">
-                                Capture photos for face recognition
-                            </p>
-                        </div>
-                    </Link>
-
-                    <Link to="/train" className="action-card card card-elevated" title="Update the recognition model">
-                        <div className="card-body">
-                            <Brain size={32} className="action-icon" aria-hidden="true" />
-                            <h3>Train Model</h3>
-                            <p className="text-muted text-sm">
-                                Update the recognition model
-                            </p>
-                        </div>
-                    </Link>
-
-                    <Link to="/attendance" className="action-card card card-elevated" title="Access attendance reports">
-                        <div className="card-body">
-                            <ChartBar size={32} className="action-icon" aria-hidden="true" />
-                            <h3>View Attendance</h3>
-                            <p className="text-muted text-sm">
-                                Access attendance reports
-                            </p>
-                        </div>
-                    </Link>
-
-                    <Link to="/session" className="action-card card card-elevated" title="Monitor live recognition">
-                        <div className="card-body">
-                            <Radio size={32} className="action-icon" aria-hidden="true" />
-                            <h3>Attendance Session</h3>
-                            <p className="text-muted text-sm">
-                                Monitor live recognition
-                            </p>
-                        </div>
-                    </Link>
+                    <ActionCard to="/employees/register" title="Register a new employee" icon={UserPlus} heading="Register Employee" description="Add a new employee to the system" />
+                    <ActionCard to="/add-photos" title="Capture photos for face recognition" icon={Camera} heading="Add Photos" description="Capture photos for face recognition" />
+                    <ActionCard to="/train" title="Update the recognition model" icon={Brain} heading="Train Model" description="Update the recognition model" />
+                    <ActionCard to="/attendance" title="Access attendance reports" icon={ChartBar} heading="View Attendance" description="Access attendance reports" />
+                    <ActionCard to="/session" title="Monitor live recognition" icon={Radio} heading="Attendance Session" description="Monitor live recognition" />
                 </div>
             </section>
         </main>
