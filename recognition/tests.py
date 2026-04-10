@@ -50,11 +50,11 @@ class DeepFaceAttendanceTest(TestCase):
     def test_default_deepface_configuration(self):
         """Defaults should mirror the legacy DeepFace configuration."""
 
-        self.assertEqual(views._get_face_recognition_model(), "Facenet")
-        self.assertEqual(views._get_face_detection_backend(), "ssd")
-        self.assertEqual(views._get_deepface_distance_metric(), "euclidean_l2")
-        self.assertFalse(views._should_enforce_detection())
-        self.assertTrue(views._is_liveness_enabled())
+        self.assertEqual(views.get_face_recognition_model(), "Facenet")
+        self.assertEqual(views.get_face_detection_backend(), "ssd")
+        self.assertEqual(views.get_deepface_distance_metric(), "euclidean_l2")
+        self.assertFalse(views.should_enforce_detection())
+        self.assertTrue(views.is_liveness_enabled())
 
     def test_deepface_configuration_overrides(self):
         """Environment or settings overrides should cascade through helpers."""
@@ -69,11 +69,11 @@ class DeepFaceAttendanceTest(TestCase):
         }
 
         with self.settings(DEEPFACE_OPTIMIZATIONS=overrides):
-            self.assertEqual(views._get_face_recognition_model(), "ArcFace")
-            self.assertEqual(views._get_face_detection_backend(), "retinaface")
-            self.assertEqual(views._get_deepface_distance_metric(), "cosine")
-            self.assertTrue(views._should_enforce_detection())
-            self.assertFalse(views._is_liveness_enabled())
+            self.assertEqual(views.get_face_recognition_model(), "ArcFace")
+            self.assertEqual(views.get_face_detection_backend(), "retinaface")
+            self.assertEqual(views.get_deepface_distance_metric(), "cosine")
+            self.assertTrue(views.should_enforce_detection())
+            self.assertFalse(views.is_liveness_enabled())
 
     def _setup_mocks(self, mock_manager_factory, mock_cv2, frames=None):
         """Configure common mocks for video processing to isolate view logic."""

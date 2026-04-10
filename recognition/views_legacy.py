@@ -3790,7 +3790,7 @@ def get_loaded_model():
 
             _loaded_classes = np.array(json.loads(decrypted_classes.decode("utf-8")))
         else:
-            _loaded_classes = np.load(io.BytesIO(decrypted_classes), allow_pickle=True)
+            _loaded_classes = np.load(io.BytesIO(decrypted_classes), allow_pickle=False)
         _loaded_model_mtime = current_mtime
     except Exception as exc:
         logger.warning("Failed to load cached ML model: %s", exc)
