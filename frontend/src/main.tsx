@@ -3,6 +3,10 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.tsx'
 
+/**
+ * The main entry point for the React application.
+ * Initializes the query client and renders the root App component.
+ */
 const queryClient = new QueryClient()
 
 createRoot(document.getElementById('root')!).render(
