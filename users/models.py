@@ -56,7 +56,7 @@ class Present(models.Model):
             models.Index(fields=["date", "present"], name="users_present_date_present_idx"),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation of the attendance record."""
         return f"{self.user.username} - {self.date} - {'Present' if self.present else 'Absent'}"
 
@@ -101,7 +101,7 @@ class Time(models.Model):
             models.Index(fields=["date", "user"], name="users_time_date_user_idx"),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation of the time entry."""
         event_type = self.get_direction_display()
         if self.time is not None:
