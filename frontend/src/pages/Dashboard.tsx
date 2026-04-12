@@ -59,6 +59,7 @@ export const Dashboard = () => {
         <main className="dashboard animate-fade-in">
             <title>Dashboard - Smart Attendance System</title>
             <meta name="description" content="Admin dashboard for managing the Smart Attendance System." />
+            <meta name="robots" content="noindex, nofollow" />
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
@@ -67,7 +68,7 @@ export const Dashboard = () => {
                         "@type": "WebPage",
                         "name": "Admin Dashboard - Smart Attendance System",
                         "description": "Admin dashboard for managing the Smart Attendance System.",
-                        "url": "https://attendance-system.example.com/dashboard"
+                        "url": window.location.origin + "/dashboard"
                     }).replace(/</g, '\\u003c')
                 }}
             />

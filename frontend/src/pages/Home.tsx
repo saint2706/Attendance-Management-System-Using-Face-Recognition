@@ -24,6 +24,7 @@ export const Home = () => {
         <main className="home animate-fade-in">
             <title>Home - Smart Attendance System</title>
             <meta name="description" content="Automated attendance tracking using face recognition technology" />
+            <link rel="canonical" href={window.location.origin + "/"} />
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
@@ -40,10 +41,10 @@ export const Home = () => {
                                 "@type": "WebSite",
                                 "name": "Smart Attendance System",
                                 "description": "Automated attendance tracking using face recognition technology",
-                                "url": "https://attendance-system.example.com/",
+                                "url": window.location.origin + "/",
                                 "potentialAction": {
                                     "@type": "SearchAction",
-                                    "target": "https://attendance-system.example.com/search?q={search_term_string}",
+                                    "target": window.location.origin + "/search?q={search_term_string}",
                                     "query-input": "required name=search_term_string"
                                 }
                             },

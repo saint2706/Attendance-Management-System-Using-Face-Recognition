@@ -50,6 +50,7 @@ export const Login = () => {
         <main className="login-page animate-fade-in">
             <title>Login - Smart Attendance System</title>
             <meta name="description" content="Login page for the Smart Attendance System dashboard." />
+            <meta name="robots" content="noindex, nofollow" />
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
@@ -58,7 +59,7 @@ export const Login = () => {
                         "@type": "WebPage",
                         "name": "Login - Smart Attendance System",
                         "description": "Login page for the Smart Attendance System dashboard.",
-                        "url": "https://attendance-system.example.com/login"
+                        "url": window.location.origin + "/login"
                     }).replace(/</g, '\\u003c')
                 }}
             />

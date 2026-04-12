@@ -213,6 +213,7 @@ export const MarkAttendance = () => {
         <main className="mark-attendance animate-fade-in">
             <title>Mark Attendance - Smart Attendance System</title>
             <meta name="description" content="Mark your time-in or time-out using face recognition." />
+            <meta name="robots" content="noindex, nofollow" />
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
@@ -221,7 +222,7 @@ export const MarkAttendance = () => {
                         "@type": "WebPage",
                         "name": "Mark Attendance - Smart Attendance System",
                         "description": "Mark your attendance securely using face recognition.",
-                        "url": "https://attendance-system.example.com/mark-attendance"
+                        "url": window.location.origin + "/mark-attendance"
                     }).replace(/</g, '\\u003c')
                 }}
             />
