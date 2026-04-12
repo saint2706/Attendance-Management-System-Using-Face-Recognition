@@ -2,7 +2,13 @@ User-Agent: *
 Disallow: /admin/
 Disallow: /django-admin/
 Disallow: /api/
+Disallow: /dashboard
+Disallow: /mark-attendance
+Disallow: /session
+Disallow: /add-photos
+Disallow: /employees/register
+Disallow: /train
+Disallow: /setup-wizard
+Disallow: /attendance
 Allow: /
 Allow: /llms.txt
-
-Sitemap: https://attendance-system.example.com/sitemap.xml

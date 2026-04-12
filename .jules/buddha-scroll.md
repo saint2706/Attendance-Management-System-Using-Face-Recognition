@@ -14,3 +14,7 @@
 - [GEO] Updated frontend/public/robots.txt to explicitly allow /llms.txt for AI discoverability.
 - [GEO] Improved semantic HTML structure by converting root `div` components to `<main>` tags in `Home.tsx`, `Dashboard.tsx`, `Login.tsx`, and `MarkAttendance.tsx` to enhance SEO and AI vector friendliness.
 - [GEO] Verified that JSON-LD dangerouslySetInnerHTML usages are already properly sanitized with HTML escaping.
+- [SEO] Updated `robots.txt` and `frontend/public/robots.txt` to Disallow indexing of all private routes. Removed sitemap.xml to avoid duplicate content indexing.
+- [SEO] Added `noindex, nofollow` meta tags to private SPA pages (`Dashboard`, `Login`, `MarkAttendance`).
+- [SEO] Added canonical URL link to the `Home` page, and JSON-LD schema with `window.location.origin` for dynamic domains instead of hardcoding, to solidify its SEO authority.
+- [PERF] Preloaded Google Fonts in `frontend/index.html` to prevent Flash of Unstyled Text (FOUT) and improve LCP and CLS.
