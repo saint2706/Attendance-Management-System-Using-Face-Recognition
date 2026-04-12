@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.urls import reverse
 
 import pytest
@@ -16,9 +17,9 @@ def test_attendance_session_page_requires_login(client):
 
 @pytest.mark.django_db
 def test_attendance_session_feed_surfaces_liveness_and_outcomes(client):
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="session-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)

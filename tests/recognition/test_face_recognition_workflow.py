@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.core.cache import cache
 from django.test import RequestFactory, override_settings
 
@@ -83,7 +84,7 @@ class TestFaceRecognitionWorkflow:
         """The API should flip the recognition flag around the distance threshold."""
 
         # Create a test user for authentication
-        user = User.objects.create_user(username="testuser", password="testpass")
+        user = User.objects.create(username="testuser", password=make_password("testpass"))
 
         dataset_entry = {
             "embedding": np.array([0.1, 0.2, 0.3], dtype=float),
@@ -146,7 +147,7 @@ class TestFaceRecognitionWorkflow:
     def test_api_logs_attempt_metadata(self, monkeypatch) -> None:
         """Recognition attempts logged via the API should capture metadata."""
 
-        user = User.objects.create_user(username="jane", password="testpass")
+        user = User.objects.create(username="jane", password=make_password("testpass"))
 
         dataset_entry = {
             "embedding": np.array([0.1, 0.2, 0.3], dtype=float),

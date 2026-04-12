@@ -210,8 +210,8 @@ class SetupWizardStep2Tests(TestCase):
     def setUp(self):
         self.step2_url = reverse("setup-wizard-step2")
         User = get_user_model()
-        self.staff_user = User.objects.create_user(
-            username="wizard_staff", password="Testpass123", is_staff=True
+        self.staff_user = User.objects.create(
+            username="wizard_staff", password=make_password("Testpass123"), is_staff=True
         )
 
     def test_get_step2_without_step1_redirects(self):

@@ -8,6 +8,7 @@ These tests are designed to quickly validate that:
 
 from __future__ import annotations
 
+from django.contrib.auth.hashers import make_password
 from django.test import Client
 from django.urls import reverse
 
@@ -51,9 +52,9 @@ class TestAuthenticationSmokeTests:
 
     def test_can_login_with_valid_credentials(self, client: Client, django_user_model) -> None:
         """Valid credentials should allow login and redirect to dashboard."""
-        django_user_model.objects.create_user(
+        django_user_model.objects.create(
             username="smoke_test_user",
-            password="SmokeTestPass123!",
+            password=make_password("SmokeTestPass123!"),
             is_staff=True,
         )
         response = client.post(
@@ -91,9 +92,9 @@ class TestKeyEndpointsSmokeTests:
     def test_register_page_requires_admin(self, client: Client, django_user_model) -> None:
         """The register page should require staff/admin access."""
         # Non-staff user
-        user = django_user_model.objects.create_user(
+        user = django_user_model.objects.create(
             username="regular_user",
-            password="RegularPass123!",
+            password=make_password("RegularPass123!"),
             is_staff=False,
         )
         client.force_login(user)
@@ -103,9 +104,9 @@ class TestKeyEndpointsSmokeTests:
 
     def test_admin_can_access_register(self, client: Client, django_user_model) -> None:
         """Admin users should be able to access the register page."""
-        admin = django_user_model.objects.create_user(
+        admin = django_user_model.objects.create(
             username="admin_smoke",
-            password="AdminPass123!",
+            password=make_password("AdminPass123!"),
             is_staff=True,
         )
         client.force_login(admin)

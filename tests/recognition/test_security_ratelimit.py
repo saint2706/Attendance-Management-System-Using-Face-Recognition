@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.urls import reverse
@@ -19,7 +20,9 @@ def clear_rate_limit_cache():
 def test_train_view_rate_limit(client):
     """Test that the train view is rate limited."""
     # Create a staff user
-    user = User.objects.create_user(username="staff_user", password="password", is_staff=True)
+    user = User.objects.create(
+        username="staff_user", password=make_password("password"), is_staff=True
+    )
     client.force_login(user)
 
     url = reverse("train")
@@ -52,7 +55,9 @@ def test_train_view_rate_limit(client):
 def test_add_photos_view_rate_limit(client):
     """Test that the add_photos view is rate limited."""
     # Create a staff user
-    user = User.objects.create_user(username="staff_user", password="password", is_staff=True)
+    user = User.objects.create(
+        username="staff_user", password=make_password("password"), is_staff=True
+    )
     client.force_login(user)
 
     url = reverse("add-photos")

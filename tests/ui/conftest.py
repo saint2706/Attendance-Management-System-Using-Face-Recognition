@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterator
 from uuid import uuid4
 
+from django.contrib.auth.hashers import make_password
 from django.db import connection
 
 import pytest
@@ -80,10 +81,12 @@ def admin_account(django_user_model) -> AdminAccount:
             connection.close()
 
             # Create the superuser
-            user = django_user_model.objects.create_superuser(
+            user = django_user_model.objects.create(
                 username=username,
                 email=f"{username}@example.com",
-                password=password,
+                password=make_password(password),
+                is_staff=True,
+                is_superuser=True,
             )
             result["created"] = True
             result["user_id"] = user.id

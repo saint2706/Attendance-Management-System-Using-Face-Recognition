@@ -1,6 +1,7 @@
 """Tests for logout functionality."""
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.urls import reverse
 
 import pytest
@@ -12,8 +13,8 @@ User = get_user_model()
 def test_logout_get_request_not_allowed(client):
     """Test that GET request to logout endpoint returns 405."""
     # Create and login a user
-    user = User.objects.create_user(
-        username="testuser", email="test@example.com", password="testpass123"
+    user = User.objects.create(
+        username="testuser", email="test@example.com", password=make_password("testpass123")
     )
     client.force_login(user)
 
@@ -28,8 +29,8 @@ def test_logout_get_request_not_allowed(client):
 def test_logout_post_request_succeeds(client):
     """Test that POST request to logout endpoint works correctly."""
     # Create and login a user
-    user = User.objects.create_user(
-        username="testuser", email="test@example.com", password="testpass123"
+    user = User.objects.create(
+        username="testuser", email="test@example.com", password=make_password("testpass123")
     )
     client.force_login(user)
 
@@ -57,8 +58,8 @@ def test_logout_post_request_succeeds(client):
 def test_logout_with_follow_redirect(client):
     """Test that logout works and follows redirect properly."""
     # Create and login a user
-    user = User.objects.create_user(
-        username="testuser", email="test@example.com", password="testpass123"
+    user = User.objects.create(
+        username="testuser", email="test@example.com", password=make_password("testpass123")
     )
     client.force_login(user)
 

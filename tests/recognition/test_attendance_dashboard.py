@@ -4,6 +4,7 @@ import csv
 import io
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.urls import reverse
 from django.utils import timezone
 
@@ -24,9 +25,9 @@ def test_attendance_dashboard_requires_staff(client):
 @pytest.mark.django_db
 def test_attendance_dashboard_non_staff_user_redirected(client):
     """Non-staff authenticated users should be redirected."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="regular-user",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=False,
     )
     client.force_login(user)
@@ -38,9 +39,9 @@ def test_attendance_dashboard_non_staff_user_redirected(client):
 @pytest.mark.django_db
 def test_attendance_dashboard_accessible_by_staff(client):
     """Staff users should be able to access the dashboard."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="dashboard-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -53,9 +54,9 @@ def test_attendance_dashboard_accessible_by_staff(client):
 @pytest.mark.django_db
 def test_attendance_dashboard_shows_summary_stats(client):
     """Dashboard should display summary statistics."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="stats-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -85,9 +86,9 @@ def test_attendance_dashboard_shows_summary_stats(client):
 @pytest.mark.django_db
 def test_attendance_dashboard_filters_by_date_range(client):
     """Dashboard should filter results by date range."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="filter-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -111,9 +112,9 @@ def test_attendance_dashboard_filters_by_date_range(client):
 @pytest.mark.django_db
 def test_attendance_dashboard_filters_by_employee(client):
     """Dashboard should filter results by employee username."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="employee-filter-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -143,9 +144,9 @@ def test_attendance_dashboard_filters_by_employee(client):
 @pytest.mark.django_db
 def test_attendance_dashboard_filters_by_outcome(client):
     """Dashboard should filter results by outcome type."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="outcome-filter-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -174,9 +175,9 @@ def test_attendance_dashboard_filters_by_outcome(client):
 @pytest.mark.django_db
 def test_attendance_dashboard_chart_data_present(client):
     """Dashboard should include chart data in JSON format."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="chart-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -199,9 +200,9 @@ def test_export_csv_requires_staff(client):
 @pytest.mark.django_db
 def test_export_csv_returns_csv_file(client):
     """Staff users should be able to export attendance data as CSV."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="export-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -240,9 +241,9 @@ def test_export_csv_returns_csv_file(client):
 @pytest.mark.django_db
 def test_export_csv_respects_filters(client):
     """CSV export should respect the same filters as the dashboard."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="export-filter-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -265,9 +266,9 @@ def test_export_csv_respects_filters(client):
 @pytest.mark.django_db
 def test_export_csv_includes_attempts(client):
     """CSV export should include recognition attempts data."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="attempts-export-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -292,9 +293,9 @@ def test_export_csv_includes_attempts(client):
 @pytest.mark.django_db
 def test_export_csv_sanitizes_formula_injection(client):
     """CSV export should sanitize fields to prevent formula injection attacks."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="csv-security-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)

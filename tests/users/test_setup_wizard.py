@@ -1,6 +1,7 @@
 """Tests for the setup wizard functionality."""
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.test import Client
 from django.urls import reverse
 
@@ -17,7 +18,9 @@ class TestSetupWizardProgress:
 
     def test_create_wizard_progress(self):
         """Test creating a wizard progress instance."""
-        user = User.objects.create_user(username="admin", password="password", is_staff=True)
+        user = User.objects.create(
+            username="admin", password=make_password("password"), is_staff=True
+        )
         progress = SetupWizardProgress.objects.create(user=user)
 
         assert progress.current_step == SetupWizardProgress.Step.ORG_DETAILS
@@ -27,7 +30,9 @@ class TestSetupWizardProgress:
 
     def test_can_proceed_to_step(self):
         """Test step progression logic."""
-        user = User.objects.create_user(username="admin2", password="password", is_staff=True)
+        user = User.objects.create(
+            username="admin2", password=make_password("password"), is_staff=True
+        )
         progress = SetupWizardProgress.objects.create(user=user)
 
         # Step 1 is always accessible
@@ -62,7 +67,9 @@ class TestSetupWizardProgress:
 
     def test_get_step_status(self):
         """Test getting step status."""
-        user = User.objects.create_user(username="admin3", password="password", is_staff=True)
+        user = User.objects.create(
+            username="admin3", password=make_password("password"), is_staff=True
+        )
         progress = SetupWizardProgress.objects.create(
             user=user,
             current_step=SetupWizardProgress.Step.CAMERA_TEST,
@@ -82,18 +89,18 @@ class TestSetupWizardViews:
     @pytest.fixture
     def admin_user(self):
         """Create and return an admin user."""
-        return User.objects.create_user(
+        return User.objects.create(
             username="testadmin",
-            password="testpass123",
+            password=make_password("testpass123"),
             is_staff=True,
         )
 
     @pytest.fixture
     def regular_user(self):
         """Create and return a regular user."""
-        return User.objects.create_user(
+        return User.objects.create(
             username="regularuser",
-            password="testpass123",
+            password=make_password("testpass123"),
             is_staff=False,
         )
 

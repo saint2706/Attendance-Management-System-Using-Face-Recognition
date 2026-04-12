@@ -1,6 +1,7 @@
 """Tests for the fairness dashboard admin view."""
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.urls import reverse
 
 import pytest
@@ -17,9 +18,9 @@ def test_fairness_dashboard_requires_staff(client):
 @pytest.mark.django_db
 def test_fairness_dashboard_non_staff_user_redirected(client):
     """Non-staff authenticated users should be redirected."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="regular-user",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=False,
     )
     client.force_login(user)
@@ -31,9 +32,9 @@ def test_fairness_dashboard_non_staff_user_redirected(client):
 @pytest.mark.django_db
 def test_fairness_dashboard_accessible_by_staff(client):
     """Staff users should be able to access the dashboard."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="fairness-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -46,9 +47,9 @@ def test_fairness_dashboard_accessible_by_staff(client):
 @pytest.mark.django_db
 def test_fairness_dashboard_shows_no_audit_message_when_no_reports(client, tmp_path, settings):
     """Dashboard should show message when no audit has been run."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="no-audit-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -65,9 +66,9 @@ def test_fairness_dashboard_shows_no_audit_message_when_no_reports(client, tmp_p
 @pytest.mark.django_db
 def test_fairness_dashboard_displays_audit_results(client, tmp_path, settings):
     """Dashboard should display audit results when reports exist."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="audit-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -112,9 +113,9 @@ Generated on 2024-01-15T10:30:00 UTC
 @pytest.mark.django_db
 def test_fairness_dashboard_loads_csv_metrics(client, tmp_path, settings):
     """Dashboard should load and display CSV metrics."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="csv-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -141,9 +142,9 @@ def test_fairness_dashboard_loads_csv_metrics(client, tmp_path, settings):
 @pytest.mark.django_db
 def test_fairness_dashboard_flags_high_error_rates(client, tmp_path, settings):
     """Dashboard should flag groups with high FAR or FRR."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="flagged-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -170,9 +171,9 @@ def test_fairness_dashboard_flags_high_error_rates(client, tmp_path, settings):
 @pytest.mark.django_db
 def test_fairness_dashboard_shows_known_limitations(client):
     """Dashboard should show known limitations section."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="limitations-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
@@ -186,9 +187,9 @@ def test_fairness_dashboard_shows_known_limitations(client):
 @pytest.mark.django_db
 def test_fairness_dashboard_links_to_related_pages(client):
     """Dashboard should have links to related admin pages."""
-    user = get_user_model().objects.create_user(
+    user = get_user_model().objects.create(
         username="links-admin",
-        password="StrongPass123!",
+        password=make_password("StrongPass123!"),
         is_staff=True,
     )
     client.force_login(user)
