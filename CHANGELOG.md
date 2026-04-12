@@ -10,6 +10,7 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 
 ### Added (Unreleased)
 
+- Added missing TSDoc/JSDoc comments to `ActionCard` in `frontend/src/components/ActionCard.tsx` and `queryClient` in `frontend/src/main.tsx`
 - Added missing TSDoc comments to `LoginCredentialsSchema` and `RegisterDataSchema` in the frontend API
 - Advanced admin commands and documentation updates (`9d1f2fb`)
 - Domain adaptation, sample quality, and group threshold support (`ad9e8bf`)
