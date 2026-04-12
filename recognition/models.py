@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -103,7 +103,7 @@ class ThresholdProfile(models.Model):
         group_indicator = f" [{self.group_type}:{self.group_value}]" if self.group_type else ""
         return f"{self.name}{default_indicator}{group_indicator} @ {self.distance_threshold:.4f}"
 
-    def save(self, *args, **kwargs) -> None:
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """Ensure only one default profile exists."""
         if self.is_default:
             ThresholdProfile.objects.filter(is_default=True).exclude(pk=self.pk).update(
@@ -461,7 +461,7 @@ class ModelEvaluationResult(models.Model):
             qs = qs.filter(evaluation_type=evaluation_type)
         return qs.order_by("-created_at").first()
 
-    def compute_trend(self, previous: Optional["ModelEvaluationResult"] = None) -> dict:
+    def compute_trend(self, previous: Optional["ModelEvaluationResult"] = None) -> Dict[str, Any]:
         """Compute metric trends compared to the previous evaluation."""
         if previous is None:
             previous = self.get_previous(self, self.evaluation_type)
