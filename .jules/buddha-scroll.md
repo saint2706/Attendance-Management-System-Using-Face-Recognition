@@ -4,6 +4,7 @@
 - [PERF] Verified Hero image optimization in Home.tsx.
 - [SEO] Verified JSON-LD schema.
 ## SEO/GEO Improvements
+- `[PERF]`: Replaced lazy loading with eager loading for the `Home` route in `frontend/src/App.tsx` to significantly improve Largest Contentful Paint (LCP) by preventing the hero section from being network-delayed.
 - `[GEO] [SEO]`: Moved static JSON-LD from `frontend/index.html` to dynamic React component using `dangerouslySetInnerHTML` in `frontend/src/pages/Home.tsx`.
 - `[GEO] [SEO]`: Implemented JSON-LD WebPage schema in Dashboard, Login, and MarkAttendance pages using `dangerouslySetInnerHTML`.
 - `[PERF]`: Removed unused `icon-512.png` image preload tag from `frontend/index.html` to fix Lighthouse "Remove unused preloads" and improve LCP for actual critical resources.

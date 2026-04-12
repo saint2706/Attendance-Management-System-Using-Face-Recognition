@@ -6,7 +6,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { Navbar } from './components/layout/Navbar';
 import './index.css';
 
-const Home = React.lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
+import { Home } from './pages/Home';
 const Login = React.lazy(() => import('./pages/Login').then(module => ({ default: module.Login })));
 const Dashboard = React.lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const MarkAttendance = React.lazy(() => import('./pages/MarkAttendance').then(module => ({ default: module.MarkAttendance })));
