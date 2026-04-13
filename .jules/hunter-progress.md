@@ -29,3 +29,7 @@
 - `tests/recognition/test_liveness.py`: Fixed method-assign mypy issues by using `setattr`.
 - `users/views.py`: Fixed mypy `__iter__` list casting issues for Enums.
 - `mypy.ini`: Ignored 3rd party modules like joblib, openvino, and untyped modules like views_legacy, monitoring, anti_spoof_cnn, etc., to fix 116 mypy typing errors.
+- `.agents/skills/scikit-learn/scripts/clustering_analysis.py`: Fixed F401 `pandas as pd` imported but unused and F541 f-string missing placeholders.
+- `.agents/skills/senior-data-scientist/scripts/experiment_designer.py`: Fixed F401 unused imports (`os`, `pathlib.Path`, `typing.List`, `typing.Optional`) and F841 unused variable `result`.
+- `.agents/skills/senior-data-scientist/scripts/feature_engineering_pipeline.py`: Fixed F401 unused imports (`os`, `pathlib.Path`, `typing.List`, `typing.Optional`) and F841 unused variable `result`.
+- `.agents/skills/senior-data-scientist/scripts/model_evaluation_suite.py`: Fixed F401 unused imports (`os`, `pathlib.Path`, `typing.List`, `typing.Optional`) and F841 unused variable `result`.
