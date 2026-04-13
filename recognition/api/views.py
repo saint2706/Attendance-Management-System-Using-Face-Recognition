@@ -133,7 +133,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         - checked_out_today: Users with successful check-OUT today
         - pending_checkout: Users checked in but not yet checked out
         """
-        today = timezone.now().date()
+        today = timezone.localdate()
         total_employees = User.objects.filter(is_active=True).count()
 
         today_start = timezone.make_aware(datetime.datetime.combine(today, datetime.time.min))

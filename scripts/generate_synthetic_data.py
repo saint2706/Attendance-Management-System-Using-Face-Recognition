@@ -220,16 +220,9 @@ def test_full_flow():
 
     response = view(request)
     if response.status_code == 200:
-        data = response.data
-        print("\nDashboard Stats Response:")
-        print(f"Total Employees:   {data.get('total_employees')}")
-        print(f"Present Today:     {data.get('present_today')}")
-        print(f"Checked Out Today: {data.get('checked_out_today')}")
-        print(f"Pending Checkout:  {data.get('pending_checkout')}")
-        print("\n✅ Verification Successful: Endpoint returned valid data.")
+        print("\n✅ Verification Successful: Stats endpoint is reachable and returned HTTP 200.")
     else:
         print(f"\n❌ Verification Failed: Status {response.status_code}")
-        print(response.data)
 
 
 if __name__ == "__main__":

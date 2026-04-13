@@ -113,7 +113,7 @@ class TestAttendanceViewSet:
     def test_filter_by_start_date(self, api_client, admin_user, setup_attendance):
         api_client.force_authenticate(user=admin_user)
         url = reverse("attendance-list")
-        today = timezone.now().date().strftime("%Y-%m-%d")
+        today = timezone.localdate().strftime("%Y-%m-%d")
         response = api_client.get(url, {"start_date": today})
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data["results"]) == 2  # Only today's
@@ -121,7 +121,7 @@ class TestAttendanceViewSet:
     def test_filter_by_end_date(self, api_client, admin_user, setup_attendance):
         api_client.force_authenticate(user=admin_user)
         url = reverse("attendance-list")
-        yesterday = (timezone.now() - datetime.timedelta(days=1)).date().strftime("%Y-%m-%d")
+        yesterday = (timezone.localdate() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
         response = api_client.get(url, {"end_date": yesterday})
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data["results"]) == 1  # Only yesterday's
