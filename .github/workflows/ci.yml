@@ -55,6 +55,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Setup Python Environment
         uses: ./.github/actions/setup-python-env
@@ -124,6 +125,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Setup Python Environment
         uses: ./.github/actions/setup-python-env
@@ -222,6 +224,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Setup Python Environment
         uses: ./.github/actions/setup-python-env
@@ -298,6 +301,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Setup Python Environment
         uses: ./.github/actions/setup-python-env

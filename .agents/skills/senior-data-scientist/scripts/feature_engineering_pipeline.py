@@ -7,11 +7,9 @@ Production-grade tool for senior data scientist
 import argparse
 import json
 import logging
-import os
 import sys
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -44,7 +42,7 @@ class FeatureEngineeringPipeline:
             self.validate_config()
 
             # Main processing
-            result = self._execute()
+            self._execute()
 
             self.results["status"] = "completed"
             self.results["end_time"] = datetime.now().isoformat()
