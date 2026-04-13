@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import concurrent.futures
+import hashlib
 import io
 import logging
 import time
@@ -67,6 +68,13 @@ def _ensure_directory(path: Path) -> None:
     """Create parent directories for the provided path."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
+
+
+def _redact_employee_id_for_log(employee_id: str) -> str:
+    """Return a stable, non-reversible token for safe employee-id logging."""
+
+    digest = hashlib.sha256(employee_id.encode("utf-8")).hexdigest()[:12]
+    return f"emp:{digest}"
 
 
 def load_existing_encodings(employee_id: str) -> np.ndarray:
@@ -467,8 +475,13 @@ def train_recognition_model(self, initiated_by: str | None = None) -> dict[str, 
 def incremental_face_training(self, employee_id: str, new_images: Sequence[str]) -> dict[str, Any]:
     """Incrementally update stored encodings and classifier for the employee."""
 
+    redacted_employee = _redact_employee_id_for_log(employee_id)
+
     if not new_images:
-        logger.debug("No new images supplied for %s; skipping incremental training.", employee_id)
+        logger.debug(
+            "No new images supplied for %s; skipping incremental training.",
+            redacted_employee,
+        )
         return {
             "employee_id": employee_id,
             "images_provided": 0,
@@ -477,7 +490,7 @@ def incremental_face_training(self, employee_id: str, new_images: Sequence[str])
 
     logger.info(
         "Starting incremental training for %s with %d images.",
-        employee_id,
+        redacted_employee,
         len(new_images),
     )
 
@@ -565,11 +578,11 @@ def incremental_face_training(self, employee_id: str, new_images: Sequence[str])
         logger.debug("FAISS index updated with %d embeddings.", faiss_index.size)
 
     except Exception as exc:  # pragma: no cover - defensive programming
-        logger.error("Incremental training failed for %s: %s", employee_id, exc)
+        logger.error("Incremental training failed for %s: %s", redacted_employee, exc)
         _dataset_embedding_cache.invalidate()
         raise
 
-    logger.info("Incremental training for %s complete.", employee_id)
+    logger.info("Incremental training for %s complete.", redacted_employee)
     _dataset_embedding_cache.invalidate()
     embedding_cache.invalidate_user_embeddings(employee_id)
     embedding_cache.invalidate_all_embeddings()  # Clear dataset index cache
