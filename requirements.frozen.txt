@@ -147,7 +147,7 @@ libclang==18.1.1
     # via tensorflow
 lightdsa==0.0.3
     # via deepface
-lightecc==0.0.4
+lightecc==0.0.5
     # via
     #   lightdsa
     #   lightphe
