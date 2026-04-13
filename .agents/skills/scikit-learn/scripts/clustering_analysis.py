@@ -6,7 +6,6 @@ import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score, silhouette_score
@@ -183,14 +182,14 @@ def compare_clustering_algorithms(X, n_clusters=3):
                 "davies_bouldin": davies,
             }
 
-            print(f"\nDBSCAN:")
+            print("\nDBSCAN:")
             print(f"  Clusters found:         {n_clusters_dbscan}")
             print(f"  Noise points:           {n_noise}")
             print(f"  Silhouette Score:       {silhouette:.4f} (higher is better)")
             print(f"  Calinski-Harabasz:      {calinski:.4f} (higher is better)")
             print(f"  Davies-Bouldin:         {davies:.4f} (lower is better)")
     else:
-        print(f"\nDBSCAN:")
+        print("\nDBSCAN:")
         print(f"  Clusters found:         {n_clusters_dbscan}")
         print(f"  Noise points:           {n_noise}")
         print("  Note: Insufficient clusters for metric calculation")
