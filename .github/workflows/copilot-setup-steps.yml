@@ -56,12 +56,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          persist-credentials: false
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+      - name: Setup Python Environment
+        uses: ./.github/actions/setup-python-env
         with:
           python-version: "3.12"
-          cache: pip
+          requirements-file: requirements-dev.txt
           cache-dependency-path: |
             requirements.txt
             requirements-dev.txt
@@ -73,11 +74,6 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             libgl1 libglib2.0-0 libsm6 libxrender1 libxext6
           sudo apt-get clean
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          pip install -r requirements-dev.txt
 
       - name: Install Playwright browsers
         run: |
