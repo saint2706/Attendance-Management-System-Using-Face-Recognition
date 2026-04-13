@@ -389,7 +389,15 @@ class FaceRecognitionAPI(View):
                         valid_key = True
 
             if valid_key:
-                masked_key = hashlib.sha256(api_key.encode()).hexdigest()
+                mask_salt = (
+                    getattr(settings, "RECOGNITION_API_KEY_MASK_SALT", "") or settings.SECRET_KEY
+                ).encode("utf-8")
+                masked_key = hashlib.pbkdf2_hmac(
+                    "sha256",
+                    api_key.encode("utf-8"),
+                    mask_salt,
+                    600000,
+                ).hex()
                 request.face_api_principal = f"api-key:{masked_key}"
                 return True, request.face_api_principal, None
             return False, None, "Invalid API key provided."
