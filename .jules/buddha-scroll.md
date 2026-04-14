@@ -18,3 +18,4 @@
 - [SEO] Added `noindex, nofollow` meta tags to private SPA pages (`Dashboard`, `Login`, `MarkAttendance`).
 - [SEO] Added canonical URL link to the `Home` page, and JSON-LD schema with `window.location.origin` for dynamic domains instead of hardcoding, to solidify its SEO authority.
 - [PERF] Preloaded Google Fonts in `frontend/index.html` to prevent Flash of Unstyled Text (FOUT) and improve LCP and CLS.
+- [GEO] Grouped endpoints into categories (Core Pages, Admin Dashboard Routes, API Endpoints, Documentation) in `llms.txt` and `llms.txt.content` to improve semantic readability for AI agents.
