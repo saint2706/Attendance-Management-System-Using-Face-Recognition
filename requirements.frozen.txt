@@ -105,7 +105,7 @@ fonttools==4.62.1
     # via matplotlib
 gast==0.7.0
     # via tensorflow
-gdown==5.2.1
+gdown==5.2.2
     # via
     #   deepface
     #   retina-face
