@@ -29,3 +29,6 @@
 - Added missing TSDoc to `LoginCredentialsSchema` and `RegisterDataSchema` in `frontend/src/api/auth.ts`.
 - **2025-03-08 (Session 3)**: Fixed `markdown-link-check` configuration by correcting regex escapes for `127.0.0.1` and `github.com` and accurately targeting `issues/new/choose` endpoint. Verified all docs and lint tasks pass completely clean.
 - **2025-03-08 (Session 4)**: Audited codebase for missing documentation. Added missing TSDoc/JSDoc block to `ActionCard` component in `frontend/src/components/ActionCard.tsx` and to the queryClient initialization in `frontend/src/main.tsx`. Verified build and lint steps passed successfully, updating `CHANGELOG.md` to reflect these changes.
+- Fixed broken tutorial link in `.agents/skills/scikit-learn/references/quick_reference.md`
+- Fixed broken link to `Web Quality Audit` and `Core Web Vitals` in `.agents/skills/seo/SKILL.md` and `.agents/skills/accessibility/SKILL.md`
+- Fixed broken link to `[SKILL.md](../SKILL.md)` in `CLAUDE.md` to `[SKILL.md](.agents/skills/accessibility/SKILL.md)`
