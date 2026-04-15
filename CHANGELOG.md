@@ -8,6 +8,1284 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-04-15
+
+### Added
+
+- feat: add bump-version workflow, fix docker attestation and trivy scan
+- feat(api): add drf-spectacular for OpenAPI documentation and cache stats endpoint
+- feat: optimize inference latency and remove insecure pickle usage
+- feat(k8s): optimize deployments for resilience and security
+- feat: Add Zod schema validation to LoginCredentials
+
+- Add `zod` schema to validate `username` and `password` on login.
+- Reject requests early to prevent unnecessary network calls and improve security.
+- feat: optimize docker configurations and kubernetes manifests
+- feat: implement SEO and GEO optimizations
+- feat: Optimize DatasetEmbeddingCache for faster load times
+- feat(ux): improve focus management in MarkAttendance kiosk mode
+- feat(frontend): introduce Kbd component for keyboard shortcuts
+- feat(frontend): improve focus management and accessibility in Kiosk mode
+- feat(ux): improve login accessibility and usability
+- feat(ui): enhance navbar accessibility and consistency
+- feat(ui): add autofocus and loading states to login page
+- feat: Cache dataset filesystem state to optimize recognition API latency
+- feat(ux): add countdown and keyboard shortcuts to attendance marking
+- feat(ux): improve post-attendance actions in MarkAttendance - Added 'Return Home' and 'Mark Another' buttons on success. - Replaced generic 'Try Again' with context-aware actions. - Added Home and UserCheck icons. - Improved accessibility with aria-labels.
+- feat(ux): freeze camera video on capture for better feedback
+- feat: apply PR review feedback on camera flash effect
+- feat(ui): add camera flash effect for attendance capture
+- feat: Optimize attendance session updates with dirty checking
+- feat(security): enforce upload size limits in recognition API
+- feat(ui): improve accessibility for attendance marking
+- feat: add rate limiting to sensitive admin endpoints
+- feat(frontend): add password visibility toggle and improve accessibility
+- feat(ui): add loading state to camera initialization
+- feat: Add rate limiting to login endpoint
+- feat(ux): add camera initialization loader to photo capture modal
+- feat(ui): add loading state to form submission buttons
+
+### Fixed
+
+- fix: address Trivy HIGH/CRITICAL vulnerabilities in Docker image
+- fix: address code review feedback on bump-version workflow
+- fix: Correct alpine user IDs in StatefulSets for Postgres and Redis
+- Fix: Replace global state mutations with thread-safe localized random generation and removed unnecessary `set_global_seed` usages.
+- fix: remove requirements.frozen.txt from .dockerignore
+- fix: optimize Dockerfiles and fix dependencies cache
+- fix(api): ensure correct Content-Type for RFC 7807 responses
+- fix: remove unused pickle import in test_dataset_cache.py
+- fix: update tests to handle json dataset embedding cache
+- fix(k8s): Correct comment indentation in pvc.yaml to pass yamllint
+- fix: regenerate pnpm-lock.yaml to fix broken lockfile (missing baseline-browser-mapping@2.10.8)
+- Fix: Standardize API error responses to RFC 7807 problem details format
+- fix: use isolated temp dirs in dataset cache tests to prevent xdist race conditions
+- Fix: Replace weak MD5 hashing with SHA-256 in embedding_cache.py
+- fix: handle empty string for DJANGO_SECRET_KEY in settings
+- fix: guard register rate limit only on POST
+- fix: Improve optimistic check and add backward compatibility test for DatasetEmbeddingCache
+- fix: apply code review fixes for countdown and keyboard shortcuts
+- fix: address PR review comments on accessibility improvements
+
+### Changed
+
+- Merge pull request #807 from saint2706/copilot/debug-docker-build-push-workflow
+- Merge pull request #798 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-85af2c71bb
+- Merge pull request #799 from saint2706/docs/fix-dead-links-5456575465647809372
+- Merge pull request #800 from saint2706/jules-optimization-docker-14610083631819338900
+- Merge pull request #802 from saint2706/jules-16116773146865082020-f2dc938d
+- Merge pull request #804 from saint2706/buddha-geo-llms-grouping-8754355574268643989
+- Merge pull request #805 from saint2706/fix-flaky-ratelimit-test-6735885417132918925
+- Merge pull request #806 from saint2706/chore/fix-docker-fernet-key-8641054916941519213
+- chore: Fix invalid base64 dummy Fernet keys in Dockerfiles
+- test: Fix flaky rate limit test due to minute boundary crossing
+- 🧘 Buddha: [GEO] Categorized endpoints in llms.txt files to improve AI readability
+- 🛡️ Sentinel: Fixed vulnerabilities in requirements.txt
+- 🛡️ Sentinel: Fixed vulnerabilities in requirements.txt
+- Pin python version in Dockerfile.gpu
+- docs: fix dead links in agent skills and CLAUDE.md
+- Bump follow-redirects
+- Merge pull request #797 from saint2706/dependabot/pip/pip-7e7b164bd8
+- Bump gdown from 5.2.1 to 5.2.2 in the pip group across 1 directory
+- Merge pull request #796 from saint2706/alert-autofix-36
+- Potential fix for code scanning alert no. 36: Clear-text logging of sensitive information
+- Merge pull request #795 from saint2706/alert-autofix-37
+- Potential fix for code scanning alert no. 37: Use of a broken or weak cryptographic hashing algorithm on sensitive data
+- Merge pull request #793 from saint2706/dependabot/pip/pip-489ca64b8d
+- Merge pull request #792 from saint2706/alert-autofix-38
+- Fix failing tests: use timezone.localdate() to avoid UTC/IST date mismatch
+- Bump pillow from 12.1.1 to 12.2.0 in the pip group across 1 directory
+- Potential fix for code scanning alert no. 38: Clear-text logging of sensitive information
+- Merge pull request #791 from saint2706/dependabot/pip/pip-590e9db7b9
+- Bump pytest from 9.0.2 to 9.0.3 in the pip group across 1 directory
+- Merge pull request #789 from saint2706/hunter-cleanup-unused-imports-6762341586821139203
+- Merge pull request #790 from saint2706/fix-cicd-pipeline-optimizations-10412189941881687066
+- ci: fix pre-commit issues with syntax and format
+- ci: optimize pipeline security and maintainability
+- 🔍 Hunter: Fixed 4 errors - removed unused imports and variables in agent scripts
+- 🔍 Hunter: Fixed 4 errors - removed unused imports and variables in agent scripts
+- Merge pull request #773 from saint2706/buddha-seo-geo-improvements-2523793657766461409
+- Merge pull request #776 from saint2706/ci-cd/optimize-yamllint-caching-12129625943673186226
+- Merge pull request #777 from saint2706/delete-existing-skills-and-regenerate
+- Add autoskills-generated generic skills and CLAUDE summary
+- Optimize pipeline: Cache yamllint dependency and fix workflow linting setup
+- 🧘 Buddha: [SEO/GEO] Add canonical URLs, robots noindex, and fix schemas
+- Merge pull request #763 from saint2706/fix-api-response-content-type-7838300834115040649
+- Merge pull request #765 from saint2706/testing-test-speed-optimization-9227880105200102333
+- Merge pull request #768 from saint2706/docs-frontend-jsdoc-13730108310792043226
+- Merge pull request #767 from saint2706/dependabot/pip/pip-3344959f9f
+- Merge pull request #769 from saint2706/api-improvements-730291782399782315
+- Merge pull request #770 from saint2706/add-type-hints-models-10169393884415121787
+- Merge pull request #771 from saint2706/buddha-lcp-eager-load-home-9714258521858425983
+- 🧘 Buddha: [PERF] Eager load Home route for better LCP
+- Add type hints to recognition and users models
+- 🔌 API: Fixed DRF content_type and un-mocked exceptions
+- 📚 Docs: Add missing JSDoc/TSDoc to ActionCard and main.tsx
+- Bump cryptography in the pip group across 1 directory
+- 🧪 Testing: Optimize test execution by pre-hashing test user passwords
+- Fix content_type configuration in API exception handling and views
+- Merge pull request #761 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-94be095972
+- Merge pull request #754 from saint2706/jules-bolt-optimization-15233615477271612457
+- Bump axios in /frontend in the npm_and_yarn group across 1 directory
+- Merge pull request #753 from saint2706/buddha-seo-geo-updates-1319486070849569257
+- Merge pull request #755 from saint2706/k8s-explicit-sa-2642910721746236721
+- Merge pull request #758 from saint2706/picasso/ux-improvements-3415007281717964252
+- Merge pull request #759 from saint2706/aiml-remove-pickle-13760202444517058644
+- Merge pull request #760 from saint2706/hunter-mypy-fix-4590091059839555930
+- Fix mypy typing errors for 3rd party modules and ignore untyped modules
+- Secure ML model loading by disallowing pickle in np.load
+- 🎨 Picasso: [UX improvement] Add loading feedback for actions
+- Explicitly define serviceAccountName in statefulsets
+- ⚡ Bolt: Implemented React memoization and API optimizations
+- ⚡ Bolt: Implemented React memoization and API optimizations
+- 🧘 Buddha: SEO/GEO improvements
+- Merge pull request #751 from saint2706/bolt/dashboard-stats-react-query-1819092361640977190
+- Merge pull request #750 from saint2706/jules-buddha-seo-improvements-3723939389572848611
+- Merge pull request #749 from saint2706/fix-ml-optimization-and-bandit-warnings-15284230727631148984
+- Merge pull request #748 from saint2706/sentinel-fix-json-ld-xss-11135910496883260269
+- Merge pull request #747 from saint2706/docker-optimization-docs-2857295852783912415
+- Merge pull request #746 from saint2706/perf-optimise-test-user-creation-with-make-password-1123618547756086184
+- Merge pull request #744 from saint2706/fix-n-plus-1-present-qs-1382608645022538904
+- Merge pull request #743 from saint2706/docs/fix-markdown-link-check-rate-limits-1335144985816753866
+- Fix formatting with black to resolve pre-commit check failure
+- ⚡ Bolt: Implement React Query for dashboard stats caching
+- [GEO] Improved semantic HTML elements in frontend components
+- Fix ML optimization, thread safety, and Bandit warnings
+- 🛡️ Sentinel: Fixed DOM XSS risk in JSON-LD injection
+- docs(docker): Document build arguments and complex logic
+- Optimised user and test data creation for faster test execution speed
+- Optimize present_qs to prevent N+1 query
+- Fix markdown-link-check rate limiting false positives
+- Delete .github/workflows/dependency-submission.yml
+- Delete kustomize_v5.3.0_linux_amd64.tar.gz
+- Merge pull request #735 from saint2706/optimize-test-user-creation-2571213880263443287
+- Merge pull request #734 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-c4bc6a0a9e
+- Merge pull request #739 from saint2706/fix/k8s-optimizations-9979350658065675853
+- Merge pull request #741 from saint2706/docker-optimization-8032964889995119723
+- Merge pull request #742 from saint2706/jules-model-optimization-align-false-10978179995587926817
+- Optimize DeepFace representations by disabling alignment
+- chore(docker): Clean up frontend source files in Dockerfile build stages
+- Optimize Kubernetes configurations for security and resilience
+- Fix formatting on users tests and optimize user creation speed
+- Optimize test execution speed by pre-hashing test passwords
+- Bump vite in /frontend in the npm_and_yarn group across 1 directory
+- Merge pull request #708 from saint2706/optimize-ml-inference-random-seed-17207905289299926927
+- Merge pull request #710 from saint2706/feat/k8s-celery-worker-resource-limits-17513745228740881407
+- Merge pull request #705 from saint2706/ci-cd/refactor-frontend-workflow-4988180280978626417
+- Merge pull request #713 from saint2706/dependabot/pip/gunicorn-25.3.0
+- Merge pull request #714 from saint2706/dependabot/pip/django-6.0.3
+- Merge pull request #715 from saint2706/dependabot/pip/tzdata-2026.1
+- Merge pull request #717 from saint2706/dependabot/pip/sentry-sdk-2.57.0
+- Merge pull request #718 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.58.0
+- Merge pull request #719 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.5.2
+- Merge pull request #721 from saint2706/dependabot/npm_and_yarn/frontend/axios-1.14.0
+- Merge pull request #722 from saint2706/dependabot/npm_and_yarn/frontend/react-router-dom-7.14.0
+- Merge pull request #724 from saint2706/buddha-seo-geo-updates-7777192126571265561
+- Merge pull request #725 from saint2706/k8s-fix-alpine-uids-18278881284372625920
+- Merge pull request #726 from saint2706/fix/api-exception-handler-raw-error-leak-9548781863708491315
+- Merge pull request #728 from saint2706/bolt-fix-attendance-api-n-plus-one-14175223631393600993
+- Merge pull request #730 from saint2706/database-optimizations-6314806998850132887
+- Merge pull request #731 from saint2706/docker-layer-bloat-optimization-4141642650045347209
+- Merge pull request #732 from saint2706/picasso-tooltips-5548599530294031769
+- Merge pull request #733 from saint2706/fix-test-suite-2878966092850713775
+- Fix test suite to use module execution and resolve test issues
+- 🎨 Picasso: [UX improvement] Added tooltips to action buttons
+- 🐳 Docker: Optimize Dockerfiles to prevent intermediate layer bloat
+- Optimized date filtering queries and added missing index.
+- ⚡ Bolt: Fix N+1 queries in AttendanceViewSet
+- Format recognition/api/exceptions.py using black
+- Fix potential raw error leak in custom exception handler
+- 🧘 Buddha: [SEO/GEO improvement] Update robots.txt for AI discoverability
+- Bump react-router-dom from 7.13.2 to 7.14.0 in /frontend
+- Bump axios from 1.13.6 to 1.14.0 in /frontend
+- Bump @types/node from 25.5.0 to 25.5.2 in /frontend
+- Bump typescript-eslint from 8.57.2 to 8.58.0 in /frontend
+- Bump sentry-sdk from 2.56.0 to 2.57.0
+- Bump tzdata from 2025.3 to 2026.1
+- Bump django from 6.0 to 6.0.3
+- Bump gunicorn from 25.1.0 to 25.3.0
+- chore: Add memory and CPU requests/limits to celery-worker deployment
+- ci: Refactor reusable Node setup steps into composite action
+- Merge pull request #700 from saint2706/testing-optimize-test-execution-8158520095484585184
+- Merge pull request #701 from saint2706/fix-docker-optimizations-14625520365110915981
+- Merge pull request #698 from saint2706/k8s-config-fixes-4022945855721145196
+- Merge pull request #697 from saint2706/api-fix-content-type-rfc7807-9337293107211899115
+- Merge pull request #696 from saint2706/picasso/ux-nav-dashboard-error-15473627684891034187
+- Merge pull request #694 from saint2706/sentinel-security-hardening-8063517629469090665
+- Merge pull request #693 from saint2706/ci-cd-least-privilege-permissions-9356762354184427092
+- test: optimize test setup using bulk_create and make_password
+- Optimize Kubernetes configurations and correct validation issues
+- 🎨 Picasso: Navigation and Dashboard Error State UX Polish
+- Fix CI: Ensure RECOGNITION_JWT_SECRET is passed in build and test envs
+- Security: Fix pickle vulnerabilities, limit CORS, and enforce JWT config
+- ci: Enforce least privilege permissions in close-all-prs workflow
+- Merge pull request #692 from saint2706/copilot/add-close-all-pull-requests-action
+- Add close-all-prs workflow with manual trigger only
+- Merge pull request #688 from saint2706/hunter-fixes-tensorflow-request-meta-cv2-setup-wizard-3626833940558243073
+- Merge pull request #684 from saint2706/docker-optimizations-11336842463918866885
+- Merge pull request #683 from saint2706/sentinel-fix-picomatch-vulnerability-15714627522168317916
+- Merge pull request #682 from saint2706/cicd-pipeline-optimization-193713560038422205
+- Merge pull request #681 from saint2706/fix-numpy-reproducibility-7171850730948019623
+- Merge pull request #691 from saint2706/api-consistent-error-handling-7004869297650672788
+- 🔌 API: Update unhandled exceptions to return consistent RFC 7807 responses
+- 🔍 Hunter: Fixed 4 errors - [summary]
+- 🐳 Docker: Optimized container security and dependencies
+- Fix ReDoS and Method Injection in picomatch dependency
+- 🔄 CI/CD: Optimize GitHub Actions pipeline speeds
+- Refactored legacy numpy seeding to use localized instances.
+- Merge pull request #656 from saint2706/bolt-dashboard-stats-optimization-10400775100821739177
+- Merge pull request #660 from saint2706/aiml-optimize-training-dataloader-8117860116046417950
+- Merge branch 'main' into aiml-optimize-training-dataloader-8117860116046417950
+- Merge pull request #659 from saint2706/docker-optimization-8232710110497996744
+- Merge pull request #658 from saint2706/sentinel/fix-rate-limiting-setup-wizard-1106026832994706732
+- Merge pull request #657 from saint2706/docs-fix-lint-and-build-11409619980490591023
+- Merge pull request #654 from saint2706/picasso-ux-improvements-13138804738325757983
+- Merge pull request #653 from saint2706/buddha-seo-geo-2162883614229547721
+- Fix Django dependency version in requirements.txt
+- Optimize dataset embedding loading in training pipeline
+- 🛡️ Sentinel: Enforce rate limiting on all setup wizard views
+- 🐳 Docker: Optimize security and build cache
+- 🛡️ Sentinel: Enforce rate limiting on all setup wizard views
+- 🛡️ Sentinel: Enforce rate limiting on all setup wizard views
+- docs: resolve missing dependency in frontend lint
+- ⚡ Bolt: Replace mocked dashboard stats with real API integration
+- 🎨 Picasso: Improve accessibility of toggle buttons and skeleton loaders
+- 🧘 Buddha: [SEO/GEO improvement]
+- Merge pull request #647 from saint2706/ci-cd-optimize-lint-workflow-18332429017647080476
+- Merge pull request #648 from saint2706/bolt-memoize-context-11015650395005739846
+- Merge pull request #649 from saint2706/docs-audit-cleanup-6568686047458466858
+- Merge pull request #650 from saint2706/chore/docker-healthcheck-optimize-11141175022615707771
+- Merge pull request #651 from saint2706/jules-kubernetes-audit-5424531466435906471
+- Merge pull request #652 from saint2706/picasso-focus-visible-10617683264212816665
+- Fix CI build failure caused by unallowed file in tree
+- 🎨 Picasso: Fix skip-link focus visibility
+- ☸️ Kubernetes: Audited resources and removed raw secrets template
+- Optimize lint workflow and fix dependency submission pipeline
+- chore: optimize healthcheck endpoint
+- 📚 Docs: Final documentation audit
+- ⚡ Bolt: Memoize AuthContext and ThemeContext values
+- Optimize lint workflow
+- Merge pull request #646 from saint2706/testing-users-views-coverage-7635601129292854412
+- Merge pull request #645 from saint2706/ci-optimizations-5728745143672781058
+- Merge pull request #644 from saint2706/buddha-seo-geo-improvements-12100500080957424925
+- Merge pull request #643 from saint2706/k8s-probes-metrics-919207080409749285
+- Merge pull request #642 from saint2706/jules-docker-lint-optimizations-4631925820695760251
+- Merge pull request #641 from saint2706/jules-10499553663687929572-5ea321d4
+- Merge pull request #640 from saint2706/docs-fix-broken-links-12952462154032785710
+- Merge pull request #637 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.57.2
+- Merge pull request #636 from saint2706/dependabot/npm_and_yarn/frontend/baseline-browser-mapping-2.10.12
+- Merge pull request #633 from saint2706/dependabot/npm_and_yarn/frontend/react-router-dom-7.13.2
+- Merge pull request #632 from saint2706/dependabot/pip/djangorestframework-3.17.1
+- Merge pull request #631 from saint2706/dependabot/pip/sentry-sdk-2.56.0
+- Merge pull request #630 from saint2706/dependabot/pip/numpy-2.4.4
+- Merge pull request #629 from saint2706/dependabot/pip/pytest-cov-7.1.0
+- 🧪 Testing: Increase test coverage for user views
+- 🧪 Testing: Increase test coverage for user views
+- 🔧 CI/CD: Pipeline optimizations
+- 🧘 Buddha: [SEO/GEO improvement] Added React 19 Document Metadata to SPA and removed unused image preload
+- Optimize liveness/readiness probes to use /monitoring/metrics/
+- 🐳 Docker: ensure dev dependencies are installed before linting
+- 🎨 Picasso: [UX improvement] Add empty state for Dashboard stats
+- Fix broken link checks and correctly configure `.markdownlinkcheck.json`
+- Bump typescript-eslint from 8.57.1 to 8.57.2 in /frontend
+- Bump baseline-browser-mapping from 2.10.10 to 2.10.12 in /frontend
+- Bump react-router-dom from 7.13.1 to 7.13.2 in /frontend
+- Bump djangorestframework from 3.16.1 to 3.17.1
+- Bump sentry-sdk from 2.53.0 to 2.56.0
+- Bump numpy from 1.26.4 to 2.4.4
+- Bump pytest-cov from 7.0.0 to 7.1.0
+- Delete plan.md
+- Merge pull request #626 from saint2706/jules-1018245512552995117-a5203660
+- Merge pull request #621 from saint2706/docs/audit-and-fix-15987440128728663158
+- Merge pull request #622 from saint2706/ci-cd-fail-fast-frontend-17518607093109507704
+- Merge pull request #623 from saint2706/picasso-keyboard-accessibility-9923623528688596877
+- Merge pull request #624 from saint2706/docker-audit-verification-5283086817370523144
+- Merge pull request #625 from saint2706/buddha-json-ld-16826371709203647807
+- Merge pull request #627 from saint2706/hunter/fix-mypy-typing-errors-6062097513574498919
+- 🔍 Hunter: Fixed 5+ mypy typing errors across pipeline, settings, views, and CLI
+- ⚡ Bolt: [Optimization] Fix N+1 queries by replacing consecutive `.count()` with single `.aggregate()`
+- Added JSON-LD structured data to Dashboard, Login, and MarkAttendance pages. Updated `.jules/buddha-scroll.md` to record the change.
+- 🐋 Docker: Verified optimal container configuration - Audited Dockerfile, Dockerfile.gpu, docker-compose.yml, k8s manifests - Confirmed multi-stage builds and base image pinnings are correct - Verified cache optimization and .dockerignore completeness - Confirmed non-root user execution and security profiles - Validated all tests and linting pass with no regressions
+- 🎨 Picasso: [UX improvement] Enhanced keyboard accessibility and interactions
+- ci: add frontend-lint dependency to frontend-build job
+- docs: audit documentation and confirm there are no missing tasks
+- Fix formatting issues in CI workflow file
+- Merge pull request #615 from saint2706/fix-n-plus-one-queries-454646210355153934
+- Merge pull request #620 from saint2706/api-improvements-rfc7807-4536475295085509889
+- Merge pull request #619 from saint2706/ci-pipeline-optimizations-1930334522847436847
+- Merge pull request #618 from saint2706/docs/add-api-auth-tsdocs-4404223499539224884
+- Merge pull request #617 from saint2706/test-coverage-pipeline-5694280225345936345
+- Merge pull request #616 from saint2706/picasso-ux-improvements-10857528324684507247
+- Merge pull request #614 from saint2706/docker-optimization-audit-564685051452760514
+- Merge pull request #613 from saint2706/buddha-seo-geo-improvements-10367557765228407254
+- Merge pull request #612 from saint2706/dependabot/pip/pip-6ba9ca5f64
+- 🔌 API: Enforce RFC 7807 problem details and strict input validation
+- ci: optimize pipelines for parallel execution and fail-fast behavior
+- docs: add TSDoc to auth schemas
+- 🧪 Testing: Increase test coverage for recognition pipeline
+- 🎨 Picasso: [UX improvement] Fix broken hero icon and dark-mode skeletons
+- ⚡ Bolt: [performance improvement] fixed N+1 queries in UserViewSet and admin dashboards
+- doc: document docker configuration audit and confirmation of optimal state
+- 🧘 Buddha: [SEO/GEO improvement] Migrate JSON-LD to React component for dynamic schema loading
+- Bump cryptography in the pip group across 1 directory
+- Merge pull request #611 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-6c4c142770
+- Bump brace-expansion
+- Merge pull request #607 from saint2706/bolt/optimize-cache-normalization-17708223008243660845
+- Merge pull request #608 from saint2706/docs-fixes-7303621652214967073
+- Merge pull request #609 from saint2706/buddha-seo-geo-verification-15085588728126288487
+- Merge pull request #610 from saint2706/picasso-ux-improvements-2464653739501592176
+- 🎨 Picasso: [UX improvement] Add skeleton loader and mobile menu aria attributes
+- Verify SEO, GEO, and Core Web Vitals optimizations
+- 📚 Docs: Fix markdown link check false positive
+- ⚡ Bolt: Skip redundant O(N) normalization loop for valid numpy embeddings
+- Merge pull request #601 from saint2706/buddha-seo-geo-improvements-7342287040499374234
+- Merge pull request #603 from saint2706/aiml-fix-api-health-coverage-2594904161132567284
+- Merge pull request #604 from saint2706/api-improvements-spectacular-cache-9110617555494253003
+- Merge pull request #605 from saint2706/testing-mock-deepface-api-views-10888115252713508768
+- Merge pull request #606 from saint2706/jules-3582679607949531194-2863deab
+- chore: optimize docker configurations for caching and size
+- test: mock DeepFace in API view tests to improve speed and isolate ML
+- test: achieve 100% coverage for api exceptions and health utils
+- 🧘 Buddha: [SEO/GEO improvement] Update llms.txt site architecture
+- Merge pull request #600 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-3f9ee708be
+- Merge pull request #599 from saint2706/dependabot/pip/pip-aa7cb66ac2
+- Merge pull request #591 from saint2706/picasso-ux-improvements-13039935246074393068
+- Merge pull request #592 from saint2706/testing-recognition-models-coverage-5846689149768169396
+- Merge pull request #593 from saint2706/ci-cd-yamllint-fixes-10334569297697269773
+- Merge pull request #594 from saint2706/python/fix-mypy-operator-errors-12580255537401144291
+- Merge pull request #595 from saint2706/hunter/mypy-fixes-10262509043885067163
+- Merge pull request #596 from saint2706/api-fix-user-create-auth-16793049855984095584
+- Bump picomatch in /frontend in the npm_and_yarn group across 1 directory
+- Bump requests from 2.32.5 to 2.33.0 in the pip group across 1 directory
+- Merge pull request #597 from saint2706/kubernetes-optimizations-1537805316644078163
+- Merge pull request #598 from saint2706/docker-optimization-16553662450854972238
+- 🐳 Docker: Verified Dockerfiles using hadolint and validated configurations.
+- tests: Fix formatting in test_models.py
+- docs: log K8s optimization verification
+- Fix UserViewSet create permission and clean up frontend auth logout logic
+- Fix mypy typing and missing import errors
+- 🐍 Python: Fix `mypy` `[operator]` errors by enforcing strict `is not None` type checking
+- ci: fix yamllint errors and format across workflows
+- tests: Add coverage to recognition.models
+- 🎨 Picasso: Login page focus management
+- Merge pull request #589 from saint2706/docs-fix-contributing-links-16756244657564838930
+- Merge pull request #590 from saint2706/buddha-robots-llms-sync-18198450421018829711
+- 🧘 Buddha: [SEO] Synchronized robots.txt and llms.txt across project
+- 📚 Docs: Fixed broken issue template links in CONTRIBUTING.md
+- Merge pull request #579 from saint2706/buddha-seo-geo-synchronization-7083252664890680813
+- Merge pull request #580 from saint2706/picasso-ux-improvements-1688977605610867063
+- Merge pull request #581 from saint2706/k8s-security-audit-10256027780232507669
+- Merge pull request #582 from saint2706/fix-mypy-recognition-health-1414998789708319337
+- Merge pull request #583 from saint2706/aiml-optimization-13642797572730525871
+- Merge pull request #584 from saint2706/ci-cd-optimization-448841225517545846
+- Merge pull request #585 from saint2706/docs-review-2307679077638635804
+- Merge pull request #586 from saint2706/docker-optimizations-3409497473908725812
+- Merge pull request #587 from saint2706/testing/health-and-exceptions-coverage-2360659309811603292
+- Merge pull request #588 from saint2706/fix/api-endpoints-auth-15652152893682325944
+- Fix `rotate_encryption_keys` test failing on CI pipeline.
+- style: add missing newline to end of aiml.md
+- 🔌 API: Fixed user authentication endpoints in frontend client
+- Add tests for `recognition/health.py` and `recognition/api/exceptions.py`.
+- Optimize Docker images by switching to opencv-python-headless
+- docs: Verified documentation links and build/lint status
+- Optimize CI/CD pipelines for fail-fast and caching
+- Fix mypy type hinting errors in recognition/health.py
+- Audit Kubernetes configurations for security and resilience
+- 🎨 Picasso: Accessibility and UX improvements for semantic regions and loading states
+- Synchronize llms.txt site architecture mapping
+- Merge pull request #570 from saint2706/buddha-seo-geo-improvements-14322678736250624570
+- Merge pull request #571 from saint2706/fix-health-coverage-4014607359003416934
+- Merge pull request #572 from saint2706/db-optimization-get-for-site-12077988247120343842
+- Merge pull request #573 from saint2706/docker-optimization-frontend-bloat-6318079229177688145
+- Merge pull request #574 from saint2706/hunter-fix-rate-limit-7605895880338242212
+- Merge pull request #575 from saint2706/k8s-fix-pvc-lint-6966450290224947342
+- Merge pull request #576 from saint2706/docs-fix-broken-links-5961585307439765498
+- Merge pull request #577 from saint2706/aiml-optimize-antispoof-cnn-15849624846519420881
+- Merge pull request #578 from saint2706/ci-cd-optimization-2862347675160956610
+- 🐳 Docker: Fix latest tag in DEPLOYMENT.md and resolve CI issue
+- ci: fix pytest coverage flag in github actions
+- 🤖 AIML: Optimize AntiSpoofCNN with TFLite Quantization
+- 📚 Docs: Fixed broken issue template links in docs/SUPPORT.md
+- Fixed rate limit bypass bug in add_photos
+- 🐳 Docker: Optimize frontend layer bloat and fix latest tag
+- Fix N+1 query issue in ThresholdProfile.get_for_site
+- Add missing test coverage for dt.datetime.fromtimestamp and fix flake8 E501 in test_api_exceptions.py.
+- Update SEO and GEO settings across site architecture and home page
+
+- Synchronized `robots.txt` between backend and frontend.
+- Removed `aria-hidden` from the LCP image in `Home.tsx` for better SEO.
+- Verified JSON-LD validity in index.html.
+- Updated `llms.txt` and `llms.txt.content` to contain precise routing mapping for AI agents based on actual Django and SPA routes.
+- Merge pull request #561 from saint2706/dependabot/pip/scipy-1.17.1
+- Merge pull request #560 from saint2706/dependabot/pip/tensorflow-2.21.0
+- Merge pull request #563 from saint2706/dependabot/npm_and_yarn/frontend/baseline-browser-mapping-2.10.10
+- Merge pull request #562 from saint2706/dependabot/pip/isort-8.0.1
+- Merge pull request #564 from saint2706/dependabot/pip/django-crispy-forms-2.6
+- Merge pull request #565 from saint2706/dependabot/pip/playwright-1.58.0
+- Merge pull request #567 from saint2706/dependabot/npm_and_yarn/frontend/zod-4.3.6
+- Merge pull request #568 from saint2706/dependabot/npm_and_yarn/frontend/tanstack/react-query-5.95.0
+- Merge pull request #569 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.57.1
+- Bump typescript-eslint from 8.57.0 to 8.57.1 in /frontend
+- Bump @tanstack/react-query from 5.90.21 to 5.95.0 in /frontend
+- Bump zod from 4.2.1 to 4.3.6 in /frontend
+- Bump playwright from 1.57.0 to 1.58.0
+- Bump django-crispy-forms from 2.5 to 2.6
+- Bump baseline-browser-mapping from 2.10.0 to 2.10.10 in /frontend
+- Bump isort from 7.0.0 to 8.0.1
+- Bump scipy from 1.14.1 to 1.17.1
+- Bump tensorflow from 2.20.0 to 2.21.0
+- Merge pull request #551 from saint2706/buddha-seo-geo-improvements-11468945243802238678
+- Merge pull request #552 from saint2706/sentinel-input-validation-5870140873681514421
+- Merge pull request #553 from saint2706/picasso/fix-aria-label-navbar-1220409030399321176
+- Merge pull request #555 from saint2706/fix-docker-hadolint-warnings-12493561437111765802
+- Merge pull request #556 from saint2706/docs-audit-verification-13877497644238797466
+- Merge pull request #557 from saint2706/kubernetes-optimizations-9398948772806961532
+- Merge pull request #558 from saint2706/jules-13626249694945053858-18698bb7
+- Merge pull request #559 from saint2706/fix-matplotlib-type-hint-10059417828111150245
+- Fix matplotlib colormap type hint in evaluation script
+- 🧪 Testing: Added tests for health and api exceptions
+- docs: audit and verify documentation formatting, links and comments
+- chore: Fix Hadolint warnings in Dockerfiles
+- 🎨 Picasso: Fixed WCAG 2.5.3 Label in Name violation on Logout button
+- 🛡️ Sentinel: Add input validation to registerEmployee in frontend
+- 🧘 Buddha: [SEO/GEO improvement]
+- Merge pull request #542 from saint2706/picasso-dashboard-tooltips-17713308492738597007
+- Merge pull request #543 from saint2706/fix-docker-optimizations-11184443548113975766
+- Merge pull request #544 from saint2706/sentinel-zod-auth-login-validation-15723196517033574518
+- Merge pull request #545 from saint2706/jules-buddha-lcp-django-home-15579196962883644125
+- Merge branch 'main' into jules-buddha-lcp-django-home-15579196962883644125
+- Merge pull request #546 from saint2706/bolt-admin-n-plus-1-11137412882841756308
+- Merge branch 'main' into bolt-admin-n-plus-1-11137412882841756308
+- Merge pull request #547 from saint2706/jules-database-optimization-n-plus-one-13363287337815062098
+- Merge branch 'main' into jules-database-optimization-n-plus-one-13363287337815062098
+- Merge pull request #548 from saint2706/jules-api-fixes-7316867969154794283
+- Merge pull request #549 from saint2706/hunter-fix-console-logs-9946336158820378260
+- Merge pull request #550 from saint2706/kubernetes-security-optimizations-7318159387829582896
+- Optimized Kubernetes Deployment Configurations
+- 🧘 Buddha: Fix CI Failure - Update Trivy Action to v0.35.0
+- Fix GitHub Action trivy-action tag
+- 🧘 Buddha: Fix CI Failure - Use v0.28.0 for Trivy Action
+- 🔍 Hunter: Fixed 3 errors - Removed console.log statements
+- Fix N+1 query issues in attendance analytics and update trivy action
+
+- Update `get_daily_trends` to prefetch `Time` records and map them by user and date, eliminating N+1 DB calls during the loop over `present_records`.
+- Update `get_department_summary` to batch query `Group` memberships for all identified users in a single operation, avoiding N+1 group lookups per user.
+- Updated `aquasecurity/trivy-action` from invalid `0.22.0` version to `master` to resolve CI workflow resolution error.
+- 🧘 Buddha: Fix CI Failure - Update Trivy Action Version
+- ⚡ Bolt: [Optimization] Fix N+1 query issue in SetupWizardProgress Admin
+- No changes required: System already fulfills API best practices requirements
+- Fix N+1 query issues in attendance analytics
+
+- Update `get_daily_trends` to prefetch `Time` records and map them by user and date, eliminating N+1 DB calls during the loop over `present_records`.
+- Update `get_department_summary` to batch query `Group` memberships for all identified users in a single operation, avoiding N+1 group lookups per user.
+- ⚡ Bolt: [Optimization] Fix N+1 query issue in SetupWizardProgress Admin
+- 🧘 Buddha: [PERF] Add Hero Image and Preload to Django Templates
+- chore: ensure docker best practices and configs
+- 🎨 Picasso: Add tooltips to dashboard action cards
+- Merge pull request #541 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-e5a595f223
+- Bump flatted in /frontend in the npm_and_yarn group across 1 directory
+- Merge pull request #539 from saint2706/k8s-security-optimization-5825424359483336781
+- Merge pull request #538 from saint2706/aiml-optimization-10184328912361284864
+- Merge pull request #536 from saint2706/test-coverage-health-exceptions-8403091778318897020
+- Merge pull request #534 from saint2706/bolt-frontend-code-splitting-14941843127345462743
+- Merge pull request #533 from saint2706/picasso-ux-mark-attendance-a11y-1523747323233985776
+- Optimize Kubernetes deployments with least-privilege security contexts and probes
+- AIML: Evaluate potential optimizations in recognition pipelines
+- test: Add 100% test coverage for health.py and api/exceptions.py
+- ⚡ Bolt: Optimize frontend bundle size with lazy loading
+- 🎨 Picasso: Remove redundant aria-labels in MarkAttendance
+- Merge pull request #532 from saint2706/docker-optimizations-14752816796078974882
+- Merge pull request #531 from saint2706/testing/api-views-coverage-6682785154980482076
+- Merge pull request #530 from saint2706/ci-cd-optimization-17709120873500871485
+- Merge pull request #529 from saint2706/picasso-ux-improvements-12294509460071226142
+- Merge pull request #528 from saint2706/docs-frontend-build-fix-12096626797000836476
+- 🧪 Testing: Improve coverage for recognition/api/views.py
+- CI/CD: Optimize CI pipeline and caching
+- 🎨 Picasso: Accessibility and UX improvements
+- 📚 Docs: Record frontend build fix in progress logs and changelog
+- Merge pull request #520 from saint2706/add-models-tests-5508398870712058305
+- Merge pull request #521 from saint2706/docs-audit-no-changes-10649555896107784698
+- Merge pull request #522 from saint2706/python-pep8-lint-fixes-12289295574423631466
+- Merge pull request #524 from saint2706/docker-pin-patch-versions-17495802735920626406
+- Merge pull request #525 from saint2706/api-improvements-rfc7807-17918071164847515194
+- Merge pull request #526 from saint2706/buddha-seo-geo-optimizations-11127764048127580687
+- refactor(api): standardise error responses to RFC 7807 and improve input validation
+- 🧘 Buddha: [GEO] [SEO] [PERF] Add FAQ sections, preload tags, and index tracking for better AI discoverability and LCP performance
+- refactor(api): standardise error responses to RFC 7807 and improve input validation
+- Fix pnpm lockfile missing dependency in frontend
+- Pin base image patch versions in docker-compose.yml and k8s manifests
+- 🎨 Python: Fix PEP 8 line length violations in tests
+- chore: perform docs audit with no changes required
+- 🧪 Testing: Add tests for recognition models to reach 100% coverage
+- 🧪 Testing: Add tests for recognition models to reach 100% coverage
+- Merge pull request #519 from saint2706/jules-2050336809199976067-3333709c
+- Merge pull request #518 from saint2706/cicd/pin-postgres-docker-image-6445903188124310982
+- Merge pull request #517 from saint2706/buddha-seo-geo-improvements-1368738557010832528
+- Merge pull request #516 from saint2706/picasso-ux-improvements-5402101808699941265
+- Merge pull request #515 from saint2706/docker-persona-pin-versions-2908077489783234009
+- Merge pull request #514 from saint2706/copilot/fix-pnpm-lockfile
+- 🧘 Buddha: Added FAQPage Structured Data (JSON-LD) and updated lockfile and requirements
+- docs: Fix broken links in frontend README and update lockfile
+- Docker: Remove curl and fix pnpm lockfile
+- docs: Fix broken links in frontend README
+- ci: Pin PostgreSQL Docker image version to 16.2-alpine
+- 🧘 Buddha: Added FAQPage Structured Data (JSON-LD) and updated lockfile
+- 🧘 Buddha: Added FAQPage Structured Data (JSON-LD)
+- 🎨 Picasso: [UX improvement] Add tooltips and enhance aria-live accessibility
+- Docker: Pinned base image versions
+- Initial plan
+- Merge pull request #501 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.57.0
+- Merge branch 'main' into dependabot/npm_and_yarn/frontend/typescript-eslint-8.57.0
+- Merge pull request #500 from saint2706/dependabot/npm_and_yarn/frontend/vitejs/plugin-react-5.2.0
+- Merge pull request #512 from saint2706/fix-admin-n-plus-one-queries-12861124773638283018
+- Merge pull request #511 from saint2706/ci-optimizations-7268853417229602914
+- Merge pull request #510 from saint2706/docker-optimizations-6416109326034755100
+- Merge pull request #508 from saint2706/sentinel-api-key-timing-attack-1079212248080676110
+- Merge pull request #507 from saint2706/aiml-batch-inference-anti-spoof-5948407750639870697
+- Merge pull request #506 from saint2706/fix/test-attendance-n-plus-one-query-assertions-9683034501721707794
+- Bump @vitejs/plugin-react from 5.1.4 to 5.2.0 in /frontend
+- Merge pull request #505 from saint2706/docs-maintenance-17624884933627805791
+- Bump typescript-eslint from 8.56.0 to 8.57.0 in /frontend
+- Merge pull request #504 from saint2706/api/standardize-error-responses-17005345599129003408
+- Merge pull request #503 from saint2706/buddha-lcp-optimization-170603886778627940
+- Merge pull request #499 from saint2706/dependabot/pip/deepface-0.0.99
+- Bump deepface from 0.0.93 to 0.0.99
+- Merge pull request #498 from saint2706/dependabot/pip/scikit-learn-1.8.0
+- Merge pull request #497 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.5.0
+- Merge pull request #496 from saint2706/dependabot/pip/pytz-2026.1.post1
+- Merge pull request #495 from saint2706/dependabot/pip/django-silk-5.5.0
+- Merge pull request #494 from saint2706/dependabot/pip/dj-database-url-3.1.2
+- Fix N+1 queries in Django Admin list views
+- CI/CD: Optimize python setup and secure dummy keys
+- chore(docker): pin base image minor versions for deterministic builds
+- Fix timing attack vulnerability in API key validation
+- Optimize anti-spoof CNN with batched inference
+- Fix pytest-xdist N+1 query assertion flakiness
+- docs: log completion of docs audit to .jules/docs-progress.md
+- 🧘‍♂️ Buddha: [PERF] Add eager loading to Hero LCP image
+- Bump scikit-learn from 1.7.2 to 1.8.0
+- Bump @types/node from 25.3.5 to 25.5.0 in /frontend
+- Bump pytz from 2025.2 to 2026.1.post1
+- Bump django-silk from 5.4.3 to 5.5.0
+- Bump dj-database-url from 2.3.0 to 3.1.2
+- Merge pull request #493 from saint2706/aiml-fix-formatting-lint-tests-12829603154174563747
+- Merge pull request #487 from saint2706/docker-optimization-linting-3448367289485672163
+- Merge pull request #485 from saint2706/sentinel-api-rate-limit-5041421298640710938
+- Merge pull request #486 from saint2706/ci-cd-optimizations-6148203347428895069
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint & fix CI format checks
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint & fix CI formatting
+- style: Fix end-of-file formatting in frontend/public/vite.svg
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint & fix CI formatting
+- style: Fix Python formatting and lint errors across test files
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint & fix CI format checks
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint & fix pre-commit issues
+- chore(docker): optimize container configurations and fix python linting errors
+- Fix pre-commit end-of-file-fixer failure in vite.svg
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint & fix pre-commit issues
+- chore(docker): optimize container configurations and fix python linting errors
+- Optimize CI/CD workflows and secure keys
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint
+- Merge pull request #483 from saint2706/imgbot
+- Merge pull request #482 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-eeacf2bf74
+- [ImgBot] Optimize images
+- Merge pull request #481 from saint2706/jules-test-api-views-16304325378607403179
+- Merge pull request #479 from saint2706/hunter-fix-e501-and-pnpm-audit-17614511680519685479
+- Merge pull request #478 from saint2706/feature/seo-geo-lcp-optimization-10533619004839605069
+- Merge pull request #477 from saint2706/ci-cd-fixes-10837362655470688204
+- Merge pull request #476 from saint2706/sentinel-fix-cors-vulnerability-5827168978712060977
+- Merge pull request #475 from saint2706/hunter-n-plus-one-fix-15161701296555409326
+- Bump flatted in /frontend in the npm_and_yarn group across 1 directory
+- Merge pull request #474 from saint2706/aiml-pipeline-optimizations-12188774406206483612
+- Merge pull request #473 from saint2706/docker-optimizations-12214824120514213665
+- Merge pull request #472 from saint2706/picasso-ux-improvements-9370377272269825146
+- Merge pull request #471 from saint2706/dependabot/pip/pip-b7f5c28099
+- Fix CI formatting issues on tests/ui and restore comment
+- 🧪 Testing: Added tests for `recognition/api/views.py`
+- 🔍 Hunter: Fixed 2 errors - E501 and flatted DoS vulnerability
+- Added explicit priority LCP Hero image to Home page
+- 🔧 CI/CD: Revert unnecessary matrices on validation workflows
+- 🛡️ Sentinel: Fixed open CORS vulnerability in DEBUG mode
+- Fix N+1 sequential evaluation crash in `liveness_results_dashboard` view
+- 🤖 AIML: Optimized pipeline dependencies and fixed PEP8
+- Optimize Docker configurations for size and security
+- 🎨 Picasso: UX/Accessibility Improvements
+- Bump black from 25.12.0 to 26.3.1 in the pip group across 1 directory
+- Merge pull request #467 from saint2706/fix/python-optimizations-13266490043699308034
+- Merge pull request #468 from saint2706/database-n-plus-one-fix-3482329299704237854
+- Merge pull request #469 from saint2706/hunter-fixes-18029976773957917458
+- Merge pull request #470 from saint2706/jules-seo-geo-improvements-6287383836111394481
+- Merge pull request #466 from saint2706/fix-test-timeouts-and-failing-command-17053915218737981054
+- Merge pull request #465 from saint2706/sentinel/rate-limit-expensive-admin-views-14909956819301884629
+- Merge pull request #464 from saint2706/docs-markdown-link-check-config-12687803189249992119
+- Merge pull request #463 from saint2706/docker-optimization-opencv-10556143561230293847
+- Merge pull request #462 from saint2706/picasso-mark-attendance-a11y-2423049443790110920
+- Merge pull request #461 from saint2706/fix-yaml-lint-errors-14625149791753622980
+- Fix flaky `django-ratelimit` tests failing during CI
+- Run pre-commit to format health.py
+- 🧘 Buddha: SEO/GEO Improvements
+- 🔍 Hunter: Fixed 3 errors - backend unused vars and linter config
+- Optimize N+1 queries in recognition health dashboard
+- test: Fix test suite execution speed and fix failing rotate_encryption_keys test
+- Optimize `RecognitionAttempt` queries in `recognition_activity` to prevent N+1 queries by eager-loading related `user` objects.
+- test: Fix test suite execution speed and fix failing rotate_encryption_keys test
+- 🛡️ Sentinel: Add rate limits to expensive admin views
+- Docs: Ignore dynamic GitHub URLs in markdown link check
+- 🐳 Docker: Use opencv-python-headless to eliminate heavy GUI dependencies
+- 🎨 Picasso: Add aria-label to camera retry button
+- Fix yamllint errors in docker-compose.gpu.yml
+- Merge pull request #459 from saint2706/copilot/fix-failing-tests
+- Initial plan
+- Merge pull request #448 from saint2706/cicd-refactor-setup-python-env-6510355172239094787
+- Merge pull request #450 from saint2706/docs/fix-jsdoc-lint-11162226372756707864
+- Merge pull request #451 from saint2706/api-rfc7807-error-handling-1410747555056680583
+- Merge pull request #452 from saint2706/picasso-ux-improvements-14029579568676584836
+- Merge pull request #454 from saint2706/buddha-sync-seo-files-4988328509640428495
+- Merge pull request #455 from saint2706/docs-fix-broken-links-596517745519400146
+- Merge pull request #456 from saint2706/docker-optimizations-13526690933966431773
+- Merge pull request #457 from saint2706/picasso-navbar-accessibility-17889433414181996721
+- Merge pull request #458 from saint2706/sentinel-replace-md5-sha256-9075313994389468075
+- 🎨 Picasso: Accessibility improvements for Navbar
+- 🐳 Docker: Optimize Dockerfiles for security, size, and caching
+- docs: configure markdown-link-check to ignore local development server URLs
+- Synchronize llms.txt and robots.txt across frontend, backend, and root
+- 🔌 API: Fix formatting in api exceptions and views
+- 🎨 Picasso: [UX improvement] Enhance accessibility and focus states
+- 🔌 API: Standardize error handling to Problem Details RFC 7807 and add input validation
+- docs: Fix JSDoc comments causing lint warnings
+- 🔧 CI/CD: Refactor Python environment setup into a reusable composite action
+- Merge pull request #447 from saint2706/fix-ci-failures-and-warnings
+- Fix CI dry-run failures and reduce backend check warnings
+- Merge pull request #438 from saint2706/buddha-seo-geo-optimizations-1130825244708058994
+- Merge pull request #439 from saint2706/docs-update-jsdoc-6447861225841581402
+- Merge pull request #440 from saint2706/picasso-dashboard-aria-label-2658806277034105244
+- Merge pull request #441 from saint2706/fix-n-plus-one-queries-883996605070017349
+- Merge pull request #442 from saint2706/bolt/fix-user-viewset-n-plus-one-5320637206664020650
+- Merge pull request #443 from saint2706/docker-optimizations-18239166136852148654
+- Merge pull request #444 from saint2706/api-error-responses-rfc-7807-18314936090313796699
+- Potential fix for code scanning alert no. 47: Information exposure through an exception
+- Potential fix for code scanning alert no. 46: Information exposure through an exception
+- Potential fix for code scanning alert no. 45: Information exposure through an exception
+- Potential fix for code scanning alert no. 44: Information exposure through an exception
+- Merge pull request #445 from saint2706/ci-cd-optimizations-18104527798393457948
+- Fix flaky rate limit test caused by slow password hashing in CI
+- ⚡ Bolt: Fixed N+1 query issue in UserViewSet
+- 🔄 CI/CD: Pipeline execution optimizations
+- Refactor API error responses to use RFC 7807 problem details format
+- 🐳 Docker: Optimized Dockerfiles for size, security, and cache efficiency
+- ⚡ Bolt: Fixed N+1 query issue in UserViewSet
+- Fix N+1 query patterns in admin views and resolve flake8 errors
+- 🎨 Picasso: Added aria-label to Setup Wizard link in Dashboard
+- 📚 Docs: Add missing JSDoc comments to frontend app entry and api client
+- 🧘 Buddha: SEO/GEO optimizations
+- Merge pull request #433 from saint2706/docker-optimizations-cleanup-1191913847656243036
+- Merge pull request #434 from saint2706/bolt-attendance-stats-optimization-12746558035736906610
+- Merge pull request #435 from saint2706/picasso-ux-improvements-14590054671887282289
+- Merge pull request #436 from saint2706/ci-cd-pipeline-optimizations-8320125023362210707
+- Merge pull request #437 from saint2706/docs/rename-todo-roadmap-11428792534602816032
+- Merge pull request #432 from saint2706/sentinel-dom-xss-innerHTML-removal-2103279987291290999
+- Merge pull request #431 from saint2706/buddha-seo-geo-enhancements-11818996917504214224
+- docs: Rename TODO.md to ROADMAP.md
+- ci: optimize github actions pipelines with caching and matrix builds
+- 🎨 Picasso: UX improvements
+- ⚡ Bolt: Optimize `attendance-stats` API endpoint performance
+- ⚡ Bolt: Optimize `attendance-stats` API endpoint performance
+- Optimize Dockerfiles and Compose configurations for size and security
+- 🛡️ Sentinel: Remove innerHTML usage to prevent DOM XSS
+- Merge pull request #426 from saint2706/dependabot/npm_and_yarn/frontend/axios-1.13.6
+- Merge pull request #427 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.3.5
+- Merge pull request #428 from saint2706/dependabot/npm_and_yarn/frontend/eslint-plugin-react-refresh-0.5.2
+- Bump axios from 1.13.5 to 1.13.6 in /frontend
+- Bump eslint-plugin-react-refresh from 0.5.0 to 0.5.2 in /frontend
+- Bump @types/node from 25.3.3 to 25.3.5 in /frontend
+- Merge pull request #425 from saint2706/dependabot/npm_and_yarn/frontend/eslint/js-9.39.4
+- Merge branch 'main' into dependabot/npm_and_yarn/frontend/eslint/js-9.39.4
+- Merge pull request #424 from saint2706/dependabot/pip/prometheus-client-0.24.1
+- Merge pull request #422 from saint2706/dependabot/npm_and_yarn/frontend/lucide-react-0.577.0
+- Merge pull request #423 from saint2706/dependabot/pip/pytest-9.0.2
+- Merge pull request #421 from saint2706/dependabot/pip/redis-7.3.0
+- Merge pull request #420 from saint2706/dependabot/pip/faiss-cpu-1.13.2
+- Merge pull request #419 from saint2706/dependabot/pip/coverage-7.13.4
+- Bump @eslint/js from 9.39.2 to 9.39.4 in /frontend
+- Bump prometheus-client from 0.23.1 to 0.24.1
+- Bump pytest from 8.3.4 to 9.0.2
+- Bump lucide-react from 0.575.0 to 0.577.0 in /frontend
+- Bump redis from 7.2.0 to 7.3.0
+- Bump faiss-cpu from 1.13.1 to 1.13.2
+- Bump coverage from 7.13.3 to 7.13.4
+- Add id-token permission to Docker publish workflow
+- Merge pull request #409 from saint2706/picasso/add-login-input-names-4418642815806537149
+- Merge branch 'main' into picasso/add-login-input-names-4418642815806537149
+- Merge pull request #410 from saint2706/fix-views-syntax-error-1824248119829583263
+- Merge branch 'main' into fix-views-syntax-error-1824248119829583263
+- Merge pull request #411 from saint2706/ci-cd-pipeline-optimization-15454378411679654539
+- Merge pull request #412 from saint2706/bolt/fix-attendance-feed-n-plus-one-5421639882741780710
+- Merge branch 'main' into bolt/fix-attendance-feed-n-plus-one-5421639882741780710
+- Merge pull request #413 from saint2706/docker-optimizations-5892953442341291416
+- Merge branch 'main' into docker-optimizations-5892953442341291416
+- Merge pull request #414 from saint2706/hunter-fix-views-flake8-issues-15767480928890618920
+- Merge branch 'main' into hunter-fix-views-flake8-issues-15767480928890618920
+- Merge pull request #415 from saint2706/seo-geo-improvements-12822594103257347863
+- Merge branch 'main' into seo-geo-improvements-12822594103257347863
+- Merge pull request #416 from saint2706/docs-agent-update-14440630704676851398
+- docs: Update JSDoc comments, clear placeholders, fix CI syntax error
+- docs: Update JSDoc comments and clear placeholders
+- Fixed unused variable warnings in `recognition/views.py`.
+- 🧘 Buddha: Implement llms.txt and robots.txt for SEO/GEO
+- 🔍 Hunter: Format failures.py using black
+- Fixed indentation error causing CI failure and optimized Docker image sizes.
+- 🔍 Hunter: Fixed 4 errors - [summary]
+- Optimized Dockerfiles for reduced image size and faster builds.
+- ⚡ Bolt: Optimize AttendanceViewSet queries to prevent N+1
+- Fix indentation error and syntax in recognition/views.py
+- Fix unused variable warning in views.py
+- Optimize CI/CD pipelines for speed, reliability, and security
+- Fix syntax error in FaceRecognitionAPI.
+- Added name attributes to login inputs for autofill support
+- Merge pull request #408 from saint2706/fix/ratelimit-test-flakiness-18164722160411106471
+- Merge pull request #407 from saint2706/api-rfc7807-error-formatting-10851661352986404769
+- Merge branch 'main' into api-rfc7807-error-formatting-10851661352986404769
+- Potential fix for code scanning alert no. 42: Information exposure through an exception
+- Potential fix for code scanning alert no. 41: Information exposure through an exception
+- Potential fix for code scanning alert no. 40: Information exposure through an exception
+- Potential fix for code scanning alert no. 39: Information exposure through an exception
+- Merge pull request #406 from saint2706/fix/docker-optimizations-11145405724652533421
+- Merge pull request #405 from saint2706/db-nplusone-views-18098286947151138996
+- Merge branch 'main' into db-nplusone-views-18098286947151138996
+- Merge pull request #404 from saint2706/docs-add-jsdoc-tsdoc-9275279130047082320
+- Merge pull request #401 from saint2706/fix-mypy-type-errors-11851698164298988612
+- Merge branch 'main' into fix-mypy-type-errors-11851698164298988612
+- Merge pull request #400 from saint2706/picasso-login-accessibility-16659941062460684881
+- Merge pull request #399 from saint2706/fix/ci-dummy-secrets-8811091365240316600
+- 🔧 CI: Fix `ImproperlyConfigured` exception with dummy secrets in workflow
+- 🐛 Fix ImproperlyConfigured exception for SECRET_KEY on CI empty string
+- test: fix import format and placement in settings/base.py
+- test: fix import format and placement in settings/base.py
+- CI: Use valid Fernet keys for CI test runs
+- 🎨 Fix `isort` import ordering in `recognition/api/views.py` to resolve pre-commit failure.
+- test: isolate test caches from Redis to prevent cross-worker pollution
+- 🔌 API: Implement RFC 7807 Problem Details and Pagination
+- CI: Use dummy secrets for CI test runs
+- Build: Optimize Dockerfiles for size, speed, and dependencies
+- Use valid Fernet dummy keys in GitHub Actions to fix CI check failures
+- docs: Add missing JSDoc/TSDoc comments to frontend API and React components
+- 🗄️ Database: Fix N+1 queries in recognition views
+- docs: Add missing JSDoc/TSDoc comments to frontend API and React components
+- Fix GitHub Actions CI workflow to use dummy strings for secrets during testing
+- Fix MyPy type errors in attendance analytics and fairness scripts
+- 🎨 Picasso: [UX improvement] Add required field indicators to Login
+- ci: replace github secrets with dummy strings in test workflow
+- Merge pull request #394 from saint2706/fix-sentinel-vulnerable-dependencies-9460453857859102610
+- Merge pull request #395 from saint2706/chore-docker-optimizations-16720557450527985510
+- Merge pull request #398 from saint2706/fix/api-lint-errors-3638566519894726448
+- Merge pull request #396 from saint2706/hunter-pep8-lint-fixes-3208812603534347236
+- Merge pull request #397 from saint2706/ci-cd-pipeline-optimization-3111875778645393140
+- Fix unused import in test_ratelimit_security.py
+- Fix CI check suite failure in test_distributed_brute_force_prevention
+- Fix formatting to resolve CI pipeline failures
+- Apply black and isort formatting to API views and serializers
+- Fix line length linting errors in recognition API views and serializers
+- 🔧 CI/CD: Fix pnpm version in frontend pipeline
+- 🔍 Hunter: Fixed 2 errors - PEP 8 formatting and line length
+- 🔧 CI/CD: Optimize frontend pipeline to use pnpm and ignore coverage artifacts
+- Merge pull request #390 from saint2706/docs-fix-broken-links-13556798684793550976
+- Merge pull request #392 from saint2706/bolt-remove-django-pandas-8734966593172566740
+- Merge pull request #391 from saint2706/fix/n-plus-one-queries-1462724459305530496
+- Merge pull request #389 from saint2706/picasso/add-aria-hidden-to-icons-5796321898841985317
+- 🔍 Hunter: Fixed 5 errors - PEP 8 formatting and line length
+- chore(docker): optimize container sizes, security, and caching
+- style: Apply black formatting to `recognition/views_legacy.py`
+- Update vulnerable dependencies `django` and `rollup`
+- ⚡ Bolt: Remove `django-pandas` to optimize DataFrame construction and reduce overhead
+- perf: Fix N+1 queries in `update_attendance_in_db` functions
+- docs: fix broken links in documentation and sample data README
+- 🎨 Picasso: [UX improvement] Add aria-hidden to decorative icons
+- Merge pull request #388 from saint2706/fix-failing-github-workflows
+- Fix CI dependency resolution and Docker workflow PR failures
+- Merge pull request #377 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-bb3626eb1a
+- Merge pull request #378 from saint2706/dependabot/pip/matplotlib-3.10.8
+- Merge pull request #379 from saint2706/dependabot/pip/sentry-sdk-django--2.53.0
+- Merge pull request #380 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.3.3
+- Merge pull request #381 from saint2706/dependabot/pip/gunicorn-25.1.0
+- Merge pull request #382 from saint2706/dependabot/pip/pytest-playwright-0.7.2
+- Merge branch 'main' into dependabot/pip/pytest-playwright-0.7.2
+- Merge pull request #383 from saint2706/dependabot/pip/optree-0.19.0
+- Merge pull request #385 from saint2706/dependabot/npm_and_yarn/frontend/react-router-dom-7.13.1
+- Merge pull request #386 from saint2706/dependabot/npm_and_yarn/frontend/globals-17.4.0
+- Bump globals from 17.3.0 to 17.4.0 in /frontend
+- Bump react-router-dom from 7.13.0 to 7.13.1 in /frontend
+- Bump optree from 0.18.0 to 0.19.0
+- Bump pytest-playwright from 0.4.4 to 0.7.2
+- Bump gunicorn from 25.0.3 to 25.1.0
+- Bump @types/node from 25.3.0 to 25.3.3 in /frontend
+- Bump sentry-sdk[django] from 2.43.0 to 2.53.0
+- Bump matplotlib from 3.10.7 to 3.10.8
+- Bump minimatch in /frontend in the npm_and_yarn group across 1 directory
+- Merge pull request #376 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-b2936519f3
+- Merge pull request #375 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.3.0
+- Merge pull request #374 from saint2706/dependabot/npm_and_yarn/frontend/eslint-plugin-react-refresh-0.5.0
+- Merge pull request #373 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.56.0
+- Merge pull request #372 from saint2706/dependabot/npm_and_yarn/frontend/lucide-react-0.575.0
+- Merge pull request #371 from saint2706/dependabot/pip/redis-7.2.0
+- Merge pull request #370 from saint2706/dependabot/pip/opencv-python-4.13.0.92
+- Merge pull request #369 from saint2706/dependabot/pip/pandas-3.0.1
+- Bump rollup in /frontend in the npm_and_yarn group across 1 directory
+- Merge pull request #368 from saint2706/dependabot/pip/sentry-sdk-2.53.0
+- Merge pull request #367 from saint2706/dependabot/pip/pip-6d02a2de66
+- Merge pull request #366 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-cb00897455
+- Bump @types/node from 25.2.2 to 25.3.0 in /frontend
+- Bump eslint-plugin-react-refresh from 0.4.26 to 0.5.0 in /frontend
+- Bump typescript-eslint from 8.53.1 to 8.56.0 in /frontend
+- Bump lucide-react from 0.562.0 to 0.575.0 in /frontend
+- Bump redis from 7.1.0 to 7.2.0
+- Bump opencv-python from 4.9.0.80 to 4.13.0.92
+- Bump pandas from 2.3.3 to 3.0.1
+- Bump sentry-sdk from 2.43.0 to 2.53.0
+- Bump the pip group across 1 directory with 2 updates
+- Bump the npm_and_yarn group across 1 directory with 2 updates
+- Merge pull request #357 from saint2706/dependabot/npm_and_yarn/frontend/tanstack/react-query-5.90.20
+- Merge pull request #364 from saint2706/dependabot/pip/pip-17dc5e2726
+- Bump @tanstack/react-query from 5.90.19 to 5.90.20 in /frontend
+- Merge pull request #353 from saint2706/dependabot/pip/gunicorn-25.0.3
+- Merge pull request #358 from saint2706/dependabot/npm_and_yarn/frontend/multi-b17e1175da
+- Merge pull request #359 from saint2706/dependabot/npm_and_yarn/frontend/globals-17.3.0
+- Merge pull request #360 from saint2706/dependabot/npm_and_yarn/frontend/vitejs/plugin-react-5.1.3
+- Merge pull request #355 from saint2706/dependabot/pip/django-crispy-forms-2.5
+- Bump @vitejs/plugin-react from 5.1.2 to 5.1.3 in /frontend
+- Merge pull request #356 from saint2706/dependabot/pip/setuptools-82.0.0
+- Bump pillow from 12.0.0 to 12.1.1 in the pip group across 1 directory
+- Merge pull request #352 from saint2706/dependabot/pip/pyflakes-3.4.0
+- Bump react and @types/react in /frontend
+- Merge pull request #361 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.2.2
+- Merge pull request #362 from saint2706/dependabot/pip/pip-d1091effbf
+- Merge pull request #363 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-66fcce4dc2
+- Bump axios in /frontend in the npm_and_yarn group across 1 directory
+- Bump cryptography in the pip group across 1 directory
+- Bump @types/node from 25.0.9 to 25.2.2 in /frontend
+- Bump globals from 17.0.0 to 17.3.0 in /frontend
+- Bump setuptools from 80.10.2 to 82.0.0
+- Bump django-crispy-forms from 2.1 to 2.5
+- Bump gunicorn from 25.0.1 to 25.0.3
+- Bump pyflakes from 3.2.0 to 3.4.0
+- Merge pull request #351 from saint2706/copilot/dry-run-github-workflows
+- Remove accidentally committed act binary
+- Update requirements.frozen.txt with django-crispy-forms 2.3
+- Fix django-crispy-forms version conflict with crispy-bootstrap5
+- Initial plan for workflow validation
+- Initial plan
+- Merge pull request #342 from saint2706/dependabot/pip/crispy-bootstrap5-2025.6
+- Merge pull request #343 from saint2706/dependabot/npm_and_yarn/frontend/axios-1.13.3
+- Merge pull request #344 from saint2706/dependabot/pip/platformdirs-4.5.1
+- Merge pull request #345 from saint2706/dependabot/pip/python-debian-1.0.1
+- Merge pull request #346 from saint2706/dependabot/pip/zstandard-0.25.0
+- Merge pull request #348 from saint2706/dependabot/npm_and_yarn/frontend/react-router-dom-7.13.0
+- Merge pull request #349 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.53.1
+- Merge pull request #350 from saint2706/dependabot/npm_and_yarn/frontend/types/react-19.2.9
+- Bump @types/react from 19.2.8 to 19.2.9 in /frontend
+- Bump typescript-eslint from 8.53.0 to 8.53.1 in /frontend
+- Bump react-router-dom from 7.12.0 to 7.13.0 in /frontend
+- Bump zstandard from 0.22.0 to 0.25.0
+- Bump python-debian from 0.1.49+ubuntu2 to 1.0.1
+- Bump axios from 1.13.2 to 1.13.3 in /frontend
+- Bump platformdirs from 4.5.0 to 4.5.1
+- Bump crispy-bootstrap5 from 2024.2 to 2025.6
+- Merge pull request #340 from saint2706/copilot/fix-django-ci-pre-commit
+- Fix black formatting in recognition/views.py
+- Initial plan
+- Merge pull request #332 from saint2706/dependabot/pip/pip-81c3d069c8
+- Merge pull request #333 from saint2706/dependabot/pip/tzdata-2025.3
+- Merge branch 'main' into dependabot/pip/tzdata-2025.3
+- Merge pull request #334 from saint2706/dependabot/pip/pyparsing-3.3.1
+- Merge pull request #335 from saint2706/dependabot/pip/pyasn1-0.6.2
+- Merge pull request #336 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.53.0
+- Merge branch 'main' into dependabot/npm_and_yarn/frontend/typescript-eslint-8.53.0
+- Merge pull request #337 from saint2706/dependabot/pip/pandas-2.3.3
+- Merge pull request #338 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.0.9
+- Merge pull request #339 from saint2706/dependabot/npm_and_yarn/frontend/tanstack/react-query-5.90.19
+- Bump @tanstack/react-query from 5.90.16 to 5.90.19 in /frontend
+- Bump @types/node from 25.0.3 to 25.0.9 in /frontend
+- Bump typescript-eslint from 8.52.0 to 8.53.0 in /frontend
+- Bump pandas from 2.2.3 to 2.3.3
+- Bump pyasn1 from 0.4.8 to 0.6.2
+- Bump pyparsing from 3.2.5 to 3.3.1
+- Bump tzdata from 2025.2 to 2025.3
+- Bump filelock from 3.20.1 to 3.20.3 in the pip group across 1 directory
+- Merge pull request #331 from saint2706/copilot/fix-django-ci-workflow-errors
+- chore: clarify ratelimit call args
+- chore: make register rate limit configurable
+- chore: clarify attendance feed select_related fields
+- refactor: streamline register rate limit check
+- chore: tidy queryset optimization slice order
+- chore: address django ci failures
+- Initial plan
+- Apply formatting and doc improvements across project
+- Merge pull request #315 from saint2706/dependabot/pip/pip-8177a8837a
+- Merge pull request #316 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-e7552e82bb
+- Merge pull request #317 from saint2706/dependabot/pip/termcolor-3.3.0
+- Merge pull request #318 from saint2706/dependabot/pip/jsonpatch-1.33
+- Merge pull request #319 from saint2706/dependabot/pip/python-dateutil-2.9.0.post0
+- Merge pull request #320 from saint2706/dependabot/pip/ml-dtypes-0.5.4
+- Merge pull request #321 from saint2706/dependabot/npm_and_yarn/frontend/react-router-dom-7.12.0
+- Merge pull request #322 from saint2706/dependabot/npm_and_yarn/frontend/vite-7.3.1
+- Merge branch 'main' into dependabot/npm_and_yarn/frontend/vite-7.3.1
+- Merge pull request #323 from saint2706/dependabot/npm_and_yarn/frontend/types/react-19.2.8
+- Merge pull request #324 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.52.0
+- Merge pull request #329 from saint2706/update-github-actions-workflow-triggers-v7vr60
+- Merge pull request #330 from saint2706/update-github-actions-workflow-triggers
+- Add path filters for docker publish workflow
+- Add path filters for docker publish workflow
+- Merge pull request #328 from saint2706/set-load-condition-in-docker-publish.yml
+- Adjust docker build load for PRs
+- Merge pull request #327 from saint2706/update-github-actions-workflow-triggers
+- Merge pull request #326 from saint2706/create-pre-commit-github-workflow
+- Merge pull request #325 from saint2706/add-github-workflow-for-dependency-review
+- Add path filters for docker publish workflow
+- Add pre-commit workflow
+- Add dependency review workflow
+- Bump typescript-eslint from 8.51.0 to 8.52.0 in /frontend
+- Bump @types/react from 19.2.7 to 19.2.8 in /frontend
+- Bump vite from 7.3.0 to 7.3.1 in /frontend
+- Bump react-router-dom from 7.11.0 to 7.12.0 in /frontend
+- Bump ml-dtypes from 0.5.3 to 0.5.4
+- Bump python-dateutil from 2.8.2 to 2.9.0.post0
+- Bump jsonpatch from 1.32 to 1.33
+- Bump termcolor from 3.2.0 to 3.3.0
+- Bump react-router
+- Bump urllib3 from 2.6.0 to 2.6.3 in the pip group across 1 directory
+- Merge pull request #310 from saint2706/palette-dashboard-greeting-14725877708144687430
+- Merge pull request #313 from saint2706/copilot/sub-pr-310
+- Refactor test code to reduce duplication and improve maintainability
+- Add time-based greeting and E2E tests for Django dashboard
+- Merge pull request #309 from saint2706/bolt-dataset-cache-optimization-232719596691359661
+- Merge pull request #311 from saint2706/sentinel-security-headers-13485873745137819277
+- Merge pull request #314 from saint2706/copilot/sub-pr-309
+- Merge pull request #312 from saint2706/copilot/sub-pr-311
+- refactor: Extract format detection sample size to named constant
+- perf: Limit optimistic check to first 10 entries for efficiency
+- Refactor tests to use fixtures and reduce duplication
+- style: Remove trailing whitespace from test file
+- Address PR review: Move globals, add docs, add tests
+- Initial plan
+- Initial plan
+- Initial plan
+- 🛡️ Sentinel: [SECURITY] Add strict security headers
+- 🎨 Palette: Add time-based greeting and improve icon accessibility in Dashboard
+- Merge pull request #294 from saint2706/palette-focus-management-kiosk-7179432807951885336
+- Merge pull request #305 from saint2706/copilot/sub-pr-294
+- Complete focus management improvements with tests
+- Fix focus management and add comprehensive UI tests
+- Merge pull request #291 from saint2706/palette-kbd-component-6853473991979121036
+- Merge pull request #306 from saint2706/copilot/sub-pr-291
+- Merge pull request #295 from saint2706/sentinel-csv-injection-fix-2199909257601746848
+- Merge pull request #304 from saint2706/copilot/sub-pr-295
+- Remove redundant kbd-md CSS rule
+- Simplify test logic and remove redundancy
+- Address code review feedback: improve robustness and performance
+- Add comprehensive CSV injection sanitization and tests
+- Merge pull request #290 from saint2706/bolt-api-performance-copy-407474442048839387
+- Add CSS rules for Kbd size variants (sm, md, lg)
+- Merge pull request #307 from saint2706/copilot/sub-pr-290
+- Revert zero-copy optimization to restore cache integrity protection
+- Initial plan
+- Initial plan
+- Merge pull request #293 from saint2706/bolt-liveness-optimization-14654965340647590256
+- Initial plan
+- Initial plan
+- Merge pull request #296 from saint2706/dependabot/pip/s3transfer-0.16.0
+- Merge pull request #297 from saint2706/dependabot/pip/click-8.3.1
+- Merge pull request #298 from saint2706/dependabot/pip/playwright-1.57.0
+- Merge pull request #299 from saint2706/dependabot/pip/requests-2.32.5
+- Merge pull request #300 from saint2706/dependabot/npm_and_yarn/frontend/tanstack/react-query-5.90.16
+- Merge pull request #301 from saint2706/dependabot/pip/markdown-it-py-4.0.0
+- Merge pull request #302 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.51.0
+- Merge pull request #303 from saint2706/dependabot/npm_and_yarn/frontend/globals-17.0.0
+- Bump globals from 16.5.0 to 17.0.0 in /frontend
+- Bump typescript-eslint from 8.50.1 to 8.51.0 in /frontend
+- Bump markdown-it-py from 3.0.0 to 4.0.0
+- Bump @tanstack/react-query from 5.90.14 to 5.90.16 in /frontend
+- Bump requests from 2.32.4 to 2.32.5
+- Bump playwright from 1.49.1 to 1.57.0
+- Bump click from 8.1.6 to 8.3.1
+- Bump s3transfer from 0.10.1 to 0.16.0
+- 🛡️ Sentinel: Fix CSV Injection in attendance export
+- ⚡ Bolt: Optimize liveness motion score computation
+- ⚡ Bolt: optimize FaceRecognitionAPI.post to zero-copy
+- Merge pull request #285 from saint2706/bolt-optimize-face-api-normalization-5010589105063071580
+- Merge pull request #288 from saint2706/copilot/sub-pr-285
+- Merge pull request #287 from saint2706/sentinel-rate-limit-admin-views-11230335056307682505
+- Merge pull request #289 from saint2706/copilot/sub-pr-287
+- Add defensive copying in optimized fast path to protect cache from mutations
+- Address review comments: clean up verbose comments, add add_photos test, use Django test client, add cache clearing
+- Initial plan
+- Initial plan
+- Merge pull request #286 from saint2706/palette-mark-attendance-focus-1681534065090746326
+- 🛡️ Sentinel: [HIGH] Fix Missing Rate Limiting on Admin Views
+- ⚡ Bolt: Optimize FaceRecognitionAPI data normalization
+- Delete .Jules directory
+- Merge pull request #279 from saint2706/bolt-faiss-cache-optimization-9764285499840253311
+- Merge pull request #284 from saint2706/copilot/sub-pr-279
+- Fix FAISS cache race condition and add comprehensive tests
+- Merge pull request #280 from saint2706/palette-mark-attendance-auto-reset-6304683584803404784
+- Merge pull request #283 from saint2706/copilot/sub-pr-280
+- Merge pull request #281 from saint2706/sentinel-fix-plot-race-condition-15072597300854737124
+- Merge pull request #282 from saint2706/copilot/sub-pr-281
+- Make Figure parameter required in _plot_to_base64
+- Fix auto-reset accessibility and positioning issues
+- Initial plan
+- Initial plan
+- Initial plan
+- Fix thread safety race condition in plotting views.
+- 🎨 Palette: Add auto-reset to Mark Attendance page
+- ⚡ Bolt: Cache FAISS index to avoid redundant builds
+- Refresh documentation for React SPA frontend
+- Refactor docs and improve test formatting
+- Remove workflow test results and reference images
+- Update palette.md
+- Merge pull request #276 from saint2706/bolt-perf-attendance-feed-15000641374648856972
+- Merge pull request #278 from saint2706/copilot/sub-pr-276
+- Address code review feedback: fix spacing, replace emoji, add mixed scenario test
+- Initial plan
+- Merge pull request #277 from saint2706/palette-improve-login-ux-1558999726292194985
+- Update frontend/src/pages/Login.css
+- Refactor password toggle button to use CSS classes for disabled state
+- ⚡ Bolt: Fix N+1 queries in attendance session feed
+- Merge pull request #271 from saint2706/bolt-cache-get-many-optimization-16100082569466227123
+- Merge pull request #274 from saint2706/copilot/sub-pr-271
+- Merge pull request #273 from saint2706/sentinel-fix-graph-idor-17951413829554454007
+- Merge pull request #275 from saint2706/copilot/sub-pr-273
+- Address PR review comments: Update docstrings, comments, and add security tests
+- Address PR review comments: logging, documentation, and test fixes
+- Initial plan
+- Merge branch 'main' into sentinel-fix-graph-idor-17951413829554454007
+- Initial plan
+- Merge branch 'main' into bolt-cache-get-many-optimization-16100082569466227123
+- Merge pull request #272 from saint2706/palette-login-a11y-6439498227634453060
+- Fix IDOR and race condition in attendance graph generation
+- ⚡ Bolt: Batch cache retrieval for dataset embeddings
+- Merge pull request #270 from saint2706/copilot/add-linting-setup
+- Apply linting fixes: black, isort, and flake8
+- Initial plan
+- Merge pull request #267 from saint2706/sentinel-dos-fix-liveness-frames-16150694899750306741
+- Merge pull request #269 from saint2706/copilot/sub-pr-267
+- Implement DoS fix and update tests for liveness frames limit
+- Merge pull request #265 from saint2706/bolt-path-resolve-optimization-11336251512300810101
+- Merge pull request #268 from saint2706/copilot/sub-pr-265
+- Document symbolic link assumption in cache key optimization
+- Merge pull request #261 from saint2706/dependabot/pip/celery-5.6.0
+- Merge pull request #263 from saint2706/dependabot/pip/pillow-12.0.0
+- Initial plan
+- Merge pull request #266 from saint2706/palette-navbar-ux-18185353909064899492
+- Initial plan
+- Bump celery from 5.4.0 to 5.6.0
+- Bump pillow from 10.3.0 to 12.0.0
+- Merge pull request #264 from saint2706/dependabot/npm_and_yarn/frontend/tanstack/react-query-5.90.14
+- Merge pull request #262 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.50.1
+- Merge pull request #260 from saint2706/dependabot/pip/isort-7.0.0
+- Merge pull request #259 from saint2706/dependabot/pip/djangorestframework-3.16.1
+- Merge pull request #258 from saint2706/dependabot/pip/redis-7.1.0
+- Fix DoS vulnerability in liveness frames processing
+- ⚡ Optimize cache key generation by replacing path.resolve() with str()
+- Bump @tanstack/react-query from 5.90.12 to 5.90.14 in /frontend
+- Bump typescript-eslint from 8.50.0 to 8.50.1 in /frontend
+- Bump isort from 5.13.2 to 7.0.0
+- Bump djangorestframework from 3.15.2 to 3.16.1
+- Bump redis from 5.2.1 to 7.1.0
+- Merge pull request #253 from saint2706/bolt-dataset-state-caching-1632989198182447019
+- Merge pull request #256 from saint2706/copilot/sub-pr-253
+- Merge pull request #255 from saint2706/sentinel-login-rate-limit-5771292764909081424
+- Merge pull request #257 from saint2706/copilot/sub-pr-255
+- Fix docstring clarity in username-based rate limit test
+- Use direct settings access instead of getattr for cache timeout
+- Add comprehensive login rate limiting tests
+- Move time import to top of test file
+- Address PR review comments: configurable timeout, views.py caching, rotate_encryption_keys invalidation, timeout test, and docs update
+- Initial plan
+- Merge pull request #254 from saint2706/ux-login-autofocus-14220056370776272658
+- Update frontend/src/pages/Login.tsx
+- Update frontend/src/pages/Login.tsx
+- Initial plan
+- Shield: Add username-based rate limiting to login view
+- Merge pull request #249 from saint2706/palette-mark-attendance-countdown-3998865566597880050
+- Merge branch 'main' into palette-mark-attendance-countdown-3998865566597880050
+- Merge pull request #252 from saint2706/copilot/sub-pr-249
+- accessibility: improve keyboard hint with aria-live region
+- Merge pull request #250 from saint2706/sentinel-fix-path-disclosure-and-crash-12704258415935262076
+- Initial plan
+- Merge pull request #248 from saint2706/bolt-dataset-caching-opt-5686617392984897377
+- Merge pull request #251 from saint2706/copilot/sub-pr-248
+- Refactor: Remove duplicate code and simplify logic in _build_dataset_embeddings_for_matching
+- Initial plan
+- Sentinel: Fix Path Disclosure in FaceRecognitionAPI and crash bug
+- ⚡ Bolt: Optimize dataset embedding build process
+- Merge pull request #247 from saint2706/sentinel-xss-fix-1698092430592668487
+- Merge branch 'main' into sentinel-xss-fix-1698092430592668487
+- Merge pull request #246 from saint2706/copilot/debug-logout-405-error
+- Improve logout test to address code review feedback
+- Fix logout 405 error by converting to POST form with CSRF token
+- Fix stored XSS vulnerability in attendance dashboard
+- Initial plan
+- Merge pull request #245 from saint2706/palette-mark-attendance-ux-17168237614502211500
+- Merge branch 'main' of https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition
+- Update screenshots and add management package in users app
+- Merge pull request #244 from saint2706/bolt/optimize-check-validity-times-2469162188758071877
+- ⚡ Bolt: Optimize check_validity_times to O(n) single-pass
+- Merge pull request #243 from saint2706/copilot/fix-action-workflow-error
+- Fix performance test query count for pytest-xdist with EXPLAIN queries
+- Initial plan
+- Merge pull request #242 from saint2706/copilot/fix-github-workflows-errors
+- Complete workflow testing and fix all linting errors
+- Fix flake8, black, and isort errors in codebase
+- Initial plan for installing act and fixing GitHub workflows
+- Initial plan
+- Merge pull request #241 from saint2706/create-tests-for-export_reports-command
+- Merge pull request #239 from saint2706/add-django-tests-for-pwa-assets
+- Add tests for export_reports command
+- Merge pull request #240 from saint2706/add-tests-for-worker_health-function
+- Add worker health tests
+- Add PWA asset response tests
+- Merge pull request #237 from saint2706/sentinel-dom-xss-fix-setup-wizard-9131606044688267761
+- Merge branch 'main' into sentinel-dom-xss-fix-setup-wizard-9131606044688267761
+- Merge pull request #236 from saint2706/palette-video-freeze-ux-5116618774037109480
+- Merge branch 'main' into palette-video-freeze-ux-5116618774037109480
+- Merge branch 'main' into sentinel-dom-xss-fix-setup-wizard-9131606044688267761
+- Merge pull request #238 from saint2706/imgbot
+- [ImgBot] Optimize images
+- Add synthetic face dataset and update recognition logic
+- Fix DOM XSS vulnerability in setup wizard camera test
+- Enhance ablation, failure analysis, attendance, and NPU detection
+- Remove CI documentation and relocate files
+- Merge pull request #231 from saint2706/bolt-attendance-session-optimization-4630068601088387079
+- Merge pull request #235 from saint2706/copilot/sub-pr-231
+- style: Fix flake8 whitespace issues in test file
+- docs: Add explanation for lastRenderedHtml null initialization and Playwright tests for dirty check
+- Merge pull request #232 from saint2706/palette-ux-flash-effect-17301201791967094564
+- Merge pull request #234 from saint2706/copilot/sub-pr-232
+- Initial plan
+- Initial plan
+- Merge branch 'main' into palette-ux-flash-effect-17301201791967094564
+- Merge pull request #233 from saint2706/sentinel-rate-limit-fix-11529245459902334889
+- Update recognition/views_legacy.py
+- 🛡️ Sentinel: [HIGH] Fix DoS risk in FaceRecognitionAPI
+- Merge pull request #230 from saint2706/imgbot
+- Merge branch 'main' into imgbot
+- Merge pull request #227 from saint2706/sentinel-upload-limits-9277101568819752971
+- Merge branch 'main' into sentinel-upload-limits-9277101568819752971
+- Merge pull request #229 from saint2706/copilot/sub-pr-227
+- Refactor tests: add helper functions and improve readability
+- Fix base64 length check and add comprehensive tests for upload size limits
+- [ImgBot] Optimize images
+- Merge pull request #226 from saint2706/palette-accessibility-markattendance-6635591686565062761
+- Merge pull request #228 from saint2706/copilot/sub-pr-226
+- Merge branch 'palette-accessibility-markattendance-6635591686565062761' into copilot/sub-pr-226
+- Merge branch 'main' into sentinel-upload-limits-9277101568819752971
+- Initial plan
+- Merge branch 'main' into palette-accessibility-markattendance-6635591686565062761
+- Initial plan
+- Merge pull request #225 from saint2706/bolt-perf-db-sort-16118486759763534673
+- ⚡ Bolt: Optimize report generation by sorting in DB
+- Merge pull request #222 from saint2706/sentinel/add-rate-limiting-9293571531357609996
+- Merge pull request #224 from saint2706/copilot/sub-pr-222
+- Address rate limiting review comments
+- Merge pull request #220 from saint2706/bolt/optimize-dataset-rebuild-10581462098239265021
+- Merge pull request #223 from saint2706/copilot/sub-pr-220
+- Add __gt__ method and move Path import to top
+- Apply review feedback: clean up test code
+- Initial plan
+- Initial plan
+- Update tests/recognition/test_embedding_cache_perf.py
+- Merge branch 'main' into sentinel/add-rate-limiting-9293571531357609996
+- Merge branch 'main' into bolt/optimize-dataset-rebuild-10581462098239265021
+- Merge pull request #221 from saint2706/palette-ux-login-toggle-5242031300798554654
+- ⚡ Bolt: Optimize dataset index rebuild performance
+- Merge pull request #218 from saint2706/copilot/fix-github-actions-workflows
+- Add documentation for local CI execution and final verification
+- Fix Django CI - resolve flake8, black, isort issues and update test expectations
+- Fix Frontend CI - disable react-refresh warning for context files and add package-lock.json
+- Initialize CI fix process - set up act and document plan
+- Initial plan
+- Merge pull request #217 from saint2706/dependabot/npm_and_yarn/frontend/lucide-react-0.562.0
+- Merge pull request #216 from saint2706/dependabot/pip/twisted-25.5.0
+- Merge pull request #215 from saint2706/dependabot/pip/django-silk-5.4.3
+- Merge pull request #214 from saint2706/dependabot/pip/pygobject-3.54.5
+- Merge pull request #213 from saint2706/dependabot/pip/pytest-cov-7.0.0
+- Merge pull request #212 from saint2706/dependabot/pip/pyparsing-3.2.5
+- Bump lucide-react from 0.556.0 to 0.562.0 in /frontend
+- Bump twisted from 24.7.0rc1 to 25.5.0
+- Bump django-silk from 5.1.0 to 5.4.3
+- Bump pygobject from 3.48.2 to 3.54.5
+- Bump pytest-cov from 6.0.0 to 7.0.0
+- Bump pyparsing from 3.1.1 to 3.2.5
+- Merge pull request #210 from saint2706/sentinel/fix-alert-manager-xss-5705731631594185339
+- Merge pull request #211 from saint2706/copilot/sub-pr-210
+- Fix AlertManager DOM construction and test marker
+- Initial plan
+- Merge pull request #209 from saint2706/palette/skip-link-15319061084274531373
+- Merge branch 'main' into palette/skip-link-15319061084274531373
+- Shield: Fix DOM XSS in AlertManager
+- Merge pull request #207 from saint2706/bolt-dataset-health-cache-6668037151136727686
+- Merge pull request #208 from saint2706/copilot/sub-pr-207
+- Move cache import to top of test file
+- Address code review comments: add cache docs and invalidation
+- 🎨 Palette: Add "Skip to main content" link
+- Initial plan
+- ⚡ Bolt: Cache dataset_health to improve dashboard performance
+- Merge pull request #206 from saint2706/sentinel-xss-fix-17821575332162229612
+- 🛡️ Sentinel: [HIGH] Fix Stored XSS in Attendance Monitor
+- Merge pull request #205 from saint2706/palette-camera-loading-10421001234928187146
+- Merge pull request #204 from saint2706/sentinel-login-ratelimit-16610346747822025213
+- Merge pull request #203 from saint2706/palette-ux-add-photos-loader-6235828237516041486
+- Merge pull request #202 from saint2706/bolt/performance/views-n-plus-one-5685148995391873997
+- Optimize attendance views to fix N+1 query issues
+- Merge pull request #201 from saint2706/copilot/fix-job-issue-58508061608
+- Fix authentication issue in FaceRecognitionAPI tests
+- Initial plan
+- Merge pull request #200 from saint2706/copilot/fix-github-actions-issue
+- Apply black and isort formatting to recognition/views_legacy.py
+- Apply black and isort formatting to test_dos_prevention.py
+- Fix flake8 linting errors in test_dos_prevention.py
+- Initial plan
+- Merge pull request #199 from saint2706/palette-fix-home-icons-5855873708565230011
+- Fix confusing icons on Home page and update documentation
+- Merge pull request #198 from saint2706/sentinel/fix-image-bomb-dos-14019119331396032151
+- Merge pull request #197 from saint2706/bolt-optimize-faiss-matching-14235569915976908282
+- 🛡️ Sentinel: Fix Image Decompression Bomb (DoS) vulnerability
+- ⚡ Bolt: Optimize face matching with FAISS
+- Merge pull request #196 from saint2706/copilot/fix-django-ci
+- Fix Django CI linting errors in test files
+- Initial plan
+- Merge pull request #188 from saint2706/dependabot/pip/faiss-cpu-1.13.1
+- Merge branch 'main' into dependabot/pip/faiss-cpu-1.13.1
+- Merge pull request #191 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.0.2
+- Merge pull request #192 from saint2706/dependabot/npm_and_yarn/frontend/react-dom-19.2.3
+- Bump @types/node from 24.10.1 to 25.0.2 in /frontend
+- Bump react-dom from 19.2.1 to 19.2.3 in /frontend
+- Merge pull request #195 from saint2706/palette-ux-loading-state-1561589548573260960
+- Merge pull request #194 from saint2706/sentinel/fix-api-auth-and-validation-11087329036376928771
+- Merge pull request #193 from saint2706/dependabot/pip/pip-c4ff2e68b4
+- Bump faiss-cpu from 1.9.0.post1 to 1.13.1
+- Merge pull request #190 from saint2706/dependabot/npm_and_yarn/frontend/react-19.2.3
+- Merge pull request #189 from saint2706/dependabot/npm_and_yarn/frontend/vitejs/plugin-react-5.1.2
+- Merge pull request #187 from saint2706/dependabot/pip/pytest-xdist-3.8.0
+- Merge pull request #186 from saint2706/dependabot/npm_and_yarn/frontend/eslint/js-9.39.2
+- Merge pull request #185 from saint2706/dependabot/pip/idna-3.11
+- Merge branch 'main' into dependabot/pip/idna-3.11
+- Merge pull request #184 from saint2706/dependabot/pip/zope-interface-8.1.1
+- Merge pull request #183 from saint2706/dependabot/pip/prometheus-client-0.23.1
+- I have addressed the critical and medium vulnerabilities reported by Sentinel.
+- Bump filelock from 3.20.0 to 3.20.1 in the pip group across 1 directory
+- Bump react from 19.2.1 to 19.2.3 in /frontend
+- Bump @vitejs/plugin-react from 5.1.1 to 5.1.2 in /frontend
+- Bump pytest-xdist from 3.5.0 to 3.8.0
+- Bump @eslint/js from 9.39.1 to 9.39.2 in /frontend
+- Bump idna from 3.7 to 3.11
+- Bump zope-interface from 6.1 to 8.1.1
+- Bump prometheus-client from 0.20.0 to 0.23.1
+- Merge pull request #182 from saint2706/copilot/fix-formatting-and-linting
+- Fix import ordering in recognition module for linting compliance
+- Initial plan
+- Add documentation index and UX/contribution guides
+- Add Redis-based embedding cache for face recognition
+- Add Fairness Audit section to developer guide
+
 ### Added (Unreleased)
 
 - Added missing TSDoc/JSDoc comments to `ActionCard` in `frontend/src/components/ActionCard.tsx` and `queryClient` in `frontend/src/main.tsx`
@@ -448,6 +1726,1284 @@ This version represents the state of the codebase when the original CHANGELOG.md
 [0.0.1]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?until=2021-04-29
 
 ## [Unreleased]
+
+## [1.8.0] - 2026-04-15
+
+### Added
+
+- feat: add bump-version workflow, fix docker attestation and trivy scan
+- feat(api): add drf-spectacular for OpenAPI documentation and cache stats endpoint
+- feat: optimize inference latency and remove insecure pickle usage
+- feat(k8s): optimize deployments for resilience and security
+- feat: Add Zod schema validation to LoginCredentials
+
+- Add `zod` schema to validate `username` and `password` on login.
+- Reject requests early to prevent unnecessary network calls and improve security.
+- feat: optimize docker configurations and kubernetes manifests
+- feat: implement SEO and GEO optimizations
+- feat: Optimize DatasetEmbeddingCache for faster load times
+- feat(ux): improve focus management in MarkAttendance kiosk mode
+- feat(frontend): introduce Kbd component for keyboard shortcuts
+- feat(frontend): improve focus management and accessibility in Kiosk mode
+- feat(ux): improve login accessibility and usability
+- feat(ui): enhance navbar accessibility and consistency
+- feat(ui): add autofocus and loading states to login page
+- feat: Cache dataset filesystem state to optimize recognition API latency
+- feat(ux): add countdown and keyboard shortcuts to attendance marking
+- feat(ux): improve post-attendance actions in MarkAttendance - Added 'Return Home' and 'Mark Another' buttons on success. - Replaced generic 'Try Again' with context-aware actions. - Added Home and UserCheck icons. - Improved accessibility with aria-labels.
+- feat(ux): freeze camera video on capture for better feedback
+- feat: apply PR review feedback on camera flash effect
+- feat(ui): add camera flash effect for attendance capture
+- feat: Optimize attendance session updates with dirty checking
+- feat(security): enforce upload size limits in recognition API
+- feat(ui): improve accessibility for attendance marking
+- feat: add rate limiting to sensitive admin endpoints
+- feat(frontend): add password visibility toggle and improve accessibility
+- feat(ui): add loading state to camera initialization
+- feat: Add rate limiting to login endpoint
+- feat(ux): add camera initialization loader to photo capture modal
+- feat(ui): add loading state to form submission buttons
+
+### Fixed
+
+- fix: address Trivy HIGH/CRITICAL vulnerabilities in Docker image
+- fix: address code review feedback on bump-version workflow
+- fix: Correct alpine user IDs in StatefulSets for Postgres and Redis
+- Fix: Replace global state mutations with thread-safe localized random generation and removed unnecessary `set_global_seed` usages.
+- fix: remove requirements.frozen.txt from .dockerignore
+- fix: optimize Dockerfiles and fix dependencies cache
+- fix(api): ensure correct Content-Type for RFC 7807 responses
+- fix: remove unused pickle import in test_dataset_cache.py
+- fix: update tests to handle json dataset embedding cache
+- fix(k8s): Correct comment indentation in pvc.yaml to pass yamllint
+- fix: regenerate pnpm-lock.yaml to fix broken lockfile (missing baseline-browser-mapping@2.10.8)
+- Fix: Standardize API error responses to RFC 7807 problem details format
+- fix: use isolated temp dirs in dataset cache tests to prevent xdist race conditions
+- Fix: Replace weak MD5 hashing with SHA-256 in embedding_cache.py
+- fix: handle empty string for DJANGO_SECRET_KEY in settings
+- fix: guard register rate limit only on POST
+- fix: Improve optimistic check and add backward compatibility test for DatasetEmbeddingCache
+- fix: apply code review fixes for countdown and keyboard shortcuts
+- fix: address PR review comments on accessibility improvements
+
+### Changed
+
+- Merge pull request #807 from saint2706/copilot/debug-docker-build-push-workflow
+- Merge pull request #798 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-85af2c71bb
+- Merge pull request #799 from saint2706/docs/fix-dead-links-5456575465647809372
+- Merge pull request #800 from saint2706/jules-optimization-docker-14610083631819338900
+- Merge pull request #802 from saint2706/jules-16116773146865082020-f2dc938d
+- Merge pull request #804 from saint2706/buddha-geo-llms-grouping-8754355574268643989
+- Merge pull request #805 from saint2706/fix-flaky-ratelimit-test-6735885417132918925
+- Merge pull request #806 from saint2706/chore/fix-docker-fernet-key-8641054916941519213
+- chore: Fix invalid base64 dummy Fernet keys in Dockerfiles
+- test: Fix flaky rate limit test due to minute boundary crossing
+- 🧘 Buddha: [GEO] Categorized endpoints in llms.txt files to improve AI readability
+- 🛡️ Sentinel: Fixed vulnerabilities in requirements.txt
+- 🛡️ Sentinel: Fixed vulnerabilities in requirements.txt
+- Pin python version in Dockerfile.gpu
+- docs: fix dead links in agent skills and CLAUDE.md
+- Bump follow-redirects
+- Merge pull request #797 from saint2706/dependabot/pip/pip-7e7b164bd8
+- Bump gdown from 5.2.1 to 5.2.2 in the pip group across 1 directory
+- Merge pull request #796 from saint2706/alert-autofix-36
+- Potential fix for code scanning alert no. 36: Clear-text logging of sensitive information
+- Merge pull request #795 from saint2706/alert-autofix-37
+- Potential fix for code scanning alert no. 37: Use of a broken or weak cryptographic hashing algorithm on sensitive data
+- Merge pull request #793 from saint2706/dependabot/pip/pip-489ca64b8d
+- Merge pull request #792 from saint2706/alert-autofix-38
+- Fix failing tests: use timezone.localdate() to avoid UTC/IST date mismatch
+- Bump pillow from 12.1.1 to 12.2.0 in the pip group across 1 directory
+- Potential fix for code scanning alert no. 38: Clear-text logging of sensitive information
+- Merge pull request #791 from saint2706/dependabot/pip/pip-590e9db7b9
+- Bump pytest from 9.0.2 to 9.0.3 in the pip group across 1 directory
+- Merge pull request #789 from saint2706/hunter-cleanup-unused-imports-6762341586821139203
+- Merge pull request #790 from saint2706/fix-cicd-pipeline-optimizations-10412189941881687066
+- ci: fix pre-commit issues with syntax and format
+- ci: optimize pipeline security and maintainability
+- 🔍 Hunter: Fixed 4 errors - removed unused imports and variables in agent scripts
+- 🔍 Hunter: Fixed 4 errors - removed unused imports and variables in agent scripts
+- Merge pull request #773 from saint2706/buddha-seo-geo-improvements-2523793657766461409
+- Merge pull request #776 from saint2706/ci-cd/optimize-yamllint-caching-12129625943673186226
+- Merge pull request #777 from saint2706/delete-existing-skills-and-regenerate
+- Add autoskills-generated generic skills and CLAUDE summary
+- Optimize pipeline: Cache yamllint dependency and fix workflow linting setup
+- 🧘 Buddha: [SEO/GEO] Add canonical URLs, robots noindex, and fix schemas
+- Merge pull request #763 from saint2706/fix-api-response-content-type-7838300834115040649
+- Merge pull request #765 from saint2706/testing-test-speed-optimization-9227880105200102333
+- Merge pull request #768 from saint2706/docs-frontend-jsdoc-13730108310792043226
+- Merge pull request #767 from saint2706/dependabot/pip/pip-3344959f9f
+- Merge pull request #769 from saint2706/api-improvements-730291782399782315
+- Merge pull request #770 from saint2706/add-type-hints-models-10169393884415121787
+- Merge pull request #771 from saint2706/buddha-lcp-eager-load-home-9714258521858425983
+- 🧘 Buddha: [PERF] Eager load Home route for better LCP
+- Add type hints to recognition and users models
+- 🔌 API: Fixed DRF content_type and un-mocked exceptions
+- 📚 Docs: Add missing JSDoc/TSDoc to ActionCard and main.tsx
+- Bump cryptography in the pip group across 1 directory
+- 🧪 Testing: Optimize test execution by pre-hashing test user passwords
+- Fix content_type configuration in API exception handling and views
+- Merge pull request #761 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-94be095972
+- Merge pull request #754 from saint2706/jules-bolt-optimization-15233615477271612457
+- Bump axios in /frontend in the npm_and_yarn group across 1 directory
+- Merge pull request #753 from saint2706/buddha-seo-geo-updates-1319486070849569257
+- Merge pull request #755 from saint2706/k8s-explicit-sa-2642910721746236721
+- Merge pull request #758 from saint2706/picasso/ux-improvements-3415007281717964252
+- Merge pull request #759 from saint2706/aiml-remove-pickle-13760202444517058644
+- Merge pull request #760 from saint2706/hunter-mypy-fix-4590091059839555930
+- Fix mypy typing errors for 3rd party modules and ignore untyped modules
+- Secure ML model loading by disallowing pickle in np.load
+- 🎨 Picasso: [UX improvement] Add loading feedback for actions
+- Explicitly define serviceAccountName in statefulsets
+- ⚡ Bolt: Implemented React memoization and API optimizations
+- ⚡ Bolt: Implemented React memoization and API optimizations
+- 🧘 Buddha: SEO/GEO improvements
+- Merge pull request #751 from saint2706/bolt/dashboard-stats-react-query-1819092361640977190
+- Merge pull request #750 from saint2706/jules-buddha-seo-improvements-3723939389572848611
+- Merge pull request #749 from saint2706/fix-ml-optimization-and-bandit-warnings-15284230727631148984
+- Merge pull request #748 from saint2706/sentinel-fix-json-ld-xss-11135910496883260269
+- Merge pull request #747 from saint2706/docker-optimization-docs-2857295852783912415
+- Merge pull request #746 from saint2706/perf-optimise-test-user-creation-with-make-password-1123618547756086184
+- Merge pull request #744 from saint2706/fix-n-plus-1-present-qs-1382608645022538904
+- Merge pull request #743 from saint2706/docs/fix-markdown-link-check-rate-limits-1335144985816753866
+- Fix formatting with black to resolve pre-commit check failure
+- ⚡ Bolt: Implement React Query for dashboard stats caching
+- [GEO] Improved semantic HTML elements in frontend components
+- Fix ML optimization, thread safety, and Bandit warnings
+- 🛡️ Sentinel: Fixed DOM XSS risk in JSON-LD injection
+- docs(docker): Document build arguments and complex logic
+- Optimised user and test data creation for faster test execution speed
+- Optimize present_qs to prevent N+1 query
+- Fix markdown-link-check rate limiting false positives
+- Delete .github/workflows/dependency-submission.yml
+- Delete kustomize_v5.3.0_linux_amd64.tar.gz
+- Merge pull request #735 from saint2706/optimize-test-user-creation-2571213880263443287
+- Merge pull request #734 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-c4bc6a0a9e
+- Merge pull request #739 from saint2706/fix/k8s-optimizations-9979350658065675853
+- Merge pull request #741 from saint2706/docker-optimization-8032964889995119723
+- Merge pull request #742 from saint2706/jules-model-optimization-align-false-10978179995587926817
+- Optimize DeepFace representations by disabling alignment
+- chore(docker): Clean up frontend source files in Dockerfile build stages
+- Optimize Kubernetes configurations for security and resilience
+- Fix formatting on users tests and optimize user creation speed
+- Optimize test execution speed by pre-hashing test passwords
+- Bump vite in /frontend in the npm_and_yarn group across 1 directory
+- Merge pull request #708 from saint2706/optimize-ml-inference-random-seed-17207905289299926927
+- Merge pull request #710 from saint2706/feat/k8s-celery-worker-resource-limits-17513745228740881407
+- Merge pull request #705 from saint2706/ci-cd/refactor-frontend-workflow-4988180280978626417
+- Merge pull request #713 from saint2706/dependabot/pip/gunicorn-25.3.0
+- Merge pull request #714 from saint2706/dependabot/pip/django-6.0.3
+- Merge pull request #715 from saint2706/dependabot/pip/tzdata-2026.1
+- Merge pull request #717 from saint2706/dependabot/pip/sentry-sdk-2.57.0
+- Merge pull request #718 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.58.0
+- Merge pull request #719 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.5.2
+- Merge pull request #721 from saint2706/dependabot/npm_and_yarn/frontend/axios-1.14.0
+- Merge pull request #722 from saint2706/dependabot/npm_and_yarn/frontend/react-router-dom-7.14.0
+- Merge pull request #724 from saint2706/buddha-seo-geo-updates-7777192126571265561
+- Merge pull request #725 from saint2706/k8s-fix-alpine-uids-18278881284372625920
+- Merge pull request #726 from saint2706/fix/api-exception-handler-raw-error-leak-9548781863708491315
+- Merge pull request #728 from saint2706/bolt-fix-attendance-api-n-plus-one-14175223631393600993
+- Merge pull request #730 from saint2706/database-optimizations-6314806998850132887
+- Merge pull request #731 from saint2706/docker-layer-bloat-optimization-4141642650045347209
+- Merge pull request #732 from saint2706/picasso-tooltips-5548599530294031769
+- Merge pull request #733 from saint2706/fix-test-suite-2878966092850713775
+- Fix test suite to use module execution and resolve test issues
+- 🎨 Picasso: [UX improvement] Added tooltips to action buttons
+- 🐳 Docker: Optimize Dockerfiles to prevent intermediate layer bloat
+- Optimized date filtering queries and added missing index.
+- ⚡ Bolt: Fix N+1 queries in AttendanceViewSet
+- Format recognition/api/exceptions.py using black
+- Fix potential raw error leak in custom exception handler
+- 🧘 Buddha: [SEO/GEO improvement] Update robots.txt for AI discoverability
+- Bump react-router-dom from 7.13.2 to 7.14.0 in /frontend
+- Bump axios from 1.13.6 to 1.14.0 in /frontend
+- Bump @types/node from 25.5.0 to 25.5.2 in /frontend
+- Bump typescript-eslint from 8.57.2 to 8.58.0 in /frontend
+- Bump sentry-sdk from 2.56.0 to 2.57.0
+- Bump tzdata from 2025.3 to 2026.1
+- Bump django from 6.0 to 6.0.3
+- Bump gunicorn from 25.1.0 to 25.3.0
+- chore: Add memory and CPU requests/limits to celery-worker deployment
+- ci: Refactor reusable Node setup steps into composite action
+- Merge pull request #700 from saint2706/testing-optimize-test-execution-8158520095484585184
+- Merge pull request #701 from saint2706/fix-docker-optimizations-14625520365110915981
+- Merge pull request #698 from saint2706/k8s-config-fixes-4022945855721145196
+- Merge pull request #697 from saint2706/api-fix-content-type-rfc7807-9337293107211899115
+- Merge pull request #696 from saint2706/picasso/ux-nav-dashboard-error-15473627684891034187
+- Merge pull request #694 from saint2706/sentinel-security-hardening-8063517629469090665
+- Merge pull request #693 from saint2706/ci-cd-least-privilege-permissions-9356762354184427092
+- test: optimize test setup using bulk_create and make_password
+- Optimize Kubernetes configurations and correct validation issues
+- 🎨 Picasso: Navigation and Dashboard Error State UX Polish
+- Fix CI: Ensure RECOGNITION_JWT_SECRET is passed in build and test envs
+- Security: Fix pickle vulnerabilities, limit CORS, and enforce JWT config
+- ci: Enforce least privilege permissions in close-all-prs workflow
+- Merge pull request #692 from saint2706/copilot/add-close-all-pull-requests-action
+- Add close-all-prs workflow with manual trigger only
+- Merge pull request #688 from saint2706/hunter-fixes-tensorflow-request-meta-cv2-setup-wizard-3626833940558243073
+- Merge pull request #684 from saint2706/docker-optimizations-11336842463918866885
+- Merge pull request #683 from saint2706/sentinel-fix-picomatch-vulnerability-15714627522168317916
+- Merge pull request #682 from saint2706/cicd-pipeline-optimization-193713560038422205
+- Merge pull request #681 from saint2706/fix-numpy-reproducibility-7171850730948019623
+- Merge pull request #691 from saint2706/api-consistent-error-handling-7004869297650672788
+- 🔌 API: Update unhandled exceptions to return consistent RFC 7807 responses
+- 🔍 Hunter: Fixed 4 errors - [summary]
+- 🐳 Docker: Optimized container security and dependencies
+- Fix ReDoS and Method Injection in picomatch dependency
+- 🔄 CI/CD: Optimize GitHub Actions pipeline speeds
+- Refactored legacy numpy seeding to use localized instances.
+- Merge pull request #656 from saint2706/bolt-dashboard-stats-optimization-10400775100821739177
+- Merge pull request #660 from saint2706/aiml-optimize-training-dataloader-8117860116046417950
+- Merge branch 'main' into aiml-optimize-training-dataloader-8117860116046417950
+- Merge pull request #659 from saint2706/docker-optimization-8232710110497996744
+- Merge pull request #658 from saint2706/sentinel/fix-rate-limiting-setup-wizard-1106026832994706732
+- Merge pull request #657 from saint2706/docs-fix-lint-and-build-11409619980490591023
+- Merge pull request #654 from saint2706/picasso-ux-improvements-13138804738325757983
+- Merge pull request #653 from saint2706/buddha-seo-geo-2162883614229547721
+- Fix Django dependency version in requirements.txt
+- Optimize dataset embedding loading in training pipeline
+- 🛡️ Sentinel: Enforce rate limiting on all setup wizard views
+- 🐳 Docker: Optimize security and build cache
+- 🛡️ Sentinel: Enforce rate limiting on all setup wizard views
+- 🛡️ Sentinel: Enforce rate limiting on all setup wizard views
+- docs: resolve missing dependency in frontend lint
+- ⚡ Bolt: Replace mocked dashboard stats with real API integration
+- 🎨 Picasso: Improve accessibility of toggle buttons and skeleton loaders
+- 🧘 Buddha: [SEO/GEO improvement]
+- Merge pull request #647 from saint2706/ci-cd-optimize-lint-workflow-18332429017647080476
+- Merge pull request #648 from saint2706/bolt-memoize-context-11015650395005739846
+- Merge pull request #649 from saint2706/docs-audit-cleanup-6568686047458466858
+- Merge pull request #650 from saint2706/chore/docker-healthcheck-optimize-11141175022615707771
+- Merge pull request #651 from saint2706/jules-kubernetes-audit-5424531466435906471
+- Merge pull request #652 from saint2706/picasso-focus-visible-10617683264212816665
+- Fix CI build failure caused by unallowed file in tree
+- 🎨 Picasso: Fix skip-link focus visibility
+- ☸️ Kubernetes: Audited resources and removed raw secrets template
+- Optimize lint workflow and fix dependency submission pipeline
+- chore: optimize healthcheck endpoint
+- 📚 Docs: Final documentation audit
+- ⚡ Bolt: Memoize AuthContext and ThemeContext values
+- Optimize lint workflow
+- Merge pull request #646 from saint2706/testing-users-views-coverage-7635601129292854412
+- Merge pull request #645 from saint2706/ci-optimizations-5728745143672781058
+- Merge pull request #644 from saint2706/buddha-seo-geo-improvements-12100500080957424925
+- Merge pull request #643 from saint2706/k8s-probes-metrics-919207080409749285
+- Merge pull request #642 from saint2706/jules-docker-lint-optimizations-4631925820695760251
+- Merge pull request #641 from saint2706/jules-10499553663687929572-5ea321d4
+- Merge pull request #640 from saint2706/docs-fix-broken-links-12952462154032785710
+- Merge pull request #637 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.57.2
+- Merge pull request #636 from saint2706/dependabot/npm_and_yarn/frontend/baseline-browser-mapping-2.10.12
+- Merge pull request #633 from saint2706/dependabot/npm_and_yarn/frontend/react-router-dom-7.13.2
+- Merge pull request #632 from saint2706/dependabot/pip/djangorestframework-3.17.1
+- Merge pull request #631 from saint2706/dependabot/pip/sentry-sdk-2.56.0
+- Merge pull request #630 from saint2706/dependabot/pip/numpy-2.4.4
+- Merge pull request #629 from saint2706/dependabot/pip/pytest-cov-7.1.0
+- 🧪 Testing: Increase test coverage for user views
+- 🧪 Testing: Increase test coverage for user views
+- 🔧 CI/CD: Pipeline optimizations
+- 🧘 Buddha: [SEO/GEO improvement] Added React 19 Document Metadata to SPA and removed unused image preload
+- Optimize liveness/readiness probes to use /monitoring/metrics/
+- 🐳 Docker: ensure dev dependencies are installed before linting
+- 🎨 Picasso: [UX improvement] Add empty state for Dashboard stats
+- Fix broken link checks and correctly configure `.markdownlinkcheck.json`
+- Bump typescript-eslint from 8.57.1 to 8.57.2 in /frontend
+- Bump baseline-browser-mapping from 2.10.10 to 2.10.12 in /frontend
+- Bump react-router-dom from 7.13.1 to 7.13.2 in /frontend
+- Bump djangorestframework from 3.16.1 to 3.17.1
+- Bump sentry-sdk from 2.53.0 to 2.56.0
+- Bump numpy from 1.26.4 to 2.4.4
+- Bump pytest-cov from 7.0.0 to 7.1.0
+- Delete plan.md
+- Merge pull request #626 from saint2706/jules-1018245512552995117-a5203660
+- Merge pull request #621 from saint2706/docs/audit-and-fix-15987440128728663158
+- Merge pull request #622 from saint2706/ci-cd-fail-fast-frontend-17518607093109507704
+- Merge pull request #623 from saint2706/picasso-keyboard-accessibility-9923623528688596877
+- Merge pull request #624 from saint2706/docker-audit-verification-5283086817370523144
+- Merge pull request #625 from saint2706/buddha-json-ld-16826371709203647807
+- Merge pull request #627 from saint2706/hunter/fix-mypy-typing-errors-6062097513574498919
+- 🔍 Hunter: Fixed 5+ mypy typing errors across pipeline, settings, views, and CLI
+- ⚡ Bolt: [Optimization] Fix N+1 queries by replacing consecutive `.count()` with single `.aggregate()`
+- Added JSON-LD structured data to Dashboard, Login, and MarkAttendance pages. Updated `.jules/buddha-scroll.md` to record the change.
+- 🐋 Docker: Verified optimal container configuration - Audited Dockerfile, Dockerfile.gpu, docker-compose.yml, k8s manifests - Confirmed multi-stage builds and base image pinnings are correct - Verified cache optimization and .dockerignore completeness - Confirmed non-root user execution and security profiles - Validated all tests and linting pass with no regressions
+- 🎨 Picasso: [UX improvement] Enhanced keyboard accessibility and interactions
+- ci: add frontend-lint dependency to frontend-build job
+- docs: audit documentation and confirm there are no missing tasks
+- Fix formatting issues in CI workflow file
+- Merge pull request #615 from saint2706/fix-n-plus-one-queries-454646210355153934
+- Merge pull request #620 from saint2706/api-improvements-rfc7807-4536475295085509889
+- Merge pull request #619 from saint2706/ci-pipeline-optimizations-1930334522847436847
+- Merge pull request #618 from saint2706/docs/add-api-auth-tsdocs-4404223499539224884
+- Merge pull request #617 from saint2706/test-coverage-pipeline-5694280225345936345
+- Merge pull request #616 from saint2706/picasso-ux-improvements-10857528324684507247
+- Merge pull request #614 from saint2706/docker-optimization-audit-564685051452760514
+- Merge pull request #613 from saint2706/buddha-seo-geo-improvements-10367557765228407254
+- Merge pull request #612 from saint2706/dependabot/pip/pip-6ba9ca5f64
+- 🔌 API: Enforce RFC 7807 problem details and strict input validation
+- ci: optimize pipelines for parallel execution and fail-fast behavior
+- docs: add TSDoc to auth schemas
+- 🧪 Testing: Increase test coverage for recognition pipeline
+- 🎨 Picasso: [UX improvement] Fix broken hero icon and dark-mode skeletons
+- ⚡ Bolt: [performance improvement] fixed N+1 queries in UserViewSet and admin dashboards
+- doc: document docker configuration audit and confirmation of optimal state
+- 🧘 Buddha: [SEO/GEO improvement] Migrate JSON-LD to React component for dynamic schema loading
+- Bump cryptography in the pip group across 1 directory
+- Merge pull request #611 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-6c4c142770
+- Bump brace-expansion
+- Merge pull request #607 from saint2706/bolt/optimize-cache-normalization-17708223008243660845
+- Merge pull request #608 from saint2706/docs-fixes-7303621652214967073
+- Merge pull request #609 from saint2706/buddha-seo-geo-verification-15085588728126288487
+- Merge pull request #610 from saint2706/picasso-ux-improvements-2464653739501592176
+- 🎨 Picasso: [UX improvement] Add skeleton loader and mobile menu aria attributes
+- Verify SEO, GEO, and Core Web Vitals optimizations
+- 📚 Docs: Fix markdown link check false positive
+- ⚡ Bolt: Skip redundant O(N) normalization loop for valid numpy embeddings
+- Merge pull request #601 from saint2706/buddha-seo-geo-improvements-7342287040499374234
+- Merge pull request #603 from saint2706/aiml-fix-api-health-coverage-2594904161132567284
+- Merge pull request #604 from saint2706/api-improvements-spectacular-cache-9110617555494253003
+- Merge pull request #605 from saint2706/testing-mock-deepface-api-views-10888115252713508768
+- Merge pull request #606 from saint2706/jules-3582679607949531194-2863deab
+- chore: optimize docker configurations for caching and size
+- test: mock DeepFace in API view tests to improve speed and isolate ML
+- test: achieve 100% coverage for api exceptions and health utils
+- 🧘 Buddha: [SEO/GEO improvement] Update llms.txt site architecture
+- Merge pull request #600 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-3f9ee708be
+- Merge pull request #599 from saint2706/dependabot/pip/pip-aa7cb66ac2
+- Merge pull request #591 from saint2706/picasso-ux-improvements-13039935246074393068
+- Merge pull request #592 from saint2706/testing-recognition-models-coverage-5846689149768169396
+- Merge pull request #593 from saint2706/ci-cd-yamllint-fixes-10334569297697269773
+- Merge pull request #594 from saint2706/python/fix-mypy-operator-errors-12580255537401144291
+- Merge pull request #595 from saint2706/hunter/mypy-fixes-10262509043885067163
+- Merge pull request #596 from saint2706/api-fix-user-create-auth-16793049855984095584
+- Bump picomatch in /frontend in the npm_and_yarn group across 1 directory
+- Bump requests from 2.32.5 to 2.33.0 in the pip group across 1 directory
+- Merge pull request #597 from saint2706/kubernetes-optimizations-1537805316644078163
+- Merge pull request #598 from saint2706/docker-optimization-16553662450854972238
+- 🐳 Docker: Verified Dockerfiles using hadolint and validated configurations.
+- tests: Fix formatting in test_models.py
+- docs: log K8s optimization verification
+- Fix UserViewSet create permission and clean up frontend auth logout logic
+- Fix mypy typing and missing import errors
+- 🐍 Python: Fix `mypy` `[operator]` errors by enforcing strict `is not None` type checking
+- ci: fix yamllint errors and format across workflows
+- tests: Add coverage to recognition.models
+- 🎨 Picasso: Login page focus management
+- Merge pull request #589 from saint2706/docs-fix-contributing-links-16756244657564838930
+- Merge pull request #590 from saint2706/buddha-robots-llms-sync-18198450421018829711
+- 🧘 Buddha: [SEO] Synchronized robots.txt and llms.txt across project
+- 📚 Docs: Fixed broken issue template links in CONTRIBUTING.md
+- Merge pull request #579 from saint2706/buddha-seo-geo-synchronization-7083252664890680813
+- Merge pull request #580 from saint2706/picasso-ux-improvements-1688977605610867063
+- Merge pull request #581 from saint2706/k8s-security-audit-10256027780232507669
+- Merge pull request #582 from saint2706/fix-mypy-recognition-health-1414998789708319337
+- Merge pull request #583 from saint2706/aiml-optimization-13642797572730525871
+- Merge pull request #584 from saint2706/ci-cd-optimization-448841225517545846
+- Merge pull request #585 from saint2706/docs-review-2307679077638635804
+- Merge pull request #586 from saint2706/docker-optimizations-3409497473908725812
+- Merge pull request #587 from saint2706/testing/health-and-exceptions-coverage-2360659309811603292
+- Merge pull request #588 from saint2706/fix/api-endpoints-auth-15652152893682325944
+- Fix `rotate_encryption_keys` test failing on CI pipeline.
+- style: add missing newline to end of aiml.md
+- 🔌 API: Fixed user authentication endpoints in frontend client
+- Add tests for `recognition/health.py` and `recognition/api/exceptions.py`.
+- Optimize Docker images by switching to opencv-python-headless
+- docs: Verified documentation links and build/lint status
+- Optimize CI/CD pipelines for fail-fast and caching
+- Fix mypy type hinting errors in recognition/health.py
+- Audit Kubernetes configurations for security and resilience
+- 🎨 Picasso: Accessibility and UX improvements for semantic regions and loading states
+- Synchronize llms.txt site architecture mapping
+- Merge pull request #570 from saint2706/buddha-seo-geo-improvements-14322678736250624570
+- Merge pull request #571 from saint2706/fix-health-coverage-4014607359003416934
+- Merge pull request #572 from saint2706/db-optimization-get-for-site-12077988247120343842
+- Merge pull request #573 from saint2706/docker-optimization-frontend-bloat-6318079229177688145
+- Merge pull request #574 from saint2706/hunter-fix-rate-limit-7605895880338242212
+- Merge pull request #575 from saint2706/k8s-fix-pvc-lint-6966450290224947342
+- Merge pull request #576 from saint2706/docs-fix-broken-links-5961585307439765498
+- Merge pull request #577 from saint2706/aiml-optimize-antispoof-cnn-15849624846519420881
+- Merge pull request #578 from saint2706/ci-cd-optimization-2862347675160956610
+- 🐳 Docker: Fix latest tag in DEPLOYMENT.md and resolve CI issue
+- ci: fix pytest coverage flag in github actions
+- 🤖 AIML: Optimize AntiSpoofCNN with TFLite Quantization
+- 📚 Docs: Fixed broken issue template links in docs/SUPPORT.md
+- Fixed rate limit bypass bug in add_photos
+- 🐳 Docker: Optimize frontend layer bloat and fix latest tag
+- Fix N+1 query issue in ThresholdProfile.get_for_site
+- Add missing test coverage for dt.datetime.fromtimestamp and fix flake8 E501 in test_api_exceptions.py.
+- Update SEO and GEO settings across site architecture and home page
+
+- Synchronized `robots.txt` between backend and frontend.
+- Removed `aria-hidden` from the LCP image in `Home.tsx` for better SEO.
+- Verified JSON-LD validity in index.html.
+- Updated `llms.txt` and `llms.txt.content` to contain precise routing mapping for AI agents based on actual Django and SPA routes.
+- Merge pull request #561 from saint2706/dependabot/pip/scipy-1.17.1
+- Merge pull request #560 from saint2706/dependabot/pip/tensorflow-2.21.0
+- Merge pull request #563 from saint2706/dependabot/npm_and_yarn/frontend/baseline-browser-mapping-2.10.10
+- Merge pull request #562 from saint2706/dependabot/pip/isort-8.0.1
+- Merge pull request #564 from saint2706/dependabot/pip/django-crispy-forms-2.6
+- Merge pull request #565 from saint2706/dependabot/pip/playwright-1.58.0
+- Merge pull request #567 from saint2706/dependabot/npm_and_yarn/frontend/zod-4.3.6
+- Merge pull request #568 from saint2706/dependabot/npm_and_yarn/frontend/tanstack/react-query-5.95.0
+- Merge pull request #569 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.57.1
+- Bump typescript-eslint from 8.57.0 to 8.57.1 in /frontend
+- Bump @tanstack/react-query from 5.90.21 to 5.95.0 in /frontend
+- Bump zod from 4.2.1 to 4.3.6 in /frontend
+- Bump playwright from 1.57.0 to 1.58.0
+- Bump django-crispy-forms from 2.5 to 2.6
+- Bump baseline-browser-mapping from 2.10.0 to 2.10.10 in /frontend
+- Bump isort from 7.0.0 to 8.0.1
+- Bump scipy from 1.14.1 to 1.17.1
+- Bump tensorflow from 2.20.0 to 2.21.0
+- Merge pull request #551 from saint2706/buddha-seo-geo-improvements-11468945243802238678
+- Merge pull request #552 from saint2706/sentinel-input-validation-5870140873681514421
+- Merge pull request #553 from saint2706/picasso/fix-aria-label-navbar-1220409030399321176
+- Merge pull request #555 from saint2706/fix-docker-hadolint-warnings-12493561437111765802
+- Merge pull request #556 from saint2706/docs-audit-verification-13877497644238797466
+- Merge pull request #557 from saint2706/kubernetes-optimizations-9398948772806961532
+- Merge pull request #558 from saint2706/jules-13626249694945053858-18698bb7
+- Merge pull request #559 from saint2706/fix-matplotlib-type-hint-10059417828111150245
+- Fix matplotlib colormap type hint in evaluation script
+- 🧪 Testing: Added tests for health and api exceptions
+- docs: audit and verify documentation formatting, links and comments
+- chore: Fix Hadolint warnings in Dockerfiles
+- 🎨 Picasso: Fixed WCAG 2.5.3 Label in Name violation on Logout button
+- 🛡️ Sentinel: Add input validation to registerEmployee in frontend
+- 🧘 Buddha: [SEO/GEO improvement]
+- Merge pull request #542 from saint2706/picasso-dashboard-tooltips-17713308492738597007
+- Merge pull request #543 from saint2706/fix-docker-optimizations-11184443548113975766
+- Merge pull request #544 from saint2706/sentinel-zod-auth-login-validation-15723196517033574518
+- Merge pull request #545 from saint2706/jules-buddha-lcp-django-home-15579196962883644125
+- Merge branch 'main' into jules-buddha-lcp-django-home-15579196962883644125
+- Merge pull request #546 from saint2706/bolt-admin-n-plus-1-11137412882841756308
+- Merge branch 'main' into bolt-admin-n-plus-1-11137412882841756308
+- Merge pull request #547 from saint2706/jules-database-optimization-n-plus-one-13363287337815062098
+- Merge branch 'main' into jules-database-optimization-n-plus-one-13363287337815062098
+- Merge pull request #548 from saint2706/jules-api-fixes-7316867969154794283
+- Merge pull request #549 from saint2706/hunter-fix-console-logs-9946336158820378260
+- Merge pull request #550 from saint2706/kubernetes-security-optimizations-7318159387829582896
+- Optimized Kubernetes Deployment Configurations
+- 🧘 Buddha: Fix CI Failure - Update Trivy Action to v0.35.0
+- Fix GitHub Action trivy-action tag
+- 🧘 Buddha: Fix CI Failure - Use v0.28.0 for Trivy Action
+- 🔍 Hunter: Fixed 3 errors - Removed console.log statements
+- Fix N+1 query issues in attendance analytics and update trivy action
+
+- Update `get_daily_trends` to prefetch `Time` records and map them by user and date, eliminating N+1 DB calls during the loop over `present_records`.
+- Update `get_department_summary` to batch query `Group` memberships for all identified users in a single operation, avoiding N+1 group lookups per user.
+- Updated `aquasecurity/trivy-action` from invalid `0.22.0` version to `master` to resolve CI workflow resolution error.
+- 🧘 Buddha: Fix CI Failure - Update Trivy Action Version
+- ⚡ Bolt: [Optimization] Fix N+1 query issue in SetupWizardProgress Admin
+- No changes required: System already fulfills API best practices requirements
+- Fix N+1 query issues in attendance analytics
+
+- Update `get_daily_trends` to prefetch `Time` records and map them by user and date, eliminating N+1 DB calls during the loop over `present_records`.
+- Update `get_department_summary` to batch query `Group` memberships for all identified users in a single operation, avoiding N+1 group lookups per user.
+- ⚡ Bolt: [Optimization] Fix N+1 query issue in SetupWizardProgress Admin
+- 🧘 Buddha: [PERF] Add Hero Image and Preload to Django Templates
+- chore: ensure docker best practices and configs
+- 🎨 Picasso: Add tooltips to dashboard action cards
+- Merge pull request #541 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-e5a595f223
+- Bump flatted in /frontend in the npm_and_yarn group across 1 directory
+- Merge pull request #539 from saint2706/k8s-security-optimization-5825424359483336781
+- Merge pull request #538 from saint2706/aiml-optimization-10184328912361284864
+- Merge pull request #536 from saint2706/test-coverage-health-exceptions-8403091778318897020
+- Merge pull request #534 from saint2706/bolt-frontend-code-splitting-14941843127345462743
+- Merge pull request #533 from saint2706/picasso-ux-mark-attendance-a11y-1523747323233985776
+- Optimize Kubernetes deployments with least-privilege security contexts and probes
+- AIML: Evaluate potential optimizations in recognition pipelines
+- test: Add 100% test coverage for health.py and api/exceptions.py
+- ⚡ Bolt: Optimize frontend bundle size with lazy loading
+- 🎨 Picasso: Remove redundant aria-labels in MarkAttendance
+- Merge pull request #532 from saint2706/docker-optimizations-14752816796078974882
+- Merge pull request #531 from saint2706/testing/api-views-coverage-6682785154980482076
+- Merge pull request #530 from saint2706/ci-cd-optimization-17709120873500871485
+- Merge pull request #529 from saint2706/picasso-ux-improvements-12294509460071226142
+- Merge pull request #528 from saint2706/docs-frontend-build-fix-12096626797000836476
+- 🧪 Testing: Improve coverage for recognition/api/views.py
+- CI/CD: Optimize CI pipeline and caching
+- 🎨 Picasso: Accessibility and UX improvements
+- 📚 Docs: Record frontend build fix in progress logs and changelog
+- Merge pull request #520 from saint2706/add-models-tests-5508398870712058305
+- Merge pull request #521 from saint2706/docs-audit-no-changes-10649555896107784698
+- Merge pull request #522 from saint2706/python-pep8-lint-fixes-12289295574423631466
+- Merge pull request #524 from saint2706/docker-pin-patch-versions-17495802735920626406
+- Merge pull request #525 from saint2706/api-improvements-rfc7807-17918071164847515194
+- Merge pull request #526 from saint2706/buddha-seo-geo-optimizations-11127764048127580687
+- refactor(api): standardise error responses to RFC 7807 and improve input validation
+- 🧘 Buddha: [GEO] [SEO] [PERF] Add FAQ sections, preload tags, and index tracking for better AI discoverability and LCP performance
+- refactor(api): standardise error responses to RFC 7807 and improve input validation
+- Fix pnpm lockfile missing dependency in frontend
+- Pin base image patch versions in docker-compose.yml and k8s manifests
+- 🎨 Python: Fix PEP 8 line length violations in tests
+- chore: perform docs audit with no changes required
+- 🧪 Testing: Add tests for recognition models to reach 100% coverage
+- 🧪 Testing: Add tests for recognition models to reach 100% coverage
+- Merge pull request #519 from saint2706/jules-2050336809199976067-3333709c
+- Merge pull request #518 from saint2706/cicd/pin-postgres-docker-image-6445903188124310982
+- Merge pull request #517 from saint2706/buddha-seo-geo-improvements-1368738557010832528
+- Merge pull request #516 from saint2706/picasso-ux-improvements-5402101808699941265
+- Merge pull request #515 from saint2706/docker-persona-pin-versions-2908077489783234009
+- Merge pull request #514 from saint2706/copilot/fix-pnpm-lockfile
+- 🧘 Buddha: Added FAQPage Structured Data (JSON-LD) and updated lockfile and requirements
+- docs: Fix broken links in frontend README and update lockfile
+- Docker: Remove curl and fix pnpm lockfile
+- docs: Fix broken links in frontend README
+- ci: Pin PostgreSQL Docker image version to 16.2-alpine
+- 🧘 Buddha: Added FAQPage Structured Data (JSON-LD) and updated lockfile
+- 🧘 Buddha: Added FAQPage Structured Data (JSON-LD)
+- 🎨 Picasso: [UX improvement] Add tooltips and enhance aria-live accessibility
+- Docker: Pinned base image versions
+- Initial plan
+- Merge pull request #501 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.57.0
+- Merge branch 'main' into dependabot/npm_and_yarn/frontend/typescript-eslint-8.57.0
+- Merge pull request #500 from saint2706/dependabot/npm_and_yarn/frontend/vitejs/plugin-react-5.2.0
+- Merge pull request #512 from saint2706/fix-admin-n-plus-one-queries-12861124773638283018
+- Merge pull request #511 from saint2706/ci-optimizations-7268853417229602914
+- Merge pull request #510 from saint2706/docker-optimizations-6416109326034755100
+- Merge pull request #508 from saint2706/sentinel-api-key-timing-attack-1079212248080676110
+- Merge pull request #507 from saint2706/aiml-batch-inference-anti-spoof-5948407750639870697
+- Merge pull request #506 from saint2706/fix/test-attendance-n-plus-one-query-assertions-9683034501721707794
+- Bump @vitejs/plugin-react from 5.1.4 to 5.2.0 in /frontend
+- Merge pull request #505 from saint2706/docs-maintenance-17624884933627805791
+- Bump typescript-eslint from 8.56.0 to 8.57.0 in /frontend
+- Merge pull request #504 from saint2706/api/standardize-error-responses-17005345599129003408
+- Merge pull request #503 from saint2706/buddha-lcp-optimization-170603886778627940
+- Merge pull request #499 from saint2706/dependabot/pip/deepface-0.0.99
+- Bump deepface from 0.0.93 to 0.0.99
+- Merge pull request #498 from saint2706/dependabot/pip/scikit-learn-1.8.0
+- Merge pull request #497 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.5.0
+- Merge pull request #496 from saint2706/dependabot/pip/pytz-2026.1.post1
+- Merge pull request #495 from saint2706/dependabot/pip/django-silk-5.5.0
+- Merge pull request #494 from saint2706/dependabot/pip/dj-database-url-3.1.2
+- Fix N+1 queries in Django Admin list views
+- CI/CD: Optimize python setup and secure dummy keys
+- chore(docker): pin base image minor versions for deterministic builds
+- Fix timing attack vulnerability in API key validation
+- Optimize anti-spoof CNN with batched inference
+- Fix pytest-xdist N+1 query assertion flakiness
+- docs: log completion of docs audit to .jules/docs-progress.md
+- 🧘‍♂️ Buddha: [PERF] Add eager loading to Hero LCP image
+- Bump scikit-learn from 1.7.2 to 1.8.0
+- Bump @types/node from 25.3.5 to 25.5.0 in /frontend
+- Bump pytz from 2025.2 to 2026.1.post1
+- Bump django-silk from 5.4.3 to 5.5.0
+- Bump dj-database-url from 2.3.0 to 3.1.2
+- Merge pull request #493 from saint2706/aiml-fix-formatting-lint-tests-12829603154174563747
+- Merge pull request #487 from saint2706/docker-optimization-linting-3448367289485672163
+- Merge pull request #485 from saint2706/sentinel-api-rate-limit-5041421298640710938
+- Merge pull request #486 from saint2706/ci-cd-optimizations-6148203347428895069
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint & fix CI format checks
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint & fix CI formatting
+- style: Fix end-of-file formatting in frontend/public/vite.svg
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint & fix CI formatting
+- style: Fix Python formatting and lint errors across test files
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint & fix CI format checks
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint & fix pre-commit issues
+- chore(docker): optimize container configurations and fix python linting errors
+- Fix pre-commit end-of-file-fixer failure in vite.svg
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint & fix pre-commit issues
+- chore(docker): optimize container configurations and fix python linting errors
+- Optimize CI/CD workflows and secure keys
+- 🛡️ Sentinel: Enforce API rate limits on attendance endpoint
+- Merge pull request #483 from saint2706/imgbot
+- Merge pull request #482 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-eeacf2bf74
+- [ImgBot] Optimize images
+- Merge pull request #481 from saint2706/jules-test-api-views-16304325378607403179
+- Merge pull request #479 from saint2706/hunter-fix-e501-and-pnpm-audit-17614511680519685479
+- Merge pull request #478 from saint2706/feature/seo-geo-lcp-optimization-10533619004839605069
+- Merge pull request #477 from saint2706/ci-cd-fixes-10837362655470688204
+- Merge pull request #476 from saint2706/sentinel-fix-cors-vulnerability-5827168978712060977
+- Merge pull request #475 from saint2706/hunter-n-plus-one-fix-15161701296555409326
+- Bump flatted in /frontend in the npm_and_yarn group across 1 directory
+- Merge pull request #474 from saint2706/aiml-pipeline-optimizations-12188774406206483612
+- Merge pull request #473 from saint2706/docker-optimizations-12214824120514213665
+- Merge pull request #472 from saint2706/picasso-ux-improvements-9370377272269825146
+- Merge pull request #471 from saint2706/dependabot/pip/pip-b7f5c28099
+- Fix CI formatting issues on tests/ui and restore comment
+- 🧪 Testing: Added tests for `recognition/api/views.py`
+- 🔍 Hunter: Fixed 2 errors - E501 and flatted DoS vulnerability
+- Added explicit priority LCP Hero image to Home page
+- 🔧 CI/CD: Revert unnecessary matrices on validation workflows
+- 🛡️ Sentinel: Fixed open CORS vulnerability in DEBUG mode
+- Fix N+1 sequential evaluation crash in `liveness_results_dashboard` view
+- 🤖 AIML: Optimized pipeline dependencies and fixed PEP8
+- Optimize Docker configurations for size and security
+- 🎨 Picasso: UX/Accessibility Improvements
+- Bump black from 25.12.0 to 26.3.1 in the pip group across 1 directory
+- Merge pull request #467 from saint2706/fix/python-optimizations-13266490043699308034
+- Merge pull request #468 from saint2706/database-n-plus-one-fix-3482329299704237854
+- Merge pull request #469 from saint2706/hunter-fixes-18029976773957917458
+- Merge pull request #470 from saint2706/jules-seo-geo-improvements-6287383836111394481
+- Merge pull request #466 from saint2706/fix-test-timeouts-and-failing-command-17053915218737981054
+- Merge pull request #465 from saint2706/sentinel/rate-limit-expensive-admin-views-14909956819301884629
+- Merge pull request #464 from saint2706/docs-markdown-link-check-config-12687803189249992119
+- Merge pull request #463 from saint2706/docker-optimization-opencv-10556143561230293847
+- Merge pull request #462 from saint2706/picasso-mark-attendance-a11y-2423049443790110920
+- Merge pull request #461 from saint2706/fix-yaml-lint-errors-14625149791753622980
+- Fix flaky `django-ratelimit` tests failing during CI
+- Run pre-commit to format health.py
+- 🧘 Buddha: SEO/GEO Improvements
+- 🔍 Hunter: Fixed 3 errors - backend unused vars and linter config
+- Optimize N+1 queries in recognition health dashboard
+- test: Fix test suite execution speed and fix failing rotate_encryption_keys test
+- Optimize `RecognitionAttempt` queries in `recognition_activity` to prevent N+1 queries by eager-loading related `user` objects.
+- test: Fix test suite execution speed and fix failing rotate_encryption_keys test
+- 🛡️ Sentinel: Add rate limits to expensive admin views
+- Docs: Ignore dynamic GitHub URLs in markdown link check
+- 🐳 Docker: Use opencv-python-headless to eliminate heavy GUI dependencies
+- 🎨 Picasso: Add aria-label to camera retry button
+- Fix yamllint errors in docker-compose.gpu.yml
+- Merge pull request #459 from saint2706/copilot/fix-failing-tests
+- Initial plan
+- Merge pull request #448 from saint2706/cicd-refactor-setup-python-env-6510355172239094787
+- Merge pull request #450 from saint2706/docs/fix-jsdoc-lint-11162226372756707864
+- Merge pull request #451 from saint2706/api-rfc7807-error-handling-1410747555056680583
+- Merge pull request #452 from saint2706/picasso-ux-improvements-14029579568676584836
+- Merge pull request #454 from saint2706/buddha-sync-seo-files-4988328509640428495
+- Merge pull request #455 from saint2706/docs-fix-broken-links-596517745519400146
+- Merge pull request #456 from saint2706/docker-optimizations-13526690933966431773
+- Merge pull request #457 from saint2706/picasso-navbar-accessibility-17889433414181996721
+- Merge pull request #458 from saint2706/sentinel-replace-md5-sha256-9075313994389468075
+- 🎨 Picasso: Accessibility improvements for Navbar
+- 🐳 Docker: Optimize Dockerfiles for security, size, and caching
+- docs: configure markdown-link-check to ignore local development server URLs
+- Synchronize llms.txt and robots.txt across frontend, backend, and root
+- 🔌 API: Fix formatting in api exceptions and views
+- 🎨 Picasso: [UX improvement] Enhance accessibility and focus states
+- 🔌 API: Standardize error handling to Problem Details RFC 7807 and add input validation
+- docs: Fix JSDoc comments causing lint warnings
+- 🔧 CI/CD: Refactor Python environment setup into a reusable composite action
+- Merge pull request #447 from saint2706/fix-ci-failures-and-warnings
+- Fix CI dry-run failures and reduce backend check warnings
+- Merge pull request #438 from saint2706/buddha-seo-geo-optimizations-1130825244708058994
+- Merge pull request #439 from saint2706/docs-update-jsdoc-6447861225841581402
+- Merge pull request #440 from saint2706/picasso-dashboard-aria-label-2658806277034105244
+- Merge pull request #441 from saint2706/fix-n-plus-one-queries-883996605070017349
+- Merge pull request #442 from saint2706/bolt/fix-user-viewset-n-plus-one-5320637206664020650
+- Merge pull request #443 from saint2706/docker-optimizations-18239166136852148654
+- Merge pull request #444 from saint2706/api-error-responses-rfc-7807-18314936090313796699
+- Potential fix for code scanning alert no. 47: Information exposure through an exception
+- Potential fix for code scanning alert no. 46: Information exposure through an exception
+- Potential fix for code scanning alert no. 45: Information exposure through an exception
+- Potential fix for code scanning alert no. 44: Information exposure through an exception
+- Merge pull request #445 from saint2706/ci-cd-optimizations-18104527798393457948
+- Fix flaky rate limit test caused by slow password hashing in CI
+- ⚡ Bolt: Fixed N+1 query issue in UserViewSet
+- 🔄 CI/CD: Pipeline execution optimizations
+- Refactor API error responses to use RFC 7807 problem details format
+- 🐳 Docker: Optimized Dockerfiles for size, security, and cache efficiency
+- ⚡ Bolt: Fixed N+1 query issue in UserViewSet
+- Fix N+1 query patterns in admin views and resolve flake8 errors
+- 🎨 Picasso: Added aria-label to Setup Wizard link in Dashboard
+- 📚 Docs: Add missing JSDoc comments to frontend app entry and api client
+- 🧘 Buddha: SEO/GEO optimizations
+- Merge pull request #433 from saint2706/docker-optimizations-cleanup-1191913847656243036
+- Merge pull request #434 from saint2706/bolt-attendance-stats-optimization-12746558035736906610
+- Merge pull request #435 from saint2706/picasso-ux-improvements-14590054671887282289
+- Merge pull request #436 from saint2706/ci-cd-pipeline-optimizations-8320125023362210707
+- Merge pull request #437 from saint2706/docs/rename-todo-roadmap-11428792534602816032
+- Merge pull request #432 from saint2706/sentinel-dom-xss-innerHTML-removal-2103279987291290999
+- Merge pull request #431 from saint2706/buddha-seo-geo-enhancements-11818996917504214224
+- docs: Rename TODO.md to ROADMAP.md
+- ci: optimize github actions pipelines with caching and matrix builds
+- 🎨 Picasso: UX improvements
+- ⚡ Bolt: Optimize `attendance-stats` API endpoint performance
+- ⚡ Bolt: Optimize `attendance-stats` API endpoint performance
+- Optimize Dockerfiles and Compose configurations for size and security
+- 🛡️ Sentinel: Remove innerHTML usage to prevent DOM XSS
+- Merge pull request #426 from saint2706/dependabot/npm_and_yarn/frontend/axios-1.13.6
+- Merge pull request #427 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.3.5
+- Merge pull request #428 from saint2706/dependabot/npm_and_yarn/frontend/eslint-plugin-react-refresh-0.5.2
+- Bump axios from 1.13.5 to 1.13.6 in /frontend
+- Bump eslint-plugin-react-refresh from 0.5.0 to 0.5.2 in /frontend
+- Bump @types/node from 25.3.3 to 25.3.5 in /frontend
+- Merge pull request #425 from saint2706/dependabot/npm_and_yarn/frontend/eslint/js-9.39.4
+- Merge branch 'main' into dependabot/npm_and_yarn/frontend/eslint/js-9.39.4
+- Merge pull request #424 from saint2706/dependabot/pip/prometheus-client-0.24.1
+- Merge pull request #422 from saint2706/dependabot/npm_and_yarn/frontend/lucide-react-0.577.0
+- Merge pull request #423 from saint2706/dependabot/pip/pytest-9.0.2
+- Merge pull request #421 from saint2706/dependabot/pip/redis-7.3.0
+- Merge pull request #420 from saint2706/dependabot/pip/faiss-cpu-1.13.2
+- Merge pull request #419 from saint2706/dependabot/pip/coverage-7.13.4
+- Bump @eslint/js from 9.39.2 to 9.39.4 in /frontend
+- Bump prometheus-client from 0.23.1 to 0.24.1
+- Bump pytest from 8.3.4 to 9.0.2
+- Bump lucide-react from 0.575.0 to 0.577.0 in /frontend
+- Bump redis from 7.2.0 to 7.3.0
+- Bump faiss-cpu from 1.13.1 to 1.13.2
+- Bump coverage from 7.13.3 to 7.13.4
+- Add id-token permission to Docker publish workflow
+- Merge pull request #409 from saint2706/picasso/add-login-input-names-4418642815806537149
+- Merge branch 'main' into picasso/add-login-input-names-4418642815806537149
+- Merge pull request #410 from saint2706/fix-views-syntax-error-1824248119829583263
+- Merge branch 'main' into fix-views-syntax-error-1824248119829583263
+- Merge pull request #411 from saint2706/ci-cd-pipeline-optimization-15454378411679654539
+- Merge pull request #412 from saint2706/bolt/fix-attendance-feed-n-plus-one-5421639882741780710
+- Merge branch 'main' into bolt/fix-attendance-feed-n-plus-one-5421639882741780710
+- Merge pull request #413 from saint2706/docker-optimizations-5892953442341291416
+- Merge branch 'main' into docker-optimizations-5892953442341291416
+- Merge pull request #414 from saint2706/hunter-fix-views-flake8-issues-15767480928890618920
+- Merge branch 'main' into hunter-fix-views-flake8-issues-15767480928890618920
+- Merge pull request #415 from saint2706/seo-geo-improvements-12822594103257347863
+- Merge branch 'main' into seo-geo-improvements-12822594103257347863
+- Merge pull request #416 from saint2706/docs-agent-update-14440630704676851398
+- docs: Update JSDoc comments, clear placeholders, fix CI syntax error
+- docs: Update JSDoc comments and clear placeholders
+- Fixed unused variable warnings in `recognition/views.py`.
+- 🧘 Buddha: Implement llms.txt and robots.txt for SEO/GEO
+- 🔍 Hunter: Format failures.py using black
+- Fixed indentation error causing CI failure and optimized Docker image sizes.
+- 🔍 Hunter: Fixed 4 errors - [summary]
+- Optimized Dockerfiles for reduced image size and faster builds.
+- ⚡ Bolt: Optimize AttendanceViewSet queries to prevent N+1
+- Fix indentation error and syntax in recognition/views.py
+- Fix unused variable warning in views.py
+- Optimize CI/CD pipelines for speed, reliability, and security
+- Fix syntax error in FaceRecognitionAPI.
+- Added name attributes to login inputs for autofill support
+- Merge pull request #408 from saint2706/fix/ratelimit-test-flakiness-18164722160411106471
+- Merge pull request #407 from saint2706/api-rfc7807-error-formatting-10851661352986404769
+- Merge branch 'main' into api-rfc7807-error-formatting-10851661352986404769
+- Potential fix for code scanning alert no. 42: Information exposure through an exception
+- Potential fix for code scanning alert no. 41: Information exposure through an exception
+- Potential fix for code scanning alert no. 40: Information exposure through an exception
+- Potential fix for code scanning alert no. 39: Information exposure through an exception
+- Merge pull request #406 from saint2706/fix/docker-optimizations-11145405724652533421
+- Merge pull request #405 from saint2706/db-nplusone-views-18098286947151138996
+- Merge branch 'main' into db-nplusone-views-18098286947151138996
+- Merge pull request #404 from saint2706/docs-add-jsdoc-tsdoc-9275279130047082320
+- Merge pull request #401 from saint2706/fix-mypy-type-errors-11851698164298988612
+- Merge branch 'main' into fix-mypy-type-errors-11851698164298988612
+- Merge pull request #400 from saint2706/picasso-login-accessibility-16659941062460684881
+- Merge pull request #399 from saint2706/fix/ci-dummy-secrets-8811091365240316600
+- 🔧 CI: Fix `ImproperlyConfigured` exception with dummy secrets in workflow
+- 🐛 Fix ImproperlyConfigured exception for SECRET_KEY on CI empty string
+- test: fix import format and placement in settings/base.py
+- test: fix import format and placement in settings/base.py
+- CI: Use valid Fernet keys for CI test runs
+- 🎨 Fix `isort` import ordering in `recognition/api/views.py` to resolve pre-commit failure.
+- test: isolate test caches from Redis to prevent cross-worker pollution
+- 🔌 API: Implement RFC 7807 Problem Details and Pagination
+- CI: Use dummy secrets for CI test runs
+- Build: Optimize Dockerfiles for size, speed, and dependencies
+- Use valid Fernet dummy keys in GitHub Actions to fix CI check failures
+- docs: Add missing JSDoc/TSDoc comments to frontend API and React components
+- 🗄️ Database: Fix N+1 queries in recognition views
+- docs: Add missing JSDoc/TSDoc comments to frontend API and React components
+- Fix GitHub Actions CI workflow to use dummy strings for secrets during testing
+- Fix MyPy type errors in attendance analytics and fairness scripts
+- 🎨 Picasso: [UX improvement] Add required field indicators to Login
+- ci: replace github secrets with dummy strings in test workflow
+- Merge pull request #394 from saint2706/fix-sentinel-vulnerable-dependencies-9460453857859102610
+- Merge pull request #395 from saint2706/chore-docker-optimizations-16720557450527985510
+- Merge pull request #398 from saint2706/fix/api-lint-errors-3638566519894726448
+- Merge pull request #396 from saint2706/hunter-pep8-lint-fixes-3208812603534347236
+- Merge pull request #397 from saint2706/ci-cd-pipeline-optimization-3111875778645393140
+- Fix unused import in test_ratelimit_security.py
+- Fix CI check suite failure in test_distributed_brute_force_prevention
+- Fix formatting to resolve CI pipeline failures
+- Apply black and isort formatting to API views and serializers
+- Fix line length linting errors in recognition API views and serializers
+- 🔧 CI/CD: Fix pnpm version in frontend pipeline
+- 🔍 Hunter: Fixed 2 errors - PEP 8 formatting and line length
+- 🔧 CI/CD: Optimize frontend pipeline to use pnpm and ignore coverage artifacts
+- Merge pull request #390 from saint2706/docs-fix-broken-links-13556798684793550976
+- Merge pull request #392 from saint2706/bolt-remove-django-pandas-8734966593172566740
+- Merge pull request #391 from saint2706/fix/n-plus-one-queries-1462724459305530496
+- Merge pull request #389 from saint2706/picasso/add-aria-hidden-to-icons-5796321898841985317
+- 🔍 Hunter: Fixed 5 errors - PEP 8 formatting and line length
+- chore(docker): optimize container sizes, security, and caching
+- style: Apply black formatting to `recognition/views_legacy.py`
+- Update vulnerable dependencies `django` and `rollup`
+- ⚡ Bolt: Remove `django-pandas` to optimize DataFrame construction and reduce overhead
+- perf: Fix N+1 queries in `update_attendance_in_db` functions
+- docs: fix broken links in documentation and sample data README
+- 🎨 Picasso: [UX improvement] Add aria-hidden to decorative icons
+- Merge pull request #388 from saint2706/fix-failing-github-workflows
+- Fix CI dependency resolution and Docker workflow PR failures
+- Merge pull request #377 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-bb3626eb1a
+- Merge pull request #378 from saint2706/dependabot/pip/matplotlib-3.10.8
+- Merge pull request #379 from saint2706/dependabot/pip/sentry-sdk-django--2.53.0
+- Merge pull request #380 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.3.3
+- Merge pull request #381 from saint2706/dependabot/pip/gunicorn-25.1.0
+- Merge pull request #382 from saint2706/dependabot/pip/pytest-playwright-0.7.2
+- Merge branch 'main' into dependabot/pip/pytest-playwright-0.7.2
+- Merge pull request #383 from saint2706/dependabot/pip/optree-0.19.0
+- Merge pull request #385 from saint2706/dependabot/npm_and_yarn/frontend/react-router-dom-7.13.1
+- Merge pull request #386 from saint2706/dependabot/npm_and_yarn/frontend/globals-17.4.0
+- Bump globals from 17.3.0 to 17.4.0 in /frontend
+- Bump react-router-dom from 7.13.0 to 7.13.1 in /frontend
+- Bump optree from 0.18.0 to 0.19.0
+- Bump pytest-playwright from 0.4.4 to 0.7.2
+- Bump gunicorn from 25.0.3 to 25.1.0
+- Bump @types/node from 25.3.0 to 25.3.3 in /frontend
+- Bump sentry-sdk[django] from 2.43.0 to 2.53.0
+- Bump matplotlib from 3.10.7 to 3.10.8
+- Bump minimatch in /frontend in the npm_and_yarn group across 1 directory
+- Merge pull request #376 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-b2936519f3
+- Merge pull request #375 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.3.0
+- Merge pull request #374 from saint2706/dependabot/npm_and_yarn/frontend/eslint-plugin-react-refresh-0.5.0
+- Merge pull request #373 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.56.0
+- Merge pull request #372 from saint2706/dependabot/npm_and_yarn/frontend/lucide-react-0.575.0
+- Merge pull request #371 from saint2706/dependabot/pip/redis-7.2.0
+- Merge pull request #370 from saint2706/dependabot/pip/opencv-python-4.13.0.92
+- Merge pull request #369 from saint2706/dependabot/pip/pandas-3.0.1
+- Bump rollup in /frontend in the npm_and_yarn group across 1 directory
+- Merge pull request #368 from saint2706/dependabot/pip/sentry-sdk-2.53.0
+- Merge pull request #367 from saint2706/dependabot/pip/pip-6d02a2de66
+- Merge pull request #366 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-cb00897455
+- Bump @types/node from 25.2.2 to 25.3.0 in /frontend
+- Bump eslint-plugin-react-refresh from 0.4.26 to 0.5.0 in /frontend
+- Bump typescript-eslint from 8.53.1 to 8.56.0 in /frontend
+- Bump lucide-react from 0.562.0 to 0.575.0 in /frontend
+- Bump redis from 7.1.0 to 7.2.0
+- Bump opencv-python from 4.9.0.80 to 4.13.0.92
+- Bump pandas from 2.3.3 to 3.0.1
+- Bump sentry-sdk from 2.43.0 to 2.53.0
+- Bump the pip group across 1 directory with 2 updates
+- Bump the npm_and_yarn group across 1 directory with 2 updates
+- Merge pull request #357 from saint2706/dependabot/npm_and_yarn/frontend/tanstack/react-query-5.90.20
+- Merge pull request #364 from saint2706/dependabot/pip/pip-17dc5e2726
+- Bump @tanstack/react-query from 5.90.19 to 5.90.20 in /frontend
+- Merge pull request #353 from saint2706/dependabot/pip/gunicorn-25.0.3
+- Merge pull request #358 from saint2706/dependabot/npm_and_yarn/frontend/multi-b17e1175da
+- Merge pull request #359 from saint2706/dependabot/npm_and_yarn/frontend/globals-17.3.0
+- Merge pull request #360 from saint2706/dependabot/npm_and_yarn/frontend/vitejs/plugin-react-5.1.3
+- Merge pull request #355 from saint2706/dependabot/pip/django-crispy-forms-2.5
+- Bump @vitejs/plugin-react from 5.1.2 to 5.1.3 in /frontend
+- Merge pull request #356 from saint2706/dependabot/pip/setuptools-82.0.0
+- Bump pillow from 12.0.0 to 12.1.1 in the pip group across 1 directory
+- Merge pull request #352 from saint2706/dependabot/pip/pyflakes-3.4.0
+- Bump react and @types/react in /frontend
+- Merge pull request #361 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.2.2
+- Merge pull request #362 from saint2706/dependabot/pip/pip-d1091effbf
+- Merge pull request #363 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-66fcce4dc2
+- Bump axios in /frontend in the npm_and_yarn group across 1 directory
+- Bump cryptography in the pip group across 1 directory
+- Bump @types/node from 25.0.9 to 25.2.2 in /frontend
+- Bump globals from 17.0.0 to 17.3.0 in /frontend
+- Bump setuptools from 80.10.2 to 82.0.0
+- Bump django-crispy-forms from 2.1 to 2.5
+- Bump gunicorn from 25.0.1 to 25.0.3
+- Bump pyflakes from 3.2.0 to 3.4.0
+- Merge pull request #351 from saint2706/copilot/dry-run-github-workflows
+- Remove accidentally committed act binary
+- Update requirements.frozen.txt with django-crispy-forms 2.3
+- Fix django-crispy-forms version conflict with crispy-bootstrap5
+- Initial plan for workflow validation
+- Initial plan
+- Merge pull request #342 from saint2706/dependabot/pip/crispy-bootstrap5-2025.6
+- Merge pull request #343 from saint2706/dependabot/npm_and_yarn/frontend/axios-1.13.3
+- Merge pull request #344 from saint2706/dependabot/pip/platformdirs-4.5.1
+- Merge pull request #345 from saint2706/dependabot/pip/python-debian-1.0.1
+- Merge pull request #346 from saint2706/dependabot/pip/zstandard-0.25.0
+- Merge pull request #348 from saint2706/dependabot/npm_and_yarn/frontend/react-router-dom-7.13.0
+- Merge pull request #349 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.53.1
+- Merge pull request #350 from saint2706/dependabot/npm_and_yarn/frontend/types/react-19.2.9
+- Bump @types/react from 19.2.8 to 19.2.9 in /frontend
+- Bump typescript-eslint from 8.53.0 to 8.53.1 in /frontend
+- Bump react-router-dom from 7.12.0 to 7.13.0 in /frontend
+- Bump zstandard from 0.22.0 to 0.25.0
+- Bump python-debian from 0.1.49+ubuntu2 to 1.0.1
+- Bump axios from 1.13.2 to 1.13.3 in /frontend
+- Bump platformdirs from 4.5.0 to 4.5.1
+- Bump crispy-bootstrap5 from 2024.2 to 2025.6
+- Merge pull request #340 from saint2706/copilot/fix-django-ci-pre-commit
+- Fix black formatting in recognition/views.py
+- Initial plan
+- Merge pull request #332 from saint2706/dependabot/pip/pip-81c3d069c8
+- Merge pull request #333 from saint2706/dependabot/pip/tzdata-2025.3
+- Merge branch 'main' into dependabot/pip/tzdata-2025.3
+- Merge pull request #334 from saint2706/dependabot/pip/pyparsing-3.3.1
+- Merge pull request #335 from saint2706/dependabot/pip/pyasn1-0.6.2
+- Merge pull request #336 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.53.0
+- Merge branch 'main' into dependabot/npm_and_yarn/frontend/typescript-eslint-8.53.0
+- Merge pull request #337 from saint2706/dependabot/pip/pandas-2.3.3
+- Merge pull request #338 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.0.9
+- Merge pull request #339 from saint2706/dependabot/npm_and_yarn/frontend/tanstack/react-query-5.90.19
+- Bump @tanstack/react-query from 5.90.16 to 5.90.19 in /frontend
+- Bump @types/node from 25.0.3 to 25.0.9 in /frontend
+- Bump typescript-eslint from 8.52.0 to 8.53.0 in /frontend
+- Bump pandas from 2.2.3 to 2.3.3
+- Bump pyasn1 from 0.4.8 to 0.6.2
+- Bump pyparsing from 3.2.5 to 3.3.1
+- Bump tzdata from 2025.2 to 2025.3
+- Bump filelock from 3.20.1 to 3.20.3 in the pip group across 1 directory
+- Merge pull request #331 from saint2706/copilot/fix-django-ci-workflow-errors
+- chore: clarify ratelimit call args
+- chore: make register rate limit configurable
+- chore: clarify attendance feed select_related fields
+- refactor: streamline register rate limit check
+- chore: tidy queryset optimization slice order
+- chore: address django ci failures
+- Initial plan
+- Apply formatting and doc improvements across project
+- Merge pull request #315 from saint2706/dependabot/pip/pip-8177a8837a
+- Merge pull request #316 from saint2706/dependabot/npm_and_yarn/frontend/npm_and_yarn-e7552e82bb
+- Merge pull request #317 from saint2706/dependabot/pip/termcolor-3.3.0
+- Merge pull request #318 from saint2706/dependabot/pip/jsonpatch-1.33
+- Merge pull request #319 from saint2706/dependabot/pip/python-dateutil-2.9.0.post0
+- Merge pull request #320 from saint2706/dependabot/pip/ml-dtypes-0.5.4
+- Merge pull request #321 from saint2706/dependabot/npm_and_yarn/frontend/react-router-dom-7.12.0
+- Merge pull request #322 from saint2706/dependabot/npm_and_yarn/frontend/vite-7.3.1
+- Merge branch 'main' into dependabot/npm_and_yarn/frontend/vite-7.3.1
+- Merge pull request #323 from saint2706/dependabot/npm_and_yarn/frontend/types/react-19.2.8
+- Merge pull request #324 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.52.0
+- Merge pull request #329 from saint2706/update-github-actions-workflow-triggers-v7vr60
+- Merge pull request #330 from saint2706/update-github-actions-workflow-triggers
+- Add path filters for docker publish workflow
+- Add path filters for docker publish workflow
+- Merge pull request #328 from saint2706/set-load-condition-in-docker-publish.yml
+- Adjust docker build load for PRs
+- Merge pull request #327 from saint2706/update-github-actions-workflow-triggers
+- Merge pull request #326 from saint2706/create-pre-commit-github-workflow
+- Merge pull request #325 from saint2706/add-github-workflow-for-dependency-review
+- Add path filters for docker publish workflow
+- Add pre-commit workflow
+- Add dependency review workflow
+- Bump typescript-eslint from 8.51.0 to 8.52.0 in /frontend
+- Bump @types/react from 19.2.7 to 19.2.8 in /frontend
+- Bump vite from 7.3.0 to 7.3.1 in /frontend
+- Bump react-router-dom from 7.11.0 to 7.12.0 in /frontend
+- Bump ml-dtypes from 0.5.3 to 0.5.4
+- Bump python-dateutil from 2.8.2 to 2.9.0.post0
+- Bump jsonpatch from 1.32 to 1.33
+- Bump termcolor from 3.2.0 to 3.3.0
+- Bump react-router
+- Bump urllib3 from 2.6.0 to 2.6.3 in the pip group across 1 directory
+- Merge pull request #310 from saint2706/palette-dashboard-greeting-14725877708144687430
+- Merge pull request #313 from saint2706/copilot/sub-pr-310
+- Refactor test code to reduce duplication and improve maintainability
+- Add time-based greeting and E2E tests for Django dashboard
+- Merge pull request #309 from saint2706/bolt-dataset-cache-optimization-232719596691359661
+- Merge pull request #311 from saint2706/sentinel-security-headers-13485873745137819277
+- Merge pull request #314 from saint2706/copilot/sub-pr-309
+- Merge pull request #312 from saint2706/copilot/sub-pr-311
+- refactor: Extract format detection sample size to named constant
+- perf: Limit optimistic check to first 10 entries for efficiency
+- Refactor tests to use fixtures and reduce duplication
+- style: Remove trailing whitespace from test file
+- Address PR review: Move globals, add docs, add tests
+- Initial plan
+- Initial plan
+- Initial plan
+- 🛡️ Sentinel: [SECURITY] Add strict security headers
+- 🎨 Palette: Add time-based greeting and improve icon accessibility in Dashboard
+- Merge pull request #294 from saint2706/palette-focus-management-kiosk-7179432807951885336
+- Merge pull request #305 from saint2706/copilot/sub-pr-294
+- Complete focus management improvements with tests
+- Fix focus management and add comprehensive UI tests
+- Merge pull request #291 from saint2706/palette-kbd-component-6853473991979121036
+- Merge pull request #306 from saint2706/copilot/sub-pr-291
+- Merge pull request #295 from saint2706/sentinel-csv-injection-fix-2199909257601746848
+- Merge pull request #304 from saint2706/copilot/sub-pr-295
+- Remove redundant kbd-md CSS rule
+- Simplify test logic and remove redundancy
+- Address code review feedback: improve robustness and performance
+- Add comprehensive CSV injection sanitization and tests
+- Merge pull request #290 from saint2706/bolt-api-performance-copy-407474442048839387
+- Add CSS rules for Kbd size variants (sm, md, lg)
+- Merge pull request #307 from saint2706/copilot/sub-pr-290
+- Revert zero-copy optimization to restore cache integrity protection
+- Initial plan
+- Initial plan
+- Merge pull request #293 from saint2706/bolt-liveness-optimization-14654965340647590256
+- Initial plan
+- Initial plan
+- Merge pull request #296 from saint2706/dependabot/pip/s3transfer-0.16.0
+- Merge pull request #297 from saint2706/dependabot/pip/click-8.3.1
+- Merge pull request #298 from saint2706/dependabot/pip/playwright-1.57.0
+- Merge pull request #299 from saint2706/dependabot/pip/requests-2.32.5
+- Merge pull request #300 from saint2706/dependabot/npm_and_yarn/frontend/tanstack/react-query-5.90.16
+- Merge pull request #301 from saint2706/dependabot/pip/markdown-it-py-4.0.0
+- Merge pull request #302 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.51.0
+- Merge pull request #303 from saint2706/dependabot/npm_and_yarn/frontend/globals-17.0.0
+- Bump globals from 16.5.0 to 17.0.0 in /frontend
+- Bump typescript-eslint from 8.50.1 to 8.51.0 in /frontend
+- Bump markdown-it-py from 3.0.0 to 4.0.0
+- Bump @tanstack/react-query from 5.90.14 to 5.90.16 in /frontend
+- Bump requests from 2.32.4 to 2.32.5
+- Bump playwright from 1.49.1 to 1.57.0
+- Bump click from 8.1.6 to 8.3.1
+- Bump s3transfer from 0.10.1 to 0.16.0
+- 🛡️ Sentinel: Fix CSV Injection in attendance export
+- ⚡ Bolt: Optimize liveness motion score computation
+- ⚡ Bolt: optimize FaceRecognitionAPI.post to zero-copy
+- Merge pull request #285 from saint2706/bolt-optimize-face-api-normalization-5010589105063071580
+- Merge pull request #288 from saint2706/copilot/sub-pr-285
+- Merge pull request #287 from saint2706/sentinel-rate-limit-admin-views-11230335056307682505
+- Merge pull request #289 from saint2706/copilot/sub-pr-287
+- Add defensive copying in optimized fast path to protect cache from mutations
+- Address review comments: clean up verbose comments, add add_photos test, use Django test client, add cache clearing
+- Initial plan
+- Initial plan
+- Merge pull request #286 from saint2706/palette-mark-attendance-focus-1681534065090746326
+- 🛡️ Sentinel: [HIGH] Fix Missing Rate Limiting on Admin Views
+- ⚡ Bolt: Optimize FaceRecognitionAPI data normalization
+- Delete .Jules directory
+- Merge pull request #279 from saint2706/bolt-faiss-cache-optimization-9764285499840253311
+- Merge pull request #284 from saint2706/copilot/sub-pr-279
+- Fix FAISS cache race condition and add comprehensive tests
+- Merge pull request #280 from saint2706/palette-mark-attendance-auto-reset-6304683584803404784
+- Merge pull request #283 from saint2706/copilot/sub-pr-280
+- Merge pull request #281 from saint2706/sentinel-fix-plot-race-condition-15072597300854737124
+- Merge pull request #282 from saint2706/copilot/sub-pr-281
+- Make Figure parameter required in _plot_to_base64
+- Fix auto-reset accessibility and positioning issues
+- Initial plan
+- Initial plan
+- Initial plan
+- Fix thread safety race condition in plotting views.
+- 🎨 Palette: Add auto-reset to Mark Attendance page
+- ⚡ Bolt: Cache FAISS index to avoid redundant builds
+- Refresh documentation for React SPA frontend
+- Refactor docs and improve test formatting
+- Remove workflow test results and reference images
+- Update palette.md
+- Merge pull request #276 from saint2706/bolt-perf-attendance-feed-15000641374648856972
+- Merge pull request #278 from saint2706/copilot/sub-pr-276
+- Address code review feedback: fix spacing, replace emoji, add mixed scenario test
+- Initial plan
+- Merge pull request #277 from saint2706/palette-improve-login-ux-1558999726292194985
+- Update frontend/src/pages/Login.css
+- Refactor password toggle button to use CSS classes for disabled state
+- ⚡ Bolt: Fix N+1 queries in attendance session feed
+- Merge pull request #271 from saint2706/bolt-cache-get-many-optimization-16100082569466227123
+- Merge pull request #274 from saint2706/copilot/sub-pr-271
+- Merge pull request #273 from saint2706/sentinel-fix-graph-idor-17951413829554454007
+- Merge pull request #275 from saint2706/copilot/sub-pr-273
+- Address PR review comments: Update docstrings, comments, and add security tests
+- Address PR review comments: logging, documentation, and test fixes
+- Initial plan
+- Merge branch 'main' into sentinel-fix-graph-idor-17951413829554454007
+- Initial plan
+- Merge branch 'main' into bolt-cache-get-many-optimization-16100082569466227123
+- Merge pull request #272 from saint2706/palette-login-a11y-6439498227634453060
+- Fix IDOR and race condition in attendance graph generation
+- ⚡ Bolt: Batch cache retrieval for dataset embeddings
+- Merge pull request #270 from saint2706/copilot/add-linting-setup
+- Apply linting fixes: black, isort, and flake8
+- Initial plan
+- Merge pull request #267 from saint2706/sentinel-dos-fix-liveness-frames-16150694899750306741
+- Merge pull request #269 from saint2706/copilot/sub-pr-267
+- Implement DoS fix and update tests for liveness frames limit
+- Merge pull request #265 from saint2706/bolt-path-resolve-optimization-11336251512300810101
+- Merge pull request #268 from saint2706/copilot/sub-pr-265
+- Document symbolic link assumption in cache key optimization
+- Merge pull request #261 from saint2706/dependabot/pip/celery-5.6.0
+- Merge pull request #263 from saint2706/dependabot/pip/pillow-12.0.0
+- Initial plan
+- Merge pull request #266 from saint2706/palette-navbar-ux-18185353909064899492
+- Initial plan
+- Bump celery from 5.4.0 to 5.6.0
+- Bump pillow from 10.3.0 to 12.0.0
+- Merge pull request #264 from saint2706/dependabot/npm_and_yarn/frontend/tanstack/react-query-5.90.14
+- Merge pull request #262 from saint2706/dependabot/npm_and_yarn/frontend/typescript-eslint-8.50.1
+- Merge pull request #260 from saint2706/dependabot/pip/isort-7.0.0
+- Merge pull request #259 from saint2706/dependabot/pip/djangorestframework-3.16.1
+- Merge pull request #258 from saint2706/dependabot/pip/redis-7.1.0
+- Fix DoS vulnerability in liveness frames processing
+- ⚡ Optimize cache key generation by replacing path.resolve() with str()
+- Bump @tanstack/react-query from 5.90.12 to 5.90.14 in /frontend
+- Bump typescript-eslint from 8.50.0 to 8.50.1 in /frontend
+- Bump isort from 5.13.2 to 7.0.0
+- Bump djangorestframework from 3.15.2 to 3.16.1
+- Bump redis from 5.2.1 to 7.1.0
+- Merge pull request #253 from saint2706/bolt-dataset-state-caching-1632989198182447019
+- Merge pull request #256 from saint2706/copilot/sub-pr-253
+- Merge pull request #255 from saint2706/sentinel-login-rate-limit-5771292764909081424
+- Merge pull request #257 from saint2706/copilot/sub-pr-255
+- Fix docstring clarity in username-based rate limit test
+- Use direct settings access instead of getattr for cache timeout
+- Add comprehensive login rate limiting tests
+- Move time import to top of test file
+- Address PR review comments: configurable timeout, views.py caching, rotate_encryption_keys invalidation, timeout test, and docs update
+- Initial plan
+- Merge pull request #254 from saint2706/ux-login-autofocus-14220056370776272658
+- Update frontend/src/pages/Login.tsx
+- Update frontend/src/pages/Login.tsx
+- Initial plan
+- Shield: Add username-based rate limiting to login view
+- Merge pull request #249 from saint2706/palette-mark-attendance-countdown-3998865566597880050
+- Merge branch 'main' into palette-mark-attendance-countdown-3998865566597880050
+- Merge pull request #252 from saint2706/copilot/sub-pr-249
+- accessibility: improve keyboard hint with aria-live region
+- Merge pull request #250 from saint2706/sentinel-fix-path-disclosure-and-crash-12704258415935262076
+- Initial plan
+- Merge pull request #248 from saint2706/bolt-dataset-caching-opt-5686617392984897377
+- Merge pull request #251 from saint2706/copilot/sub-pr-248
+- Refactor: Remove duplicate code and simplify logic in _build_dataset_embeddings_for_matching
+- Initial plan
+- Sentinel: Fix Path Disclosure in FaceRecognitionAPI and crash bug
+- ⚡ Bolt: Optimize dataset embedding build process
+- Merge pull request #247 from saint2706/sentinel-xss-fix-1698092430592668487
+- Merge branch 'main' into sentinel-xss-fix-1698092430592668487
+- Merge pull request #246 from saint2706/copilot/debug-logout-405-error
+- Improve logout test to address code review feedback
+- Fix logout 405 error by converting to POST form with CSRF token
+- Fix stored XSS vulnerability in attendance dashboard
+- Initial plan
+- Merge pull request #245 from saint2706/palette-mark-attendance-ux-17168237614502211500
+- Merge branch 'main' of https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition
+- Update screenshots and add management package in users app
+- Merge pull request #244 from saint2706/bolt/optimize-check-validity-times-2469162188758071877
+- ⚡ Bolt: Optimize check_validity_times to O(n) single-pass
+- Merge pull request #243 from saint2706/copilot/fix-action-workflow-error
+- Fix performance test query count for pytest-xdist with EXPLAIN queries
+- Initial plan
+- Merge pull request #242 from saint2706/copilot/fix-github-workflows-errors
+- Complete workflow testing and fix all linting errors
+- Fix flake8, black, and isort errors in codebase
+- Initial plan for installing act and fixing GitHub workflows
+- Initial plan
+- Merge pull request #241 from saint2706/create-tests-for-export_reports-command
+- Merge pull request #239 from saint2706/add-django-tests-for-pwa-assets
+- Add tests for export_reports command
+- Merge pull request #240 from saint2706/add-tests-for-worker_health-function
+- Add worker health tests
+- Add PWA asset response tests
+- Merge pull request #237 from saint2706/sentinel-dom-xss-fix-setup-wizard-9131606044688267761
+- Merge branch 'main' into sentinel-dom-xss-fix-setup-wizard-9131606044688267761
+- Merge pull request #236 from saint2706/palette-video-freeze-ux-5116618774037109480
+- Merge branch 'main' into palette-video-freeze-ux-5116618774037109480
+- Merge branch 'main' into sentinel-dom-xss-fix-setup-wizard-9131606044688267761
+- Merge pull request #238 from saint2706/imgbot
+- [ImgBot] Optimize images
+- Add synthetic face dataset and update recognition logic
+- Fix DOM XSS vulnerability in setup wizard camera test
+- Enhance ablation, failure analysis, attendance, and NPU detection
+- Remove CI documentation and relocate files
+- Merge pull request #231 from saint2706/bolt-attendance-session-optimization-4630068601088387079
+- Merge pull request #235 from saint2706/copilot/sub-pr-231
+- style: Fix flake8 whitespace issues in test file
+- docs: Add explanation for lastRenderedHtml null initialization and Playwright tests for dirty check
+- Merge pull request #232 from saint2706/palette-ux-flash-effect-17301201791967094564
+- Merge pull request #234 from saint2706/copilot/sub-pr-232
+- Initial plan
+- Initial plan
+- Merge branch 'main' into palette-ux-flash-effect-17301201791967094564
+- Merge pull request #233 from saint2706/sentinel-rate-limit-fix-11529245459902334889
+- Update recognition/views_legacy.py
+- 🛡️ Sentinel: [HIGH] Fix DoS risk in FaceRecognitionAPI
+- Merge pull request #230 from saint2706/imgbot
+- Merge branch 'main' into imgbot
+- Merge pull request #227 from saint2706/sentinel-upload-limits-9277101568819752971
+- Merge branch 'main' into sentinel-upload-limits-9277101568819752971
+- Merge pull request #229 from saint2706/copilot/sub-pr-227
+- Refactor tests: add helper functions and improve readability
+- Fix base64 length check and add comprehensive tests for upload size limits
+- [ImgBot] Optimize images
+- Merge pull request #226 from saint2706/palette-accessibility-markattendance-6635591686565062761
+- Merge pull request #228 from saint2706/copilot/sub-pr-226
+- Merge branch 'palette-accessibility-markattendance-6635591686565062761' into copilot/sub-pr-226
+- Merge branch 'main' into sentinel-upload-limits-9277101568819752971
+- Initial plan
+- Merge branch 'main' into palette-accessibility-markattendance-6635591686565062761
+- Initial plan
+- Merge pull request #225 from saint2706/bolt-perf-db-sort-16118486759763534673
+- ⚡ Bolt: Optimize report generation by sorting in DB
+- Merge pull request #222 from saint2706/sentinel/add-rate-limiting-9293571531357609996
+- Merge pull request #224 from saint2706/copilot/sub-pr-222
+- Address rate limiting review comments
+- Merge pull request #220 from saint2706/bolt/optimize-dataset-rebuild-10581462098239265021
+- Merge pull request #223 from saint2706/copilot/sub-pr-220
+- Add __gt__ method and move Path import to top
+- Apply review feedback: clean up test code
+- Initial plan
+- Initial plan
+- Update tests/recognition/test_embedding_cache_perf.py
+- Merge branch 'main' into sentinel/add-rate-limiting-9293571531357609996
+- Merge branch 'main' into bolt/optimize-dataset-rebuild-10581462098239265021
+- Merge pull request #221 from saint2706/palette-ux-login-toggle-5242031300798554654
+- ⚡ Bolt: Optimize dataset index rebuild performance
+- Merge pull request #218 from saint2706/copilot/fix-github-actions-workflows
+- Add documentation for local CI execution and final verification
+- Fix Django CI - resolve flake8, black, isort issues and update test expectations
+- Fix Frontend CI - disable react-refresh warning for context files and add package-lock.json
+- Initialize CI fix process - set up act and document plan
+- Initial plan
+- Merge pull request #217 from saint2706/dependabot/npm_and_yarn/frontend/lucide-react-0.562.0
+- Merge pull request #216 from saint2706/dependabot/pip/twisted-25.5.0
+- Merge pull request #215 from saint2706/dependabot/pip/django-silk-5.4.3
+- Merge pull request #214 from saint2706/dependabot/pip/pygobject-3.54.5
+- Merge pull request #213 from saint2706/dependabot/pip/pytest-cov-7.0.0
+- Merge pull request #212 from saint2706/dependabot/pip/pyparsing-3.2.5
+- Bump lucide-react from 0.556.0 to 0.562.0 in /frontend
+- Bump twisted from 24.7.0rc1 to 25.5.0
+- Bump django-silk from 5.1.0 to 5.4.3
+- Bump pygobject from 3.48.2 to 3.54.5
+- Bump pytest-cov from 6.0.0 to 7.0.0
+- Bump pyparsing from 3.1.1 to 3.2.5
+- Merge pull request #210 from saint2706/sentinel/fix-alert-manager-xss-5705731631594185339
+- Merge pull request #211 from saint2706/copilot/sub-pr-210
+- Fix AlertManager DOM construction and test marker
+- Initial plan
+- Merge pull request #209 from saint2706/palette/skip-link-15319061084274531373
+- Merge branch 'main' into palette/skip-link-15319061084274531373
+- Shield: Fix DOM XSS in AlertManager
+- Merge pull request #207 from saint2706/bolt-dataset-health-cache-6668037151136727686
+- Merge pull request #208 from saint2706/copilot/sub-pr-207
+- Move cache import to top of test file
+- Address code review comments: add cache docs and invalidation
+- 🎨 Palette: Add "Skip to main content" link
+- Initial plan
+- ⚡ Bolt: Cache dataset_health to improve dashboard performance
+- Merge pull request #206 from saint2706/sentinel-xss-fix-17821575332162229612
+- 🛡️ Sentinel: [HIGH] Fix Stored XSS in Attendance Monitor
+- Merge pull request #205 from saint2706/palette-camera-loading-10421001234928187146
+- Merge pull request #204 from saint2706/sentinel-login-ratelimit-16610346747822025213
+- Merge pull request #203 from saint2706/palette-ux-add-photos-loader-6235828237516041486
+- Merge pull request #202 from saint2706/bolt/performance/views-n-plus-one-5685148995391873997
+- Optimize attendance views to fix N+1 query issues
+- Merge pull request #201 from saint2706/copilot/fix-job-issue-58508061608
+- Fix authentication issue in FaceRecognitionAPI tests
+- Initial plan
+- Merge pull request #200 from saint2706/copilot/fix-github-actions-issue
+- Apply black and isort formatting to recognition/views_legacy.py
+- Apply black and isort formatting to test_dos_prevention.py
+- Fix flake8 linting errors in test_dos_prevention.py
+- Initial plan
+- Merge pull request #199 from saint2706/palette-fix-home-icons-5855873708565230011
+- Fix confusing icons on Home page and update documentation
+- Merge pull request #198 from saint2706/sentinel/fix-image-bomb-dos-14019119331396032151
+- Merge pull request #197 from saint2706/bolt-optimize-faiss-matching-14235569915976908282
+- 🛡️ Sentinel: Fix Image Decompression Bomb (DoS) vulnerability
+- ⚡ Bolt: Optimize face matching with FAISS
+- Merge pull request #196 from saint2706/copilot/fix-django-ci
+- Fix Django CI linting errors in test files
+- Initial plan
+- Merge pull request #188 from saint2706/dependabot/pip/faiss-cpu-1.13.1
+- Merge branch 'main' into dependabot/pip/faiss-cpu-1.13.1
+- Merge pull request #191 from saint2706/dependabot/npm_and_yarn/frontend/types/node-25.0.2
+- Merge pull request #192 from saint2706/dependabot/npm_and_yarn/frontend/react-dom-19.2.3
+- Bump @types/node from 24.10.1 to 25.0.2 in /frontend
+- Bump react-dom from 19.2.1 to 19.2.3 in /frontend
+- Merge pull request #195 from saint2706/palette-ux-loading-state-1561589548573260960
+- Merge pull request #194 from saint2706/sentinel/fix-api-auth-and-validation-11087329036376928771
+- Merge pull request #193 from saint2706/dependabot/pip/pip-c4ff2e68b4
+- Bump faiss-cpu from 1.9.0.post1 to 1.13.1
+- Merge pull request #190 from saint2706/dependabot/npm_and_yarn/frontend/react-19.2.3
+- Merge pull request #189 from saint2706/dependabot/npm_and_yarn/frontend/vitejs/plugin-react-5.1.2
+- Merge pull request #187 from saint2706/dependabot/pip/pytest-xdist-3.8.0
+- Merge pull request #186 from saint2706/dependabot/npm_and_yarn/frontend/eslint/js-9.39.2
+- Merge pull request #185 from saint2706/dependabot/pip/idna-3.11
+- Merge branch 'main' into dependabot/pip/idna-3.11
+- Merge pull request #184 from saint2706/dependabot/pip/zope-interface-8.1.1
+- Merge pull request #183 from saint2706/dependabot/pip/prometheus-client-0.23.1
+- I have addressed the critical and medium vulnerabilities reported by Sentinel.
+- Bump filelock from 3.20.0 to 3.20.1 in the pip group across 1 directory
+- Bump react from 19.2.1 to 19.2.3 in /frontend
+- Bump @vitejs/plugin-react from 5.1.1 to 5.1.2 in /frontend
+- Bump pytest-xdist from 3.5.0 to 3.8.0
+- Bump @eslint/js from 9.39.1 to 9.39.2 in /frontend
+- Bump idna from 3.7 to 3.11
+- Bump zope-interface from 6.1 to 8.1.1
+- Bump prometheus-client from 0.20.0 to 0.23.1
+- Merge pull request #182 from saint2706/copilot/fix-formatting-and-linting
+- Fix import ordering in recognition module for linting compliance
+- Initial plan
+- Add documentation index and UX/contribution guides
+- Add Redis-based embedding cache for face recognition
+- Add Fairness Audit section to developer guide
 ### Documentation
 - Fixed broken tutorial link in scikit-learn quick reference.
 - Fixed broken link to Web Quality Audit and Core Web Vitals in SEO and accessibility skills.
