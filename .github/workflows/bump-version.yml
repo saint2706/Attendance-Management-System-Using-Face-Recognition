@@ -51,7 +51,7 @@ jobs:
       - name: Determine last release tag
         id: last-tag
         run: |
-          last_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          last_tag=$(git describe --tags --abbrev=0 HEAD 2>/dev/null || echo "")
           echo "tag=${last_tag}" >> "$GITHUB_OUTPUT"
           if [ -z "${last_tag}" ]; then
             echo "No previous tag found; using full history."
@@ -79,13 +79,13 @@ jobs:
 
           bump="patch"
           while IFS= read -r msg; do
-            if echo "${msg}" | grep -qiE "^feat(\(.+\))?!:|BREAKING[ -]CHANGE"; then
+            if echo "${msg}" | grep -qiE "^[a-z]+(\(.+\))?!:|BREAKING[ -]CHANGE"; then
               bump="major"; break
             fi
             if echo "${msg}" | grep -qiE "^feat(\(.+\))?:"; then
               bump="minor"
             fi
-          done < <(git log "${range}" --pretty=format:"%s" --)
+          done < <(git log "${range}" --pretty=format:"%s")
 
           echo "bump=${bump}" >> "$GITHUB_OUTPUT"
           echo "Detected bump type: ${bump}"
@@ -108,10 +108,9 @@ jobs:
 
       - name: Update pyproject.toml
         env:
-          OLD_VERSION: ${{ steps.current.outputs.version }}
           NEW_VERSION: ${{ steps.next.outputs.version }}
         run: |
-          sed -i "s/^version = \"${OLD_VERSION}\"/version = \"${NEW_VERSION}\"/" pyproject.toml
+          sed -i "0,/^version = /{s/^version = .*/version = \"${NEW_VERSION}\"/}" pyproject.toml
           grep "^version" pyproject.toml
 
       - name: Generate release notes
@@ -146,7 +145,7 @@ jobs:
               else
                 other="${other}- ${line}"$'\n'
               fi
-            done < <(git log "${range}" --pretty=format:"%s" --)
+            done < <(git log "${range}" --pretty=format:"%s")
 
             if [ -n "${breaking}" ]; then
               echo "### ⚠️ Breaking Changes"
@@ -204,7 +203,7 @@ jobs:
               else
                 changed="${changed}- ${line}"$'\n'
               fi
-            done < <(git log "${range}" --pretty=format:"%s" --)
+            done < <(git log "${range}" --pretty=format:"%s")
 
             if [ -n "${breaking}" ]; then
               echo "### Breaking Changes"
