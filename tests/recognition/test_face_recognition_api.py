@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import django
 from django.core.cache import cache
@@ -107,19 +107,20 @@ def test_face_recognition_api_rate_limit(client, monkeypatch):
     url = reverse("face-recognition-api")
     payload = json.dumps({"embedding": [0.1, 0.2, 0.3]})
 
-    for _ in range(5):
-        ok_response = client.post(
+    with patch("django_ratelimit.core.time.time", return_value=12345.0):
+        for _ in range(5):
+            ok_response = client.post(
+                url,
+                data=payload,
+                content_type="application/json",
+                HTTP_X_API_KEY="test-api-key",
+            )
+            assert ok_response.status_code == 200
+
+        limited = client.post(
             url,
             data=payload,
             content_type="application/json",
             HTTP_X_API_KEY="test-api-key",
         )
-        assert ok_response.status_code == 200
-
-    limited = client.post(
-        url,
-        data=payload,
-        content_type="application/json",
-        HTTP_X_API_KEY="test-api-key",
-    )
-    assert limited.status_code == 429
+        assert limited.status_code == 429
