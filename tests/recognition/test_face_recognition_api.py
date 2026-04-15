@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import django
 from django.core.cache import cache
@@ -84,7 +84,8 @@ def test_face_recognition_api_returns_match(client, monkeypatch):
         "anti_spoofing": False,
     },
 )
-def test_face_recognition_api_rate_limit(client, monkeypatch):
+@patch("django_ratelimit.core.time.time", return_value=1776240224.0)
+def test_face_recognition_api_rate_limit(mock_time, client, monkeypatch):
     cache.clear()
 
     monkeypatch.setattr(
