@@ -1,0 +1,271 @@
+---
+name: Bump Version & Release
+
+"on":
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: >-
+          Version bump type. Use "auto" to detect from
+          conventional commits since the last tag.
+        required: true
+        default: auto
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bump-version
+  cancel-in-progress: false
+
+jobs:
+  bump-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Get current version
+        id: current
+        run: |
+          version=$(grep -Po '(?<=^version = ")[^"]+' pyproject.toml)
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "Current version: ${version}"
+
+      - name: Determine last release tag
+        id: last-tag
+        run: |
+          last_tag=$(git describe --tags --abbrev=0 HEAD 2>/dev/null || echo "")
+          echo "tag=${last_tag}" >> "$GITHUB_OUTPUT"
+          if [ -z "${last_tag}" ]; then
+            echo "No previous tag found; using full history."
+          else
+            echo "Last tag: ${last_tag}"
+          fi
+
+      - name: Detect bump type from conventional commits
+        id: detect
+        env:
+          INPUT_BUMP: ${{ inputs.bump_type }}
+          LAST_TAG: ${{ steps.last-tag.outputs.tag }}
+        run: |
+          if [ "${INPUT_BUMP}" != "auto" ]; then
+            echo "bump=${INPUT_BUMP}" >> "$GITHUB_OUTPUT"
+            echo "Bump type (manual): ${INPUT_BUMP}"
+            exit 0
+          fi
+
+          if [ -z "${LAST_TAG}" ]; then
+            range="HEAD"
+          else
+            range="${LAST_TAG}..HEAD"
+          fi
+
+          bump="patch"
+          while IFS= read -r msg; do
+            if echo "${msg}" | grep -qiE "^[a-z]+(\(.+\))?!:|BREAKING[ -]CHANGE"; then
+              bump="major"; break
+            fi
+            if echo "${msg}" | grep -qiE "^feat(\(.+\))?:"; then
+              bump="minor"
+            fi
+          done < <(git log "${range}" --pretty=format:"%s")
+
+          echo "bump=${bump}" >> "$GITHUB_OUTPUT"
+          echo "Detected bump type: ${bump}"
+
+      - name: Calculate new version
+        id: next
+        env:
+          CURRENT: ${{ steps.current.outputs.version }}
+          BUMP: ${{ steps.detect.outputs.bump }}
+        run: |
+          IFS='.' read -r major minor patch <<< "${CURRENT}"
+          case "${BUMP}" in
+            major) major=$((major + 1)); minor=0; patch=0 ;;
+            minor) minor=$((minor + 1)); patch=0 ;;
+            patch) patch=$((patch + 1)) ;;
+          esac
+          new="${major}.${minor}.${patch}"
+          echo "version=${new}" >> "$GITHUB_OUTPUT"
+          echo "New version: ${new}"
+
+      - name: Update pyproject.toml
+        env:
+          NEW_VERSION: ${{ steps.next.outputs.version }}
+        run: |
+          sed -i "0,/^version = /{s/^version = .*/version = \"${NEW_VERSION}\"/}" pyproject.toml
+          grep "^version" pyproject.toml
+
+      - name: Generate release notes
+        id: notes
+        env:
+          LAST_TAG: ${{ steps.last-tag.outputs.tag }}
+          NEW_VERSION: ${{ steps.next.outputs.version }}
+        run: |
+          if [ -z "${LAST_TAG}" ]; then
+            range="HEAD"
+          else
+            range="${LAST_TAG}..HEAD"
+          fi
+
+          {
+            echo "body<<RELEASE_NOTES_EOF"
+            echo "## What's Changed in v${NEW_VERSION}"
+            echo ""
+
+            breaking=""
+            features=""
+            fixes=""
+            other=""
+
+            while IFS= read -r line; do
+              if echo "${line}" | grep -qiE "BREAKING[ -]CHANGE|^[a-z]+(\(.+\))?!:"; then
+                breaking="${breaking}- ${line}"$'\n'
+              elif echo "${line}" | grep -qiE "^feat(\(.+\))?:"; then
+                features="${features}- ${line}"$'\n'
+              elif echo "${line}" | grep -qiE "^fix(\(.+\))?:"; then
+                fixes="${fixes}- ${line}"$'\n'
+              else
+                other="${other}- ${line}"$'\n'
+              fi
+            done < <(git log "${range}" --pretty=format:"%s")
+
+            if [ -n "${breaking}" ]; then
+              echo "### ⚠️ Breaking Changes"
+              echo "${breaking}"
+            fi
+            if [ -n "${features}" ]; then
+              echo "### ✨ Features"
+              echo "${features}"
+            fi
+            if [ -n "${fixes}" ]; then
+              echo "### 🐛 Bug Fixes"
+              echo "${fixes}"
+            fi
+            if [ -n "${other}" ]; then
+              echo "### 📦 Other Changes"
+              echo "${other}"
+            fi
+
+            echo "RELEASE_NOTES_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Update CHANGELOG.md
+        env:
+          NEW_VERSION: ${{ steps.next.outputs.version }}
+          LAST_TAG: ${{ steps.last-tag.outputs.tag }}
+        run: |
+          date_today=$(date -u +%Y-%m-%d)
+
+          if [ -z "${LAST_TAG}" ]; then
+            range="HEAD"
+          else
+            range="${LAST_TAG}..HEAD"
+          fi
+
+          # Build the new changelog entry in a temp file
+          tmp_entry=$(mktemp)
+          {
+            echo ""
+            echo "## [${NEW_VERSION}] - ${date_today}"
+            echo ""
+
+            breaking=""
+            added=""
+            fixed=""
+            changed=""
+
+            while IFS= read -r line; do
+              if echo "${line}" | grep -qiE \
+                "BREAKING[ -]CHANGE|^[a-z]+(\(.+\))?!:"; then
+                breaking="${breaking}- ${line}"$'\n'
+              elif echo "${line}" | grep -qiE "^feat(\(.+\))?:"; then
+                added="${added}- ${line}"$'\n'
+              elif echo "${line}" | grep -qiE "^fix(\(.+\))?:"; then
+                fixed="${fixed}- ${line}"$'\n'
+              else
+                changed="${changed}- ${line}"$'\n'
+              fi
+            done < <(git log "${range}" --pretty=format:"%s")
+
+            if [ -n "${breaking}" ]; then
+              echo "### Breaking Changes"
+              echo ""
+              printf '%s' "${breaking}"
+              echo ""
+            fi
+            if [ -n "${added}" ]; then
+              echo "### Added"
+              echo ""
+              printf '%s' "${added}"
+              echo ""
+            fi
+            if [ -n "${fixed}" ]; then
+              echo "### Fixed"
+              echo ""
+              printf '%s' "${fixed}"
+              echo ""
+            fi
+            if [ -n "${changed}" ]; then
+              echo "### Changed"
+              echo ""
+              printf '%s' "${changed}"
+              echo ""
+            fi
+          } > "${tmp_entry}"
+
+          if [ -f CHANGELOG.md ]; then
+            # Insert the new entry after the [Unreleased] heading
+            awk -v entry="$(cat "${tmp_entry}")" \
+              '/^## \[Unreleased\]/{print; print entry; next}1' \
+              CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+          else
+            {
+              echo "# Changelog"
+              echo ""
+              echo "## [Unreleased]"
+              cat "${tmp_entry}"
+            } > CHANGELOG.md
+          fi
+          rm -f "${tmp_entry}"
+
+      - name: Commit version bump
+        env:
+          NEW_VERSION: ${{ steps.next.outputs.version }}
+        run: |
+          git add pyproject.toml CHANGELOG.md
+          git commit -m "chore: bump version to v${NEW_VERSION}"
+
+      - name: Create and push tag
+        env:
+          NEW_VERSION: ${{ steps.next.outputs.version }}
+        run: |
+          git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
+          git push origin HEAD --follow-tags
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.next.outputs.version }}
+          BODY: ${{ steps.notes.outputs.body }}
+        run: |
+          gh release create "v${NEW_VERSION}" \
+            --title "v${NEW_VERSION}" \
+            --notes "${BODY}"

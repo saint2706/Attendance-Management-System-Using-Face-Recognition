@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1
 
 # Build argument: PYTHON_VERSION specifies the base Python runtime version
-# Default is 3.12.2 to match development environment and testing
-ARG PYTHON_VERSION=3.12.2
+# Default is 3.12.10 to match development environment and testing
+ARG PYTHON_VERSION=3.12.10
 
 # =============================================================================
 # Stage 1: Build Frontend
@@ -97,6 +97,17 @@ COPY --from=build /venv /venv
 
 # Copy application code and collected static files
 COPY --from=build /app /app
+
+# Apply Debian security updates to patch OS-level CVEs from the base image.
+# hadolint ignore=DL3005
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade system Python build tools to versions that resolve known CVEs.
+# (setuptools: CVE-2024-6345, CVE-2025-47273 | wheel: CVE-2026-24049)
+RUN pip install --no-cache-dir "setuptools>=78.1.1" "wheel>=0.46.2"
 
 # Create directories for runtime data and set ownership
 RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
