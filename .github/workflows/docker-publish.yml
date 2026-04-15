@@ -46,6 +46,7 @@ permissions:
   contents: read
   packages: write
   id-token: write
+  attestations: write
 
 concurrency:
   group: docker-${{ github.workflow }}-${{ github.ref }}
@@ -163,7 +164,7 @@ jobs:
       - name: Fail on Trivy vulnerabilities
         if: >-
           github.event_name != 'pull_request' &&
-          steps.trivy-scan.outputs.exit-code != '0'
+          steps.trivy-scan.outcome == 'failure'
         run: |
           echo "Trivy reported HIGH or CRITICAL vulnerabilities."
           echo "See trivy-report.sarif for details."
