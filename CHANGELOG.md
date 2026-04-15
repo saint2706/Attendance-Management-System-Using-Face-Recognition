@@ -446,3 +446,9 @@ This version represents the state of the codebase when the original CHANGELOG.md
 [0.1.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2023-11-19&until=2025-09-28
 [0.0.2]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2021-04-29&until=2023-11-19
 [0.0.1]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?until=2021-04-29
+
+## [Unreleased]
+### Documentation
+- Fixed broken tutorial link in scikit-learn quick reference.
+- Fixed broken link to Web Quality Audit and Core Web Vitals in SEO and accessibility skills.
+- Fixed broken relative link to SKILL.md in CLAUDE.md.
