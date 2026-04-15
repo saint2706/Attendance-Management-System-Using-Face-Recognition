@@ -1,5 +1,12 @@
 # Site Architecture
+
+The Smart Attendance System is an automated attendance tracking platform utilizing advanced AI-powered face recognition technology.
+
+## Core Pages
 - /: Home page - Welcome to the Smart Attendance System
+- /setup-wizard: Setup wizard for first-time configuration
+
+## Application SPA Routes
 - /dashboard: User dashboard - Access attendance records and manage users
 - /login: User login - Dashboard Login
 - /mark-attendance: Mark attendance in the SPA
@@ -8,8 +15,11 @@
 - /add-photos: Add user photos in the SPA
 - /employees/register: Register a new employee in the SPA
 - /train: Train facial recognition models
-- /setup-wizard: Setup wizard for first-time configuration
+
+## Documentation
 - /docs: Technical documentation
+
+## Admin & Dashboards
 - /admin/evaluation/: Admin evaluation dashboard
 - /admin/ablation/: Admin ablation results
 - /admin/failures/: Admin failure analysis
@@ -21,6 +31,9 @@
 - /admin/threshold-profiles/: Admin threshold profiles management
 - /admin/threshold-profiles/create/: Admin threshold profile create
 - /admin/threshold-profiles/import/: Admin threshold profile import
+- /django-admin/: Django Admin Interface
+
+## API Endpoints
 - /api/threshold/: Threshold profile API
 - /api/v1/auth/login/: Auth Login API
 - /api/v1/auth/refresh/: Auth Refresh API
@@ -28,4 +41,3 @@
 - /api/v1/users/: Users API
 - /api/v1/attendance/: Attendance API
 - /monitoring/metrics/: Monitoring metrics API
-- /django-admin/: Django Admin Interface
