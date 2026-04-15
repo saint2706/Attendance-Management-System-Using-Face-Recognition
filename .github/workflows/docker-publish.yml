@@ -95,13 +95,6 @@ jobs:
           flavor: |
             latest=false
 
-      - name: Prepare primary image tag
-        env:
-          META_TAGS: ${{ steps.meta.outputs.tags }}
-        run: |
-          primary_tag="$(echo "$META_TAGS" | head -n 1)"
-          echo "PRIMARY_IMAGE_TAG=${primary_tag}" >> "$GITHUB_ENV"
-
       - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@v6
@@ -131,7 +124,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.35.0
         continue-on-error: true
         with:
-          image-ref: ${{ env.PRIMARY_IMAGE_TAG }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }}
           format: sarif
           output: trivy-report.sarif
           vuln-type: os,library
@@ -150,7 +143,7 @@ jobs:
         id: trivy-sbom
         uses: aquasecurity/trivy-action@v0.35.0
         with:
-          image-ref: ${{ env.PRIMARY_IMAGE_TAG }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }}
           format: cyclonedx
           output: trivy-sbom.cdx.json
 
