@@ -57,7 +57,7 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 - fix: remove unused pickle import in test_dataset_cache.py
 - fix: update tests to handle json dataset embedding cache
 - fix(k8s): Correct comment indentation in pvc.yaml to pass yamllint
-- fix: regenerate pnpm-lock.yaml to fix broken lockfile (missing baseline-browser-mapping@2.10.8)
+- fix: regenerate pnpm-lock.yaml to fix broken lockfile (missing `baseline-browser-mapping@2.10.8`)
 - Fix: Standardize API error responses to RFC 7807 problem details format
 - fix: use isolated temp dirs in dataset cache tests to prevent xdist race conditions
 - Fix: Replace weak MD5 hashing with SHA-256 in embedding_cache.py
@@ -1776,7 +1776,7 @@ This version represents the state of the codebase when the original CHANGELOG.md
 - fix: remove unused pickle import in test_dataset_cache.py
 - fix: update tests to handle json dataset embedding cache
 - fix(k8s): Correct comment indentation in pvc.yaml to pass yamllint
-- fix: regenerate pnpm-lock.yaml to fix broken lockfile (missing baseline-browser-mapping@2.10.8)
+- fix: regenerate pnpm-lock.yaml to fix broken lockfile (missing `baseline-browser-mapping@2.10.8`)
 - Fix: Standardize API error responses to RFC 7807 problem details format
 - fix: use isolated temp dirs in dataset cache tests to prevent xdist race conditions
 - Fix: Replace weak MD5 hashing with SHA-256 in embedding_cache.py

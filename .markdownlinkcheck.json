@@ -29,6 +29,27 @@
     },
     {
       "pattern": "^https://www.contributor-covenant.org"
+    },
+    {
+      "pattern": "^https://babeljs\\.io/"
+    },
+    {
+      "pattern": "^https://www\\.tpgi\\.com/"
+    },
+    {
+      "pattern": "^https://www\\.w3\\.org/"
+    },
+    {
+      "pattern": "^https://inference\\.sh"
+    },
+    {
+      "pattern": "^https://github\\.com/mozilla/diversity"
+    },
+    {
+      "pattern": "^https://vite\\.dev/guide/rolldown"
+    },
+    {
+      "pattern": "^https://swc\\.rs/"
     }
   ]
 }
