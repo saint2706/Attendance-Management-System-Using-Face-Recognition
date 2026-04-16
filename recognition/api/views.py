@@ -94,11 +94,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         # Expected impact: Reduced DB query complexity, preventing useless joins and
         # extra prefetch queries that fetch data unused by the serializer.
         user = self.request.user
-        queryset = (
-            RecognitionAttempt.objects.all()
-            .select_related("user")
-            .order_by("-created_at")
-        )
+        queryset = RecognitionAttempt.objects.all().select_related("user").order_by("-created_at")
 
         if not user.is_staff:
             queryset = queryset.filter(user=user)
