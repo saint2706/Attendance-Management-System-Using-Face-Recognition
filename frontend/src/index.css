@@ -399,6 +399,16 @@ a:hover {
   background-color: var(--color-border);
 }
 
+/* Sizing and Layout Utilities */
+.w-full { width: 100%; }
+.w-16 { width: 4rem; }
+.w-24 { width: 6rem; }
+.h-8 { height: 2rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.mt-1 { margin-top: 0.25rem; }
+.py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+.rounded { border-radius: var(--radius-md); }
+
 /* Status badges */
 .badge {
   display: inline-flex;
