@@ -8,6 +8,24 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-04-17
+
+### Fixed
+
+- fix: lowercase IMAGE_NAME in docker-publish workflow to fix Trivy image scan
+
+### Changed
+
+- Merge pull request #812 from saint2706/copilot/fix-docker-publish-workflow
+- Merge pull request #811 from saint2706/bolt-remove-unused-relations-5916276269963378559
+- Merge pull request #810 from saint2706/docs/fix-broken-links-13105858589702833884
+- Merge pull request #809 from saint2706/picasso/dashboard-layout-fixes-8899094370847337870
+- ⚡ Bolt: Remove unused DB relations in AttendanceViewSet
+- ⚡ Bolt: Remove unused DB relations in AttendanceViewSet
+- docs: Fix broken markdown links and update ignore patterns
+- 🎨 Picasso: [UX improvement] Fix undefined layout classes
+- Merge pull request #808 from saint2706/fix-docker-build-publish-workflow
+
 ## [1.8.0] - 2026-04-15
 
 ### Added
@@ -1726,6 +1744,24 @@ This version represents the state of the codebase when the original CHANGELOG.md
 [0.0.1]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?until=2021-04-29
 
 ## [Unreleased]
+
+## [1.9.0] - 2026-04-17
+
+### Fixed
+
+- fix: lowercase IMAGE_NAME in docker-publish workflow to fix Trivy image scan
+
+### Changed
+
+- Merge pull request #812 from saint2706/copilot/fix-docker-publish-workflow
+- Merge pull request #811 from saint2706/bolt-remove-unused-relations-5916276269963378559
+- Merge pull request #810 from saint2706/docs/fix-broken-links-13105858589702833884
+- Merge pull request #809 from saint2706/picasso/dashboard-layout-fixes-8899094370847337870
+- ⚡ Bolt: Remove unused DB relations in AttendanceViewSet
+- ⚡ Bolt: Remove unused DB relations in AttendanceViewSet
+- docs: Fix broken markdown links and update ignore patterns
+- 🎨 Picasso: [UX improvement] Fix undefined layout classes
+- Merge pull request #808 from saint2706/fix-docker-build-publish-workflow
 
 ## [1.8.0] - 2026-04-15
 
