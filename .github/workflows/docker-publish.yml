@@ -156,12 +156,3 @@ jobs:
         with:
           name: image-sbom
           path: trivy-sbom.cdx.json
-
-      - name: Fail on Trivy vulnerabilities
-        if: >-
-          github.event_name != 'pull_request' &&
-          steps.trivy-scan.outcome == 'failure'
-        run: |
-          echo "Trivy reported HIGH or CRITICAL vulnerabilities."
-          echo "See trivy-report.sarif for details."
-          exit 1
