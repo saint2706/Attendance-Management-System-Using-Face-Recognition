@@ -102,7 +102,7 @@ class TestCustomExceptionHandler:
         assert response is not None
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert response.data["type"] == "about:blank"
-        assert response.data["title"] == "Valueerror"
+        assert response.data["title"] == "Internal Server Error"
         assert response.data["status"] == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert response.data["detail"] == "An unexpected error occurred."
         assert response.data["instance"] == "/api/v1/test/"

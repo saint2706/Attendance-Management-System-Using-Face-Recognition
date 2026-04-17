@@ -34,7 +34,9 @@ def custom_exception_handler(exc, context):
 
     from rest_framework.response import Response
 
+    is_unhandled = False
     if response is None:
+        is_unhandled = True
         # Non-DRF standard exceptions are not handled by DRF's exception_handler.
         # Log the exception to ensure we don't swallow tracebacks for internal server errors.
         logger.error("Unhandled API Exception: %s", str(exc), exc_info=exc)
@@ -55,7 +57,10 @@ def custom_exception_handler(exc, context):
             status_code = 403
             detail = "You do not have permission to perform this action."
         else:
-            title = getattr(exc, "default_code", exc.__class__.__name__)
+            if is_unhandled:
+                title = "Internal Server Error"
+            else:
+                title = getattr(exc, "default_code", exc.__class__.__name__)
             status_code = response.status_code
 
             # DRF validation errors often return a dict or list for detail
