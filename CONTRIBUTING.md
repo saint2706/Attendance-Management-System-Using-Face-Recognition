@@ -64,7 +64,7 @@ For comprehensive setup instructions, see the [Developer Guide](docs/DEVELOPER_G
 
 ### Python Style Guide
 
-The project follows the [PEP 8](https://www.python.org/dev/peps/pep-0008/) style guide for Python code. Please ensure that your code adheres to these conventions.
+The project follows the [PEP 8](https://peps.python.org/pep-0008/) style guide for Python code. Please ensure that your code adheres to these conventions.
 
 ### Docstrings
 
