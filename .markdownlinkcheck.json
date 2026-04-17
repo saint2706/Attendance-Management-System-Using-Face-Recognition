@@ -50,6 +50,15 @@
     },
     {
       "pattern": "^https://swc\\.rs/"
+    },
+    {
+      "pattern": "^https://github\\.com/Jeffallan"
+    },
+    {
+      "pattern": "^\\.\\./SKILL\\.md"
+    },
+    {
+      "pattern": "^\\.agents/skills/"
     }
   ]
 }
