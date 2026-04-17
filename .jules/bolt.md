@@ -56,3 +56,7 @@
 - **Problem**: Admin Action cards were rerendering unnecessarily on Dashboard state changes.
 - **Optimization**: Extracted `ActionCard` component in `frontend/src/components/ActionCard.tsx` and memoized it using `React.memo()`. Replaced inline `Link` tags in `frontend/src/pages/Dashboard.tsx` with `ActionCard` to improve React rendering efficiency.
 - **Result**: Reduced React rerenders in Dashboard.
+## Optimization: Removed unused query optimizations
+- **Problem**: The `AttendanceViewSet.get_queryset` in `recognition/api/views.py` used `.select_related("present_record", "time_record")` and `prefetch_related("user__groups", "user__user_permissions")` to optimize serialization. However, `AttendanceRecordSerializer` doesn't access these fields, it only needs the `user` relation for `get_username`.
+- **Optimization**: Removed the unused explicit `.select_related` and `prefetch_related` relations from the queryset, leaving only `.select_related("user")`.
+- **Result**: Reduced DB query complexity, preventing useless joins and extra prefetch queries that fetch data unused by the serializer.

@@ -88,13 +88,13 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
+        # ⚡ Bolt: Removed unnecessary 'present_record', 'time_record' from select_related
+        # and 'user__groups', 'user__user_permissions' from prefetch_related since
+        # AttendanceRecordSerializer only needs 'user' to resolve the username.
+        # Expected impact: Reduced DB query complexity, preventing useless joins and
+        # extra prefetch queries that fetch data unused by the serializer.
         user = self.request.user
-        queryset = (
-            RecognitionAttempt.objects.all()
-            .select_related("user", "present_record", "time_record")
-            .prefetch_related("user__groups", "user__user_permissions")
-            .order_by("-created_at")
-        )
+        queryset = RecognitionAttempt.objects.all().select_related("user").order_by("-created_at")
 
         if not user.is_staff:
             queryset = queryset.filter(user=user)
