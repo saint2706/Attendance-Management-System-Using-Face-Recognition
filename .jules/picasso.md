@@ -39,3 +39,10 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 * When adding a loading indicator, be sure to use `lucide-react`'s `Loader2` and make sure it is imported properly. It's common to miss the import when inserting the element. Always check lint and build to verify.
 
 - Added missing utility classes to index.css to ensure layout sizes and spacing work properly.
+
+## Audited Codebase
+- Confirmed that accessibility requirements are satisfied across the codebase.
+- No ARIA, visual polish, empty state or keyboard accessibility gaps found that require modification.
+
+## Enhancements
+- `Navbar.tsx`: Added a `title` attribute to the main brand `<Link>` providing a tooltip ("Return to Home") for better usability when hovering or focusing the element.

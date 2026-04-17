@@ -44,7 +44,7 @@ export const Navbar = () => {
     return (
         <nav className="navbar">
             <div className="navbar-container">
-                <Link to="/" className="navbar-brand">
+                <Link to="/" className="navbar-brand" title="Return to Home">
                     <UserCheck size={24} aria-hidden="true" />
                     <span>Smart Attendance</span>
                 </Link>
