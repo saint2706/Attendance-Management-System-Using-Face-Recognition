@@ -78,7 +78,10 @@ RUN DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.product
     FACE_DATA_ENCRYPTION_KEY=ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE= \
     RECOGNITION_JWT_SECRET=dummy-jwt-secret-for-build \
     python manage.py collectstatic --noinput \
-    && rm -rf /app/frontend
+    && rm -rf /app/frontend \
+    && find /venv -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true \
+    && find /venv -type f -name "*.pyc" -delete \
+    && find /venv -type f -name "*.pyo" -delete
 
 FROM python-base AS runtime
 
@@ -118,6 +121,9 @@ USER appuser
 
 # Expose the application port
 EXPOSE 8000
+
+# Set stop signal for graceful shutdown of gunicorn
+STOPSIGNAL SIGTERM
 
 # Health check to verify the application is running
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

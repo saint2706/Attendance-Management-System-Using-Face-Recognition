@@ -75,8 +75,8 @@ For a complete walkthrough, see the **[Quick Start Guide](docs/QUICKSTART.md)**.
 ### Docker Quick Run
 
 ```bash
-docker pull ghcr.io/saint2706/attendance-management-system-using-face-recognition:latest
-docker run -d -p 8000:8000 ghcr.io/saint2706/attendance-management-system-using-face-recognition:latest
+docker pull ghcr.io/saint2706/attendance-management-system-using-face-recognition:production
+docker run -d -p 8000:8000 ghcr.io/saint2706/attendance-management-system-using-face-recognition:production
 ```
 
 *(See [Deployment Guide](docs/DEPLOYMENT.md) for required environment variables)*

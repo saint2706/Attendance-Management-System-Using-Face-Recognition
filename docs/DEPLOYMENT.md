@@ -331,7 +331,7 @@ To build the image, run the following command from the project root:
 docker compose build
 ```
 
-This will create an image named `attendance-system:latest` that will be used by the `web` and `celery` services.
+This will create an image named `attendance-system:production` that will be used by the `web` and `celery` services.
 
 ## 3. Configuration
 
