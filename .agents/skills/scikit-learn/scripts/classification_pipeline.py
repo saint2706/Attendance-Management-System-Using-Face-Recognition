@@ -249,7 +249,7 @@ if __name__ == "__main__":
 
     # For demonstration, treat all features as numeric
     numeric_features = X.columns.tolist()
-    categorical_features = []
+    categorical_features: list[str] = []
 
     print("=" * 60)
     print("Classification Pipeline Example")

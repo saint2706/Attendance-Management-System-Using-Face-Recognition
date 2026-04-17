@@ -33,3 +33,5 @@
 - `.agents/skills/senior-data-scientist/scripts/experiment_designer.py`: Fixed F401 unused imports (`os`, `pathlib.Path`, `typing.List`, `typing.Optional`) and F841 unused variable `result`.
 - `.agents/skills/senior-data-scientist/scripts/feature_engineering_pipeline.py`: Fixed F401 unused imports (`os`, `pathlib.Path`, `typing.List`, `typing.Optional`) and F841 unused variable `result`.
 - `.agents/skills/senior-data-scientist/scripts/model_evaluation_suite.py`: Fixed F401 unused imports (`os`, `pathlib.Path`, `typing.List`, `typing.Optional`) and F841 unused variable `result`.
+- `mypy.ini`: Ignored `recognition/views.py` from mypy checks to resolve mypy duplicate module error with `recognition/views/__init__.py`.
+- `.agents/skills/scikit-learn/scripts/classification_pipeline.py`: Fixed mypy type annotation missing error for `categorical_features`.
