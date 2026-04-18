@@ -20,7 +20,7 @@ spec:
         app.kubernetes.io/name: redis
         app.kubernetes.io/component: cache
     spec:
-      serviceAccountName: default
+      serviceAccountName: attendance-sa
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true

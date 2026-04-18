@@ -6,6 +6,7 @@ namespace: attendance-system
 
 resources:
   - namespace.yaml
+  - serviceaccount.yaml
   - networkpolicy.yaml
   - configmap.yaml
   - sealed-secret.yaml

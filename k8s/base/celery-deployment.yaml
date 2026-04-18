@@ -19,7 +19,7 @@ spec:
         app.kubernetes.io/name: celery-worker
         app.kubernetes.io/component: worker
     spec:
-      serviceAccountName: default
+      serviceAccountName: attendance-sa
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true

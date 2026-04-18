@@ -21,7 +21,7 @@ spec:
         app.kubernetes.io/name: celery-beat
         app.kubernetes.io/component: scheduler
     spec:
-      serviceAccountName: default
+      serviceAccountName: attendance-sa
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
