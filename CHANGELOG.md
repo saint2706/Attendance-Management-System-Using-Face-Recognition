@@ -8,6 +8,10 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 
 ## [Unreleased]
 
+### Fixed
+
+- docs: Fix missing screenshot link `home-light-updated.png` in `docs/USER_GUIDE.md` to point to `home-light.png`
+
 ## [1.9.0] - 2026-04-17
 
 ### Fixed
