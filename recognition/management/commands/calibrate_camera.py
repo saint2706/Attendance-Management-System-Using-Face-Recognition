@@ -94,13 +94,15 @@ class Command(BaseCommand):
         images = []
 
         if images_dir and images_dir.exists():
+            cv2 = None
             try:
-                import cv2
+                import cv2 as cv2_module
+
+                cv2 = cv2_module
             except ImportError:
                 self.stderr.write(
                     self.style.WARNING("cv2 not available, using PIL for image loading")
                 )
-                cv2 = None
 
             for ext in ["*.jpg", "*.jpeg", "*.png", "*.bmp"]:
                 for img_path in images_dir.glob(ext):

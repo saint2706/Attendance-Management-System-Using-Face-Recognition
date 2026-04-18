@@ -39,15 +39,17 @@ def extract_embedding(
 
     if isinstance(representations, np.ndarray):
         if representations.ndim == 2 and len(representations) > 0:
-            embedding_vector = representations[0]
+            embedding_vector = representations[0].tolist()
     elif isinstance(representations, list) and representations:
         first = representations[0]
         if isinstance(first, dict):
             embedding_vector = first.get("embedding")
             area = first.get("facial_area")
             facial_area = area if isinstance(area, dict) else None
-        elif isinstance(first, (list, tuple, np.ndarray)):
+        elif isinstance(first, (list, tuple)):
             embedding_vector = first
+        elif isinstance(first, np.ndarray):
+            embedding_vector = first.tolist()
     elif isinstance(representations, dict) and "embedding" in representations:
         embedding_vector = representations.get("embedding")
         area = representations.get("facial_area")
