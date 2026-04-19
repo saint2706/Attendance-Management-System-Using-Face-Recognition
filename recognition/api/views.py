@@ -133,11 +133,21 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         - checked_out_today: Users with successful check-OUT today
         - pending_checkout: Users checked in but not yet checked out
         """
-        today = timezone.localdate()
         total_employees = User.objects.filter(is_active=True).count()
 
-        today_start = timezone.make_aware(datetime.datetime.combine(today, datetime.time.min))
-        today_end = timezone.make_aware(datetime.datetime.combine(today, datetime.time.max))
+        filter_serializer = AttendanceFilterSerializer(data=self.request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+
+        start_date = filter_serializer.validated_data.get("start_date")
+        end_date = filter_serializer.validated_data.get("end_date")
+
+        if not start_date:
+            start_date = timezone.localdate()
+        if not end_date:
+            end_date = timezone.localdate()
+
+        today_start = timezone.make_aware(datetime.datetime.combine(start_date, datetime.time.min))
+        today_end = timezone.make_aware(datetime.datetime.combine(end_date, datetime.time.max))
 
         # Single query to get all successful attempts for today
         attempts_today = (
