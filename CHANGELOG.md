@@ -8,6 +8,11 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 
 ## [Unreleased]
 
+### Added
+
+- docs: Documented `/admin/health/` endpoint in `docs/API_REFERENCE.md` as per good first issue.
+- docs: Improved troubleshooting guide in `docs/troubleshooting.md` with common issues and solutions.
+
 ### Fixed
 
 - docs: Fix missing screenshot link `home-light-updated.png` in `docs/USER_GUIDE.md` to point to `home-light.png`
