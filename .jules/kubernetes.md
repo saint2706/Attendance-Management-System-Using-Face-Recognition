@@ -1,0 +1,1 @@
+- Fixed the Prometheus scrape path in web-deployment.yaml to point to the correct application metrics endpoint, preventing 404 errors during Prometheus scraping.
