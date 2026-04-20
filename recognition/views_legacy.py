@@ -3505,8 +3505,8 @@ def view_attendance_date(request):
             date = form.cleaned_data["date"]
             logger.debug("Admin %s viewing attendance for date %s", request.user, date)
 
-            time_qs = Time.objects.filter(date=date)
-            present_qs = Present.objects.filter(date=date)
+            time_qs = Time.objects.filter(date=date).select_related("user")
+            present_qs = Present.objects.filter(date=date).select_related("user")
 
             if present_qs.exists():
                 qs, chart_url = hours_vs_employee_given_date(present_qs, time_qs)
