@@ -1,5 +1,7 @@
 # Site Architecture
 
+The Smart Attendance System is an automated attendance tracking platform utilizing advanced AI-powered face recognition technology.
+
 ## Core Pages
 - /: Home page - Welcome to the Smart Attendance System
 - /setup-wizard: Setup wizard for first-time configuration

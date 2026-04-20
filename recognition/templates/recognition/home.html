@@ -3,6 +3,47 @@
 {% load static %}
 {% block title %}Home - Smart Attendance System{% endblock %}
 
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Smart Attendance System Features",
+      "description": "Advanced AI-powered face recognition ensures quick and precise attendance marking."
+    },
+    {
+      "@type": "Product",
+      "name": "Smart Attendance System",
+      "description": "Automated attendance tracking platform utilizing advanced AI-powered face recognition technology."
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does the Smart Attendance System work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The system uses advanced AI-powered face recognition technology to quickly and accurately mark attendance when you scan your face."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my biometric data secure?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, your biometric data is encrypted and stored securely with industry-standard protection. We do not share your biometric data with third parties."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="text-center mb-8">
     <img src="{% static 'icons/icon-512.png' %}"

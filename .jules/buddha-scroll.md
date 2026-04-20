@@ -19,3 +19,6 @@
 - [SEO] Added canonical URL link to the `Home` page, and JSON-LD schema with `window.location.origin` for dynamic domains instead of hardcoding, to solidify its SEO authority.
 - [PERF] Preloaded Google Fonts in `frontend/index.html` to prevent Flash of Unstyled Text (FOUT) and improve LCP and CLS.
 - [GEO] Categorized endpoints in llms.txt files to improve AI readability
+## SEO/GEO Improvements - JSON-LD and AI Discoverability
+- **[GEO]** Added JSON-LD schema (Article, Product, FAQPage) to the Django `home.html` page to enhance AI discoverability.
+- **[GEO]** Updated `llms.txt.content` with missing introductory content, ensuring consistency with `llms.txt`.
