@@ -151,7 +151,7 @@ jsonschema==4.26.0
     # via drf-spectacular
 jsonschema-specifications==2025.9.1
     # via jsonschema
-keras==3.13.2
+keras==3.14.0
     # via
     #   deepface
     #   tensorflow
