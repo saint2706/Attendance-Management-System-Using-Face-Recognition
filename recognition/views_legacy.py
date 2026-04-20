@@ -1829,6 +1829,22 @@ def update_attendance_in_db_in(
     usernames = list(present.keys())
     users_by_username = {u.username: u for u in User.objects.filter(username__in=usernames)}
 
+    # Pre-fetch existing Present records
+    present_records = {
+        p.user_id: p
+        for p in Present.objects.filter(user__in=users_by_username.values(), date=today)
+    }
+
+    failed_attempt_ids = []
+    presents_to_create = []
+    presents_to_update = []
+    times_to_create = []
+
+    # To keep track of created objects per user to link to RecognitionAttempt
+    user_to_present_record = {}
+    user_to_time_record_kwargs = {}
+    successful_attempts_data = {}
+
     for person, is_present in present.items():
         user = users_by_username.get(person)
         if user is None:
@@ -1850,39 +1866,65 @@ def update_attendance_in_db_in(
             )
             attempt_id = attempt_ids.get(person)
             if attempt_id:
-                RecognitionAttempt.objects.filter(id=attempt_id).update(
-                    successful=False,
-                    error_message="User not found while persisting check-in.",
-                )
+                failed_attempt_ids.append(attempt_id)
             continue
 
-        # Find or create the attendance record for the day
-        qs, created = Present.objects.get_or_create(
-            user=user, date=today, defaults={"present": is_present}
-        )
-
-        if not created and is_present and not qs.present:
-            # Mark as present if they were previously marked absent
+        # Handle Present records
+        qs = present_records.get(user.id)
+        if qs is None:
+            qs = Present(user=user, date=today, present=is_present)
+            presents_to_create.append(qs)
+            present_records[user.id] = qs
+        elif is_present and not qs.present:
             qs.present = True
-            qs.save(update_fields=["present"])
+            presents_to_update.append(qs)
 
+        user_to_present_record[user.id] = qs
+
+        # Handle Time records
+        time_record = None
         if is_present:
-            # Record the check-in time
-            time_record = Time.objects.create(
-                user=user, date=today, time=current_time, direction=Direction.IN
-            )
-        else:
-            time_record = None
+            time_record = Time(user=user, date=today, time=current_time, direction=Direction.IN)
+            times_to_create.append(time_record)
+            user_to_time_record_kwargs[user.id] = time_record
 
+        # Collect Attempt info
         attempt_id = attempt_ids.get(person)
         if attempt_id:
-            attempt_updates: Dict[str, Any] = {
+            successful_attempts_data[attempt_id] = {
                 "user": user,
-                "present_record": qs,
             }
-            if time_record is not None:
-                attempt_updates["time_record"] = time_record
-            RecognitionAttempt.objects.filter(id=attempt_id).update(**attempt_updates)
+
+    if failed_attempt_ids:
+        RecognitionAttempt.objects.filter(id__in=failed_attempt_ids).update(
+            successful=False,
+            error_message="User not found while persisting check-in.",
+        )
+
+    if presents_to_create:
+        Present.objects.bulk_create(presents_to_create)
+
+    if presents_to_update:
+        Present.objects.bulk_update(presents_to_update, ["present"])
+
+    if times_to_create:
+        Time.objects.bulk_create(times_to_create)
+
+    if successful_attempts_data:
+        attempts = list(RecognitionAttempt.objects.filter(id__in=successful_attempts_data.keys()))
+        attempts_to_update = []
+        for attempt in attempts:
+            data = successful_attempts_data[attempt.id]
+            user = data["user"]
+            attempt.user = user
+            attempt.present_record = present_records.get(user.id)
+            attempt.time_record = user_to_time_record_kwargs.get(user.id)
+            attempts_to_update.append(attempt)
+
+        if attempts_to_update:
+            RecognitionAttempt.objects.bulk_update(
+                attempts_to_update, ["user", "present_record", "time_record"]
+            )
 
 
 def update_attendance_in_db_out(
@@ -1921,6 +1963,11 @@ def update_attendance_in_db_out(
         for p in Present.objects.filter(user__in=users_by_username.values(), date=today)
     }
 
+    failed_attempt_ids = []
+    times_to_create = []
+    user_to_time_record = {}
+    successful_attempts_data = {}
+
     for person, is_present in present.items():
         if not is_present:
             continue
@@ -1945,26 +1992,44 @@ def update_attendance_in_db_out(
             )
             attempt_id = attempt_ids.get(person)
             if attempt_id:
-                RecognitionAttempt.objects.filter(id=attempt_id).update(
-                    successful=False,
-                    error_message="User not found while persisting check-out.",
-                )
+                failed_attempt_ids.append(attempt_id)
             continue
+
         # Record the check-out time
-        time_record = Time.objects.create(
-            user=user, date=today, time=current_time, direction=Direction.OUT
-        )
+        time_record = Time(user=user, date=today, time=current_time, direction=Direction.OUT)
+        times_to_create.append(time_record)
+        user_to_time_record[user.id] = time_record
 
         attempt_id = attempt_ids.get(person)
         if attempt_id:
+            successful_attempts_data[attempt_id] = {"user": user}
+
+    if failed_attempt_ids:
+        RecognitionAttempt.objects.filter(id__in=failed_attempt_ids).update(
+            successful=False,
+            error_message="User not found while persisting check-out.",
+        )
+
+    if times_to_create:
+        Time.objects.bulk_create(times_to_create)
+
+    if successful_attempts_data:
+        attempts = list(RecognitionAttempt.objects.filter(id__in=successful_attempts_data.keys()))
+        attempts_to_update = []
+        for attempt in attempts:
+            data = successful_attempts_data[attempt.id]
+            user = data["user"]
+            attempt.user = user
+            attempt.time_record = user_to_time_record.get(user.id)
             present_record = present_records.get(user.id)
-            attempt_updates: Dict[str, Any] = {
-                "user": user,
-                "time_record": time_record,
-            }
             if present_record is not None:
-                attempt_updates["present_record"] = present_record
-            RecognitionAttempt.objects.filter(id=attempt_id).update(**attempt_updates)
+                attempt.present_record = present_record
+            attempts_to_update.append(attempt)
+
+        if attempts_to_update:
+            RecognitionAttempt.objects.bulk_update(
+                attempts_to_update, ["user", "time_record", "present_record"]
+            )
 
 
 def check_validity_times(times_all: Sequence[Time] | QuerySet[Time]) -> tuple[bool, float]:
