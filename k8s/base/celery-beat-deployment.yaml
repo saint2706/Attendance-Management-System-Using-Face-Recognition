@@ -23,6 +23,7 @@ spec:
     spec:
       serviceAccountName: attendance-sa
       automountServiceAccountToken: false
+      # Pod-level security context enforces running as a non-root user for enhanced security.
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -45,6 +46,7 @@ spec:
                 name: attendance-config
             - secretRef:
                 name: attendance-secrets
+          # Resource limits and requests defined for optimal scheduling and to prevent resource starvation. (128Mi/256Mi for lightweight scheduling tasks)
           resources:
             requests:
               memory: "128Mi"
@@ -52,6 +54,7 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "100m"
+          # Liveness probe ensures the pod is automatically restarted if it becomes unresponsive.
           livenessProbe:
             exec:
               command:
@@ -62,6 +65,7 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 3
+          # Readiness probe ensures traffic is only routed to the pod when it is fully ready to serve requests.
           readinessProbe:
             exec:
               command:
@@ -75,6 +79,7 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+          # Apply least-privilege security context to container to prevent privilege escalation.
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
