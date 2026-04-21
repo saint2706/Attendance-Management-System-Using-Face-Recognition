@@ -146,3 +146,52 @@ all fail, it logs `"Failed to compute fallback distance"` and skips the candidat
 
 > ℹ️ Document alert integrations for task failure rates or retry exhaustion when
 > those tools are in place.
+
+## Common Issues & Solutions
+
+### Camera Permissions Denied
+**Symptoms**
+- The camera feed does not appear on the "Mark Time-In" or "Mark Time-Out" pages.
+- The browser shows a camera icon with a strike-through or a permission prompt that was dismissed.
+
+**Diagnostics**
+- Check the browser's address bar for camera permission indicators.
+- Open the browser developer console (F12) to look for `NotAllowedError` or `PermissionDeniedError`.
+
+**Recovery Steps**
+1. Instruct the user to click the camera icon in their browser's address bar and allow camera access.
+2. Ensure the site is being served over HTTPS, as modern browsers restrict camera access on HTTP (except for `localhost`).
+3. Reload the page after granting permissions.
+
+### Missing Dependencies After Clone/Update
+**Symptoms**
+- `ModuleNotFoundError` when running `python manage.py`.
+- `Error [ERR_MODULE_NOT_FOUND]` or similar when running frontend build commands.
+
+**Diagnostics**
+- Check if `requirements.txt` or `requirements-dev.txt` were recently updated.
+- Verify the frontend `package.json` dependencies are installed.
+
+**Recovery Steps**
+1. Re-install Python dependencies:
+   ```bash
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt
+   ```
+2. Re-install frontend dependencies:
+   ```bash
+   cd frontend && pnpm install --frozen-lockfile
+   ```
+
+### Database Connection Failures
+**Symptoms**
+- `OperationalError: could not connect to server` or `psycopg2.OperationalError` during application startup or migrations.
+
+**Diagnostics**
+- Verify the database service (PostgreSQL) is running.
+- Check the `DATABASE_URL` environment variable is correctly set in your `.env` file.
+
+**Recovery Steps**
+1. If using Docker, ensure the database container is up: `docker compose up -d db`.
+2. Verify credentials in `.env` match your local PostgreSQL setup.
+3. Restart the application server.

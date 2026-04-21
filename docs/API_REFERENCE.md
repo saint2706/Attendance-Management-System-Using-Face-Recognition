@@ -177,3 +177,29 @@ A successful request indicates that the batch has been accepted and enqueued for
 - **`403 Forbidden`:** The user is not authenticated.
 - **`405 Method Not Allowed`:** The request was not a `POST` request.
 - **`503 Service Unavailable`:** The Celery queue is not available.
+
+---
+
+## Health Check Endpoint
+
+This endpoint provides a comprehensive overview of the system's health, including dataset status, model training status, evaluation metrics, recent recognition activity, and background worker status. It is useful for monitoring and diagnostics.
+
+- **URL:** `/admin/health/`
+- **HTTP Method:** `GET`
+- **Authentication:** Required. The user must be a staff member (`is_staff=True`).
+
+### Health Check Response
+
+#### Success Response (`200 OK`)
+
+The response is an HTML page rendering the health dashboard. The underlying data provided to the template includes:
+
+- **Dataset Health:** Information about the training dataset, including the number of images, number of identities, and the last update timestamp.
+- **Model Health:** Status of the trained model artifacts (`svc.sav`, `classes.npy`, `classification_report.txt`) and whether the model is stale compared to the dataset.
+- **Evaluation Health:** Latest evaluation metrics (nightly, fairness, liveness), trends, total evaluations, and recent failures.
+- **Recognition Activity:** Snapshots of the most recent recognition attempt, recent spoof detected, recent success, recent failure, and the last recognition outcome.
+- **Worker Health:** Status of the Celery workers (e.g., `online` or `unreachable`) and the number of active workers.
+
+#### Error Responses
+
+- **`302 Found` / `Redirect`:** If the user is not authenticated or not a staff member, they will be redirected to the admin login page.
