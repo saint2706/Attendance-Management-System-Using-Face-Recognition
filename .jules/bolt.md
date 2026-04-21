@@ -61,3 +61,7 @@
 - **Optimization**: Removed the unused explicit `.select_related` and `prefetch_related` relations from the queryset, leaving only `.select_related("user")`.
 - **Result**: Reduced DB query complexity, preventing useless joins and extra prefetch queries that fetch data unused by the serializer.
 - Fixed N+1 queries by adding `select_related('user')` when querying the `Time` and `Present` models in the `hours_vs_date_given_employee` and `hours_vs_employee_given_date` view functions. Additionally, removed redundant `select_related` and `prefetch_related` queries in the API Viewsets that were not utilized by their respective Serializers, thereby preventing useless JOINs.
+## Optimization: Composite Index on RecognitionAttempt
+- **Problem**: `AttendanceViewSet.get_queryset` in `recognition/api/views.py` filters `RecognitionAttempt` records by both `user` and `created_at` (date range). Without a composite index, the database may have to scan more rows or use an index that doesn't optimally support this combination.
+- **Optimization**: Added a composite index `models.Index(fields=["user", "created_at"], name="users_attempt_user_created_idx")` to the `RecognitionAttempt` model in `users/models.py`.
+- **Result**: Significantly faster query execution for user-specific attendance records over a time range, improving the responsiveness of attendance history lookups.
