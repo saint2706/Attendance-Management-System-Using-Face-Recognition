@@ -308,6 +308,9 @@ class RecognitionAttempt(models.Model):
             models.Index(fields=["site", "direction"], name="users_attempt_site_dir_idx"),
             models.Index(fields=["user", "direction"], name="users_attempt_user_dir_idx"),
             models.Index(fields=["created_at"], name="users_attempt_created_idx"),
+            # ⚡ Bolt: Added composite index on user and created_at to optimize the AttendanceViewSet
+            # query filtering by user and date range.
+            models.Index(fields=["user", "created_at"], name="users_attempt_user_created_idx"),
         ]
 
     def __str__(self) -> str:
