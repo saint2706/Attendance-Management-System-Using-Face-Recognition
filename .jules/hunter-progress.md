@@ -35,3 +35,8 @@
 - `.agents/skills/senior-data-scientist/scripts/model_evaluation_suite.py`: Fixed F401 unused imports (`os`, `pathlib.Path`, `typing.List`, `typing.Optional`) and F841 unused variable `result`.
 - `mypy.ini`: Ignored `recognition/views.py` from mypy checks to resolve mypy duplicate module error with `recognition/views/__init__.py`.
 - `.agents/skills/scikit-learn/scripts/classification_pipeline.py`: Fixed mypy type annotation missing error for `categorical_features`.
+\n- `tests/recognition/test_api_attendance_n_plus_one.py`: Removed debug `print` statement.
+- `tests/recognition/test_performance.py`: Removed debug `print` statements.
+- `tests/recognition/test_real_data_integration.py`: Removed debug `print` statement.
+- `tests/recognition/test_api_attendance_n_plus_one.py`: Ran black to fix line length issues.
+- `tests/recognition/test_performance.py`: Ran black to fix line length issues.

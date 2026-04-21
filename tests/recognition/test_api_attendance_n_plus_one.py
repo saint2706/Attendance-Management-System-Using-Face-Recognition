@@ -54,6 +54,5 @@ def test_attendance_api_query_count():
         and not q["sql"].startswith("RELEASE SAVEPOINT")
     ]
 
-    print(f"Number of queries: {len(filtered_queries)}")
     # Should be < 10.
     assert len(filtered_queries) < 10
