@@ -95,12 +95,6 @@ WORKDIR /app
 RUN groupadd --system --gid 1000 appgroup \
     && useradd --system --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
 
-# Copy virtual environment with installed dependencies
-COPY --from=build /venv /venv
-
-# Copy application code and collected static files
-COPY --from=build /app /app
-
 # Apply Debian security updates to patch OS-level CVEs from the base image.
 # hadolint ignore=DL3005
 RUN apt-get update \
@@ -113,6 +107,12 @@ RUN apt-get update \
 # Ensure we patch the system python environment specifically,
 # not the venv which is already patched in the build stage.
 RUN /usr/local/bin/python -m pip install --no-cache-dir "setuptools>=78.1.1" "wheel>=0.46.2"
+
+# Copy virtual environment with installed dependencies
+COPY --from=build /venv /venv
+
+# Copy application code and collected static files
+COPY --from=build /app /app
 
 # Create directories for runtime data and set ownership
 RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
