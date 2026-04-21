@@ -145,7 +145,7 @@ class TestRealDataIntegration:
                     response = client.post(url, payload, format="json")
 
         if response.status_code == 405:
-            print(f"Method Not Allowed at {url}. Allowed: {response.get('Allow', 'Unknown')}")
+            pass
             # Fallback: check if the router mounted it at a different path?
             # For now, let fail to see debug print.
 

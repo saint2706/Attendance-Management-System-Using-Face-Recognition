@@ -88,7 +88,6 @@ class TestFAISSIndexPerformance:
 
         mean_ms, std_ms = measure_time_ms(build, iterations=5)
 
-        print(f"\n100 embeddings build: {mean_ms:.2f}ms ± {std_ms:.2f}ms")
         assert (
             mean_ms < THRESHOLDS["faiss_build_100"]
         ), f"Build took {mean_ms:.2f}ms, expected <{THRESHOLDS['faiss_build_100']}ms"
@@ -103,7 +102,6 @@ class TestFAISSIndexPerformance:
 
         mean_ms, std_ms = measure_time_ms(build, iterations=3)
 
-        print(f"\n1000 embeddings build: {mean_ms:.2f}ms ± {std_ms:.2f}ms")
         assert (
             mean_ms < THRESHOLDS["faiss_build_1000"]
         ), f"Build took {mean_ms:.2f}ms, expected <{THRESHOLDS['faiss_build_1000']}ms"
@@ -118,7 +116,6 @@ class TestFAISSIndexPerformance:
 
         mean_ms, std_ms = measure_time_ms(build, iterations=2)
 
-        print(f"\n10000 embeddings build: {mean_ms:.2f}ms ± {std_ms:.2f}ms")
         assert (
             mean_ms < THRESHOLDS["faiss_build_10000"]
         ), f"Build took {mean_ms:.2f}ms, expected <{THRESHOLDS['faiss_build_10000']}ms"
@@ -136,7 +133,6 @@ class TestFAISSIndexPerformance:
 
         mean_ms, std_ms = measure_time_ms(search, iterations=100)
 
-        print(f"\nSingle search latency: {mean_ms:.3f}ms ± {std_ms:.3f}ms")
         assert (
             mean_ms < THRESHOLDS["faiss_search_single"]
         ), f"Search took {mean_ms:.3f}ms, expected <{THRESHOLDS['faiss_search_single']}ms"
@@ -154,7 +150,6 @@ class TestFAISSIndexPerformance:
 
         mean_ms, std_ms = measure_time_ms(search, iterations=100)
 
-        print(f"\nk=10 search latency: {mean_ms:.3f}ms ± {std_ms:.3f}ms")
         assert (
             mean_ms < THRESHOLDS["faiss_search_k10"]
         ), f"Search took {mean_ms:.3f}ms, expected <{THRESHOLDS['faiss_search_k10']}ms"
@@ -173,7 +168,6 @@ class TestFAISSIndexPerformance:
 
         mean_ms, std_ms = measure_time_ms(concurrent_search, iterations=3)
 
-        print(f"\n100 concurrent searches: {mean_ms:.2f}ms ± {std_ms:.2f}ms")
         assert (
             mean_ms < THRESHOLDS["concurrent_search_ops"]
         ), f"Concurrent ops took {mean_ms:.2f}ms, expected <{THRESHOLDS['concurrent_search_ops']}ms"
@@ -239,7 +233,6 @@ class TestLoadSimulation:
         total_ms = (time.perf_counter() - start) * 1000
 
         avg_ms = total_ms / n_requests
-        print(f"\n1000 sequential searches: total={total_ms:.2f}ms, avg={avg_ms:.3f}ms/request")
 
         # Ensure reasonable average latency
         assert avg_ms < 1.0, f"Average latency {avg_ms:.3f}ms too high"
@@ -326,16 +319,11 @@ class TestScalingBehavior:
             mean_ms, _ = measure_time_ms(lambda: index.search_single(query), iterations=100)
             latencies.append(mean_ms)
 
-            print(f"\nSize {size}: {mean_ms:.3f}ms per search")
-
         # Latencies should not grow linearly with size
         # If linear: latency[2]/latency[0] ≈ sizes[2]/sizes[0] = 10x
         # With flat index, should be ~constant; with IVF, should be sublinear
         ratio = latencies[2] / latencies[0]
         size_ratio = sizes[2] / sizes[0]
-
-        print(f"\nLatency ratio (1000/100): {ratio:.2f}")
-        print(f"Size ratio: {size_ratio:.2f}")
 
         # Allow some growth but should be much less than linear
         assert (
