@@ -26,6 +26,7 @@ spec:
       serviceAccountName: attendance-sa
       automountServiceAccountToken: false
       # Pod-level security context enforces running as a non-root user for enhanced security.
+      # User 1000 is chosen to map to the non-root 'appuser' defined in the Dockerfile.
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -47,6 +48,7 @@ spec:
             - secretRef:
                 name: attendance-secrets
           # Resource limits and requests defined for optimal scheduling and to prevent resource starvation. (512Mi/2Gi for memory-intensive web/worker tasks)
+          # Reserving 512Mi accommodates the base Python process and libraries, while scaling to 2Gi ensures sufficient memory overhead during computationally expensive tasks.
           resources:
             requests:
               memory: "512Mi"
@@ -55,6 +57,7 @@ spec:
               memory: "2Gi"
               cpu: "1000m"
           # Liveness probe ensures the pod is automatically restarted if it becomes unresponsive.
+          # HTTP GET probe on /monitoring/metrics/ confirms the Django application and routing mechanism are fully operational. Wait delays of 60s give Python ample startup time.
           livenessProbe:
             httpGet:
               path: /monitoring/metrics/
@@ -80,6 +83,7 @@ spec:
             - name: tmp
               mountPath: /tmp
           # Apply least-privilege security context to container to prevent privilege escalation.
+          # readOnlyRootFilesystem guards the primary image against compromise, while dropping ALL capabilities revokes irrelevant kernel syscalls.
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
