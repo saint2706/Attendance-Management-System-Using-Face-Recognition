@@ -102,12 +102,6 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy virtual environment with installed dependencies
-COPY --from=build /venv /venv
-
-# Copy application code and collected static files
-COPY --from=build /app /app
-
 # Upgrade system Python build tools to versions that resolve known CVEs.
 # (setuptools: CVE-2024-6345, CVE-2025-47273 | wheel: CVE-2026-24049)
 # Ensure we patch the system python environment specifically,
