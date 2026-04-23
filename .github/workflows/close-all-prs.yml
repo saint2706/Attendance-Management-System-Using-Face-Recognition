@@ -11,6 +11,6 @@ jobs:
   close-prs:
     runs-on: ubuntu-latest
     steps:
-      - uses: crondaemon/close-pr@v1
+      - uses: crondaemon/close-pr@e80e1e69a47321a5e128cb5bba436eb1f32a76ed  # v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

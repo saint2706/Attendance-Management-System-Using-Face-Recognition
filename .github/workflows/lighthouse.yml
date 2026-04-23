@@ -67,7 +67,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -88,12 +88,12 @@ jobs:
         run: python manage.py collectstatic --noinput
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@8f152de45cc393f58c3f4159c1da8112d6abc404  # v4
         with:
           node-version: "20"
 
       - name: Cache npm global packages
-        uses: actions/cache@v4
+        uses: actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319  # v4
         with:
           path: ~/.npm
           # Cache based on the OS and a hash of this workflow file

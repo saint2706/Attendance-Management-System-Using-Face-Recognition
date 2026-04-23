@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dependency Review
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@3b139cfc5fae8b618d3efa36728a59838077a1f3  # v4
         with:
           fail-on-severity: high
           deny-licenses: GPL-3.0, LGPL-3.0

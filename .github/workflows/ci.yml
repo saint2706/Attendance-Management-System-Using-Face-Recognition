@@ -52,7 +52,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -122,7 +122,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -169,7 +169,7 @@ jobs:
             --cov-report=term-missing
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@1eb3cb2b3e0f29609092a73eb033bb759a334508  # v4
         if: always()
         with:
           name: coverage-report-${{ matrix.python-version }}
@@ -221,7 +221,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -298,7 +298,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -314,7 +314,7 @@ jobs:
             pyproject.toml
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319  # v4
         with:
           path: ~/.cache/ms-playwright
           key: >-
