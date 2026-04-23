@@ -23,6 +23,7 @@ spec:
       serviceAccountName: attendance-sa
       automountServiceAccountToken: false
       # Pod-level security context enforces running as a non-root user for enhanced security.
+      # User and fsGroup 70 align with the official Alpine Linux PostgreSQL image standards.
       securityContext:
         runAsNonRoot: true
         runAsUser: 70
@@ -57,6 +58,7 @@ spec:
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           # Resource limits and requests defined for optimal scheduling and to prevent resource starvation. (256Mi/1Gi optimized for database caching)
+          # Optimized for database caching and queries, preventing unexpected out-of-memory errors while serving traffic.
           resources:
             requests:
               memory: "256Mi"
@@ -65,6 +67,7 @@ spec:
               memory: "1Gi"
               cpu: "500m"
           # Liveness probe ensures the pod is automatically restarted if it becomes unresponsive.
+          # Application-specific command (pg_isready) verifies correct database functioning below the HTTP stack.
           livenessProbe:
             exec:
               command:
@@ -87,6 +90,7 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 3
           # Apply least-privilege security context to container to prevent privilege escalation.
+          # readOnlyRootFilesystem guards against compromise, and dropping ALL capabilities revokes irrelevant kernel syscalls.
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
