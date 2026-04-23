@@ -47,3 +47,6 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 ## Enhancements
 - `Navbar.tsx`: Added a `title` attribute to the main brand `<Link>` providing a tooltip ("Return to Home") for better usability when hovering or focusing the element.
 - Added focus-visible states to ActionCard components to improve keyboard navigation accessibility by giving a clear outline when tabbing through navigation cards.
+
+- Added `:focus-visible` styles to the mobile menu toggle in `Navbar.css` to improve keyboard navigation visibility.
+- Added `role="alert"` and `aria-live="assertive"` to the dashboard error state in `Dashboard.tsx` to ensure screen readers announce when dashboard statistics fail to load.
