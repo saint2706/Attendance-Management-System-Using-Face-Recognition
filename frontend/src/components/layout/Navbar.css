@@ -119,6 +119,11 @@
     border: 1px solid var(--color-border);
 }
 
+.mobile-menu-toggle:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
 @media (max-width: 768px) {
     .navbar-nav {
         position: absolute;
