@@ -29,3 +29,4 @@ djangorestframework-simplejwt==5.5.1
 django-cors-headers==4.3.1
 drf-spectacular>=0.28.0
 gunicorn>=21.0.0
+argon2-cffi==23.1.0
