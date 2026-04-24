@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16.2-alpine
+    image: postgres:16.2-alpine@sha256:951bfda460300925caa3949eaa092ba022e9aec191bbea9056a39e2382260b27
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-attendance}
@@ -17,7 +17,7 @@ services:
       retries: 5
 
   redis:
-    image: redis:7.2.13-alpine
+    image: redis:7.2.13-alpine@sha256:9907ac0c435717b4d95697cb4d0ce77d100b1d21269a01a0ce66f27335184c38
     restart: unless-stopped
     ports:
       - "${REDIS_PORT:-6379}:6379"
