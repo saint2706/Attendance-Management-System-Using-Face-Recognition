@@ -50,3 +50,10 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 
 - Added `:focus-visible` styles to the mobile menu toggle in `Navbar.css` to improve keyboard navigation visibility.
 - Added `role="alert"` and `aria-live="assertive"` to the dashboard error state in `Dashboard.tsx` to ensure screen readers announce when dashboard statistics fail to load.
+
+## Accessibility (ARIA) Enhancements
+- Added `aria-labelledby` and `aria-describedby` dynamically using `React.useId()` in `ActionCard.tsx` so screen readers properly associate the card's heading and description text with the interactive link element.
+- Added `aria-busy={isLoading}` to the submit button in `Login.tsx` to communicate processing state to assistive technologies.
+- Added `aria-busy={isLoadingStats}` to the retry button in `Dashboard.tsx` to communicate loading state for statistics fetch.
+- Added `aria-busy={isInitializing}` to the retry camera access button in `MarkAttendance.tsx`.
+- Added `aria-busy={isProcessing}` to the capture and recognize button in `MarkAttendance.tsx` to improve feedback when the image is being processed.

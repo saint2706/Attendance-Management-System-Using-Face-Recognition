@@ -24,6 +24,7 @@ spec:
       serviceAccountName: attendance-sa
       automountServiceAccountToken: false
       # Pod-level security context enforces running as a non-root user for enhanced security.
+      # User 1000 is chosen to map to the non-root 'appuser' defined in the Dockerfile.
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -46,7 +47,9 @@ spec:
                 name: attendance-config
             - secretRef:
                 name: attendance-secrets
-          # Resource limits and requests defined for optimal scheduling and to prevent resource starvation. (128Mi/256Mi for lightweight scheduling tasks)
+          # Resource limits and requests defined for optimal scheduling and to prevent resource starvation.
+          # (128Mi/256Mi for lightweight scheduling tasks)
+          # Celery beat is a lightweight periodic task scheduler, requiring far fewer resources compared to worker nodes.
           resources:
             requests:
               memory: "128Mi"
@@ -55,6 +58,7 @@ spec:
               memory: "256Mi"
               cpu: "100m"
           # Liveness probe ensures the pod is automatically restarted if it becomes unresponsive.
+          # Exec probe validates the celery beat process is active, mitigating deadlocks.
           livenessProbe:
             exec:
               command:
@@ -80,6 +84,7 @@ spec:
             - name: tmp
               mountPath: /tmp
           # Apply least-privilege security context to container to prevent privilege escalation.
+          # readOnlyRootFilesystem guards against compromise, and dropping ALL capabilities revokes irrelevant kernel syscalls.
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true

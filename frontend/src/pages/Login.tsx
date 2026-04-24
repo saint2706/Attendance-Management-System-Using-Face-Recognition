@@ -145,6 +145,7 @@ export const Login = () => {
                         className="btn btn-primary btn-lg login-button"
                         disabled={isLoading}
                         aria-live="polite"
+                        aria-busy={isLoading}
                     >
                         {isLoading ? (
                             <>

@@ -23,6 +23,7 @@ spec:
       serviceAccountName: attendance-sa
       automountServiceAccountToken: false
       # Pod-level security context enforces running as a non-root user for enhanced security.
+      # User 999 aligns with the official Alpine Linux Redis image standards.
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
@@ -41,7 +42,9 @@ spec:
           command:
             - redis-server
             - /usr/local/etc/redis/redis.conf
-          # Resource limits and requests defined for optimal scheduling and to prevent resource starvation. (128Mi/512Mi to support in-memory caching and message brokering)
+          # Resource limits and requests defined for optimal scheduling and to prevent resource starvation.
+          # (128Mi/512Mi to support in-memory caching and message brokering)
+          # Moderate RAM requests with headroom for spikes in cache utilization.
           resources:
             requests:
               memory: "128Mi"
@@ -50,6 +53,7 @@ spec:
               memory: "512Mi"
               cpu: "200m"
           # Liveness probe ensures the pod is automatically restarted if it becomes unresponsive.
+          # Application-specific command (redis-cli ping) verifies correct database functioning below the HTTP stack.
           livenessProbe:
             exec:
               command:
@@ -70,6 +74,7 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 3
           # Apply least-privilege security context to container to prevent privilege escalation.
+          # readOnlyRootFilesystem guards against compromise, and dropping ALL capabilities revokes irrelevant kernel syscalls.
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true

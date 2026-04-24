@@ -33,6 +33,7 @@ RUN pnpm run build
 # =============================================================================
 # Stage 2: Base runtime with CUDA
 # =============================================================================
+# hadolint ignore=DL3006
 FROM nvidia/cuda:${CUDA_VERSION}-cudnn9-runtime-ubuntu22.04 AS cuda-base
 
 ENV DEBIAN_FRONTEND=noninteractive \

@@ -22,12 +22,15 @@ interface ActionCardProps {
  * @returns {JSX.Element} The rendered ActionCard component.
  */
 export const ActionCard = React.memo(({ to, title, icon: Icon, heading, description }: ActionCardProps) => {
+    const headingId = React.useId();
+    const descId = React.useId();
+
     return (
-        <Link to={to} className="action-card card card-elevated" title={title}>
+        <Link to={to} className="action-card card card-elevated" title={title} aria-labelledby={headingId} aria-describedby={descId}>
             <div className="card-body">
                 <Icon size={32} className="action-icon" aria-hidden="true" />
-                <h3>{heading}</h3>
-                <p className="text-muted text-sm">
+                <h3 id={headingId}>{heading}</h3>
+                <p id={descId} className="text-muted text-sm">
                     {description}
                 </p>
             </div>
