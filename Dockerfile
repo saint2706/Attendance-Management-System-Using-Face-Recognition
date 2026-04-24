@@ -28,6 +28,7 @@ RUN pnpm run build
 # =============================================================================
 # Stage 2: Base Python Runtime
 # =============================================================================
+# hadolint ignore=DL3006
 FROM python:${PYTHON_VERSION}-slim-bookworm AS python-base
 
 ENV PYTHONUNBUFFERED=1 \
