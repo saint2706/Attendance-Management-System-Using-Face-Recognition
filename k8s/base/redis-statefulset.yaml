@@ -42,7 +42,8 @@ spec:
           command:
             - redis-server
             - /usr/local/etc/redis/redis.conf
-          # Resource limits and requests defined for optimal scheduling and to prevent resource starvation. (128Mi/512Mi to support in-memory caching and message brokering)
+          # Resource limits and requests defined for optimal scheduling and to prevent resource starvation.
+          # (128Mi/512Mi to support in-memory caching and message brokering)
           # Moderate RAM requests with headroom for spikes in cache utilization.
           resources:
             requests:

@@ -46,7 +46,8 @@ spec:
                 name: attendance-config
             - secretRef:
                 name: attendance-secrets
-          # Resource limits and requests defined for optimal scheduling and to prevent resource starvation. (512Mi/2Gi for memory-intensive web/worker tasks)
+          # Resource limits and requests defined for optimal scheduling and to prevent resource starvation.
+          # (512Mi/2Gi for memory-intensive web/worker tasks)
           # Reserving 512Mi accommodates the base Python process, while 2Gi handles peak memory loads during background facial recognition processing.
           resources:
             requests:
