@@ -47,7 +47,8 @@ spec:
                 name: attendance-config
             - secretRef:
                 name: attendance-secrets
-          # Resource limits and requests defined for optimal scheduling and to prevent resource starvation. (128Mi/256Mi for lightweight scheduling tasks)
+          # Resource limits and requests defined for optimal scheduling and to prevent resource starvation.
+          # (128Mi/256Mi for lightweight scheduling tasks)
           # Celery beat is a lightweight periodic task scheduler, requiring far fewer resources compared to worker nodes.
           resources:
             requests:
