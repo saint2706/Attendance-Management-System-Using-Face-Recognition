@@ -311,6 +311,11 @@ class RecognitionAttempt(models.Model):
             # ⚡ Bolt: Added composite index on user and created_at to optimize the AttendanceViewSet
             # query filtering by user and date range.
             models.Index(fields=["user", "created_at"], name="users_attempt_user_created_idx"),
+            # 🗄️ Database: Added composite index on created_at and successful to optimize query
+            # in attendance stats endpoint.
+            models.Index(
+                fields=["created_at", "successful"], name="users_attempt_created_succ_idx"
+            ),
         ]
 
     def __str__(self) -> str:
