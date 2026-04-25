@@ -30,16 +30,58 @@ spec:
         - protocol: TCP
           port: 8000
 ---
-# Allow internal communication
+# Allow access to Redis from application components
+# Restricting internal communication enforces least privilege. By defining explicit access rules for Redis,
+# we prevent lateral movement in the event of a compromised pod, significantly increasing the resilience and security of the cluster.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-internal
+  name: allow-redis-access
   namespace: attendance-system
 spec:
-  podSelector: {}
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: redis
   policyTypes:
     - Ingress
   ingress:
     - from:
-        - podSelector: {}
+        - podSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - web
+                  - celery-worker
+                  - celery-beat
+      ports:
+        - protocol: TCP
+          port: 6379
+---
+# Allow access to PostgreSQL from application components
+# Restricting internal communication enforces least privilege. By defining explicit access rules for PostgreSQL,
+# we prevent lateral movement in the event of a compromised pod, significantly increasing the resilience and security of the cluster.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres-access
+  namespace: attendance-system
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgres
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - web
+                  - celery-worker
+                  - celery-beat
+      ports:
+        - protocol: TCP
+          port: 5432
