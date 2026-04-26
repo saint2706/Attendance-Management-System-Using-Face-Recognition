@@ -19,3 +19,9 @@
 - [SEO] Added canonical URL link to the `Home` page, and JSON-LD schema with `window.location.origin` for dynamic domains instead of hardcoding, to solidify its SEO authority.
 - [PERF] Preloaded Google Fonts in `frontend/index.html` to prevent Flash of Unstyled Text (FOUT) and improve LCP and CLS.
 - [GEO] Categorized endpoints in llms.txt files to improve AI readability
+## 2024-05 - SEO/GEO Optimizations
+
+- [SEO] Verified `robots.txt` in root and `frontend/public/` allows `/llms.txt` and restricts admin paths.
+- [SEO] Verified `llms.txt` exists and accurately details site architecture.
+- [PERF] Added explicit dimensions to the `.hero-icon` in the frontend home page to fix potential CLS.
+- [GEO] JSON-LD structured data is properly formatted and sanitized.
