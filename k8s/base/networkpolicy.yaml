@@ -23,6 +23,7 @@ spec:
     - Ingress
   ingress:
     - from:
+        # Allow traffic specifically from the NGINX Ingress Controller namespace to securely route external traffic to the web pods.
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: ingress-nginx

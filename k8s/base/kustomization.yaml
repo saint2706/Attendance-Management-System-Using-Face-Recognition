@@ -18,6 +18,7 @@ resources:
   - celery-deployment.yaml
   - celery-beat-deployment.yaml
   - ingress.yaml
+  - pdb.yaml
 
 labels:
   - pairs:
