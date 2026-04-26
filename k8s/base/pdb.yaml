@@ -1,0 +1,33 @@
+# PodDisruptionBudget for web deployment
+# Ensures at least one web pod is available during voluntary disruptions (like node drains) to maintain service availability.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web-pdb
+  namespace: attendance-system
+  labels:
+    app.kubernetes.io/name: web
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: attendance-system
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: web
+---
+# PodDisruptionBudget for celery-worker deployment
+# Ensures at least one worker pod is available during voluntary disruptions to maintain background task processing.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: celery-worker-pdb
+  namespace: attendance-system
+  labels:
+    app.kubernetes.io/name: celery-worker
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: attendance-system
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: celery-worker
