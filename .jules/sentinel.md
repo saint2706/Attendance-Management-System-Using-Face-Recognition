@@ -66,3 +66,4 @@
 **Vulnerability:** The application was relying on default Django password hashing settings which might fall back to weaker algorithms if strong ones aren't explicitly configured, and the minimum password length was left at the default of 8 characters, which is susceptible to brute-force attacks.
 **Learning:** Explicitly configuring robust cryptographic algorithms (like Argon2) and enforcing strong password policies (min 12 characters) are essential defense-in-depth measures to protect user credentials against offline cracking attempts.
 **Prevention:** Updated `attendance_system_facial_recognition/settings/base.py` to explicitly enforce `Argon2PasswordHasher` as the primary hasher, and increased the `MinimumLengthValidator` to require 12 characters. Added `argon2-cffi` to `requirements.txt`.
+- Updated `postcss` in frontend to patch an XSS vulnerability (GHSA-qx2v-qp2m-jg93).
