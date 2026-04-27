@@ -254,7 +254,7 @@ pillow==12.2.0
     #   matplotlib
     #   retina-face
     #   tensorboard
-prometheus-client==0.24.1
+prometheus-client==0.25.0
     # via -r requirements.txt
 prompt-toolkit==3.0.52
     # via click-repl
