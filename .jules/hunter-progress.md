@@ -40,3 +40,5 @@
 - `tests/recognition/test_real_data_integration.py`: Removed debug `print` statement.
 - `tests/recognition/test_api_attendance_n_plus_one.py`: Ran black to fix line length issues.
 - `tests/recognition/test_performance.py`: Ran black to fix line length issues.
+- `tests/recognition/test_face_recognition_api.py`: Removed invalid `F401` from the `noqa` comment for `from recognition import views_legacy`.
+- `tests/recognition/test_api_views.py.orig`: Removed the `.orig` backup file.
