@@ -42,7 +42,7 @@ export const Navbar = () => {
     }, [mobileMenuOpen]);
 
     return (
-        <nav className="navbar">
+        <nav className="navbar" aria-label="Main Navigation">
             <div className="navbar-container">
                 <Link to="/" className="navbar-brand" title="Return to Home">
                     <UserCheck size={24} aria-hidden="true" />

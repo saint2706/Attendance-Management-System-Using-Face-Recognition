@@ -85,7 +85,7 @@ export const Dashboard = () => {
             </header>
 
             {/* Quick Stats */}
-            <section className="stats-section" aria-labelledby="stats-title">
+            <section className="stats-section" aria-labelledby="stats-title" role="region">
                 <h2 className="section-title" id="stats-title">Quick Overview</h2>
                 {hasError ? (
                     <div className="text-center py-12 w-full card card-elevated" style={{ gridColumn: '1 / -1' }} role="alert" aria-live="assertive">

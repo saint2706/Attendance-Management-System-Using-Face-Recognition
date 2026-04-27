@@ -204,6 +204,17 @@ a.card:focus-visible {
   transform: translateY(-2px);
 }
 
+.card:focus-within {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+  box-shadow: var(--shadow-md);
+}
+
+.card-elevated:focus-within {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
 .card-body {
   padding: var(--spacing-lg);
 }
