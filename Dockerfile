@@ -89,18 +89,18 @@ ENV PATH="/venv/bin:$PATH" \
     DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.production \
     DJANGO_DEBUG=0
 
-WORKDIR /app
-
-# Create a non-root user for running the application
-RUN groupadd --system --gid 1000 appgroup \
-    && useradd --system --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
-
 # Apply Debian security updates to patch OS-level CVEs from the base image.
 # hadolint ignore=DL3005
 RUN apt-get update \
     && apt-get upgrade -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Create a non-root user for running the application
+RUN groupadd --system --gid 1000 appgroup \
+    && useradd --system --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
 
 # Upgrade system Python build tools to versions that resolve known CVEs.
 # (setuptools: CVE-2024-6345, CVE-2025-47273 | wheel: CVE-2026-24049)

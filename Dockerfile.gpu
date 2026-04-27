@@ -132,12 +132,6 @@ ENV PATH="/venv/bin:$PATH" \
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
-WORKDIR /app
-
-# Create non-root user
-RUN groupadd --system --gid 1000 appgroup \
-    && useradd --system --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
-
 # Apply Ubuntu security updates to patch OS-level CVEs from the base image.
 # Do this before copying app code to maximize layer caching.
 # hadolint ignore=DL3005
@@ -145,6 +139,12 @@ RUN apt-get update \
     && apt-get upgrade -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Create non-root user
+RUN groupadd --system --gid 1000 appgroup \
+    && useradd --system --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
 
 # Copy virtual environment and application
 COPY --from=build /venv /venv
