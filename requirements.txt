@@ -22,7 +22,7 @@ scipy==1.17.1
 prometheus-client==0.24.1
 PyYAML==6.0.2
 cryptography==46.0.7
-psycopg2-binary==2.9.11
+psycopg2-binary==2.9.12
 faiss-cpu==1.13.2
 djangorestframework==3.17.1
 djangorestframework-simplejwt==5.5.1

@@ -262,7 +262,7 @@ protobuf==7.34.0
     # via
     #   tensorboard
     #   tensorflow
-psycopg2-binary==2.9.11
+psycopg2-binary==2.9.12
     # via -r requirements.txt
 pycparser==3.0
     # via cffi
