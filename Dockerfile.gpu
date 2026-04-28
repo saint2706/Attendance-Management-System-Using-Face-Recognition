@@ -146,13 +146,14 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Create runtime directories
+# Do this before copying app code to maximize layer caching.
+RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
+    && chown -R appuser:appgroup /app/media /app/face_recognition_data /app/staticfiles
+
 # Copy virtual environment and application
 COPY --from=build /venv /venv
 COPY --from=build /app /app
-
-# Create runtime directories
-RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
-    && chown -R appuser:appgroup /app/media /app/face_recognition_data /app/staticfiles
 
 USER appuser
 
