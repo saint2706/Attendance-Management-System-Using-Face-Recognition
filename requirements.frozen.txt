@@ -291,7 +291,7 @@ referencing==0.37.0
     # via
     #   jsonschema
     #   jsonschema-specifications
-requests[socks]==2.33.0
+requests[socks]==2.33.1
     # via
     #   deepface
     #   gdown
