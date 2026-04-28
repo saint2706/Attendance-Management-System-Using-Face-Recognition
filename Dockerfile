@@ -106,17 +106,18 @@ RUN apt-get update \
 # (setuptools: CVE-2024-6345, CVE-2025-47273 | wheel: CVE-2026-24049)
 # Ensure we patch the system python environment specifically,
 # not the venv which is already patched in the build stage.
-RUN /usr/local/bin/python -m pip install --no-cache-dir "setuptools>=78.1.1" "wheel>=0.46.2"
+RUN /usr/local/bin/python -m pip install --no-cache-dir "setuptools==82.0.1" "wheel==0.47.0"
+
+# Create directories for runtime data and set ownership
+# Do this before copying app code to maximize layer caching.
+RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
+    && chown -R appuser:appgroup /app/media /app/face_recognition_data /app/staticfiles
 
 # Copy virtual environment with installed dependencies
 COPY --from=build /venv /venv
 
 # Copy application code and collected static files
 COPY --from=build /app /app
-
-# Create directories for runtime data and set ownership
-RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
-    && chown -R appuser:appgroup /app/media /app/face_recognition_data /app/staticfiles
 
 # Switch to non-root user
 USER appuser
