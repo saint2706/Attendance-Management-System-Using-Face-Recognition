@@ -28,7 +28,7 @@ export const ActionCard = React.memo(({ to, title, icon: Icon, heading, descript
     return (
         <Link to={to} className="action-card card card-elevated" title={title} aria-labelledby={headingId} aria-describedby={descId}>
             <div className="card-body">
-                <Icon size={32} className="action-icon" aria-hidden="true" />
+                <Icon width={32} height={32} className="action-icon" aria-hidden="true" />
                 <h3 id={headingId}>{heading}</h3>
                 <p id={descId} className="text-muted text-sm">
                     {description}

@@ -1,0 +1,4 @@
+🎨 Picasso: [UX improvement] Explicit width and height on lucide-react icons
+
+Replaced the shorthand `size` prop on `lucide-react` icons with explicit `width` and `height` properties to prevent Cumulative Layout Shift (CLS) and fix Lighthouse missing dimension audits.
+Also patched the React dependency version mismatch by bumping react-dom to 19.2.5.

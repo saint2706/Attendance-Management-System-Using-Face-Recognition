@@ -65,7 +65,7 @@ export const Login = () => {
             />
             <div className="login-card card card-elevated">
                 <div className="login-header">
-                    <LogIn size={32} className="login-icon" aria-hidden="true" />
+                    <LogIn width={32} height={32} className="login-icon" aria-hidden="true" />
                     <h1 className="login-title">Welcome Back</h1>
                     <p className="login-subtitle text-muted">
                         Sign in to access your dashboard
