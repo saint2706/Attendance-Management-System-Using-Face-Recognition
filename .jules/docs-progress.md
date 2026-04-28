@@ -35,3 +35,4 @@
 - **2025-03-08 (Session 5)**: Audited user guide documentation. Corrected a broken link for the home page screenshot from `screenshots/home-light-updated.png` to `screenshots/home-light.png` in `docs/USER_GUIDE.md` and updated `CHANGELOG.md`. Verified markdown links again using `markdown-link-check`.
 - Documented `/admin/health/` endpoint in `docs/API_REFERENCE.md` as per issue #8 in `docs/GOOD_FIRST_ISSUES.md`.
 - Improved Troubleshooting Guide in `docs/troubleshooting.md` as per issue #2 in `docs/GOOD_FIRST_ISSUES.md`.
+- **2025-03-08 (Session 6)**: Audited codebase documentation for broken links. Fixed an invalid commit range link `v0.3.0...v1.0.0` in `CHANGELOG.md` to `35e67a0...v1.0.0`. Validated the fix via `markdown-link-check` and ensured build and linting checks (`make lint`, `pnpm run lint`) pass.

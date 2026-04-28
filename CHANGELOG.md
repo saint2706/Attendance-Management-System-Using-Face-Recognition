@@ -1745,7 +1745,7 @@ This version represents the state of the codebase when the original CHANGELOG.md
 [1.3.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2025-11-12&until=2025-11-18
 [1.2.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2025-11-09&until=2025-11-11
 [1.1.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2025-11-08&until=2025-11-09
-[1.0.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/compare/v0.3.0...v1.0.0
+[1.0.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/compare/35e67a0...v1.0.0
 [0.3.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2025-10-03&until=2025-10-29
 [0.2.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2025-09-28&until=2025-10-03
 [0.1.0]: https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/commits/main?since=2023-11-19&until=2025-09-28
