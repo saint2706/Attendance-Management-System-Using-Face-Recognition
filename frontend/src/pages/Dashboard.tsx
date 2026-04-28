@@ -89,7 +89,7 @@ export const Dashboard = () => {
                 <h2 className="section-title" id="stats-title">Quick Overview</h2>
                 {hasError ? (
                     <div className="text-center py-12 w-full card card-elevated" style={{ gridColumn: '1 / -1' }} role="alert" aria-live="assertive">
-                        <AlertTriangle size={48} className="mx-auto text-warning mb-sm" aria-hidden="true" />
+                        <AlertTriangle width={48} height={48} className="mx-auto text-warning mb-sm" aria-hidden="true" />
                         <h3 className="text-lg font-semibold mb-xs">Failed to load statistics</h3>
                         <p className="text-muted mb-md">We couldn't retrieve the latest dashboard data.</p>
                         <button onClick={() => fetchStats()} className="btn btn-secondary" title="Retry loading statistics" disabled={isLoadingStats} aria-busy={isLoadingStats}>
@@ -103,7 +103,7 @@ export const Dashboard = () => {
                     </div>
                 ) : !isLoadingStats && stats.totalEmployees === 0 ? (
                     <div className="text-center py-12 w-full card card-elevated" style={{ gridColumn: '1 / -1' }}>
-                        <Inbox size={48} className="mx-auto text-muted mb-sm" aria-hidden="true" />
+                        <Inbox width={48} height={48} className="mx-auto text-muted mb-sm" aria-hidden="true" />
                         <h3 className="text-lg font-semibold mb-xs">No employees yet</h3>
                         <p className="text-muted mb-md">Get started by registering your first employee.</p>
                         <Link to="/employees/register" className="btn btn-primary" title="Register your first employee">
@@ -123,7 +123,7 @@ export const Dashboard = () => {
                                         <p className="stat-value">{stats.totalEmployees}</p>
                                     )}
                                 </div>
-                                <Users size={32} className="stat-icon" aria-hidden="true" />
+                                <Users width={32} height={32} className="stat-icon" aria-hidden="true" />
                             </div>
                         </div>
                         <div className="stat-card card card-elevated stat-success">
@@ -136,7 +136,7 @@ export const Dashboard = () => {
                                         <p className="stat-value">{stats.presentToday}</p>
                                     )}
                                 </div>
-                                <UserCheck size={32} className="stat-icon" aria-hidden="true" />
+                                <UserCheck width={32} height={32} className="stat-icon" aria-hidden="true" />
                             </div>
                         </div>
                         <div className="stat-card card card-elevated stat-info">

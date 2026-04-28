@@ -77,7 +77,7 @@ export const Home = () => {
             <section className="hero" aria-labelledby="hero-title">
                 <div className="hero-content">
                     <ScanFace
-                        size={128}
+                        width={128} height={128}
                         className="hero-icon mb-md mx-auto"
                         aria-hidden="true"
                         style={{ color: 'var(--color-primary)' }}
@@ -114,7 +114,7 @@ export const Home = () => {
                 <div className="features-grid">
                     <article className="feature-card card card-elevated">
                         <div className="card-body text-center">
-                            <Zap size={32} className="feature-icon" aria-hidden="true" />
+                            <Zap width={32} height={32} className="feature-icon" aria-hidden="true" />
                             <h3>Fast & Accurate</h3>
                             <p className="text-muted">
                                 Advanced AI-powered face recognition ensures quick and precise attendance marking.
@@ -123,7 +123,7 @@ export const Home = () => {
                     </article>
                     <article className="feature-card card card-elevated">
                         <div className="card-body text-center">
-                            <Shield size={32} className="feature-icon" aria-hidden="true" />
+                            <Shield width={32} height={32} className="feature-icon" aria-hidden="true" />
                             <h3>Secure & Private</h3>
                             <p className="text-muted">
                                 Your biometric data is encrypted and stored securely with industry-standard protection.
@@ -132,7 +132,7 @@ export const Home = () => {
                     </article>
                     <article className="feature-card card card-elevated">
                         <div className="card-body text-center">
-                            <ChartBar size={32} className="feature-icon" aria-hidden="true" />
+                            <ChartBar width={32} height={32} className="feature-icon" aria-hidden="true" />
                             <h3>Detailed Reports</h3>
                             <p className="text-muted">
                                 Generate comprehensive attendance reports with visual analytics and export capabilities.
@@ -164,7 +164,7 @@ export const Home = () => {
             {/* Privacy Section */}
             <section className="privacy-notice card" aria-labelledby="privacy-title">
                 <div className="card-body text-center">
-                    <UserCheck size={32} className="feature-icon" aria-hidden="true" />
+                    <UserCheck width={32} height={32} className="feature-icon" aria-hidden="true" />
                     <h2 id="privacy-title">Your Privacy Matters</h2>
                     <p className="text-muted">
                         By using this system, you consent to the collection and processing of your facial data

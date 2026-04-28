@@ -228,7 +228,7 @@ export const MarkAttendance = () => {
             />
             <div className="attendance-container">
                 <header className="attendance-header">
-                    <Clock size={32} className="header-icon" aria-hidden="true" />
+                    <Clock width={32} height={32} className="header-icon" aria-hidden="true" />
                     <h1>Mark Time-{direction === 'in' ? 'In' : 'Out'}</h1>
                     <p className="text-muted">
                         Position your face in the camera and click capture
@@ -239,7 +239,7 @@ export const MarkAttendance = () => {
                 <div className="camera-container card card-elevated">
                     {error ? (
                         <div className="camera-error" role="alert" aria-live="assertive">
-                            <CameraOff size={48} aria-hidden="true" />
+                            <CameraOff width={48} height={48} aria-hidden="true" />
                             <p>{error}</p>
                             <button onClick={startCamera} className="btn btn-primary" title="Retry connecting to camera" disabled={isInitializing} aria-busy={isInitializing}>
                                 {isInitializing ? (
@@ -254,7 +254,7 @@ export const MarkAttendance = () => {
                         <>
                             {isInitializing && (
                                 <div className="flex flex-col items-center justify-center text-muted" role="status" aria-live="polite" style={{ position: 'absolute', inset: 0, zIndex: 10, backgroundColor: '#000' }}>
-                                    <Loader2 size={48} className="animate-spin mb-md" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
+                                    <Loader2 width={48} height={48} className="animate-spin mb-md" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
                                     <p>Starting camera...</p>
                                 </div>
                             )}
@@ -305,7 +305,7 @@ export const MarkAttendance = () => {
                         <div className="result-content">
                             {result.recognized ? (
                                 <>
-                                    <CheckCircle size={32} aria-hidden="true" />
+                                    <CheckCircle width={32} height={32} aria-hidden="true" />
                                     <div>
                                         <h2>Attendance Marked!</h2>
                                         <p>Welcome, {result.username}</p>
@@ -318,7 +318,7 @@ export const MarkAttendance = () => {
                                 </>
                             ) : result.spoofDetected ? (
                                 <>
-                                    <AlertTriangle size={32} aria-hidden="true" />
+                                    <AlertTriangle width={32} height={32} aria-hidden="true" />
                                     <div>
                                         <h2>Liveness Check Failed</h2>
                                         <p>Please try again with your actual face</p>
@@ -326,7 +326,7 @@ export const MarkAttendance = () => {
                                 </>
                             ) : (
                                 <>
-                                    <XCircle size={32} aria-hidden="true" />
+                                    <XCircle width={32} height={32} aria-hidden="true" />
                                     <div>
                                         <h2>Not Recognized</h2>
                                         <p>{result.message}</p>
