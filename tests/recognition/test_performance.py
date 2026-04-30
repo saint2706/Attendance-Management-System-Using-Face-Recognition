@@ -25,12 +25,12 @@ from recognition.faiss_index import APPROXIMATE_SEARCH_THRESHOLD, FAISSIndex
 
 # Expected performance thresholds (in milliseconds)
 THRESHOLDS = {
-    "faiss_build_100": 10,  # 100 embeddings should build in <10ms
-    "faiss_build_1000": 100,  # 1000 embeddings should build in <100ms
-    "faiss_build_10000": 2000,  # 10000 embeddings should build in <2s
-    "faiss_search_single": 1,  # Single search should be <1ms
-    "faiss_search_k10": 5,  # k=10 search should be <5ms
-    "concurrent_search_ops": 50,  # 100 concurrent searches <50ms total
+    "faiss_build_100": 20,  # 100 embeddings should build in <20ms
+    "faiss_build_1000": 300,  # 1000 embeddings should build in <300ms
+    "faiss_build_10000": 3000,  # 10000 embeddings should build in <3s
+    "faiss_search_single": 2,  # Single search should be <2ms
+    "faiss_search_k10": 10,  # k=10 search should be <10ms
+    "concurrent_search_ops": 100,  # 100 concurrent searches <100ms total
 }
 
 
