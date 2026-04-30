@@ -59,6 +59,9 @@
     },
     {
       "pattern": "^\\.agents/skills/"
+    },
+    {
+      "pattern": "^https://github\\.com/psf/black"
     }
   ]
 }
