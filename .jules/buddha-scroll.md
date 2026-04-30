@@ -25,3 +25,4 @@
 - [SEO] Verified `llms.txt` exists and accurately details site architecture.
 - [PERF] Added explicit dimensions to the `.hero-icon` in the frontend home page to fix potential CLS.
 - [GEO] JSON-LD structured data is properly formatted and sanitized.
+- [GEO] Fixed nested `<main>` elements in App.tsx by replacing the wrapper with a `<div>` and updated `llms.txt` files with detailed endpoint descriptions for better AI discoverability.

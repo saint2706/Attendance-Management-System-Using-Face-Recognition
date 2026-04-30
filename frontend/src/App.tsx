@@ -48,7 +48,7 @@ const AppContent = () => {
         Skip to main content
       </a>
       <Navbar />
-      <main id="main-content" className="container" style={{ paddingTop: 'var(--spacing-lg)', paddingBottom: 'var(--spacing-xl)' }} tabIndex={-1}>
+      <div id="main-content" className="container" style={{ paddingTop: 'var(--spacing-lg)', paddingBottom: 'var(--spacing-xl)' }} tabIndex={-1}>
         <Suspense fallback={
           <div className="flex flex-col items-center justify-center" style={{ minHeight: '60vh' }} role="status" aria-live="polite">
             <Loader2 width={48} height={48} className="animate-spin mb-md" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
@@ -78,7 +78,7 @@ const AppContent = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
-      </main>
+      </div>
       <footer className="text-center text-muted text-sm" style={{ padding: 'var(--spacing-lg)', borderTop: '1px solid var(--color-border)' }}>
         © 2024 Smart Attendance System. All rights reserved.
       </footer>
