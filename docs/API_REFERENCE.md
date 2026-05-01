@@ -192,8 +192,61 @@ This endpoint provides a comprehensive overview of the system's health, includin
 
 #### Success Response (`200 OK`)
 
-The response is an HTML page rendering the health dashboard. The underlying data provided to the template includes:
+The response is an HTML page rendering the health dashboard. The underlying data provided to the template is roughly equivalent to the following JSON structure (which represents the context passed to the template):
 
+```json
+{
+    "snapshot": {
+        "status": "healthy",
+        "camera_tested": true,
+        "liveness_tested": true
+    },
+    "dataset": {
+        "exists": true,
+        "image_count": 150,
+        "identity_count": 5,
+        "last_updated": "2023-10-27T10:00:00Z",
+        "last_updated_display": "2023-10-27T10:00:00+00:00"
+    },
+    "model": {
+        "model_present": true,
+        "classes_present": true,
+        "report_present": true,
+        "last_trained": "2023-10-27T10:05:00Z",
+        "last_trained_display": "2023-10-27T10:05:00+00:00",
+        "stale": false
+    },
+    "evaluation_state": {
+        "latest_evaluation": {
+            "id": 1,
+            "evaluation_type": "scheduled_nightly",
+            "accuracy": 0.98,
+            "success": true
+        },
+        "trends": {
+            "accuracy": 0.01
+        },
+        "total_evaluations": 10,
+        "recent_failures": 0,
+        "scheduled_tasks_enabled": true
+    },
+    "recognition_state": {
+        "last_attempt": {
+            "username": "john_doe",
+            "direction": "In",
+            "timestamp": "2023-10-28T09:00:00Z",
+            "successful": true,
+            "spoof_detected": false
+        }
+    },
+    "worker_state": {
+        "status": "online",
+        "workers": 2
+    }
+}
+```
+
+This context data provides:
 - **Dataset Health:** Information about the training dataset, including the number of images, number of identities, and the last update timestamp.
 - **Model Health:** Status of the trained model artifacts (`svc.sav`, `classes.npy`, `classification_report.txt`) and whether the model is stale compared to the dataset.
 - **Evaluation Health:** Latest evaluation metrics (nightly, fairness, liveness), trends, total evaluations, and recent failures.
