@@ -246,7 +246,7 @@ def setup_wizard_step2(request):
     if progress.completed:
         return redirect("dashboard")
 
-    if not progress.can_proceed_to_step(SetupWizardProgress.Step.CAMERA_TEST):
+    if not progress.can_proceed_to_step(getattr(SetupWizardProgress.Step, "CAMERA_TEST")):
         messages.warning(request, "Please complete the previous step first.")
         return redirect("setup-wizard-step1")
 
@@ -308,7 +308,7 @@ def setup_wizard_step3(request):
     if progress.completed:
         return redirect("dashboard")
 
-    if not progress.can_proceed_to_step(SetupWizardProgress.Step.ADD_EMPLOYEE):
+    if not progress.can_proceed_to_step(getattr(SetupWizardProgress.Step, "ADD_EMPLOYEE")):
         messages.warning(request, "Please complete the camera test first.")
         return redirect("setup-wizard-step2")
 
@@ -380,7 +380,7 @@ def setup_wizard_step4(request):
     if progress.completed:
         return redirect("dashboard")
 
-    if not progress.can_proceed_to_step(SetupWizardProgress.Step.TRAIN_MODEL):
+    if not progress.can_proceed_to_step(getattr(SetupWizardProgress.Step, "TRAIN_MODEL")):
         messages.warning(request, "Please add an employee and capture photos first.")
         return redirect("setup-wizard-step3")
 
@@ -467,7 +467,7 @@ def setup_wizard_step5(request):
     if progress.completed:
         return redirect("dashboard")
 
-    if not progress.can_proceed_to_step(SetupWizardProgress.Step.START_SESSION):
+    if not progress.can_proceed_to_step(getattr(SetupWizardProgress.Step, "START_SESSION")):
         messages.warning(request, "Please train the model first.")
         return redirect("setup-wizard-step4")
 
