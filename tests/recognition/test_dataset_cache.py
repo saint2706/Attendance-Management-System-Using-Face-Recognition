@@ -43,14 +43,17 @@ class DatasetEmbeddingCacheTests(TestCase):
         # Patch the module-level singleton's paths to point at our temp dirs.
         self._orig_dataset_root = views._dataset_embedding_cache._dataset_root
         self._orig_cache_root = views._dataset_embedding_cache._cache_root
+        self._orig_encryption = views._dataset_embedding_cache._encryption
         views._dataset_embedding_cache._dataset_root = self.dataset_root
         views._dataset_embedding_cache._cache_root = self.data_root
+        views._dataset_embedding_cache._encryption = FaceDataEncryption(TEST_FACE_KEY)
         views._dataset_embedding_cache.invalidate()
 
     def tearDown(self):  # pragma: no cover - cleanup
         views._dataset_embedding_cache.invalidate()
         views._dataset_embedding_cache._dataset_root = self._orig_dataset_root
         views._dataset_embedding_cache._cache_root = self._orig_cache_root
+        views._dataset_embedding_cache._encryption = self._orig_encryption
         shutil.rmtree(self._tmp_dataset, ignore_errors=True)
         shutil.rmtree(self._tmp_data, ignore_errors=True)
 
