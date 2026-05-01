@@ -132,7 +132,9 @@ class AttendanceAnalytics:
         current_tz = timezone.get_current_timezone()
 
         # Prefetch all Time records
-        all_time_records = list(Time.objects.filter(**time_filters).order_by("time"))
+        all_time_records = list(
+            Time.objects.filter(**time_filters).select_related("user").order_by("time")
+        )
         time_records_by_key = defaultdict(list)
         for t in all_time_records:
             time_records_by_key[(t.user_id, t.date)].append(t)
