@@ -608,16 +608,11 @@ The script logs in with the demo admin credentials and captures:
 
 | Screenshot            | Path                                         | Description                         |
 | --------------------- | -------------------------------------------- | ----------------------------------- |
-| Home page             | `screenshots/home.png`                       | Landing page with primary actions   |
+| Home page             | `docs/screenshots/home-light.png`                       | Landing page with primary actions   |
 | Login page            | `docs/screenshots/login.png`                 | User authentication screen          |
-| Admin dashboard       | `docs/screenshots/admin-dashboard.png`       | Admin home with first-run checklist |
-| Employee registration | `docs/screenshots/employee-registration.png` | Form for registering new employees  |
-| Employee enrollment   | `docs/screenshots/employee-enrollment.png`   | Photo capture for face recognition  |
-| Attendance session    | `docs/screenshots/attendance-session.png`    | Live recognition feed and logs      |
+| Admin dashboard       | `docs/screenshots/admin-dashboard-light.png`       | Admin home with first-run checklist |
+| Employee registration | `docs/screenshots/register.png` | Form for registering new employees  |
 | Reports               | `docs/screenshots/reports.png`               | Attendance reports dashboard        |
-| System health         | `docs/screenshots/system-health.png`         | Operational health dashboard        |
-| Fairness dashboard    | `docs/screenshots/fairness-dashboard.png`    | Per-group fairness metrics          |
-| Evaluation dashboard  | `screenshots/evaluation-dashboard.png`       | Model performance metrics           |
 
 ### Script Options
 
