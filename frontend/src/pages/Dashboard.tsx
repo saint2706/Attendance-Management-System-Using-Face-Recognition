@@ -103,9 +103,9 @@ export const Dashboard = () => {
                     </div>
                 ) : !isLoadingStats && stats.totalEmployees === 0 ? (
                     <div className="text-center py-12 w-full card card-elevated" style={{ gridColumn: '1 / -1' }}>
-                        <Inbox width={48} height={48} className="mx-auto text-muted mb-sm" aria-hidden="true" />
+                        <Inbox width={48} height={48} className="mx-auto text-muted mb-md" aria-hidden="true" />
                         <h3 className="text-lg font-semibold mb-xs">No employees yet</h3>
-                        <p className="text-muted mb-md">Get started by registering your first employee.</p>
+                        <p className="text-muted mb-lg">Get started by registering your first employee.</p>
                         <Link to="/employees/register" className="btn btn-primary" title="Register your first employee">
                             <UserPlus size={18} aria-hidden="true" />
                             Register Employee

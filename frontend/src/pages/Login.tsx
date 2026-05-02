@@ -150,7 +150,7 @@ export const Login = () => {
                         {isLoading ? (
                             <>
                                 <Loader2 size={18} className="animate-spin" aria-hidden="true" />
-                                Signing in...
+                                Authenticating...
                             </>
                         ) : (
                             <>
