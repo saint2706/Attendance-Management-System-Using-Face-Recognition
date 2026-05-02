@@ -34,10 +34,10 @@ The Smart Attendance System is an automated attendance tracking platform utilizi
 - /django-admin/: Django Admin Interface for raw database access.
 
 ## API Endpoints
-- /api/threshold/: Threshold profile API. Manage distance threshold profiles.
-- /api/v1/auth/login/: Auth Login API. Returns JWT tokens.
-- /api/v1/auth/refresh/: Auth Refresh API. Refreshes JWT tokens.
-- /api/v1/auth/verify/: Auth Verify API. Verifies JWT token validity.
-- /api/v1/users/: Users API. CRUD operations for users.
-- /api/v1/attendance/: Attendance API. CRUD operations for attendance records.
-- /monitoring/metrics/: Monitoring metrics API for Prometheus.
+- /api/threshold/: Threshold profile API. Manage distance threshold profiles. Agents can fetch and adjust thresholds to optimize recognition accuracy.
+- /api/v1/auth/login/: Auth Login API. Returns JWT tokens. Agents can use this to authenticate and obtain access tokens.
+- /api/v1/auth/refresh/: Auth Refresh API. Refreshes JWT tokens. Agents can use this to maintain active sessions.
+- /api/v1/auth/verify/: Auth Verify API. Verifies JWT token validity. Agents can use this to check token status.
+- /api/v1/users/: Users API. CRUD operations for users. Agents can fetch user details, register new users, and manage profiles.
+- /api/v1/attendance/: Attendance API. CRUD operations for attendance records. Agents can retrieve attendance logs and mark attendance.
+- /monitoring/metrics/: Monitoring metrics API for Prometheus. Agents can fetch system performance and health metrics.
