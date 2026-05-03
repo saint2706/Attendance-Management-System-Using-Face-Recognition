@@ -425,9 +425,9 @@ export const MarkAttendance = () => {
                 </div>
 
                 {/* Instructions */}
-                <div className="instructions card" id="attendance-instructions">
+                <div className="instructions card" id="attendance-instructions" aria-labelledby="instructions-title">
                     <div className="card-body">
-                        <h2>Tips for best results:</h2>
+                        <h2 id="instructions-title">Tips for best results:</h2>
                         <ul>
                             <li>Ensure good lighting on your face</li>
                             <li>Look directly at the camera</li>

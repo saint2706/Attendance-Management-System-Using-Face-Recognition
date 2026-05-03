@@ -40,11 +40,6 @@
 
 .stat-card {
     padding: var(--spacing-lg);
-    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-}
-
-.stat-card:hover {
-    transform: translateY(-4px);
 }
 
 .stat-content {

@@ -58,3 +58,8 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 - Added `aria-busy={isInitializing}` to the retry camera access button in `MarkAttendance.tsx`.
 - Added `aria-busy={isProcessing}` to the capture and recognize button in `MarkAttendance.tsx` to improve feedback when the image is being processed.
 Replaced large `size` prop with explicit `width` and `height` props on `lucide-react` icons to prevent Cumulative Layout Shift (CLS) and fix Lighthouse issues regarding explicit sizing on SVG images.
+
+## UX/UI Polish & Keyboard Accessibility Enhancements
+- Added global `:focus-visible` styles to `a` elements in `index.css` to ensure all links (including text links without button classes) have a clear outline for keyboard users.
+- Removed click-like `hover` transformations from non-interactive `.stat-card` elements in `Dashboard.css` to improve interaction consistency.
+- Added `aria-labelledby` to the instructions card and a corresponding `id` on the heading in `MarkAttendance.tsx` to properly label the section for screen readers.
