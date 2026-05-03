@@ -53,7 +53,7 @@ ENV PATH="/venv/bin:$PATH"
 
 # Leverage Docker layer caching for dependency installation
 COPY requirements.frozen.txt ./requirements.txt
-RUN pip install --no-cache-dir --upgrade pip==26.0.1 setuptools==82.0.1 wheel==0.47.0 \
+RUN pip install --no-cache-dir --upgrade pip==26.1 setuptools==82.0.1 wheel==0.47.0 \
     && pip install --no-cache-dir -r requirements.txt
 
 # Copy backend directories explicitly to prevent copying raw frontend source and avoid intermediate layer bloat
@@ -103,10 +103,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Upgrade system Python build tools to versions that resolve known CVEs.
-# (setuptools: CVE-2024-6345, CVE-2025-47273 | wheel: CVE-2026-24049)
+# (setuptools: CVE-2024-6345, CVE-2025-47273 | wheel: CVE-2026-24049 | pip: CVE-2026-3219)
 # Ensure we patch the system python environment specifically,
 # not the venv which is already patched in the build stage.
-RUN /usr/local/bin/python -m pip install --no-cache-dir "setuptools==82.0.1" "wheel==0.47.0"
+RUN /usr/local/bin/python -m pip install --no-cache-dir "pip==26.1" "setuptools==82.0.1" "wheel==0.47.0"
 
 # Create directories for runtime data and set ownership
 # Do this before copying app code to maximize layer caching.

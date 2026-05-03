@@ -60,18 +60,15 @@ export const Dashboard = () => {
             <title>Dashboard - Smart Attendance System</title>
             <meta name="description" content="Admin dashboard for managing the Smart Attendance System." />
             <meta name="robots" content="noindex, nofollow" />
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify({
-                        "@context": "https://schema.org",
-                        "@type": "WebPage",
-                        "name": "Admin Dashboard - Smart Attendance System",
-                        "description": "Admin dashboard for managing the Smart Attendance System.",
-                        "url": window.location.origin + "/dashboard"
-                    }).replace(/</g, '\\u003c')
-                }}
-            />
+            <script type="application/ld+json">
+                {JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "WebPage",
+                    "name": "Admin Dashboard - Smart Attendance System",
+                    "description": "Admin dashboard for managing the Smart Attendance System.",
+                    "url": window.location.origin + "/dashboard"
+                }).replace(/</g, '\\u003c')}
+            </script>
             <header className="dashboard-header">
                 <div>
                     <h1 className="dashboard-title">Admin Dashboard</h1>

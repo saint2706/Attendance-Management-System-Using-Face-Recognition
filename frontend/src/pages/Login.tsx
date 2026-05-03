@@ -51,18 +51,15 @@ export const Login = () => {
             <title>Login - Smart Attendance System</title>
             <meta name="description" content="Login page for the Smart Attendance System dashboard." />
             <meta name="robots" content="noindex, nofollow" />
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify({
-                        "@context": "https://schema.org",
-                        "@type": "WebPage",
-                        "name": "Login - Smart Attendance System",
-                        "description": "Login page for the Smart Attendance System dashboard.",
-                        "url": window.location.origin + "/login"
-                    }).replace(/</g, '\\u003c')
-                }}
-            />
+            <script type="application/ld+json">
+                {JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "WebPage",
+                    "name": "Login - Smart Attendance System",
+                    "description": "Login page for the Smart Attendance System dashboard.",
+                    "url": window.location.origin + "/login"
+                }).replace(/</g, '\\u003c')}
+            </script>
             <div className="login-card card card-elevated">
                 <div className="login-header">
                     <LogIn width={32} height={32} className="login-icon" aria-hidden="true" />
