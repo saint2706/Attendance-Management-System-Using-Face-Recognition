@@ -3,41 +3,41 @@
 The Smart Attendance System is an automated attendance tracking platform utilizing advanced AI-powered face recognition technology.
 
 ## Core Pages
-- /: Home page - Welcome to the Smart Attendance System
-- /setup-wizard: Setup wizard for first-time configuration
+- /: Home page - Welcome to the Smart Attendance System. AI agents can fetch project overview, key features, and quick links to start attendance or login.
+- /setup-wizard: Setup wizard for first-time configuration of the application. AI agents can guide users through initial setup.
 
 ## Application SPA Routes
-- /dashboard: User dashboard - Access attendance records and manage users
-- /login: User login - Dashboard Login
-- /mark-attendance: Mark attendance in the SPA
-- /attendance: View attendance in the SPA
-- /session: Active attendance session in the SPA
-- /add-photos: Add user photos in the SPA
-- /employees/register: Register a new employee in the SPA
-- /train: Train facial recognition models
+- /dashboard: User dashboard - Access attendance records, system stats, and manage users. Protected route. AI agents can analyze dashboard metrics and statistics.
+- /login: User login - Dashboard Login. Authenticates users for protected routes.
+- /mark-attendance: Mark attendance in the SPA. Captures face image and marks attendance. AI agents can process check-in/check-out events.
+- /attendance: View attendance in the SPA. View detailed attendance records. AI agents can fetch historical attendance data.
+- /session: Active attendance session in the SPA. Monitor live recognition events.
+- /add-photos: Add user photos in the SPA. Capture and register photos for employees.
+- /employees/register: Register a new employee in the SPA. Register basic details of a new employee.
+- /train: Train facial recognition models. Trigger model retraining after adding new photos.
 
 ## Documentation
-- /docs: Technical documentation
+- /docs: Technical documentation covering system architecture, API, and setup. AI agents can read detailed technical manuals.
 
 ## Admin & Dashboards
-- /admin/evaluation/: Admin evaluation dashboard
-- /admin/ablation/: Admin ablation results
-- /admin/failures/: Admin failure analysis
-- /admin/health/: Admin system health
-- /admin/attendance-dashboard/: Admin attendance dashboard
-- /admin/attendance-dashboard/export/: Admin attendance export
-- /admin/fairness/: Admin fairness dashboard
-- /admin/recognition-trends/: Admin recognition accuracy trends
-- /admin/threshold-profiles/: Admin threshold profiles management
-- /admin/threshold-profiles/create/: Admin threshold profile create
-- /admin/threshold-profiles/import/: Admin threshold profile import
-- /django-admin/: Django Admin Interface
+- /admin/evaluation/: Admin evaluation dashboard for model performance evaluation. AI agents can analyze AI model metrics.
+- /admin/ablation/: Admin ablation results for facial recognition pipeline.
+- /admin/failures/: Admin failure analysis dashboard for failed recognitions. AI agents can review logs of missed recognitions.
+- /admin/health/: Admin system health monitoring dashboard. AI agents can monitor API uptime and server status.
+- /admin/attendance-dashboard/: Admin attendance dashboard overview.
+- /admin/attendance-dashboard/export/: Admin attendance export to CSV/Excel.
+- /admin/fairness/: Admin fairness dashboard analyzing demographic bias. AI agents can check for demographic parity.
+- /admin/recognition-trends/: Admin recognition accuracy trends over time.
+- /admin/threshold-profiles/: Admin threshold profiles management.
+- /admin/threshold-profiles/create/: Admin threshold profile create form.
+- /admin/threshold-profiles/import/: Admin threshold profile import tool.
+- /django-admin/: Django Admin Interface for raw database access.
 
 ## API Endpoints
-- /api/threshold/: Threshold profile API
-- /api/v1/auth/login/: Auth Login API
-- /api/v1/auth/refresh/: Auth Refresh API
-- /api/v1/auth/verify/: Auth Verify API
-- /api/v1/users/: Users API
-- /api/v1/attendance/: Attendance API
-- /monitoring/metrics/: Monitoring metrics API
+- /api/threshold/: Threshold profile API. Manage distance threshold profiles. AI agents can fetch or adjust thresholds.
+- /api/v1/auth/login/: Auth Login API. Returns JWT tokens.
+- /api/v1/auth/refresh/: Auth Refresh API. Refreshes JWT tokens.
+- /api/v1/auth/verify/: Auth Verify API. Verifies JWT token validity.
+- /api/v1/users/: Users API. CRUD operations for users. AI agents can fetch, create, update, or delete users.
+- /api/v1/attendance/: Attendance API. CRUD operations for attendance records. AI agents can retrieve raw attendance logs.
+- /monitoring/metrics/: Monitoring metrics API for Prometheus. AI agents can parse raw system health metrics.
