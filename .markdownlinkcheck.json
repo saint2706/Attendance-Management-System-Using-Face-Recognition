@@ -7,7 +7,7 @@
       "pattern": "^http://localhost"
     },
     {
-      "pattern": "^https://github\\.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/"
+      "pattern": "^https://github\\.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues"
     },
     {
       "pattern": "^https://github\\.com/saint2706/Attendance-Management-System-Using-Face-Recognition/pull/"

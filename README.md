@@ -36,6 +36,7 @@
 
 - **Real-time Recognition:** Instant identification using the efficient "Facenet" model.
 - **Anti-Spoofing:** Two-stage liveness detection (motion + texture) rejects photos and screens.
+- **Setup Wizard:** Step-by-step onboarding for first-time setup.
 - **Smart Dashboard:** Comprehensive admin panel for reports, user management, and system health.
 - **Offline Capable:** PWA architecture ensures basic functionality even with spotty internet.
 - **Automated Training:** The model retrains itself in the background when new users are added.
