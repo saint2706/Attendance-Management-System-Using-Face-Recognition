@@ -97,7 +97,7 @@ def load_existing_encodings(employee_id: str) -> np.ndarray:
         return np.empty((0, 0), dtype=np.float64)
 
     try:
-        return np.load(io.BytesIO(decrypted_bytes))
+        return np.load(io.BytesIO(decrypted_bytes), allow_pickle=False)
     except Exception as exc:  # pragma: no cover - defensive programming
         logger.warning("Failed to deserialize encodings for %s: %s", employee_id, exc)
         return np.empty((0, 0), dtype=np.float64)
