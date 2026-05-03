@@ -390,6 +390,26 @@ class FaceRecognitionAPI(View):
 
     http_method_names = ["post", "options"]
 
+    def http_method_not_allowed(self, request, *args, **kwargs):
+        logger.warning(
+            "Method Not Allowed (%s): %s",
+            request.method,
+            request.path,
+        )
+        response = JsonResponse(
+            {
+                "type": "about:blank",
+                "title": "Method Not Allowed",
+                "status": 405,
+                "detail": f"Method '{request.method}' not allowed.",
+                "instance": request.path,
+            },
+            status=405,
+            content_type="application/problem+json",
+        )
+        response["Allow"] = ", ".join(self._allowed_methods())
+        return response
+
     def _authenticate_request(self, request) -> tuple[bool, Optional[str], Optional[str]]:
         """Validate session, API key, or JWT credentials for API access."""
 
