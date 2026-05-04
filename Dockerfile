@@ -102,22 +102,19 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade system Python build tools to versions that resolve known CVEs.
+# Remove bundled wheels from ensurepip to resolve Trivy CVEs
 # (setuptools: CVE-2024-6345, CVE-2025-47273 | wheel: CVE-2026-24049)
-# Ensure we patch the system python environment specifically,
-# not the venv which is already patched in the build stage.
-RUN /usr/local/bin/python -m pip install --no-cache-dir "setuptools==82.0.1" "wheel==0.47.0"
-
-# Create directories for runtime data and set ownership
-# Do this before copying app code to maximize layer caching.
-RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
-    && chown -R appuser:appgroup /app/media /app/face_recognition_data /app/staticfiles
+RUN find /usr/local/lib/python3.*/ensurepip/_bundled/ -name "*.whl" -delete || true
 
 # Copy virtual environment with installed dependencies
 COPY --from=build /venv /venv
 
 # Copy application code and collected static files
 COPY --from=build /app /app
+
+# Create directories for runtime data and set ownership
+RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
+    && chown -R appuser:appgroup /app/media /app/face_recognition_data /app/staticfiles
 
 # Switch to non-root user
 USER appuser
