@@ -1,1 +1,1 @@
-We removed allow_pickle=True to prevent security vulnerabilities and fixed tests calling obsolete methods
+🤖 AIML: Removed insecure pickle usage in np.load
