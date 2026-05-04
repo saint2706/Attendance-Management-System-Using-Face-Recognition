@@ -80,7 +80,7 @@ django==6.0.4
     #   djangorestframework-simplejwt
     #   drf-spectacular
     #   sentry-sdk
-django-cors-headers==4.3.1
+django-cors-headers==4.9.0
     # via -r requirements.txt
 django-crispy-forms==2.6
     # via
