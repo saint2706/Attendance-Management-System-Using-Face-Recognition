@@ -42,3 +42,7 @@
 - `tests/recognition/test_performance.py`: Ran black to fix line length issues.
 - `tests/recognition/test_face_recognition_api.py`: Removed invalid `F401` from the `noqa` comment for `from recognition import views_legacy`.
 - `tests/recognition/test_api_views.py.orig`: Removed the `.orig` backup file.
+
+## Fixed
+- `Dockerfile.tmp`, `Dockerfile.gpu.tmp`, `frontend/node_modules/.tmp`: Removed leftover `.tmp` mistakes.
+- `.github/workflows/bump-version.yml`: Fixed `comments-indentation` warning where `# zizmor: ignore[artipacked]` was not indented properly using `yamllint`.
