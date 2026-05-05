@@ -67,3 +67,4 @@
 **Learning:** Explicitly configuring robust cryptographic algorithms (like Argon2) and enforcing strong password policies (min 12 characters) are essential defense-in-depth measures to protect user credentials against offline cracking attempts.
 **Prevention:** Updated `attendance_system_facial_recognition/settings/base.py` to explicitly enforce `Argon2PasswordHasher` as the primary hasher, and increased the `MinimumLengthValidator` to require 12 characters. Added `argon2-cffi` to `requirements.txt`.
 - Updated `postcss` in frontend to patch an XSS vulnerability (GHSA-qx2v-qp2m-jg93).
+Enforced allow_pickle=False in np.load
