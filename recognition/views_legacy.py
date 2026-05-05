@@ -2750,7 +2750,7 @@ def _deepface_liveness_check(frame: np.ndarray) -> Optional[bool]:
     """Run DeepFace anti-spoofing on the provided frame."""
 
     try:
-        analysis = DeepFace.analyze(  # type: ignore[call-arg]
+        analysis = DeepFace.analyze(
             img_path=frame,
             actions=("anti-spoof",),
             enforce_detection=False,

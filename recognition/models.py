@@ -315,7 +315,7 @@ class RecognitionOutcome(models.Model):
             return
 
         try:
-            days = int(retention_days)  # type: ignore
+            days = int(retention_days)  # type: ignore[arg-type]
         except (TypeError, ValueError):  # pragma: no cover - defensive
             logger.debug(
                 "Invalid RECOGNITION_OUTCOME_RETENTION_DAYS=%r; skipping prune.",

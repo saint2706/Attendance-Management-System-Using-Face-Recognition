@@ -199,7 +199,7 @@ def _load_dataset_index(
 ):
     """Return the cached dataset index used during recognition."""
 
-    return views_module._load_dataset_embeddings_for_matching(  # type: ignore[attr-defined]
+    return getattr(views_module, "_load_dataset_embeddings_for_matching")(
         model_name,
         detector_backend,
         enforce_detection,
@@ -221,7 +221,7 @@ def _infer_samples(
     results: List[SampleEvaluation] = []
     for path in image_paths:
         ground_truth = path.parent.name or UNKNOWN_LABEL
-        embedding = views_module._get_or_compute_cached_embedding(  # type: ignore[attr-defined]
+        embedding = getattr(views_module, "_get_or_compute_cached_embedding")(
             path,
             model_name,
             detector_backend,
@@ -454,10 +454,10 @@ def run_face_recognition_evaluation(config: EvaluationConfig) -> EvaluationSumma
     """Execute the evaluation end-to-end and return the resulting summary."""
 
     views_module = _recognition_views()
-    model_name = views_module._get_face_recognition_model()  # type: ignore[attr-defined]
-    detector_backend = views_module._get_face_detection_backend()  # type: ignore[attr-defined]
-    enforce_detection = views_module._should_enforce_detection()  # type: ignore[attr-defined]
-    distance_metric = views_module._get_deepface_distance_metric()  # type: ignore[attr-defined]
+    model_name = getattr(views_module, "_get_face_recognition_model")()
+    detector_backend = getattr(views_module, "_get_face_detection_backend")()
+    enforce_detection = getattr(views_module, "_should_enforce_detection")()
+    distance_metric = getattr(views_module, "_get_deepface_distance_metric")()
 
     logger.info(
         "Running evaluation with model=%s detector=%s metric=%s threshold=%.3f",
