@@ -52,6 +52,7 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y \
     python3.12 \
     python3.12-venv \
+    python3-pip \
     ca-certificates=20240203~22.04.1 \
     && apt-get purge -y --auto-remove software-properties-common \
     && apt-get clean \
@@ -145,6 +146,12 @@ RUN apt-get update \
     && apt-get upgrade -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Upgrade system Python build tools to versions that resolve known CVEs.
+# (setuptools: CVE-2024-6345, CVE-2025-47273)
+# Ensure we patch the system python environment specifically,
+# not the venv which is already patched in the build stage.
+RUN /usr/bin/python3 -m pip install --no-cache-dir "setuptools==82.0.1" "wheel==0.47.0"
 
 # Create runtime directories
 # Do this before copying app code to maximize layer caching.
