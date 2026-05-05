@@ -3410,9 +3410,11 @@ def view_attendance_employee(request):
 
             user = User.objects.filter(username=username).first()
             if user:
-                time_qs = Time.objects.filter(
-                    user=user, date__gte=date_from, date__lte=date_to
-                ).order_by("-date")
+                time_qs = (
+                    Time.objects.filter(user=user, date__gte=date_from, date__lte=date_to)
+                    .select_related("user")
+                    .order_by("-date")
+                )
                 present_qs = (
                     Present.objects.filter(user=user, date__gte=date_from, date__lte=date_to)
                     .select_related("user")
@@ -3457,9 +3459,11 @@ def view_my_attendance_employee_login(request):
                 messages.warning(request, "Invalid date selection.")
                 return redirect("view-my-attendance-employee-login")
 
-            time_qs = Time.objects.filter(
-                user=user, date__gte=date_from, date__lte=date_to
-            ).order_by("-date")
+            time_qs = (
+                Time.objects.filter(user=user, date__gte=date_from, date__lte=date_to)
+                .select_related("user")
+                .order_by("-date")
+            )
             present_qs = (
                 Present.objects.filter(user=user, date__gte=date_from, date__lte=date_to)
                 .select_related("user")
