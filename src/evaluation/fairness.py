@@ -144,14 +144,22 @@ def estimate_lighting_bucket(image_path: Path) -> str:
     try:
         import numpy as np
         from PIL import Image  # Imported lazily to avoid mandatory dependency during tests
-    except Exception:  # pragma: no cover - Pillow is part of runtime requirements
+    except Exception as e:
+        import logging
+
+        logging.getLogger(__name__).warning(
+            f"Error checking lighting bucket: {e}"
+        )  # pragma: no cover - Pillow is part of runtime requirements
         return "unknown"
 
     try:
         with Image.open(image_path) as img:
             grayscale = img.convert("L")
             data = np.asarray(grayscale, dtype=float)
-    except Exception:
+    except Exception as e:
+        import logging
+
+        logging.getLogger(__name__).warning(f"Error checking lighting bucket: {e}")
         return "unknown"
 
     if data.size == 0:

@@ -36,7 +36,8 @@ def _get_cache() -> "BaseCache":
     """Return the embeddings cache backend."""
     try:
         return caches["embeddings"]
-    except Exception:
+    except Exception as e:
+        logger.warning(f"Error accessing cache: {e}")
         # Fallback to default cache if embeddings cache is not configured
         return caches["default"]
 
@@ -237,7 +238,8 @@ def get_dataset_hash() -> Optional[str]:
     cache = _get_cache()
     try:
         return cache.get(_DATASET_HASH_KEY)
-    except Exception:
+    except Exception as e:
+        logger.warning(f"Error accessing cache: {e}")
         return None
 
 

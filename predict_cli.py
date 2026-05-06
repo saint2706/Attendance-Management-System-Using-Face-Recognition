@@ -33,7 +33,10 @@ def _setup_django():
         if not django.apps.apps.ready:
             django.setup()
         return True
-    except Exception:
+    except Exception as e:
+        import logging
+
+        logging.getLogger(__name__).warning(f"Failed to setup Django: {e}")
         return False
 
 

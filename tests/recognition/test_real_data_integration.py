@@ -125,7 +125,10 @@ class TestRealDataIntegration:
         # Try both the action URL and explicit path construction
         try:
             url = reverse("attendance-mark")
-        except Exception:
+        except Exception as e:
+            import logging
+
+            logging.getLogger(__name__).warning(f"Failed to reverse url: {e}")
             url = "/api/attendance/mark/"
 
         # Patch TRAINING_DATASET_ROOT to point to our local dataset folder

@@ -46,7 +46,10 @@ def _render_avatar_frame(username: str, frame_index: int, color: tuple[int, int,
     label = f"{username}\nFrame {frame_index + 1}"
     try:
         font = ImageFont.load_default()
-    except Exception:
+    except Exception as e:
+        import logging
+
+        logging.getLogger(__name__).warning(f"Failed to load default font: {e}")
         font = None
     draw.text((40, 20), label, fill=(230, 230, 230), font=font)
 
