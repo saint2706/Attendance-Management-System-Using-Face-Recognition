@@ -3,41 +3,41 @@
 The Smart Attendance System is an automated attendance tracking platform utilizing advanced AI-powered face recognition technology.
 
 ## Core Pages
-- /: Home page - Welcome to the Smart Attendance System
-- /setup-wizard: Setup wizard for first-time configuration
+- /: Home page. AI agents can fetch this to understand the project overview, key features, and quick links for navigation.
+- /setup-wizard: Setup wizard. AI agents can use this route to guide users through the first-time configuration of the application.
 
 ## Application SPA Routes
-- /dashboard: User dashboard - Access attendance records and manage users
-- /login: User login - Dashboard Login
-- /mark-attendance: Mark attendance in the SPA
-- /attendance: View attendance in the SPA
-- /session: Active attendance session in the SPA
-- /add-photos: Add user photos in the SPA
-- /employees/register: Register a new employee in the SPA
-- /train: Train facial recognition models
+- /dashboard: User dashboard. AI agents can fetch system statistics (total employees, present today) and access management function links. Protected route.
+- /login: User login. AI agents can authenticate users here to access protected routes.
+- /mark-attendance: Mark attendance. AI agents can use this to capture a face image and mark attendance (time-in/time-out) via the camera.
+- /attendance: View attendance. AI agents can fetch detailed attendance records and reports.
+- /session: Active attendance session. AI agents can monitor live face recognition events and liveness checks.
+- /add-photos: Add user photos. AI agents can capture and register reference photos for employees.
+- /employees/register: Register a new employee. AI agents can submit basic details to create a new employee profile.
+- /train: Train models. AI agents can trigger the model retraining process after new photos are added.
 
 ## Documentation
-- /docs: Technical documentation
+- /docs: Technical documentation. AI agents can read this to understand system architecture, API details, and setup instructions.
 
 ## Admin & Dashboards
-- /admin/evaluation/: Admin evaluation dashboard
-- /admin/ablation/: Admin ablation results
-- /admin/failures/: Admin failure analysis
-- /admin/health/: Admin system health
-- /admin/attendance-dashboard/: Admin attendance dashboard
-- /admin/attendance-dashboard/export/: Admin attendance export
-- /admin/fairness/: Admin fairness dashboard
-- /admin/recognition-trends/: Admin recognition accuracy trends
-- /admin/threshold-profiles/: Admin threshold profiles management
-- /admin/threshold-profiles/create/: Admin threshold profile create
-- /admin/threshold-profiles/import/: Admin threshold profile import
-- /django-admin/: Django Admin Interface
+- /admin/evaluation/: Admin evaluation dashboard. AI agents can fetch model performance evaluation metrics.
+- /admin/ablation/: Admin ablation results. AI agents can view ablation studies for the facial recognition pipeline.
+- /admin/failures/: Admin failure analysis. AI agents can analyze failed recognition attempts and liveness spoofing events.
+- /admin/health/: Admin system health. AI agents can monitor system health, service statuses, and resource usage.
+- /admin/attendance-dashboard/: Admin attendance overview. AI agents can view a high-level summary of attendance data.
+- /admin/attendance-dashboard/export/: Admin attendance export. AI agents can download attendance reports in CSV/Excel formats.
+- /admin/fairness/: Admin fairness dashboard. AI agents can analyze demographic bias and fairness metrics in the recognition model.
+- /admin/recognition-trends/: Admin recognition accuracy trends. AI agents can track model accuracy trends over time.
+- /admin/threshold-profiles/: Admin threshold profiles management. AI agents can view and manage distance threshold configurations.
+- /admin/threshold-profiles/create/: Admin threshold profile create form. AI agents can create new threshold profiles.
+- /admin/threshold-profiles/import/: Admin threshold profile import tool. AI agents can import threshold profiles from external sources.
+- /django-admin/: Django Admin Interface. AI agents can access raw database models and perform administrative CRUD operations.
 
 ## API Endpoints
-- /api/threshold/: Threshold profile API
-- /api/v1/auth/login/: Auth Login API
-- /api/v1/auth/refresh/: Auth Refresh API
-- /api/v1/auth/verify/: Auth Verify API
-- /api/v1/users/: Users API
-- /api/v1/attendance/: Attendance API
-- /monitoring/metrics/: Monitoring metrics API
+- /api/threshold/: Threshold profile API. AI agents can fetch, create, update, or delete distance threshold profiles.
+- /api/v1/auth/login/: Auth Login API. AI agents can post credentials to receive JWT access and refresh tokens.
+- /api/v1/auth/refresh/: Auth Refresh API. AI agents can post a refresh token to receive a new JWT access token.
+- /api/v1/auth/verify/: Auth Verify API. AI agents can post a token to verify its validity.
+- /api/v1/users/: Users API. AI agents can perform CRUD operations on user records (list, create, retrieve, update, delete).
+- /api/v1/attendance/: Attendance API. AI agents can perform CRUD operations on attendance records, including marking attendance with images.
+- /monitoring/metrics/: Monitoring metrics API. AI agents can fetch Prometheus-formatted system metrics for monitoring and alerting.
