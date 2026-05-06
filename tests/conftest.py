@@ -35,6 +35,9 @@ def close_database_connections():
 
         for conn in connections.all():
             conn.close()
-    except Exception:
+    except Exception as e:
+        import logging
+
+        logging.getLogger(__name__).debug(f"Failed to close django connections: {e}")
         # If Django is not configured or connections can't be closed, ignore
         pass

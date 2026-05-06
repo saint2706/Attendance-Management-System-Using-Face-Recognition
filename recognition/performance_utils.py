@@ -410,7 +410,7 @@ def log_recognition_timing(func: F) -> F:
             )
             raise
 
-    return wrapper  # type: ignore
+    return wrapper  # type: ignore[return-value]
 
 
 def profile_model_performance(

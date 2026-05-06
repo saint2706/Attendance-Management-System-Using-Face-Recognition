@@ -120,7 +120,8 @@ def _prepare_gray_frame(
         if hasattr(cv2, "cvtColor"):
             try:
                 converted = cv2.cvtColor(working, cv2.COLOR_BGR2GRAY)
-            except Exception:  # pragma: no cover - cv2 may be stubbed in tests
+            except Exception as e:  # pragma: no cover - cv2 may be stubbed
+                logger.debug(f"Failed cv2 operation: {e}")
                 converted = None
         if isinstance(converted, np.ndarray):
             working = converted
@@ -134,7 +135,8 @@ def _prepare_gray_frame(
             resized = cv2.resize(working, (target_size, target_size))
             if isinstance(resized, np.ndarray):
                 working = resized
-        except Exception:  # pragma: no cover - cv2 may be stubbed
+        except Exception as e:  # pragma: no cover - cv2 may be stubbed
+            logger.debug(f"Failed cv2 operation: {e}")
             working = np.copy(working)
     else:
         working = np.copy(working)
@@ -144,7 +146,8 @@ def _prepare_gray_frame(
             blurred = cv2.GaussianBlur(working, (5, 5), 0)
             if isinstance(blurred, np.ndarray):
                 working = blurred
-        except Exception:  # pragma: no cover - cv2 may be stubbed
+        except Exception as e:  # pragma: no cover - cv2 may be stubbed
+            logger.debug(f"Failed cv2 operation: {e}")
             pass
 
     return working
@@ -178,7 +181,8 @@ def _compute_motion_score(frames: Sequence[ArrayLike]) -> Optional[float]:
                     if isinstance(magnitude, np.ndarray):
                         magnitudes.append(float(np.mean(magnitude)))
                         success = True
-            except Exception:  # pragma: no cover - fall back to absolute differences
+            except Exception as e:  # pragma: no cover - fall back to absolute differences
+                logger.debug(f"Failed to calculate SSIM: {e}")
                 pass
 
         if not success:
@@ -226,7 +230,8 @@ def _compute_horizontal_motion(frames: Sequence[ArrayLike]) -> tuple[float, floa
                     right_motion = float(np.mean(np.maximum(horizontal, 0)))
                     left_scores.append(left_motion)
                     right_scores.append(right_motion)
-            except Exception:  # pragma: no cover
+            except Exception as e:  # pragma: no cover
+                logger.debug(f"Exception during motion analysis: {e}")
                 pass
 
     if not left_scores:
