@@ -58,3 +58,4 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 - Added `aria-busy={isInitializing}` to the retry camera access button in `MarkAttendance.tsx`.
 - Added `aria-busy={isProcessing}` to the capture and recognize button in `MarkAttendance.tsx` to improve feedback when the image is being processed.
 Replaced large `size` prop with explicit `width` and `height` props on `lucide-react` icons to prevent Cumulative Layout Shift (CLS) and fix Lighthouse issues regarding explicit sizing on SVG images.
+- Added missing ARIA labels to retry, reset, return home, try again and logout buttons to improve screen reader accessibility.

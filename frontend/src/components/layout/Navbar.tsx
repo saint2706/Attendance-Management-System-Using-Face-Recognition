@@ -60,7 +60,7 @@ export const Navbar = () => {
                                     </NavLink>
                                 </li>
                                 <li>
-                                    <button onClick={handleLogout} className="nav-link nav-button" title="Logout">
+                                    <button onClick={handleLogout} className="nav-link nav-button" title="Logout" aria-label="Logout">
                                         <LogOut size={18} aria-hidden="true" />
                                         <span>Logout</span>
                                     </button>

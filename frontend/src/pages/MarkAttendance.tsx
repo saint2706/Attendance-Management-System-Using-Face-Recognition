@@ -241,7 +241,7 @@ export const MarkAttendance = () => {
                         <div className="camera-error" role="alert" aria-live="assertive">
                             <CameraOff width={48} height={48} aria-hidden="true" />
                             <p>{error}</p>
-                            <button onClick={startCamera} className="btn btn-primary" title="Retry connecting to camera" disabled={isInitializing} aria-busy={isInitializing}>
+                            <button onClick={startCamera} className="btn btn-primary" title="Retry connecting to camera" aria-label="Retry connecting to camera" disabled={isInitializing} aria-busy={isInitializing}>
                                 {isInitializing ? (
                                     <Loader2 size={18} className="animate-spin" aria-hidden="true" />
                                 ) : (
@@ -389,6 +389,7 @@ export const MarkAttendance = () => {
                                             onClick={() => navigate('/')}
                                             className="btn btn-secondary btn-lg"
                                             title="Return to the home page"
+                                            aria-label="Return to the home page"
                                         >
                                             <Home size={20} aria-hidden="true" />
                                             Return Home
@@ -398,6 +399,7 @@ export const MarkAttendance = () => {
                                             className="btn btn-primary btn-lg"
                                             aria-keyshortcuts="Escape"
                                             title="Reset to mark another attendance"
+                                            aria-label="Reset to mark another attendance"
                                         >
                                             <UserCheck size={20} aria-hidden="true" />
                                             Mark Another
@@ -409,6 +411,7 @@ export const MarkAttendance = () => {
                                         className="btn btn-secondary btn-lg"
                                         aria-keyshortcuts="Escape"
                                         title="Reset and try scanning again"
+                                        aria-label="Reset and try scanning again"
                                     >
                                         <RefreshCw size={20} aria-hidden="true" />
                                         Try Again
