@@ -1071,7 +1071,7 @@ def enqueue_attendance_batch(request):
     """Accept a batch of attendance records and enqueue them for Celery processing."""
 
     if request.method.upper() != "POST":
-        return JsonResponse(
+        response = JsonResponse(
             {
                 "type": "about:blank",
                 "title": "Method Not Allowed",
@@ -1082,6 +1082,8 @@ def enqueue_attendance_batch(request):
             status=405,
             content_type="application/problem+json",
         )
+        response["Allow"] = "POST"
+        return response
 
     try:
         raw_body = request.body.decode(request.encoding or "utf-8") if request.body else "{}"
