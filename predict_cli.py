@@ -149,7 +149,9 @@ def predict(
     # For demonstration, generate a random score
     import random
 
-    random.seed(42)
+    from src.common.seeding import set_global_seed
+
+    set_global_seed(42)
     score = random.uniform(0.3, 0.95)
 
     # Get band and action
