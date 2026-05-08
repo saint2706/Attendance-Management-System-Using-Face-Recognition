@@ -200,6 +200,52 @@ The response is an HTML page rendering the health dashboard. The underlying data
 - **Recognition Activity:** Snapshots of the most recent recognition attempt, recent spoof detected, recent success, recent failure, and the last recognition outcome.
 - **Worker Health:** Status of the Celery workers (e.g., `online` or `unreachable`) and the number of active workers.
 
+**Example Context Data Structure:**
+
+```json
+{
+  "snapshot": { },
+  "dataset": {
+    "exists": true,
+    "image_count": 1500,
+    "identity_count": 120,
+    "last_updated": "2023-10-25T14:30:00Z",
+    "last_updated_display": "2023-10-25T14:30:00+00:00"
+  },
+  "model": {
+    "model_present": true,
+    "classes_present": true,
+    "report_present": true,
+    "last_trained": "2023-10-25T15:00:00Z",
+    "last_trained_display": "2023-10-25T15:00:00+00:00",
+    "stale": false
+  },
+  "evaluation_state": {
+    "latest_evaluation": { },
+    "latest_nightly": { },
+    "latest_fairness": { },
+    "latest_liveness": { },
+    "trends": { },
+    "total_evaluations": 42,
+    "recent_failures": 0,
+    "scheduled_tasks_enabled": true,
+    "scheduled_tasks_count": 5
+  },
+  "recognition_state": {
+    "last_attempt": { },
+    "last_spoof": { },
+    "last_success": { },
+    "last_failure": { },
+    "last_outcome": { }
+  },
+  "worker_state": {
+    "status": "online",
+    "workers": 2
+  },
+  "metrics_url": "https://attendance.yourdomain.com/monitoring/metrics/"
+}
+```
+
 #### Error Responses
 
 - **`302 Found` / `Redirect`:** If the user is not authenticated or not a staff member, they will be redirected to the admin login page.

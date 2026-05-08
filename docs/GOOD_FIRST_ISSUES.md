@@ -125,24 +125,6 @@ This document contains a curated list of beginner-friendly tasks for new contrib
 
 ---
 
-## Infrastructure
-
-### 8. Add Health Check Endpoint Documentation
-
-**Description:** Document the `/admin/health/` endpoint and its response format in the API Reference.
-
-**Labels:** `good first issue`, `docs`, `infra`
-
-**Files involved:**
-
-- `docs/API_REFERENCE.md`
-- `recognition/health.py`
-
-**Skill level:** Beginner
-**Estimated effort:** 1-2 hours
-
----
-
 ## How to Get Started
 
 1. Comment on an issue to claim it
