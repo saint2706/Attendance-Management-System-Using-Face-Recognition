@@ -97,7 +97,7 @@ class AttendanceAnalytics:
             Present.objects.filter(**filters).select_related("user").order_by("date", "user_id")
         )
 
-        if not present_records.exists():
+        if not present_records:
             return {
                 "start_date": start_date,
                 "end_date": end_date,
@@ -217,7 +217,7 @@ class AttendanceAnalytics:
 
         present_qs = Present.objects.filter(**filters).select_related("user")
 
-        if not present_qs.exists():
+        if not present_qs:
             return {
                 "start_date": start_date,
                 "end_date": end_date,
