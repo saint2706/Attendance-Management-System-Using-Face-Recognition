@@ -54,7 +54,7 @@ class TestFaceRecognitionWorkflow:
 
         return _builder
 
-    def test_face_encoding_generation(self, monkeypatch):
+    def test_face_encoding_generation(self, monkeypatch) -> None:
         """Computed face encodings should be NumPy arrays with float64 dtype."""
 
         expected_embedding = [0.5, 0.25, 0.75]
@@ -187,7 +187,7 @@ class TestFaceRecognitionWorkflow:
         assert attempt.direction == Direction.IN
         assert attempt.source == "api"
 
-    def test_concurrent_attendance_requests(self, monkeypatch):
+    def test_concurrent_attendance_requests(self, monkeypatch) -> None:
         """Concurrent consumers should receive advancing frames and clean up."""
 
         class _DeterministicStream:
@@ -215,7 +215,7 @@ class TestFaceRecognitionWorkflow:
 
         results: list[list[int]] = []
 
-        def _consume_frames() -> None:
+        def _consume_frames() -> None:  # type: ignore[misc]
             local_values: list[int] = []
             with manager.frame_consumer() as consumer:
                 for _ in range(3):
@@ -244,7 +244,7 @@ class TestFaceRecognitionWorkflow:
                 )
         assert manager._consumer_count == 0
 
-    def test_camera_initialization(self, monkeypatch):
+    def test_camera_initialization(self, monkeypatch) -> None:
         """The shared webcam manager should only start the stream once per lifetime."""
 
         start_calls = []
