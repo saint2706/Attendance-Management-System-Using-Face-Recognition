@@ -18,6 +18,8 @@ from pathlib import Path
 
 import yaml
 
+from src.common.seeding import set_global_seed
+
 logger = logging.getLogger(__name__)
 
 
@@ -145,11 +147,10 @@ def predict(
         if profile_threshold is not None:
             threshold = profile_threshold
 
-    # Simulate prediction (in production, this would call the actual model)
-    # For demonstration, generate a random score
     import random
 
-    random.seed(42)
+    # Simulate prediction (in production, this would call the actual model)
+    # For demonstration, generate a random score
     score = random.uniform(0.3, 0.95)
 
     # Get band and action
@@ -174,6 +175,7 @@ def predict(
 
 
 def main():
+    set_global_seed(42)
     parser = argparse.ArgumentParser(
         description="Face recognition prediction with policy-based actions"
     )
