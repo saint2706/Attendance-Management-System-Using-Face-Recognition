@@ -52,17 +52,17 @@ RUN python -m venv /venv
 ENV PATH="/venv/bin:$PATH"
 
 # Leverage Docker layer caching for dependency installation
-COPY requirements.frozen.txt ./requirements.txt
+COPY --chown=root:root requirements.frozen.txt ./requirements.txt
 RUN pip install --no-cache-dir --upgrade pip==26.0.1 setuptools==82.0.1 wheel==0.47.0 \
     && pip install --no-cache-dir -r requirements.txt
 
 # Copy backend directories explicitly to prevent copying raw frontend source and avoid intermediate layer bloat
-COPY attendance_system_facial_recognition /app/attendance_system_facial_recognition
-COPY configs /app/configs
-COPY recognition /app/recognition
-COPY users /app/users
-COPY src /app/src
-COPY manage.py /app/manage.py
+COPY --chown=root:root attendance_system_facial_recognition /app/attendance_system_facial_recognition
+COPY --chown=root:root configs /app/configs
+COPY --chown=root:root recognition /app/recognition
+COPY --chown=root:root users /app/users
+COPY --chown=root:root src /app/src
+COPY --chown=root:root manage.py /app/manage.py
 
 # Copy built frontend from Stage 1
 COPY --from=frontend-build --chown=root:root /app/frontend/dist /app/frontend/dist
@@ -114,10 +114,10 @@ RUN mkdir -p /app/media /app/face_recognition_data /app/staticfiles \
     && chown -R appuser:appgroup /app/media /app/face_recognition_data /app/staticfiles
 
 # Copy virtual environment with installed dependencies
-COPY --from=build /venv /venv
+COPY --from=build --chown=root:root /venv /venv
 
 # Copy application code and collected static files
-COPY --from=build /app /app
+COPY --from=build --chown=root:root /app /app
 
 # Switch to non-root user
 USER appuser
