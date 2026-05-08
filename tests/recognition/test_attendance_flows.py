@@ -30,7 +30,7 @@ def _create_admin_user() -> Any:
     )
 
 
-def test_admin_can_register_employee(client):
+def test_admin_can_register_employee(client) -> None:
     """A staff member should be able to register a brand-new employee."""
 
     admin = _create_admin_user()
@@ -53,7 +53,7 @@ def test_admin_can_register_employee(client):
     assert not new_user.is_superuser
 
 
-def test_add_photos_creates_dataset_for_existing_user(client, monkeypatch):
+def test_add_photos_creates_dataset_for_existing_user(client, monkeypatch) -> None:
     """Posting to the Add Photos view should trigger dataset creation."""
 
     admin = _create_admin_user()
@@ -121,7 +121,9 @@ class _StubWebcamManager:
     RECOGNITION_HEADLESS_FRAME_SLEEP=0,
     RECOGNITION_DISTANCE_THRESHOLD=0.5,
 )
-def test_mark_attendance_records_successful_check_in(client, django_user_model, monkeypatch):
+def test_mark_attendance_records_successful_check_in(
+    client, django_user_model, monkeypatch
+) -> None:
     """Successful recognition should enqueue a check-in record for processing."""
 
     employee = django_user_model.objects.create(
@@ -194,7 +196,7 @@ def test_mark_attendance_records_successful_check_in(client, django_user_model, 
     assert records[0]["present"] == {employee.username: True}
 
 
-def test_admin_can_view_attendance_by_date(client, monkeypatch):
+def test_admin_can_view_attendance_by_date(client, monkeypatch) -> None:
     """Admin attendance reports should surface annotated attendance data."""
 
     admin = _create_admin_user()
@@ -225,7 +227,7 @@ def test_admin_can_view_attendance_by_date(client, monkeypatch):
     assert response.context["qs"].first().user == employee
 
 
-def test_attendance_dashboard_shows_summary_metrics(client, monkeypatch):
+def test_attendance_dashboard_shows_summary_metrics(client, monkeypatch) -> None:
     """The attendance summary view should render the aggregated metrics."""
 
     admin = _create_admin_user()
@@ -253,7 +255,7 @@ def test_attendance_dashboard_shows_summary_metrics(client, monkeypatch):
     RECOGNITION_HEADLESS_FRAME_SLEEP=0,
     RECOGNITION_DISTANCE_THRESHOLD=0.5,
 )
-def test_registration_training_and_attendance_flow(client, django_user_model, monkeypatch):
+def test_registration_training_and_attendance_flow(client, django_user_model, monkeypatch) -> None:
     """A staff user can register, trigger training, and mark attendance successfully."""
 
     admin = django_user_model.objects.create(
@@ -393,7 +395,7 @@ def test_registration_training_and_attendance_flow(client, django_user_model, mo
     RECOGNITION_HEADLESS_FRAME_SLEEP=0,
     RECOGNITION_DISTANCE_THRESHOLD=0.5,
 )
-def test_liveness_failure_blocks_attendance(client, django_user_model, monkeypatch):
+def test_liveness_failure_blocks_attendance(client, django_user_model, monkeypatch) -> None:
     """Spoofed faces should not be queued for attendance updates."""
 
     employee = django_user_model.objects.create(
@@ -460,7 +462,9 @@ def test_liveness_failure_blocks_attendance(client, django_user_model, monkeypat
     RECOGNITION_HEADLESS_FRAME_SLEEP=0,
     RECOGNITION_DISTANCE_THRESHOLD=0.5,
 )
-def test_unknown_face_does_not_create_attendance_records(client, django_user_model, monkeypatch):
+def test_unknown_face_does_not_create_attendance_records(
+    client, django_user_model, monkeypatch
+) -> None:
     """High-distance matches should be ignored and not create attendance records."""
 
     employee = django_user_model.objects.create(
@@ -525,7 +529,9 @@ def test_unknown_face_does_not_create_attendance_records(client, django_user_mod
     RECOGNITION_HEADLESS_ATTENDANCE_FRAMES=1,
     RECOGNITION_HEADLESS_FRAME_SLEEP=0,
 )
-def test_missing_training_data_short_circuits_attendance(client, django_user_model, monkeypatch):
+def test_missing_training_data_short_circuits_attendance(
+    client, django_user_model, monkeypatch
+) -> None:
     """The attendance flow should guide users when no encrypted dataset is present."""
 
     employee = django_user_model.objects.create(

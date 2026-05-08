@@ -69,7 +69,7 @@ class EncryptionWorkflowTests(TestCase):
         shutil.rmtree(self.data_root, ignore_errors=True)
 
     @override_settings(FACE_DATA_ENCRYPTION_KEY=TEST_FACE_FERNET_KEY)
-    def test_face_data_encryption_helper_round_trip(self):
+    def test_face_data_encryption_helper_round_trip(self) -> None:
         helper = FaceDataEncryption()
         encoding = np.array([0.1, 0.2, 0.3], dtype=np.float64)
 
@@ -85,7 +85,7 @@ class EncryptionWorkflowTests(TestCase):
         RECOGNITION_HEADLESS=True,
         RECOGNITION_HEADLESS_DATASET_FRAMES=1,
     )
-    def test_create_dataset_encrypts_frames(self):
+    def test_create_dataset_encrypts_frames(self) -> None:
         """Captured frames should be stored encrypted on disk."""
 
         output_dir = self.dataset_root / "alice"
@@ -141,7 +141,7 @@ class EncryptionWorkflowTests(TestCase):
         mock_deepface,
         mock_svc,
         mock_train_test_split,
-    ):
+    ) -> None:
         """Training should persist encrypted artifacts and mark view should load them."""
 
         # Create at least 2 images per user for stratified train_test_split to work
