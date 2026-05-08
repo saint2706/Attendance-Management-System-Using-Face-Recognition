@@ -65,3 +65,5 @@
 - **Problem**: `AttendanceViewSet.get_queryset` in `recognition/api/views.py` filters `RecognitionAttempt` records by both `user` and `created_at` (date range). Without a composite index, the database may have to scan more rows or use an index that doesn't optimally support this combination.
 - **Optimization**: Added a composite index `models.Index(fields=["user", "created_at"], name="users_attempt_user_created_idx")` to the `RecognitionAttempt` model in `users/models.py`.
 - **Result**: Significantly faster query execution for user-specific attendance records over a time range, improving the responsiveness of attendance history lookups.
+
+- **Optimization**: Replaced `exists()` with `bool()` in `get_daily_trends` and `get_department_summary` to prevent redundant queries (N+1-like issue) when the queryset is iterated over immediately afterwards.
