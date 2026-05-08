@@ -27,3 +27,5 @@
 - [GEO] JSON-LD structured data is properly formatted and sanitized.
 - [GEO] Fixed nested `<main>` elements in App.tsx by replacing the wrapper with a `<div>` and updated `llms.txt` files with detailed endpoint descriptions for better AI discoverability.
 - [GEO] Enhanced llms.txt site architecture for AI discoverability across all 3 files
+
+- [GEO/SEO] Synchronized and updated llms.txt and robots.txt to properly account for missing protected routes, task endpoints, and API boundaries.

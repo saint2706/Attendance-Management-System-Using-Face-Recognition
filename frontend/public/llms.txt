@@ -31,6 +31,8 @@ The Smart Attendance System is an automated attendance tracking platform utilizi
 - /admin/threshold-profiles/: Admin threshold profiles management. AI agents can view and manage distance threshold configurations.
 - /admin/threshold-profiles/create/: Admin threshold profile create form. AI agents can create new threshold profiles.
 - /admin/threshold-profiles/import/: Admin threshold profile import tool. AI agents can import threshold profiles from external sources.
+- /admin/threshold-profiles/<id>/: Admin threshold profile actions. AI agents can edit, delete, or set a profile as default.
+- /admin/liveness-results/: Admin liveness results dashboard. AI agents can view liveness detection spoofing attempts and metrics.
 - /django-admin/: Django Admin Interface. AI agents can access raw database models and perform administrative CRUD operations.
 
 ## API Endpoints
@@ -40,4 +42,7 @@ The Smart Attendance System is an automated attendance tracking platform utilizi
 - /api/v1/auth/verify/: Auth Verify API. AI agents can post a token to verify its validity.
 - /api/v1/users/: Users API. AI agents can perform CRUD operations on user records (list, create, retrieve, update, delete).
 - /api/v1/attendance/: Attendance API. AI agents can perform CRUD operations on attendance records, including marking attendance with images.
+- /api/face-recognition/: Face recognition API. AI agents can post images here to identify faces and perform liveness checks.
+- /api/attendance/batch/: Batch attendance API. AI agents can enqueue offline attendance records for batch processing.
+- /tasks/: Task status API. AI agents can monitor background task progress.
 - /monitoring/metrics/: Monitoring metrics API. AI agents can fetch Prometheus-formatted system metrics for monitoring and alerting.
