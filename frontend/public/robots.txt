@@ -10,5 +10,7 @@ Disallow: /employees/register
 Disallow: /train
 Disallow: /setup-wizard
 Disallow: /attendance
+Disallow: /tasks/
+Disallow: /login
 Allow: /
 Allow: /llms.txt
