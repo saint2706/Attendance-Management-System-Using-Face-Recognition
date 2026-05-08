@@ -1,4 +1,6 @@
-🎨 Picasso: [UX improvement] Explicit width and height on lucide-react icons
+ci: secure and optimize GitHub Actions and Composite Steps
 
-Replaced the shorthand `size` prop on `lucide-react` icons with explicit `width` and `height` properties to prevent Cumulative Layout Shift (CLS) and fix Lighthouse missing dimension audits.
-Also patched the React dependency version mismatch by bumping react-dom to 19.2.5.
+* Pinned GitHub Actions in `.github/actions/setup-python-env/action.yml` to specific commit SHAs (`@a26af6...` for setup-python@v5)
+* Pinned GitHub Actions in `.github/actions/setup-frontend-env/action.yml` to specific commit SHAs (`@a3252b...` for pnpm/action-setup@v3, `@49933e...` for setup-node@v4)
+* Fixed High Severity Template Injection Vulnerability in `setup-python-env`'s `pip install -r ${{ inputs.requirements-file }}` by moving the untrusted parameter into bash script environment variables and expanding there.
+* Passed full YAML/security linting suite via `yamllint` & `zizmor` locally.
