@@ -78,7 +78,7 @@ export const Dashboard = () => {
                     <p className="text-muted">{getGreeting()}, {user?.username}!</p>
                 </div>
                 <div className="header-actions">
-                    <Link to="/setup-wizard" className="btn btn-primary" title="Start the Setup Wizard">
+                    <Link to="/setup-wizard" className="btn btn-primary" title="Start the Setup Wizard" aria-label="Start Setup Wizard">
                         Setup Wizard
                     </Link>
                 </div>
@@ -102,7 +102,7 @@ export const Dashboard = () => {
                         </button>
                     </div>
                 ) : !isLoadingStats && stats.totalEmployees === 0 ? (
-                    <div className="text-center py-12 w-full card card-elevated" style={{ gridColumn: '1 / -1' }}>
+                    <div className="text-center py-12 w-full card card-elevated" style={{ gridColumn: '1 / -1' }} role="alert">
                         <Inbox width={48} height={48} className="mx-auto text-muted mb-sm" aria-hidden="true" />
                         <h3 className="text-lg font-semibold mb-xs">No employees yet</h3>
                         <p className="text-muted mb-md">Get started by registering your first employee.</p>

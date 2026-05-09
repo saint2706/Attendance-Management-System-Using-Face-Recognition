@@ -59,3 +59,5 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 - Added `aria-busy={isProcessing}` to the capture and recognize button in `MarkAttendance.tsx` to improve feedback when the image is being processed.
 Replaced large `size` prop with explicit `width` and `height` props on `lucide-react` icons to prevent Cumulative Layout Shift (CLS) and fix Lighthouse issues regarding explicit sizing on SVG images.
 - Added `:focus-visible` styling directly to the base `a` element in `frontend/src/index.css` to ensure all unmarked links (like the 'Back to Home' links or main navigation text links) provide clear keyboard focus indicators.
+- Added `role="alert"` for the empty state and `aria-label="Start Setup Wizard"` to the Setup Wizard button in `Dashboard.tsx` to improve screen reader feedback.
+- Added `aria-labelledby` to `.feature-card` elements in `Home.tsx` to associate the feature cards with their titles for better accessibility.
