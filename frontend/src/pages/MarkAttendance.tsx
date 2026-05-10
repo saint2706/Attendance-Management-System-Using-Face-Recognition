@@ -211,6 +211,7 @@ export const MarkAttendance = () => {
 
     return (
         <main className="mark-attendance animate-fade-in">
+            <h1 className="sr-only">Mark Attendance</h1>
             <title>Mark Attendance - Smart Attendance System</title>
             <meta name="description" content="Mark your time-in or time-out using face recognition." />
             <meta name="robots" content="noindex, nofollow" />

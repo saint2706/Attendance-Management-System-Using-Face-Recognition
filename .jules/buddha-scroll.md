@@ -29,3 +29,4 @@
 - [GEO] Enhanced llms.txt site architecture for AI discoverability across all 3 files
 
 - [GEO/SEO] Synchronized and updated llms.txt and robots.txt to properly account for missing protected routes, task endpoints, and API boundaries.
+- [SEO] Added missing <h1> tag to MarkAttendance.tsx for semantic HTML hierarchy
