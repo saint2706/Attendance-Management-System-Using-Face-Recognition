@@ -100,7 +100,7 @@ def test_mobile_menu_closes_on_outside_click(mobile_page: Page, server_url: str)
     expect(nav_menu).to_have_class(re.compile(r"is-open"))
 
     # Click outside the menu (on main content), forcing the click to bypass interceptions
-    mobile_page.click("#main-content", force=True)
+    mobile_page.click("body", position={"x": 0, "y": 0})
 
     # Menu should be closed
     expect(nav_menu).not_to_have_class(re.compile(r"is-open"))
