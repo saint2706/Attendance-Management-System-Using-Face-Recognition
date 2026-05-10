@@ -67,3 +67,8 @@
 - **Result**: Significantly faster query execution for user-specific attendance records over a time range, improving the responsiveness of attendance history lookups.
 
 - **Optimization**: Replaced `exists()` with `bool()` in `get_daily_trends` and `get_department_summary` to prevent redundant queries (N+1-like issue) when the queryset is iterated over immediately afterwards.
+
+## Optimization: N+1 query issue in Liveness Evaluation Task
+- Found multiple `.aggregate()` queries being executed consecutively against the same queryset in `recognition/scheduled_tasks.py` (`scheduled_liveness_evaluation`).
+- **Optimization:** Refactored these sequential database queries into a single `.aggregate()` call using `Count("id")`, `Count("id", filter=Q(...))`, and `Avg("liveness_confidence", filter=Q(...))` to minimize database roundtrips.
+- **Result:** Decreased query count from 2 to 1 on the scheduled liveness evaluation Celery task.
