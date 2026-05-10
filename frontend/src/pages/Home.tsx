@@ -112,28 +112,28 @@ export const Home = () => {
             <section className="features" aria-labelledby="features-title">
                 <h2 className="features-title text-center" id="features-title">Why Choose Our System?</h2>
                 <div className="features-grid">
-                    <article className="feature-card card card-elevated">
+                    <article className="feature-card card card-elevated" aria-labelledby="feature-fast-title">
                         <div className="card-body text-center">
                             <Zap width={32} height={32} className="feature-icon" aria-hidden="true" />
-                            <h3>Fast & Accurate</h3>
+                            <h3 id="feature-fast-title">Fast & Accurate</h3>
                             <p className="text-muted">
                                 Advanced AI-powered face recognition ensures quick and precise attendance marking.
                             </p>
                         </div>
                     </article>
-                    <article className="feature-card card card-elevated">
+                    <article className="feature-card card card-elevated" aria-labelledby="feature-secure-title">
                         <div className="card-body text-center">
                             <Shield width={32} height={32} className="feature-icon" aria-hidden="true" />
-                            <h3>Secure & Private</h3>
+                            <h3 id="feature-secure-title">Secure & Private</h3>
                             <p className="text-muted">
                                 Your biometric data is encrypted and stored securely with industry-standard protection.
                             </p>
                         </div>
                     </article>
-                    <article className="feature-card card card-elevated">
+                    <article className="feature-card card card-elevated" aria-labelledby="feature-reports-title">
                         <div className="card-body text-center">
                             <ChartBar width={32} height={32} className="feature-icon" aria-hidden="true" />
-                            <h3>Detailed Reports</h3>
+                            <h3 id="feature-reports-title">Detailed Reports</h3>
                             <p className="text-muted">
                                 Generate comprehensive attendance reports with visual analytics and export capabilities.
                             </p>
