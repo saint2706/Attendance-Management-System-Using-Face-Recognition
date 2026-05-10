@@ -254,11 +254,14 @@ def run_liveness_evaluation(
 
         # Aggregate liveness results
         results = LivenessResult.objects.filter(created_at__gte=since)
-        counts = results.aggregate(
-            total=Count("id"), passed=Count("id", filter=Q(challenge_status="passed"))
+        stats = results.aggregate(
+            total=Count("id"),
+            passed=Count("id", filter=Q(challenge_status="passed")),
+            avg_confidence=Avg("liveness_confidence", filter=Q(challenge_status="passed")),
         )
-        total_checks = counts["total"]
-        passed_count = counts["passed"]
+        total_checks = stats["total"]
+        passed_count = stats["passed"]
+        avg_confidence = stats["avg_confidence"]
 
         if total_checks == 0:
             duration = time.time() - start_time
@@ -282,11 +285,6 @@ def run_liveness_evaluation(
             }
 
         pass_rate = passed_count / total_checks
-
-        # Get average confidence for passed checks
-        avg_confidence = results.filter(challenge_status="passed").aggregate(
-            avg_confidence=Avg("liveness_confidence")
-        )["avg_confidence"]
 
         # Get breakdown by challenge type
         by_challenge = results.values("challenge_type").annotate(
