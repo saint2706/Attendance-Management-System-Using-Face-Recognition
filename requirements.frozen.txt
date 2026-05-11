@@ -344,7 +344,7 @@ termcolor==3.3.0
     # via
     #   fire
     #   tensorflow
-tf-keras==2.20.1
+tf-keras==2.21.0
     # via -r requirements.txt
 threadpoolctl==3.6.0
     # via scikit-learn
