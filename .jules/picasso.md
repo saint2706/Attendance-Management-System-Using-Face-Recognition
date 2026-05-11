@@ -61,3 +61,5 @@ Replaced large `size` prop with explicit `width` and `height` props on `lucide-r
 - Added `:focus-visible` styling directly to the base `a` element in `frontend/src/index.css` to ensure all unmarked links (like the 'Back to Home' links or main navigation text links) provide clear keyboard focus indicators.
 - Added `role="alert"` for the empty state and `aria-label="Start Setup Wizard"` to the Setup Wizard button in `Dashboard.tsx` to improve screen reader feedback.
 - Added `aria-labelledby` to `.feature-card` elements in `Home.tsx` to associate the feature cards with their titles for better accessibility.
+
+- Added `aria-errormessage` attributes to the username and password input fields in `Login.tsx` to properly associate the error messages with the inputs for screen reader users, improving form accessibility and validation feedback.
