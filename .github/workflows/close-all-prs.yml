@@ -1,6 +1,6 @@
 name: Close All Pull Requests
 
-on:
+"on":
   workflow_dispatch:
 
 permissions:
