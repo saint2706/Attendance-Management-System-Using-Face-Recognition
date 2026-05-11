@@ -298,7 +298,7 @@ requests[socks]==2.33.1
     #   tensorflow
 retina-face==0.0.17
     # via deepface
-rich==14.3.3
+rich==15.0.0
     # via keras
 rpds-py==0.30.0
     # via
