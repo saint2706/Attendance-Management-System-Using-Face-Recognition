@@ -99,6 +99,7 @@ export const Login = () => {
                             disabled={isLoading}
                             aria-invalid={Boolean(error)}
                             aria-describedby={error ? "login-error" : undefined}
+                            aria-errormessage={error ? "login-error" : undefined}
                         />
                     </div>
 
@@ -121,6 +122,7 @@ export const Login = () => {
                                 disabled={isLoading}
                                 aria-invalid={Boolean(error)}
                                 aria-describedby={error ? "login-error" : undefined}
+                                aria-errormessage={error ? "login-error" : undefined}
                             />
                             <button
                                 type="button"
