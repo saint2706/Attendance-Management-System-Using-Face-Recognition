@@ -596,7 +596,7 @@ spec:
       - command:
         - redis-server
         - /usr/local/etc/redis/redis.conf
-        image: redis:7.2.13-alpine
+        image: redis:8.6.3-alpine
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
