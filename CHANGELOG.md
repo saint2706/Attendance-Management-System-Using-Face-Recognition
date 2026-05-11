@@ -3053,3 +3053,6 @@ This version represents the state of the codebase when the original CHANGELOG.md
 - Fixed broken tutorial link in scikit-learn quick reference.
 - Fixed broken link to Web Quality Audit and Core Web Vitals in SEO and accessibility skills.
 - Fixed broken relative link to SKILL.md in CLAUDE.md.
+
+## [Unreleased]
+- Fixed broken links in `docs/QUICKSTART.md` by removing trailing slashes from local server URLs.
