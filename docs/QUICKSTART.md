@@ -105,12 +105,12 @@ python manage.py runserver
 You should see output like:
 
 ```text
-Starting development server at http://127.0.0.1:8000/
+Starting development server at http://127.0.0.1:8000
 ```
 
 ### 9. Open the app in your browser
 
-Navigate to <http://127.0.0.1:8000/> in your web browser.
+Navigate to <http://127.0.0.1:8000> in your web browser.
 
 ## Demo login credentials
 
@@ -146,6 +146,6 @@ Navigate to <http://127.0.0.1:8000/> in your web browser.
   npm run dev
   ```
 
-  Then visit <http://localhost:5173/> for the React-based interface.
+  Then visit <http://localhost:5173> for the React-based interface.
 
 - **Production deployment:** When ready to deploy for real use, follow the [Deployment Guide](DEPLOYMENT.md) and [Security & Compliance Guide](security.md).
