@@ -301,7 +301,7 @@ def setup_wizard_step3(request):
         context["step_description"] = (
             "Create your first employee account and capture their photos for face recognition."
         )
-        return render(request, "users/setup_wizard/step3_add_employee.html", context)
+        return render(request, "users/setup_wizard/step3_add_employee.html", context, status=429)
 
     progress = _get_or_create_wizard_progress(request.user)
 
@@ -373,7 +373,7 @@ def setup_wizard_step4(request):
         context["task"] = None
         context["model_trained"] = progress.model_trained
         context["form"] = TrainingConfirmForm()
-        return render(request, "users/setup_wizard/step4_train_model.html", context)
+        return render(request, "users/setup_wizard/step4_train_model.html", context, status=429)
 
     progress = _get_or_create_wizard_progress(request.user)
 

@@ -78,7 +78,7 @@ def test_wizard_step3_rate_limit(client):
 
     # 11th attempt - should be rate limited
     response = client.post(url, {})
-    assert response.status_code == 200
+    assert response.status_code == 429
 
     messages = list(response.context["messages"])
     assert len(messages) > 0
@@ -111,8 +111,8 @@ def test_wizard_step4_rate_limit(client):
 
     # 6th attempt
     response = client.post(url, {})
-    # Note: setup_wizard steps return 200 (re-render) even if limited.
-    assert response.status_code == 200
+    # Note: setup_wizard steps return 429 even if limited.
+    assert response.status_code == 429
 
     messages = list(response.context["messages"])
     assert len(messages) > 0
