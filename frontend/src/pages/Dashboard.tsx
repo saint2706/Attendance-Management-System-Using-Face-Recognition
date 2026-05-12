@@ -78,7 +78,7 @@ export const Dashboard = () => {
                     <p className="text-muted">{getGreeting()}, {user?.username}!</p>
                 </div>
                 <div className="header-actions">
-                    <Link to="/setup-wizard" className="btn btn-primary" title="Start the Setup Wizard" aria-label="Start Setup Wizard">
+                    <Link to="/setup-wizard" className="btn btn-primary" title="Start the Setup Wizard">
                         Setup Wizard
                     </Link>
                 </div>
