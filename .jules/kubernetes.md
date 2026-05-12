@@ -48,3 +48,4 @@ Security policies conform rigorously to best practice isolation strategies:
 
 These configurations reflect proactive mitigation against common cloud-native security vectors, delivering a resilient, highly available standard.
 Kubernetes configurations have been verified and optimized. Resource limits, liveness/readiness probes, and least-privilege security contexts (including automountServiceAccountToken: false and runAsNonRoot: true) are fully implemented and verified across all deployments.
+Kubernetes configuration files have been validated using yamllint, and test cases have passed. All resources have bounds applied correctly.
