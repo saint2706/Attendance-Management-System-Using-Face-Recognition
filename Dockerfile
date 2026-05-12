@@ -102,11 +102,11 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade system Python build tools to versions that resolve known CVEs.
+# Remove vulnerable system Python packages to resolve known CVEs.
 # (setuptools: CVE-2024-6345, CVE-2025-47273 | wheel: CVE-2026-24049)
-# Ensure we patch the system python environment specifically,
-# not the venv which is already patched in the build stage.
-RUN /usr/local/bin/python -m pip install --no-cache-dir "setuptools==82.0.1" "wheel==0.47.0"
+# We remove them instead of upgrading globally to avoid PEP 668 violations,
+# as the runtime stage exclusively uses the isolated /venv.
+RUN rm -rf /usr/local/lib/python3.12/site-packages/setuptools* /usr/local/lib/python3.12/site-packages/wheel*
 
 # Create directories for runtime data and set ownership
 # Do this before copying app code to maximize layer caching.
