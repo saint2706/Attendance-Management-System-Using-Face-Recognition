@@ -10,6 +10,8 @@ permissions:
 jobs:
   close-prs:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: crondaemon/close-pr@881bf1f79f8f753f256bc0d4ece4d7b183b250fb  # v1
         env:

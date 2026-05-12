@@ -49,6 +49,8 @@ jobs:
   lint:
     name: Lint & Formatting
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     timeout-minutes: 5
     steps:
       - name: Check out repository
@@ -86,6 +88,8 @@ jobs:
   tests_fast:
     name: Fast Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     timeout-minutes: 15
     needs: [lint]
     services:
@@ -181,6 +185,8 @@ jobs:
   tests_slow:
     name: Slow/Integration Tests
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     timeout-minutes: 45
     # Run on main branch push, manual dispatch with run_slow_tests=true,
     # or scheduled
@@ -260,6 +266,8 @@ jobs:
   tests_ui:
     name: UI/E2E Tests
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     timeout-minutes: 20
     # Run on main branch push or manual dispatch
     if: >-
