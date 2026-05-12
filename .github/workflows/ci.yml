@@ -92,6 +92,7 @@ jobs:
       postgres:
         image: postgres:16.2-alpine
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           POSTGRES_USER: ams
           POSTGRES_PASSWORD: ams
           POSTGRES_DB: ams
@@ -108,6 +109,7 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12"]
     env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
       DJANGO_SECRET_KEY: >-
@@ -155,12 +157,14 @@ jobs:
 
       - name: Django deploy checks
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           DJANGO_DEBUG: "0"
         run: |
           python manage.py check --deploy
 
       - name: Run fast tests with coverage (excludes slow, ui, e2e)
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
         run: |
           pytest -m "not slow and not ui and not e2e" -n auto --maxfail=5 \
@@ -196,6 +200,7 @@ jobs:
       postgres:
         image: postgres:16.2-alpine
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           POSTGRES_USER: ams
           POSTGRES_PASSWORD: ams
           POSTGRES_DB: ams
@@ -207,6 +212,7 @@ jobs:
           --health-timeout=5s
           --health-retries=5
     env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
       DJANGO_SECRET_KEY: >-
@@ -242,6 +248,7 @@ jobs:
 
       - name: Run slow and integration tests
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
         run: |
           pytest -m "slow or integration" --no-cov -v --durations=20
@@ -274,6 +281,7 @@ jobs:
       postgres:
         image: postgres:16.2-alpine
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           POSTGRES_USER: ams
           POSTGRES_PASSWORD: ams
           POSTGRES_DB: ams
@@ -285,6 +293,7 @@ jobs:
           --health-timeout=5s
           --health-retries=5
     env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
       DJANGO_SECRET_KEY: >-
@@ -336,6 +345,7 @@ jobs:
 
       - name: Run Playwright UI tests
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
         run: |
           pytest -m "ui or e2e" --no-cov -v tests/ui

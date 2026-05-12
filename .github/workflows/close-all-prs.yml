@@ -13,4 +13,5 @@ jobs:
     steps:
       - uses: crondaemon/close-pr@881bf1f79f8f753f256bc0d4ece4d7b183b250fb  # v1
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

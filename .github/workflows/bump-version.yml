@@ -63,6 +63,7 @@ jobs:
       - name: Detect bump type from conventional commits
         id: detect
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           INPUT_BUMP: ${{ inputs.bump_type }}
           LAST_TAG: ${{ steps.last-tag.outputs.tag }}
         run: |
@@ -94,6 +95,7 @@ jobs:
       - name: Calculate new version
         id: next
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           CURRENT: ${{ steps.current.outputs.version }}
           BUMP: ${{ steps.detect.outputs.bump }}
         run: |
@@ -109,6 +111,7 @@ jobs:
 
       - name: Update pyproject.toml
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           NEW_VERSION: ${{ steps.next.outputs.version }}
         run: |
           sed -i "0,/^version = /{s/^version = .*/version = \"${NEW_VERSION}\"/}" pyproject.toml
@@ -117,6 +120,7 @@ jobs:
       - name: Generate release notes
         id: notes
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           LAST_TAG: ${{ steps.last-tag.outputs.tag }}
           NEW_VERSION: ${{ steps.next.outputs.version }}
         run: |
@@ -170,6 +174,7 @@ jobs:
 
       - name: Update CHANGELOG.md
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           NEW_VERSION: ${{ steps.next.outputs.version }}
           LAST_TAG: ${{ steps.last-tag.outputs.tag }}
         run: |
@@ -249,6 +254,7 @@ jobs:
 
       - name: Commit version bump
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           NEW_VERSION: ${{ steps.next.outputs.version }}
         run: |
           git add pyproject.toml CHANGELOG.md
@@ -256,6 +262,7 @@ jobs:
 
       - name: Create and push tag
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           NEW_VERSION: ${{ steps.next.outputs.version }}
         run: |
           git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
@@ -263,6 +270,7 @@ jobs:
 
       - name: Create GitHub Release
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEW_VERSION: ${{ steps.next.outputs.version }}
           BODY: ${{ steps.notes.outputs.body }}

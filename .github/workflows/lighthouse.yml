@@ -45,6 +45,7 @@ jobs:
       postgres:
         image: postgres:16.2-alpine
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           POSTGRES_USER: ams
           POSTGRES_PASSWORD: ams
           POSTGRES_DB: ams
@@ -57,6 +58,7 @@ jobs:
           --health-retries=5
 
     env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       DJANGO_DEBUG: "1"
       DJANGO_SECRET_KEY: "temporary-secret-key"
       DATA_ENCRYPTION_KEY: "ZHVtbXktZW5jcnlwdGlvbi1rZXktZm9yLWJ1aWxkISE="
