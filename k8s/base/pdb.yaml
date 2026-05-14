@@ -1,3 +1,4 @@
+---
 # PodDisruptionBudget for web deployment
 # Ensures at least one web pod is available during voluntary disruptions (like node drains) to maintain service availability.
 apiVersion: policy/v1

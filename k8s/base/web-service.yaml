@@ -1,3 +1,4 @@
+---
 # Web service for internal cluster communication
 apiVersion: v1
 kind: Service
