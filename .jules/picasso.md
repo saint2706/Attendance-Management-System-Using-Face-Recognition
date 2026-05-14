@@ -63,3 +63,4 @@ Replaced large `size` prop with explicit `width` and `height` props on `lucide-r
 - Added `aria-labelledby` to `.feature-card` elements in `Home.tsx` to associate the feature cards with their titles for better accessibility.
 
 - Added `aria-errormessage` attributes to the username and password input fields in `Login.tsx` to properly associate the error messages with the inputs for screen reader users, improving form accessibility and validation feedback.
+- Updated Dockerfile to use `npm install -g pnpm` instead of `corepack enable pnpm` to avoid Node.js 20 dynamic import errors during CI builds.

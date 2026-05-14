@@ -1,0 +1,1 @@
+- Replaced `corepack enable pnpm` with `npm install -g pnpm` in Dockerfile to fix CI build issue.
