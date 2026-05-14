@@ -79,7 +79,7 @@ export const Login = () => {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className={`login-form ${isLoading ? 'opacity-50' : ''}`}>
+                <form onSubmit={handleSubmit} className="login-form">
                     <div className="form-group">
                         <label htmlFor="username" className="input-label">
                             Username <span className="text-danger" aria-hidden="true">*</span>

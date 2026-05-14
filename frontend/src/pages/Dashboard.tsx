@@ -146,7 +146,7 @@ export const Dashboard = () => {
                                     {isLoadingStats ? (
                                         <div className="animate-pulse h-8 w-24 skeleton rounded mt-1" aria-hidden="true" />
                                     ) : (
-                                        <p className="stat-value stat-status" title={`System status: ${stats.status}`}>
+                                        <p className="stat-value stat-status">
                                             <Activity size={20} aria-hidden="true" />
                                             {stats.status}
                                         </p>
