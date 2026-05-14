@@ -1,0 +1,2 @@
+- Replaced deprecated `corepack enable pnpm` with `RUN npm install -g pnpm@9.15.0` in the Dockerfile to mitigate node corepack vm missing callbacks bug.
+- Updated all deprecated actions pinned SHAs in `.github/workflows/docker-publish.yml` to newer SHAs compatible with node24, securing action supply chains and fixing the build pipeline.
