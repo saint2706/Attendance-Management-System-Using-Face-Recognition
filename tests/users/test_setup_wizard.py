@@ -210,6 +210,387 @@ class TestSetupWizardViews:
         assert response.status_code == 302
         assert "/dashboard/" in response.url
 
+    def test_step3_requires_step2_completion(self, authenticated_admin_client, admin_user):
+        """Test that step 3 requires step 2 completion."""
+        response = authenticated_admin_client.get(reverse("setup-wizard-step3"))
+        assert response.status_code == 302
+        assert "/setup-wizard-step2/" in response.url or "/setup-wizard/step2/" in response.url
+
+    def test_step3_renders_after_step2(self, authenticated_admin_client, admin_user):
+        """Test step 3 renders after step 2 completion."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.current_step = SetupWizardProgress.Step.ADD_EMPLOYEE
+        progress.save()
+
+        response = authenticated_admin_client.get(reverse("setup-wizard-step3"))
+        assert response.status_code == 200
+        assert b"Add First Employee" in response.content
+
+    def test_step3_create_employee_submission(self, authenticated_admin_client, admin_user):
+        """Test step 3 employee creation submission."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.current_step = SetupWizardProgress.Step.ADD_EMPLOYEE
+        progress.save()
+
+        response = authenticated_admin_client.post(
+            reverse("setup-wizard-step3"),
+            {
+                "create_employee": "1",
+                "username": "newemployee",
+                "password1": "complexPass123!",
+                "password2": "complexPass123!",
+            },
+        )
+        assert response.status_code == 302
+        assert "/setup-wizard/step3/" in response.url
+
+        progress.refresh_from_db()
+        assert progress.first_employee_username == "newemployee"
+
+    def test_step3_confirm_photos_submission(self, authenticated_admin_client, admin_user):
+        """Test step 3 confirm photos submission."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.first_employee_username = "newemployee"
+        progress.current_step = SetupWizardProgress.Step.ADD_EMPLOYEE
+        progress.save()
+
+        response = authenticated_admin_client.post(
+            reverse("setup-wizard-step3"),
+            {"confirm_photos": "1", "photos_captured": "True"},
+        )
+        assert response.status_code == 302
+        assert "/setup-wizard/step4/" in response.url
+
+        progress.refresh_from_db()
+        assert progress.first_employee_photos_captured
+        assert progress.current_step == SetupWizardProgress.Step.TRAIN_MODEL
+
+    def test_step4_requires_step3_completion(self, authenticated_admin_client, admin_user):
+        """Test that step 4 requires step 3 completion."""
+        response = authenticated_admin_client.get(reverse("setup-wizard-step4"))
+        assert response.status_code == 302
+        assert "/setup-wizard/step3/" in response.url
+
+    def test_step4_renders_after_step3(self, authenticated_admin_client, admin_user):
+        """Test step 4 renders after step 3 completion."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.first_employee_username = "newemployee"
+        progress.first_employee_photos_captured = True
+        progress.current_step = SetupWizardProgress.Step.TRAIN_MODEL
+        progress.save()
+
+        response = authenticated_admin_client.get(reverse("setup-wizard-step4"))
+        assert response.status_code == 200
+        assert b"Train Recognition Model" in response.content
+
+    def test_step4_renders_with_task_status(
+        self, authenticated_admin_client, admin_user, monkeypatch
+    ):
+        """Test step 4 renders correctly when a task is in progress."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.first_employee_username = "newemployee"
+        progress.first_employee_photos_captured = True
+        progress.training_task_id = "mock-task-id"
+        progress.current_step = SetupWizardProgress.Step.TRAIN_MODEL
+        progress.save()
+
+        class MockAsyncResult:
+            def __init__(self, task_id):
+                self.id = task_id
+                self.status = "SUCCESS"
+
+            def ready(self):
+                return True
+
+            def successful(self):
+                return True
+
+        monkeypatch.setattr("celery.result.AsyncResult", MockAsyncResult)
+
+        response = authenticated_admin_client.get(reverse("setup-wizard-step4"))
+        assert response.status_code == 200
+
+        progress.refresh_from_db()
+        assert progress.model_trained
+
+    def test_step4_start_training_import_error(
+        self, authenticated_admin_client, admin_user, monkeypatch
+    ):
+        """Test step 4 start training handles ImportError for celery tasks."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.first_employee_username = "newemployee"
+        progress.first_employee_photos_captured = True
+        progress.current_step = SetupWizardProgress.Step.TRAIN_MODEL
+        progress.save()
+
+        def mock_import_error(*args, **kwargs):
+            raise ImportError("Mocked import error")
+
+        # By doing this hack, it raises inside the try-except
+        monkeypatch.setattr("recognition.tasks.train_recognition_model.delay", mock_import_error)
+
+        response = authenticated_admin_client.post(
+            reverse("setup-wizard-step4"),
+            {"start_training": "1"},
+        )
+        assert response.status_code == 200
+        assert b"Training service not available. Please check configuration." in response.content
+
+    def test_step4_start_training_general_error(
+        self, authenticated_admin_client, admin_user, monkeypatch
+    ):
+        """Test step 4 start training handles Exception for celery tasks."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.first_employee_username = "newemployee"
+        progress.first_employee_photos_captured = True
+        progress.current_step = SetupWizardProgress.Step.TRAIN_MODEL
+        progress.save()
+
+        def mock_error(*args, **kwargs):
+            raise Exception("Mocked general error")
+
+        monkeypatch.setattr("recognition.tasks.train_recognition_model.delay", mock_error)
+
+        response = authenticated_admin_client.post(
+            reverse("setup-wizard-step4"),
+            {"start_training": "1"},
+        )
+        assert response.status_code == 200
+        assert b"Failed to start training. Please try again." in response.content
+
+    def test_step5_rate_limited(self, authenticated_admin_client, admin_user, monkeypatch):
+        """Test step 5 handles rate limits properly."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.first_employee_username = "newemployee"
+        progress.first_employee_photos_captured = True
+        progress.model_trained = True
+        progress.current_step = SetupWizardProgress.Step.START_SESSION
+        progress.save()
+
+        # Mock getattr on request inside setup_wizard_step5
+        def mock_limited(request, *args, **kwargs):
+            request.limited = True
+            return True
+
+        monkeypatch.setattr("django_ratelimit.decorators.is_ratelimited", mock_limited)
+
+        response = authenticated_admin_client.get(reverse("setup-wizard-step5"))
+        assert response.status_code == 429
+        assert b"Too many attempts. Please try again later." in response.content
+
+    def test_step4_rate_limited(self, authenticated_admin_client, admin_user, monkeypatch):
+        """Test step 4 handles rate limits properly."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.first_employee_username = "newemployee"
+        progress.first_employee_photos_captured = True
+        progress.current_step = SetupWizardProgress.Step.TRAIN_MODEL
+        progress.save()
+
+        # Mock ratelimit decorator
+        def mock_limited(request, *args, **kwargs):
+            request.limited = True
+            return True
+
+        monkeypatch.setattr("django_ratelimit.decorators.is_ratelimited", mock_limited)
+
+        response = authenticated_admin_client.get(reverse("setup-wizard-step4"))
+        assert response.status_code == 200
+        assert b"Too many attempts. Please try again later." in response.content
+
+    def test_step4_task_does_not_exist(self, authenticated_admin_client, admin_user, monkeypatch):
+        """Test step 4 task handling when Celery throws an Exception on AsyncResult."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.first_employee_username = "newemployee"
+        progress.first_employee_photos_captured = True
+        progress.training_task_id = "mock-task-id"
+        progress.current_step = SetupWizardProgress.Step.TRAIN_MODEL
+        progress.save()
+
+        def mock_async_result(task_id):
+            raise Exception("Celery task exception")
+
+        monkeypatch.setattr("celery.result.AsyncResult", mock_async_result)
+
+        response = authenticated_admin_client.get(reverse("setup-wizard-step4"))
+        assert response.status_code == 200
+
+    def test_step4_start_training_submission(
+        self, authenticated_admin_client, admin_user, monkeypatch
+    ):
+        """Test step 4 start training submission."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.first_employee_username = "newemployee"
+        progress.first_employee_photos_captured = True
+        progress.current_step = SetupWizardProgress.Step.TRAIN_MODEL
+        progress.save()
+
+        class MockResult:
+            id = "mock-task-id"
+
+        class MockDelay:
+            def __init__(self):
+                self.called = False
+                self.called_with = None
+
+            def delay(self, **kwargs):
+                self.called = True
+                self.called_with = kwargs
+                return MockResult()
+
+        mock_task = MockDelay()
+        monkeypatch.setattr("recognition.tasks.train_recognition_model.delay", mock_task.delay)
+
+        response = authenticated_admin_client.post(
+            reverse("setup-wizard-step4"),
+            {"start_training": "1"},
+        )
+        assert response.status_code == 302
+        assert "/setup-wizard/step4/" in response.url
+
+        progress.refresh_from_db()
+        assert progress.training_task_id == "mock-task-id"
+        assert mock_task.called
+        assert mock_task.called_with == {"initiated_by": admin_user.username}
+
+    def test_step4_continue_submission(self, authenticated_admin_client, admin_user):
+        """Test step 4 continue submission."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.first_employee_username = "newemployee"
+        progress.first_employee_photos_captured = True
+        progress.training_task_id = "mock-task-id"
+        progress.model_trained = True
+        progress.current_step = SetupWizardProgress.Step.TRAIN_MODEL
+        progress.save()
+
+        response = authenticated_admin_client.post(
+            reverse("setup-wizard-step4"),
+            {"continue": "1"},
+        )
+        assert response.status_code == 302
+        assert "/setup-wizard/step5/" in response.url
+
+        progress.refresh_from_db()
+        assert progress.current_step == SetupWizardProgress.Step.START_SESSION
+
+    def test_step5_requires_step4_completion(self, authenticated_admin_client, admin_user):
+        """Test that step 5 requires step 4 completion."""
+        response = authenticated_admin_client.get(reverse("setup-wizard-step5"))
+        assert response.status_code == 302
+        assert "/setup-wizard/step4/" in response.url
+
+    def test_step5_renders_after_step4(self, authenticated_admin_client, admin_user):
+        """Test step 5 renders after step 4 completion."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.first_employee_username = "newemployee"
+        progress.first_employee_photos_captured = True
+        progress.model_trained = True
+        progress.current_step = SetupWizardProgress.Step.START_SESSION
+        progress.save()
+
+        response = authenticated_admin_client.get(reverse("setup-wizard-step5"))
+        assert response.status_code == 200
+        assert b"Start Attendance Session" in response.content
+
+    def test_step5_start_session_check_in(self, authenticated_admin_client, admin_user):
+        """Test step 5 start session submission for check-in."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.first_employee_username = "newemployee"
+        progress.first_employee_photos_captured = True
+        progress.model_trained = True
+        progress.current_step = SetupWizardProgress.Step.START_SESSION
+        progress.save()
+
+        response = authenticated_admin_client.post(
+            reverse("setup-wizard-step5"),
+            {"session_type": "check_in"},
+        )
+        assert response.status_code == 302
+        assert reverse("mark-your-attendance") in response.url
+
+        progress.refresh_from_db()
+        assert progress.first_session_started
+        assert progress.completed
+
+    def test_step5_start_session_check_out(self, authenticated_admin_client, admin_user):
+        """Test step 5 start session submission for check-out."""
+        progress, _ = SetupWizardProgress.objects.get_or_create(user=admin_user)
+        progress.org_name = "Test"
+        progress.org_timezone = "UTC"
+        progress.camera_tested = True
+        progress.liveness_tested = True
+        progress.first_employee_username = "newemployee"
+        progress.first_employee_photos_captured = True
+        progress.model_trained = True
+        progress.current_step = SetupWizardProgress.Step.START_SESSION
+        progress.save()
+
+        response = authenticated_admin_client.post(
+            reverse("setup-wizard-step5"),
+            {"session_type": "check_out"},
+        )
+        assert response.status_code == 302
+        assert reverse("mark-your-attendance-out") in response.url
+
+        progress.refresh_from_db()
+        assert progress.first_session_started
+        assert progress.completed
+
 
 @pytest.mark.django_db
 class TestSetupWizardForms:
