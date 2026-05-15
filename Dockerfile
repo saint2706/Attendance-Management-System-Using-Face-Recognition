@@ -9,7 +9,7 @@ ARG PYTHON_VERSION=3.12.10
 # =============================================================================
 FROM node:20.11.1-alpine@sha256:bf77dc26e48ea95fca9d1aceb5acfa69d2e546b765ec2abfb502975f1a2d4def AS frontend-build
 
-RUN corepack enable pnpm
+RUN npm install -g pnpm@9.15.0
 
 RUN mkdir -p /app/frontend && chown -R node:node /app/frontend
 
