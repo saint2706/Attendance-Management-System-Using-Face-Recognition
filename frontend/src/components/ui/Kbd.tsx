@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * Props for the Kbd component.
  */
-interface KbdProps {
+export interface KbdProps {
   children: React.ReactNode;
   className?: string;
   size?: 'sm' | 'md' | 'lg';

@@ -7,7 +7,7 @@ import { getToken } from '../api/client';
 /**
  * Defines the state and functions available in the AuthContext.
  */
-interface AuthContextType {
+export interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     isAuthenticated: boolean;

@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import React from 'react';
 
-interface ActionCardProps {
+/**
+ * Properties for the ActionCard component.
+ */
+export interface ActionCardProps {
     to: string;
     title: string;
     icon: React.ElementType;
