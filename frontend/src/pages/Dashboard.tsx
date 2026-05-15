@@ -118,7 +118,10 @@ export const Dashboard = () => {
                                 <div>
                                     <p className="stat-label">Total Employees</p>
                                     {isLoadingStats ? (
-                                        <div className="animate-pulse h-8 w-16 skeleton rounded mt-1" aria-hidden="true" />
+                                        <>
+                                            <div className="animate-pulse h-8 w-16 skeleton rounded mt-1" aria-hidden="true" />
+                                            <span className="sr-only">Loading total employees...</span>
+                                        </>
                                     ) : (
                                         <p className="stat-value">{stats.totalEmployees}</p>
                                     )}
@@ -131,7 +134,10 @@ export const Dashboard = () => {
                                 <div>
                                     <p className="stat-label">Present Today</p>
                                     {isLoadingStats ? (
-                                        <div className="animate-pulse h-8 w-16 skeleton rounded mt-1" aria-hidden="true" />
+                                        <>
+                                            <div className="animate-pulse h-8 w-16 skeleton rounded mt-1" aria-hidden="true" />
+                                            <span className="sr-only">Loading present today...</span>
+                                        </>
                                     ) : (
                                         <p className="stat-value">{stats.presentToday}</p>
                                     )}
@@ -144,7 +150,10 @@ export const Dashboard = () => {
                                 <div>
                                     <p className="stat-label">System Status</p>
                                     {isLoadingStats ? (
-                                        <div className="animate-pulse h-8 w-24 skeleton rounded mt-1" aria-hidden="true" />
+                                        <>
+                                            <div className="animate-pulse h-8 w-24 skeleton rounded mt-1" aria-hidden="true" />
+                                            <span className="sr-only">Loading system status...</span>
+                                        </>
                                     ) : (
                                         <p className="stat-value stat-status">
                                             <Activity size={20} aria-hidden="true" />
