@@ -31,8 +31,9 @@ def _setup_django():
     )
     try:
         import django
+        from django.apps import apps
 
-        if not django.apps.apps.ready:
+        if not apps.ready:
             django.setup()
         return True
     except Exception as e:
@@ -147,11 +148,82 @@ def predict(
         if profile_threshold is not None:
             threshold = profile_threshold
 
-    import random
+    # Actual Face Recognition Prediction
+    if not _setup_django():
+        logger.error("Failed to setup Django for prediction.")
+        sys.exit(1)
 
-    # Simulate prediction (in production, this would call the actual model)
-    # For demonstration, generate a random score
-    score = random.uniform(0.3, 0.95)
+    from django.conf import settings
+
+    import cv2
+    from deepface import DeepFace
+
+    from recognition.pipeline import extract_embedding, find_closest_dataset_match
+    from recognition.views import (
+        _get_face_detection_backend,
+        _get_face_recognition_model,
+        _load_dataset_embeddings_for_matching,
+        _should_enforce_detection,
+    )
+
+    frame = cv2.imread(str(image_path))
+    if frame is None:
+        logger.error(f"Failed to read image at {image_path}")
+        sys.exit(1)
+
+    model_name = _get_face_recognition_model()
+    detector_backend = _get_face_detection_backend()
+    enforce_detection = _should_enforce_detection()
+
+    try:
+        representations = DeepFace.represent(
+            img_path=frame,
+            model_name=model_name,
+            detector_backend=detector_backend,
+            enforce_detection=enforce_detection,
+            align=False,
+        )
+        embedding_vector, facial_area = extract_embedding(representations)
+
+        if embedding_vector is None:
+            score = 0.0
+        else:
+            dataset_index = _load_dataset_embeddings_for_matching(
+                model_name, detector_backend, enforce_detection
+            )
+
+            import numpy as np
+
+            normalized_index = []
+            for entry in dataset_index:
+                candidate = entry.get("embedding") if isinstance(entry, dict) else None
+                if candidate is not None:
+                    if not isinstance(candidate, np.ndarray):
+                        try:
+                            candidate = np.array(candidate, dtype=float)
+                        except Exception:
+                            continue
+                    normalized_entry = dict(entry)
+                    normalized_entry["embedding"] = candidate
+                    normalized_index.append(normalized_entry)
+
+            if not normalized_index:
+                score = 0.0
+            else:
+                distance_metric = getattr(settings, "DEEPFACE_DISTANCE_METRIC", "cosine")
+                match_result = find_closest_dataset_match(
+                    embedding_vector, normalized_index, distance_metric
+                )
+
+                if match_result is None:
+                    score = 0.0
+                else:
+                    _, distance, _ = match_result
+                    score = max(0.0, min(1.0, 1.0 - distance)) if distance is not None else 0.0
+
+    except Exception as e:
+        logger.error(f"Face recognition error: {e}")
+        score = 0.0
 
     # Get band and action
     band_name, band_config, action_config = get_score_band(score, policy)
