@@ -64,3 +64,5 @@ Replaced large `size` prop with explicit `width` and `height` props on `lucide-r
 
 - Added `aria-errormessage` attributes to the username and password input fields in `Login.tsx` to properly associate the error messages with the inputs for screen reader users, improving form accessibility and validation feedback.
 - Added `.sr-only` visually hidden text alongside the loading skeletons in `Dashboard.tsx` to explicitly announce "Loading total employees...", "Loading present today...", and "Loading system status..." to screen readers while data is being fetched.
+- Removed redundant `aria-label` on elements containing descriptive visible text (WCAG 2.5.3: Label in Name).
+- Added dynamic `title` tooltips to status indicators in UI dashboards for improved contextual assistance.
