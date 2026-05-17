@@ -12,3 +12,6 @@
 
 ## Further checks required
 - None
+
+## Dependabot update
+- Added `github-actions` ecosystem to `.github/dependabot.yml` per best practices to ensure actions updates are managed.
