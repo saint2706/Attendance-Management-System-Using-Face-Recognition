@@ -67,7 +67,7 @@ export const Navbar = () => {
                                 </li>
                                 {user && (
                                     <li className="nav-user">
-                                        <span className="badge badge-info">{user.username}</span>
+                                        <span className="badge badge-info" title={`Logged in as ${user.username}`}>{user.username}</span>
                                     </li>
                                 )}
                             </>

@@ -18,7 +18,7 @@ Added aria-live for loading states, improved aria-labelledby for sections, and a
 
 - Replaced broken raster hero image (`/icons/icon-512.png`) with an accessible SVG `ScanFace` icon from Lucide React to gracefully handle missing static assets and match application aesthetics.
 - Replaced hardcoded Tailwind-like classes (`bg-gray-200`) in Dashboard statistics skeletons with a new reusable, theme-aware CSS `.skeleton` class so loading skeletons correctly adjust visibility during dark mode.
-## UX Improvements\n- Added `Escape` key accessibility for closing the mobile menu in the Navbar.
+## UX Improvements- Added `Escape` key accessibility for closing the mobile menu in the Navbar.
 \n- Confirmed `Space` and `Escape` keyboard accessibility is working in MarkAttendance.tsx for capture and reset actions.
 # Picasso UX Improvements
 
@@ -64,3 +64,4 @@ Replaced large `size` prop with explicit `width` and `height` props on `lucide-r
 
 - Added `aria-errormessage` attributes to the username and password input fields in `Login.tsx` to properly associate the error messages with the inputs for screen reader users, improving form accessibility and validation feedback.
 - Added `.sr-only` visually hidden text alongside the loading skeletons in `Dashboard.tsx` to explicitly announce "Loading total employees...", "Loading present today...", and "Loading system status..." to screen readers while data is being fetched.
+- Added title tooltips to dynamic stat values in Dashboard.tsx and user badge in Navbar.tsx to improve usability.

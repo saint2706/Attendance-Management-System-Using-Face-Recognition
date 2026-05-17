@@ -123,7 +123,7 @@ export const Dashboard = () => {
                                             <span className="sr-only">Loading total employees...</span>
                                         </>
                                     ) : (
-                                        <p className="stat-value">{stats.totalEmployees}</p>
+                                        <p className="stat-value" title={`Total Employees: ${stats.totalEmployees}`}>{stats.totalEmployees}</p>
                                     )}
                                 </div>
                                 <Users width={32} height={32} className="stat-icon" aria-hidden="true" />
@@ -139,7 +139,7 @@ export const Dashboard = () => {
                                             <span className="sr-only">Loading present today...</span>
                                         </>
                                     ) : (
-                                        <p className="stat-value">{stats.presentToday}</p>
+                                        <p className="stat-value" title={`Present Today: ${stats.presentToday}`}>{stats.presentToday}</p>
                                     )}
                                 </div>
                                 <UserCheck width={32} height={32} className="stat-icon" aria-hidden="true" />
@@ -155,7 +155,7 @@ export const Dashboard = () => {
                                             <span className="sr-only">Loading system status...</span>
                                         </>
                                     ) : (
-                                        <p className="stat-value stat-status">
+                                        <p className="stat-value stat-status" title={`System Status: ${stats.status}`}>
                                             <Activity size={20} aria-hidden="true" />
                                             {stats.status}
                                         </p>
