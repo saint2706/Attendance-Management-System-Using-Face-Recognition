@@ -10,7 +10,7 @@
 
 **Attendance-Management-System-Using-Face-Recognition** is a modern, full-stack solution for automated time-tracking. It combines state-of-the-art deep learning (FaceNet) with a robust Django backend to deliver a seamless experience for employees and admins alike.
 
-![Home Page Light Theme](docs/screenshots/home-light.png)
+![Home Page Light Theme](docs/screenshots/home.png)
 
 ## Why this project?
 

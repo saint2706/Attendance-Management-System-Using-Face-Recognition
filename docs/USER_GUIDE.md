@@ -18,7 +18,7 @@ If you are new to the system, start with the [Quick Start Guide](QUICKSTART.md) 
 
 1. Navigate to the system's home page.
 
-    ![Home page](screenshots/home-light.png)
+    ![Home page](screenshots/home.png)
 
     *The home page shows the main actions: Mark Time-In, Mark Time-Out, and Dashboard Login.*
 
@@ -51,7 +51,7 @@ If you are new to the system, start with the [Quick Start Guide](QUICKSTART.md) 
 
 After logging in as an admin, you will see the Admin Dashboard with a first-run checklist (if setup is incomplete) and quick-action cards.
 
-![Admin dashboard](screenshots/admin-dashboard-light.png)
+![Admin dashboard](screenshots/admin-dashboard.png)
 
 *The admin dashboard provides quick access to employee management, photo capture, and reports.*
 
@@ -60,7 +60,7 @@ After logging in as an admin, you will see the Admin Dashboard with a first-run 
 1. Log in to your admin dashboard.
 2. Click on **Register Employee**.
 
-    ![Register employee](screenshots/register.png)
+    ![Register employee](screenshots/employee-registration.png)
 
     *The registration form for adding a new employee to the system.*
 
@@ -71,6 +71,8 @@ After logging in as an admin, you will see the Admin Dashboard with a first-run 
 1. From the admin dashboard, click on **Add Photos**.
 2. Enter the username of the employee and click **Add Photos**.
 3. The system will automatically capture a set of images to create a face profile for the employee. Ensure the employee is in a well-lit area and facing the camera.
+
+    ![Employee Enrollment](screenshots/employee-enrollment.png)
 
 > [!TIP]
 > For best recognition accuracy, capture **8-12 images** per employee under varied lighting and poses. See the [Training Protocol](TRAINING_PROTOCOL.md) for detailed guidance on diverse data collection.
@@ -86,9 +88,13 @@ The Attendance Session view provides a live feed of recognition attempts with re
     - Liveness detection outcomes
     - Check-in/check-out controls
 
+    ![Attendance Session](screenshots/attendance-session.png)
+
 #### Viewing Attendance Reports
 
 Admins have access to several attendance reports:
+
+![Attendance Reports](screenshots/reports.png)
 
 - **Attendance by Date:** View a list of all employees who were present on a specific date, along with their work hours.
 - **Attendance by Employee:** View the complete attendance history for a single employee over a selected date range.
