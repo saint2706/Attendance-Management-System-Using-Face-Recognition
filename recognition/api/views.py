@@ -7,7 +7,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
-from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -318,19 +318,10 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
         if match_result is None:
-            response = Response(
-                {
-                    "type": "about:blank",
-                    "title": "Match Failed",
-                    "status": status.HTTP_200_OK,
-                    "detail": "Face recognized but no match found in database",
-                    "instance": request.path,
-                    "recognition": {"detected": True, "matched": False},
-                },
-                status=status.HTTP_200_OK,
+            raise RecognitionException(
+                {"detail": "Face recognized but no match found in database"},
+                recognition_data={"detected": True, "matched": False},
             )
-            response.content_type = "application/problem+json"
-            return response
 
         matched_username, distance, _ = match_result
 
