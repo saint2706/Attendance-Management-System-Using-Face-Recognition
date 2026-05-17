@@ -1,3 +1,4 @@
+---
 # Kubernetes namespace for the Attendance System
 apiVersion: v1
 kind: Namespace

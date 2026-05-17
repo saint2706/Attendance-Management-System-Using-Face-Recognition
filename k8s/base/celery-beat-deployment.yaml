@@ -1,3 +1,4 @@
+---
 # Celery Beat scheduler deployment for periodic tasks
 apiVersion: apps/v1
 kind: Deployment
