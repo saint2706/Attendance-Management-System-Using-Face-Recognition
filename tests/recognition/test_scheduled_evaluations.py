@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.hashers import make_password
 
@@ -432,3 +432,94 @@ class TestSystemHealthDashboardWithEvaluation:
         assert "evaluation_state" in response.context
         assert response.context["evaluation_state"]["latest_evaluation"] is not None
         assert response.context["evaluation_state"]["latest_evaluation"]["accuracy"] == 0.95
+
+
+@pytest.mark.django_db
+@pytest.mark.slow
+@pytest.mark.integration
+class TestFairnessAuditScheduledTask:
+    """Tests for fairness audits and evaluation edge cases in scheduled tasks."""
+
+    @patch("recognition.scheduled_tasks._get_reports_dir")
+    @patch("src.evaluation.fairness.run_fairness_audit")
+    def test_run_fairness_audit_success(self, mock_run_audit, mock_reports_dir, settings):
+        settings.CELERY_TASK_ALWAYS_EAGER = True
+
+        mock_path = MagicMock()
+        mock_reports_dir.return_value = mock_path
+        mock_result = MagicMock()
+        mock_result.evaluation.metrics = {"accuracy": 0.95, "samples": 100, "threshold": 0.5}
+        mock_sample = MagicMock()
+        mock_sample.ground_truth = "user1"
+        mock_result.evaluation.samples = [mock_sample]
+        mock_result.group_metrics = {"group1": {}}
+        mock_result.summary_path = "/path/to/summary.json"
+        mock_run_audit.return_value = mock_result
+
+        from recognition.scheduled_tasks import run_fairness_audit
+
+        result = run_fairness_audit.apply().get()
+
+        assert result["success"] is True
+        assert result["evaluation_type"] == "fairness"
+        assert result["accuracy"] == 0.95
+        assert result["samples_evaluated"] == 100
+
+    @patch("recognition.scheduled_tasks._get_reports_dir")
+    @patch("src.evaluation.fairness.run_fairness_audit")
+    def test_run_fairness_audit_failure(self, mock_run_audit, mock_reports_dir, settings):
+        settings.CELERY_TASK_ALWAYS_EAGER = True
+
+        mock_path = MagicMock()
+        mock_reports_dir.return_value = mock_path
+        mock_run_audit.side_effect = Exception("Audit failed")
+
+        from recognition.scheduled_tasks import run_fairness_audit
+
+        result = run_fairness_audit.apply().get()
+
+        assert result["success"] is False
+        assert result["evaluation_type"] == "fairness"
+        assert "Audit failed" in result["error_message"]
+
+    @patch("src.evaluation.face_recognition_eval.EvaluationConfig")
+    def test_run_face_recognition_evaluation_exception(self, mock_config, settings):
+        settings.CELERY_TASK_ALWAYS_EAGER = True
+        mock_config.side_effect = Exception("Evaluation failed")
+        from recognition.scheduled_tasks import _run_face_recognition_evaluation
+
+        result = _run_face_recognition_evaluation(
+            evaluation_type="nightly", task_id="test-task-123"
+        )
+
+        assert result.success is False
+        assert "Evaluation failed" in result.error_message
+
+    @patch("src.evaluation.face_recognition_eval.run_face_recognition_evaluation")
+    @patch("recognition.scheduled_tasks._get_reports_dir")
+    def test_run_face_recognition_evaluation_success(
+        self, mock_get_reports_dir, mock_run, settings
+    ):
+        settings.CELERY_TASK_ALWAYS_EAGER = True
+
+        mock_path = MagicMock()
+        mock_get_reports_dir.return_value = mock_path
+
+        mock_result = MagicMock()
+        mock_result.metrics = {"accuracy": 0.95, "samples": 100, "threshold": 0.5}
+        mock_sample = MagicMock()
+        mock_sample.ground_truth = "user1"
+        mock_result.samples = [mock_sample]
+        mock_run.return_value = mock_result
+
+        # Here we also mock EvaluationConfig because importing recognition.views has issues in testing setup
+        with patch("src.evaluation.face_recognition_eval.EvaluationConfig"):
+            from recognition.scheduled_tasks import _run_face_recognition_evaluation
+
+            result = _run_face_recognition_evaluation(
+                evaluation_type="nightly", task_id="test-task-123"
+            )
+
+            assert result.success is True
+            assert result.accuracy == 0.95
+            assert result.samples_evaluated == 100
