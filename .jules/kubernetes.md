@@ -48,3 +48,6 @@ Security policies conform rigorously to best practice isolation strategies:
 
 These configurations reflect proactive mitigation against common cloud-native security vectors, delivering a resilient, highly available standard.
 Kubernetes configurations have been verified and optimized. Resource limits, liveness/readiness probes, and least-privilege security contexts (including automountServiceAccountToken: false and runAsNonRoot: true) are fully implemented and verified across all deployments.
+
+## YAML Formatting Improvements
+- Resolved `yamllint` warnings across all Kubernetes manifests by explicitly adding the `---` sequence to signify the start of a YAML document. This enforces standardized YAML formatting across the `k8s/` directory and improves consistency when processed by automated deployment tools.

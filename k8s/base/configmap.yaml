@@ -1,3 +1,4 @@
+---
 # ConfigMap for non-sensitive Django configuration
 apiVersion: v1
 kind: ConfigMap
