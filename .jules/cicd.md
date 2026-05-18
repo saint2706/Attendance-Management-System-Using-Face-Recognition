@@ -12,3 +12,6 @@
 
 ## Further checks required
 - None
+
+## Recent Improvements
+- Added `github-actions` to `dependabot.yml` to track and update pinned SHA versions for GitHub Actions dependencies automatically.
