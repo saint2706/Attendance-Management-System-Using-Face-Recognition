@@ -33,6 +33,7 @@ from src.common import (
     encrypt_bytes,
     encrypt_face_bytes,
 )
+from src.common.seeding import set_global_seed
 
 from . import embedding_cache
 from .views import (
@@ -361,6 +362,9 @@ def train_model_sync(*, initiated_by: str | None = None) -> dict[str, Any]:
 
     test_split_ratio = _get_recognition_training_test_split_ratio()
     random_seed = _get_recognition_training_seed()
+
+    # Ensure deterministic split and training
+    set_global_seed(random_seed)
 
     X_train, X_test, y_train, y_test = train_test_split(
         embedding_vectors,

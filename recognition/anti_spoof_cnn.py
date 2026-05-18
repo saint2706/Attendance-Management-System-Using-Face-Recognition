@@ -134,11 +134,13 @@ class AntiSpoofCNN:
                 metrics=["accuracy"],
             )
 
+            import tensorflow as tf
             from tensorflow import lite
 
             # Convert to TFLite and quantize
             converter = lite.TFLiteConverter.from_keras_model(model)
             converter.optimizations = [lite.Optimize.DEFAULT]
+            converter.target_spec.supported_types = [tf.float16]
             tflite_model = converter.convert()
 
             return tflite_model
@@ -230,9 +232,9 @@ class AntiSpoofCNN:
 
             # Ensure 3 channels
             if resized.ndim == 2:
-                resized = np.stack([resized] * 3, axis=-1)
+                resized = cv2.cvtColor(resized, cv2.COLOR_GRAY2RGB)
             elif resized.shape[-1] == 4:
-                resized = resized[..., :3]
+                resized = cv2.cvtColor(resized, cv2.COLOR_BGRA2BGR)
 
             # Normalize to [0, 1]
             normalized = resized.astype(np.float32) / 255.0
