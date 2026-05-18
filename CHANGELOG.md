@@ -3056,3 +3056,6 @@ This version represents the state of the codebase when the original CHANGELOG.md
 
 ## [Unreleased]
 - Fixed broken links in `docs/QUICKSTART.md` by removing trailing slashes from local server URLs.
+
+### Documentation
+- Addressed issue #1 by capturing missing/outdated documentation screenshots and updating references in the User Guide.

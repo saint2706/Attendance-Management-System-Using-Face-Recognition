@@ -42,3 +42,4 @@
   - Removed trailing slash from URLs `http://127.0.0.1:8000/` and `http://localhost:5173/` in `docs/QUICKSTART.md` to resolve broken link checks.
   - Verified `make lint` and `cd frontend && pnpm run lint` pass without errors.
   - Verified `cd frontend && pnpm run build` completes successfully.
+- **2025-03-08 (Session 9)**: Addressed issue #1 in `docs/GOOD_FIRST_ISSUES.md`. Captured documentation screenshots using `scripts/capture_screenshots.py` and updated references in `docs/USER_GUIDE.md` to use the newly captured screenshots (`home.png`, `admin-dashboard.png`, `employee-registration.png`, etc.). Deleted the outdated orphaned images (e.g., `home-light.png`). Verified full stack integrity with frontend lint/build checks and backend tests.
