@@ -1,3 +1,4 @@
+---
 # Celery worker deployment for async task processing
 apiVersion: apps/v1
 kind: Deployment

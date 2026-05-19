@@ -1,3 +1,4 @@
+---
 # PostgreSQL StatefulSet for database persistence
 apiVersion: apps/v1
 kind: StatefulSet
