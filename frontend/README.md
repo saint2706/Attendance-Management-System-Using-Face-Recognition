@@ -35,4 +35,3 @@ This directory contains the React-based frontend application for the Smart Atten
    ```
 
 For detailed usage, refer to the [User Guide](../docs/USER_GUIDE.md) and [Developer Guide](../docs/DEVELOPER_GUIDE.md).
-
