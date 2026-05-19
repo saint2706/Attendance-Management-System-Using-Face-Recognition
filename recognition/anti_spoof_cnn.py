@@ -134,11 +134,13 @@ class AntiSpoofCNN:
                 metrics=["accuracy"],
             )
 
+            import tensorflow as tf
             from tensorflow import lite
 
             # Convert to TFLite and quantize
             converter = lite.TFLiteConverter.from_keras_model(model)
             converter.optimizations = [lite.Optimize.DEFAULT]
+            converter.target_spec.supported_types = [tf.float16]
             tflite_model = converter.convert()
 
             return tflite_model
