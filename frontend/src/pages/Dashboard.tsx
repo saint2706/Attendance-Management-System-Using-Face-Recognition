@@ -94,7 +94,10 @@ export const Dashboard = () => {
                         <p className="text-muted mb-md">We couldn't retrieve the latest dashboard data.</p>
                         <button onClick={() => fetchStats()} className="btn btn-secondary" title="Retry loading statistics" disabled={isLoadingStats} aria-busy={isLoadingStats}>
                             {isLoadingStats ? (
-                                <Loader2 size={18} className="animate-spin" aria-hidden="true" />
+                                <>
+                                    <Loader2 size={18} className="animate-spin" aria-hidden="true" />
+                                    <span className="sr-only">Loading...</span>
+                                </>
                             ) : (
                                 <RefreshCw size={18} aria-hidden="true" />
                             )}
