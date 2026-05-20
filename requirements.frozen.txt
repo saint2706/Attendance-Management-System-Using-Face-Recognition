@@ -131,7 +131,7 @@ grpcio==1.78.0
     # via
     #   tensorboard
     #   tensorflow
-gunicorn==25.3.0
+gunicorn==26.0.0
     # via
     #   -r requirements.txt
     #   deepface
