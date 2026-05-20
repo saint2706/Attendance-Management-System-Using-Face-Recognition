@@ -179,7 +179,7 @@ def _train_classifier(
 
     existing_model = _load_existing_model()
     if existing_model is None:
-        classifier = SGDClassifier(loss="log_loss", random_state=42)
+        classifier = SGDClassifier(loss="log_loss", random_state=42, n_jobs=-1)
     else:
         classifier = existing_model
 
