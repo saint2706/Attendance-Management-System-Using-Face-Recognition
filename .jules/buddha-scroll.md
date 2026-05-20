@@ -31,3 +31,5 @@
 - [GEO/SEO] Synchronized and updated llms.txt and robots.txt to properly account for missing protected routes, task endpoints, and API boundaries.
 - [SEO] Added missing <h1> tag to MarkAttendance.tsx for semantic HTML hierarchy
 - [SEO] Removed duplicate `<h1>` in `MarkAttendance.tsx` to ensure a strict h1-h6 semantic HTML hierarchy.
+
+- [SEO] Validated that dynamically hoisting React 19 metadata effectively ensures proper semantic HTML formatting and SEO optimizations without static hardcoding sitemap URLs.
