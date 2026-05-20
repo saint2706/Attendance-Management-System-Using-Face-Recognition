@@ -12,3 +12,8 @@
 
 ## Further checks required
 - None
+# CI/CD Pipeline Optimizations
+
+## Date: $(date +"%Y-%m-%d")
+- Added `github-actions` package-ecosystem to `.github/dependabot.yml`.
+  - **Why:** To enable Dependabot to automatically track, update, and manage versions for pinned SHA GitHub Actions, aligning with our security best practices for CI/CD infrastructure.
