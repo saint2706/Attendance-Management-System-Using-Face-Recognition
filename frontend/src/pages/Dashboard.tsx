@@ -92,7 +92,7 @@ export const Dashboard = () => {
                         <AlertTriangle width={48} height={48} className="mx-auto text-warning mb-sm" aria-hidden="true" />
                         <h3 className="text-lg font-semibold mb-xs">Failed to load statistics</h3>
                         <p className="text-muted mb-md">We couldn't retrieve the latest dashboard data.</p>
-                        <button onClick={() => fetchStats()} className="btn btn-secondary" title="Retry loading statistics" disabled={isLoadingStats} aria-busy={isLoadingStats}>
+                        <button onClick={() => fetchStats()} className="btn btn-secondary" aria-label="Retry loading statistics" disabled={isLoadingStats} aria-busy={isLoadingStats}>
                             {isLoadingStats ? (
                                 <>
                                     <Loader2 size={18} className="animate-spin" aria-hidden="true" />
