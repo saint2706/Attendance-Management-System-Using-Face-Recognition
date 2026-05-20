@@ -1337,6 +1337,7 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 - Bump urllib3 from 2.5.0 to 2.6.0 in the pip group (`6b55304`)
 
 ### Documentation (Unreleased)
+- Replaced the default Vite template `frontend/README.md` with a custom Frontend README to fix broken links and provide accurate setup instructions.
 
 - Comprehensive documentation refresh for 2026: updated React SPA frontend references, fixed broken links, updated agent instructions
 - Added missing JSDoc/TSDoc comments to exported frontend components and API functions

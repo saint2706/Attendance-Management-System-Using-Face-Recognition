@@ -42,3 +42,4 @@
   - Removed trailing slash from URLs `http://127.0.0.1:8000/` and `http://localhost:5173/` in `docs/QUICKSTART.md` to resolve broken link checks.
   - Verified `make lint` and `cd frontend && pnpm run lint` pass without errors.
   - Verified `cd frontend && pnpm run build` completes successfully.
+- **2025-03-08 (Session 9)**: Audited project documentation and codebase to ensure clarity, accuracy, and completeness. Replaced `frontend/README.md` (which contained the default Vite template text and had 2 broken links flagged by `markdown-link-check`) with a properly structured Frontend README that describes our React app and links to the project docs.
