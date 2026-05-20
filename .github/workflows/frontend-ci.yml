@@ -14,6 +14,10 @@ name: Frontend CI
 permissions:
   contents: read
 
+concurrency:
+  group: frontend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   frontend-lint:
     runs-on: ubuntu-latest

@@ -244,7 +244,7 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
         run: |
-          pytest -m "slow or integration" --no-cov -v --durations=20
+          pytest -m "slow or integration" -n auto --no-cov -v --durations=20
 
       - name: Smoke test - prepare splits
         run: |
@@ -338,4 +338,4 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: attendance_system_facial_recognition.settings
         run: |
-          pytest -m "ui or e2e" --no-cov -v tests/ui
+          pytest -m "ui or e2e" -n auto --no-cov -v tests/ui

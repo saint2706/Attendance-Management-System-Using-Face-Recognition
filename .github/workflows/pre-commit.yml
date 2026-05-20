@@ -10,6 +10,10 @@ name: pre-commit
 permissions:
   contents: read
 
+concurrency:
+  group: pre-commit-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
