@@ -18,7 +18,7 @@ If you are new to the system, start with the [Quick Start Guide](QUICKSTART.md) 
 
 1. Navigate to the system's home page.
 
-    ![Home page](screenshots/home-light.png)
+    ![Home page](screenshots/home.png)
 
     *The home page shows the main actions: Mark Time-In, Mark Time-Out, and Dashboard Login.*
 
@@ -51,7 +51,7 @@ If you are new to the system, start with the [Quick Start Guide](QUICKSTART.md) 
 
 After logging in as an admin, you will see the Admin Dashboard with a first-run checklist (if setup is incomplete) and quick-action cards.
 
-![Admin dashboard](screenshots/admin-dashboard-light.png)
+![Admin dashboard](screenshots/admin-dashboard.png)
 
 *The admin dashboard provides quick access to employee management, photo capture, and reports.*
 

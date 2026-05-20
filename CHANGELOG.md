@@ -8,6 +8,10 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 
 ## [Unreleased]
 
+### Fixed
+- docs: Corrected broken links for the home page and admin dashboard screenshots in `README.md` and `docs/USER_GUIDE.md`
+
+
 ### Added
 
 - docs: Documented `/admin/health/` endpoint in `docs/API_REFERENCE.md` as per good first issue.
@@ -1755,6 +1759,10 @@ This version represents the state of the codebase when the original CHANGELOG.md
 
 ## [Unreleased]
 
+### Fixed
+- docs: Corrected broken links for the home page and admin dashboard screenshots in `README.md` and `docs/USER_GUIDE.md`
+
+
 ## [1.9.0] - 2026-04-17
 
 ### Fixed
@@ -3056,4 +3064,8 @@ This version represents the state of the codebase when the original CHANGELOG.md
 - Fixed broken relative link to SKILL.md in CLAUDE.md.
 
 ## [Unreleased]
+
+### Fixed
+- docs: Corrected broken links for the home page and admin dashboard screenshots in `README.md` and `docs/USER_GUIDE.md`
+
 - Fixed broken links in `docs/QUICKSTART.md` by removing trailing slashes from local server URLs.
