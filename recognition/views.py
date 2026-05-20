@@ -390,6 +390,11 @@ class FaceRecognitionAPI(View):
 
     http_method_names = ["post", "options"]
 
+    def options(self, request, *args, **kwargs):  # pylint: disable=unused-argument
+        response = JsonResponse({})
+        response["Allow"] = "POST, OPTIONS"
+        return response
+
     def _authenticate_request(self, request) -> tuple[bool, Optional[str], Optional[str]]:
         """Validate session, API key, or JWT credentials for API access."""
 
