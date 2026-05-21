@@ -3371,7 +3371,7 @@ def view_attendance_date(request):
             time_qs = Time.objects.filter(date=date).select_related("user")
             present_qs = Present.objects.filter(date=date).select_related("user")
 
-            if present_qs.exists():
+            if present_qs:
                 qs, chart_url = hours_vs_employee_given_date(present_qs, time_qs)
             else:
                 messages.warning(request, "No records for the selected date.")
@@ -3421,7 +3421,7 @@ def view_attendance_employee(request):
                     .order_by("-date")
                 )
 
-                if present_qs.exists():
+                if present_qs:
                     qs, chart_url = hours_vs_date_given_employee(present_qs, time_qs, admin=True)
                 else:
                     messages.warning(request, "No records for the selected duration.")
@@ -3468,7 +3468,7 @@ def view_my_attendance_employee_login(request):
                 .order_by("-date")
             )
 
-            if present_qs.exists():
+            if present_qs:
                 qs, chart_url = hours_vs_date_given_employee(present_qs, time_qs, admin=False)
             else:
                 messages.warning(request, "No records for the selected duration.")
