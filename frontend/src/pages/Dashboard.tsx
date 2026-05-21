@@ -96,7 +96,6 @@ export const Dashboard = () => {
                             {isLoadingStats ? (
                                 <>
                                     <Loader2 size={18} className="animate-spin" aria-hidden="true" />
-                                    <span className="sr-only">Loading...</span>
                                 </>
                             ) : (
                                 <RefreshCw size={18} aria-hidden="true" />
