@@ -43,3 +43,4 @@
   - Verified `make lint` and `cd frontend && pnpm run lint` pass without errors.
   - Verified `cd frontend && pnpm run build` completes successfully.
 - **2025-03-08 (Session 9)**: Audited project documentation and codebase to ensure clarity, accuracy, and completeness. Replaced `frontend/README.md` (which contained the default Vite template text and had 2 broken links flagged by `markdown-link-check`) with a properly structured Frontend README that describes our React app and links to the project docs.
+- **2026-05-22**: Fixed broken link to issue template and changed npm commands to pnpm commands in documentation to match the project's package manager. Also verified build and lint commands.

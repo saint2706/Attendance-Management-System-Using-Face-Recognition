@@ -79,4 +79,4 @@ When updating documentation:
 3. Keep cross-references consistent
 4. Run `make docs-screenshots` after UI changes
 
-> **Tip:** Use the [Documentation Improvement](../.github/ISSUE_TEMPLATE/docs_improvement.yml) issue template to suggest changes.
+> **Tip:** Use the [Documentation Improvement](https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/new?template=docs_improvement.yml) issue template to suggest changes.

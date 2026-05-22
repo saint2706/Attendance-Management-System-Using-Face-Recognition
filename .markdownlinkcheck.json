@@ -62,6 +62,15 @@
     },
     {
       "pattern": "^https://github\\.com/psf/black"
+    },
+    {
+      "pattern": "^https://github\\.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/new/choose"
+    },
+    {
+      "pattern": "^https://github\\.com/saint2706/Attendance-Management-System-Using-Face-Recognition/security/advisories/new"
+    },
+    {
+      "pattern": "^https://github\\.com/saint2706/Attendance-Management-System-Using-Face-Recognition/issues/new\\?template=docs_improvement\\.yml"
     }
   ]
 }

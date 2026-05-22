@@ -142,8 +142,8 @@ Navigate to <http://127.0.0.1:8000> in your web browser.
 
   ```bash
   cd frontend
-  npm install
-  npm run dev
+  pnpm install
+  pnpm run dev
   ```
 
   Then visit <http://localhost:5173> for the React-based interface.

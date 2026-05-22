@@ -15,6 +15,9 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 
 ### Fixed
 
+- docs: Fix broken issue template links in DOCS_INDEX.md, CONTRIBUTING.md, and SUPPORT.md
+- docs: Updated npm commands to pnpm commands in frontend/README.md, docs/DEVELOPER_GUIDE.md, and docs/QUICKSTART.md to match the project package manager
+
 - docs: Fix missing screenshot link `home-light-updated.png` in `docs/USER_GUIDE.md` to point to `home-light.png`
 
 ## [1.9.0] - 2026-04-17

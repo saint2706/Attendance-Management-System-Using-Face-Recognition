@@ -474,14 +474,14 @@ The project includes a modern React frontend in the `frontend/` directory, built
 2. **Install dependencies:**
 
     ```bash
-    npm install
+    pnpm install
     # or: pnpm install
     ```
 
 3. **Start the development server:**
 
     ```bash
-    npm run dev
+    pnpm run dev
     ```
 
     The frontend will be available at `http://localhost:5173/` with hot module replacement.
@@ -490,10 +490,10 @@ The project includes a modern React frontend in the `frontend/` directory, built
 
 ```bash
 # Build for production
-npm run build
+pnpm run build
 
 # Preview production build
-npm run preview
+pnpm run preview
 ```
 
 ### Frontend Project Structure
