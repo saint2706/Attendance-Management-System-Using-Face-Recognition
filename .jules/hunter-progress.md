@@ -42,3 +42,4 @@
 - `tests/recognition/test_performance.py`: Ran black to fix line length issues.
 - `tests/recognition/test_face_recognition_api.py`: Removed invalid `F401` from the `noqa` comment for `from recognition import views_legacy`.
 - `tests/recognition/test_api_views.py.orig`: Removed the `.orig` backup file.
+- `tests/recognition/test_api_attendance_n_plus_one.py`, `tests/recognition/test_api_security_sentinel.py`, `tests/recognition/test_api_views.py`: Fixed failing tests returning 301 redirects by decorating with `@override_settings(SECURE_SSL_REDIRECT=False)`.

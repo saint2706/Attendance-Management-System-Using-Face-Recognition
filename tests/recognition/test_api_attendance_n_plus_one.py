@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.db import connection
+from django.test import override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
@@ -11,6 +12,7 @@ from users.models import Direction, RecognitionAttempt
 
 
 @pytest.mark.django_db
+@override_settings(SECURE_SSL_REDIRECT=False)
 def test_attendance_api_query_count():
     User = get_user_model()
     admin = User.objects.create(

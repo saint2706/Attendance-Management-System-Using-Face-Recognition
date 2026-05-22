@@ -12,6 +12,7 @@ from users.models import RecognitionAttempt
 
 @pytest.mark.django_db
 @override_settings(
+    SECURE_SSL_REDIRECT=False,
     RECOGNITION_API_KEYS=("secure-key-1",),
     RECOGNITION_DISTANCE_THRESHOLD=0.5,
     DEEPFACE_OPTIMIZATIONS={
@@ -52,7 +53,7 @@ def test_long_username_truncation(client, monkeypatch):
 
 
 @pytest.mark.django_db
-@override_settings(RECOGNITION_API_KEYS=("secure-key-1", "secure-key-2"))
+@override_settings(SECURE_SSL_REDIRECT=False, RECOGNITION_API_KEYS=("secure-key-1", "secure-key-2"))
 def test_api_key_authentication_works(client, monkeypatch):
     cache.clear()
 

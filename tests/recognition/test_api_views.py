@@ -1,6 +1,7 @@
 import datetime
 
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -38,6 +39,7 @@ def normal_user():
 
 @pytest.mark.django_db
 class TestUserViewSet:
+    @override_settings(SECURE_SSL_REDIRECT=False)
     def test_list_users_staff(self, api_client, admin_user, normal_user):
         api_client.force_authenticate(user=admin_user)
         url = reverse("user-list")
@@ -46,6 +48,7 @@ class TestUserViewSet:
         # Staff should see all users
         assert len(response.data["results"]) == 2
 
+    @override_settings(SECURE_SSL_REDIRECT=False)
     def test_list_users_non_staff(self, api_client, normal_user, admin_user):
         api_client.force_authenticate(user=normal_user)
         url = reverse("user-list")
@@ -55,6 +58,7 @@ class TestUserViewSet:
         assert len(response.data["results"]) == 1
         assert response.data["results"][0]["username"] == "normal"
 
+    @override_settings(SECURE_SSL_REDIRECT=False)
     def test_me_endpoint(self, api_client, normal_user):
         api_client.force_authenticate(user=normal_user)
         url = reverse("user-me")
