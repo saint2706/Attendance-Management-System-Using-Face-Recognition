@@ -48,3 +48,6 @@ Security policies conform rigorously to best practice isolation strategies:
 
 These configurations reflect proactive mitigation against common cloud-native security vectors, delivering a resilient, highly available standard.
 Kubernetes configurations have been verified and optimized. Resource limits, liveness/readiness probes, and least-privilege security contexts (including automountServiceAccountToken: false and runAsNonRoot: true) are fully implemented and verified across all deployments.
+
+## Updates
+- Correctly pinned container images (`redis:7.2.13-alpine` and `postgres:16.2-alpine`) in `.yaml` manifests to avoid unexpected breakages.
