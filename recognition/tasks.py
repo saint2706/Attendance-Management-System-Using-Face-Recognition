@@ -495,12 +495,15 @@ def incremental_face_training(self, employee_id: str, new_images: Sequence[str])
     )
 
     new_vectors: list[np.ndarray] = []
-    for image in new_images:
-        embedding = compute_face_encoding(Path(image))
-        if embedding is None:
-            logger.debug("No embedding generated for %s; skipping.", image)
-            continue
-        new_vectors.append(embedding.astype(np.float64))
+    import concurrent.futures
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        results = list(executor.map(compute_face_encoding, [Path(image) for image in new_images]))
+        for image, embedding in zip(new_images, results):
+            if embedding is None:
+                logger.debug("No embedding generated for %s; skipping.", image)
+                continue
+            new_vectors.append(embedding.astype(np.float64))
 
     if not new_vectors:
         logger.info(
