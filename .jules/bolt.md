@@ -72,3 +72,7 @@
 - Found multiple `.aggregate()` queries being executed consecutively against the same queryset in `recognition/scheduled_tasks.py` (`scheduled_liveness_evaluation`).
 - **Optimization:** Refactored these sequential database queries into a single `.aggregate()` call using `Count("id")`, `Count("id", filter=Q(...))`, and `Avg("liveness_confidence", filter=Q(...))` to minimize database roundtrips.
 - **Result:** Decreased query count from 2 to 1 on the scheduled liveness evaluation Celery task.
+## Optimization: CSS build failure due to duplicate @keyframes
+- **Problem**: The frontend build failed with `Unexpected "}" [css-syntax-error]` due to a duplicate `@keyframes spin` definition that was partially removed but left a syntax error in `frontend/src/pages/Login.css`, and a duplicate definition in `frontend/src/index.css`.
+- **Optimization**: Consolidated the `@keyframes spin` definition and the `.animate-spin` class into `frontend/src/index.css` (which is globally available) and removed the redundant definitions from `frontend/src/pages/Login.css`.
+- **Result**: Resolved the CSS syntax error, allowing the `pnpm build` process to complete successfully, and reduced duplicate CSS code.
