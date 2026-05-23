@@ -134,15 +134,16 @@ class AntiSpoofCNN:
                 metrics=["accuracy"],
             )
 
-            import tensorflow as tf
-            from tensorflow import lite
-            import numpy as np
-            import cv2
             import glob
+
+            import cv2
+            import numpy as np
+            from tensorflow import lite
 
             # Proper INT8 quantization logic
             def representative_dataset():
                 import os
+
                 # Get image paths from training dataset
                 train_dir = os.path.join("face_recognition_data", "training_dataset")
                 img_paths = glob.glob(os.path.join(train_dir, "*", "*.jpg"))
