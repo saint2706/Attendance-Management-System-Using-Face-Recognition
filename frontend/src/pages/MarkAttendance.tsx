@@ -229,7 +229,8 @@ export const MarkAttendance = () => {
             <div className="attendance-container">
                 <header className="attendance-header">
                     <Clock width={32} height={32} className="header-icon" aria-hidden="true" />
-                    <h1>Mark Time-{direction === 'in' ? 'In' : 'Out'}</h1>
+                    <h1 className="sr-only">Mark Attendance</h1>
+                    <h2>Mark Time-{direction === 'in' ? 'In' : 'Out'}</h2>
                     <p className="text-muted">
                         Position your face in the camera and click capture
                     </p>
