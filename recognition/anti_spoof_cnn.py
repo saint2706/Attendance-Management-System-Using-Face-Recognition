@@ -136,11 +136,38 @@ class AntiSpoofCNN:
 
             import tensorflow as tf
             from tensorflow import lite
+            import numpy as np
+            import cv2
+            import glob
+
+            # Proper INT8 quantization logic
+            def representative_dataset():
+                import os
+                # Get image paths from training dataset
+                train_dir = os.path.join("face_recognition_data", "training_dataset")
+                img_paths = glob.glob(os.path.join(train_dir, "*", "*.jpg"))
+                # Use up to 100 images for calibration
+                for img_path in img_paths[:100]:
+                    img = cv2.imread(img_path)
+                    if img is not None:
+                        # Resize to model input size
+                        img = cv2.resize(img, self._input_size)
+                        # Ensure 3 channels
+                        if img.ndim == 2:
+                            img = np.stack([img] * 3, axis=-1)
+                        elif img.shape[-1] == 4:
+                            img = img[..., :3]
+
+                        img = img.astype(np.float32) / 255.0
+                        img = np.expand_dims(img, axis=0)
+                        yield [img]
 
             # Convert to TFLite and quantize
             converter = lite.TFLiteConverter.from_keras_model(model)
             converter.optimizations = [lite.Optimize.DEFAULT]
-            converter.target_spec.supported_types = [tf.float16]
+            converter.representative_dataset = representative_dataset
+            converter.target_spec.supported_ops = [lite.OpsSet.TFLITE_BUILTINS_INT8]
+
             tflite_model = converter.convert()
 
             return tflite_model
