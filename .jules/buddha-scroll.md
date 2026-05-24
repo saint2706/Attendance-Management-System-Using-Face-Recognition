@@ -31,3 +31,4 @@
 - [GEO/SEO] Synchronized and updated llms.txt and robots.txt to properly account for missing protected routes, task endpoints, and API boundaries.
 - [SEO] Added missing <h1> tag to MarkAttendance.tsx for semantic HTML hierarchy
 - [SEO] Removed duplicate `<h1>` in `MarkAttendance.tsx` to ensure a strict h1-h6 semantic HTML hierarchy.
+- [GEO] Updated static aria-label values to dynamic state-reflective labels in Login.tsx and Navbar.tsx to improve screen reader accessibility.

@@ -84,7 +84,7 @@ export const Navbar = () => {
                     <button
                         onClick={toggleTheme}
                         className="btn btn-icon theme-toggle"
-                            aria-label="Toggle theme"
+                            aria-label={resolvedTheme === 'dark' ? "Switch to light mode" : "Switch to dark mode"}
                             aria-pressed={resolvedTheme === 'dark'}
                             title={resolvedTheme === 'dark' ? "Switch to light mode" : "Switch to dark mode"}
                     >
