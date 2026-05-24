@@ -7,7 +7,7 @@ the fly by the helper scripts (see below) and encrypted with the active
 
 > **Quick start:** To see this dataset in action, follow the [Beginner Setup](../README.md#beginner-setup-fast-demo-no-prior-experience-required) instructions in the main README. The demo environment uses these synthetic faces to let you explore the full attendance workflow without setting up real employee photos.
 
-```
+```text
 sample_data/
   face_recognition_data/
     training_dataset/

@@ -14,15 +14,18 @@ Lower distances indicate closer matches. The default global threshold is `d ≤ 
 ## Score Bands and Actions
 
 ### 1. Confident Accept (Distance ≤ 0.30)
+
 - Automatic approval.
 - Expected frequency: ~85% of valid attempts when cameras and lighting match enrollment conditions.
 
 ### 2. Uncertain (0.30 < Distance ≤ 0.45)
+
 - Secondary verification required (PIN/OTP).
 - Marked as provisional until the human challenge succeeds.
 - Expected frequency: ~10-12% of attempts.
 
 ### 3. Reject (Distance > 0.45)
+
 - Not marked, user notified.
 - Suggest re-enrollment after 5 failures or trigger liveness retraining.
 - Expected frequency: ~3-5% of attempts depending on the population and camera quality.

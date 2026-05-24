@@ -5,6 +5,7 @@ This directory contains UI tests for the Smart Attendance System using Playwrigh
 ## Overview
 
 These tests verify the user interface functionality, including:
+
 - Theme toggle and dark mode persistence
 - Mobile navigation behavior
 - Table enhancements (search, sort, export)
@@ -17,12 +18,14 @@ These tests verify the user interface functionality, including:
 Before running the tests, you need to:
 
 1. **Install Playwright:**
+
    ```bash
    pip install pytest-playwright
    playwright install chromium  # Or firefox, webkit
    ```
 
 2. **Start the Django development server:**
+
    ```bash
    python manage.py runserver
    ```
@@ -174,14 +177,17 @@ def test_mobile_feature(mobile_page: Page):
 
 ### Common Issues
 
-**Issue: "Connection refused" error**
+#### Issue: "Connection refused" error
+
 - Make sure Django server is running at `http://localhost:8000/`
 
-**Issue: Tests fail but work in browser**
+#### Issue: Tests fail but work in browser
+
 - Try running with `--headed` to see what's happening
 - Add `page.pause()` in your test to stop and inspect
 
-**Issue: Element not found**
+#### Issue: Element not found
+
 - Check that the element exists on the page
 - Ensure you're on the correct URL
 - Wait for dynamic content to load

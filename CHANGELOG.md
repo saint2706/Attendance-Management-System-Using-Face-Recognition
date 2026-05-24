@@ -1151,7 +1151,7 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 - Fix stored XSS vulnerability in attendance dashboard
 - Initial plan
 - Merge pull request #245 from saint2706/palette-mark-attendance-ux-17168237614502211500
-- Merge branch 'main' of https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition
+- Merge branch 'main' of <https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition>
 - Update screenshots and add management package in users app
 - Merge pull request #244 from saint2706/bolt/optimize-check-validity-times-2469162188758071877
 - ⚡ Bolt: Optimize check_validity_times to O(n) single-pass
@@ -1214,7 +1214,7 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 - Address rate limiting review comments
 - Merge pull request #220 from saint2706/bolt/optimize-dataset-rebuild-10581462098239265021
 - Merge pull request #223 from saint2706/copilot/sub-pr-220
-- Add __gt__ method and move Path import to top
+- Add **gt** method and move Path import to top
 - Apply review feedback: clean up test code
 - Initial plan
 - Initial plan
@@ -1337,6 +1337,7 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 - Bump urllib3 from 2.5.0 to 2.6.0 in the pip group (`6b55304`)
 
 ### Documentation (Unreleased)
+
 - Replaced the default Vite template `frontend/README.md` with a custom Frontend README to fix broken links and provide accurate setup instructions.
 
 - Comprehensive documentation refresh for 2026: updated React SPA frontend references, fixed broken links, updated agent instructions
@@ -2889,7 +2890,7 @@ This version represents the state of the codebase when the original CHANGELOG.md
 - Fix stored XSS vulnerability in attendance dashboard
 - Initial plan
 - Merge pull request #245 from saint2706/palette-mark-attendance-ux-17168237614502211500
-- Merge branch 'main' of https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition
+- Merge branch 'main' of <https://github.com/saint2706/Attendance-Management-System-Using-Face-Recognition>
 - Update screenshots and add management package in users app
 - Merge pull request #244 from saint2706/bolt/optimize-check-validity-times-2469162188758071877
 - ⚡ Bolt: Optimize check_validity_times to O(n) single-pass
@@ -2952,7 +2953,7 @@ This version represents the state of the codebase when the original CHANGELOG.md
 - Address rate limiting review comments
 - Merge pull request #220 from saint2706/bolt/optimize-dataset-rebuild-10581462098239265021
 - Merge pull request #223 from saint2706/copilot/sub-pr-220
-- Add __gt__ method and move Path import to top
+- Add **gt** method and move Path import to top
 - Apply review feedback: clean up test code
 - Initial plan
 - Initial plan
@@ -3050,10 +3051,13 @@ This version represents the state of the codebase when the original CHANGELOG.md
 - Add documentation index and UX/contribution guides
 - Add Redis-based embedding cache for face recognition
 - Add Fairness Audit section to developer guide
+
 ### Documentation
+
 - Fixed broken tutorial link in scikit-learn quick reference.
 - Fixed broken link to Web Quality Audit and Core Web Vitals in SEO and accessibility skills.
 - Fixed broken relative link to SKILL.md in CLAUDE.md.
 
 ## [Unreleased]
+
 - Fixed broken links in `docs/QUICKSTART.md` by removing trailing slashes from local server URLs.

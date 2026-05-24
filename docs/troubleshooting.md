@@ -8,43 +8,57 @@ fallback behaviours implemented in `recognition/views.py`.
 ## Celery or Redis Outage
 
 ### Symptoms
+
 - Batch attendance submissions remain in a `PENDING` state or never complete.
 - `enqueue_attendance_batch` API returns HTTP 503 with the message `"Unable to enqueue attendance batch at this time."`
 - Application logs contain connection errors to Redis (e.g., `ConnectionError`, `TimeoutError`).
 
 ### Diagnostics
+
 1. **Check worker availability**
+
    ```bash
    celery -A attendance_system_facial_recognition worker inspect ping
    ```
+
    All registered workers should respond with `pong`.
 2. **Inspect active tasks**
+
    ```bash
    celery -A attendance_system_facial_recognition inspect active
    ```
+
    Confirm whether tasks are stuck or if queues are empty.
 3. **Validate Redis connectivity**
+
    ```bash
    redis-cli -h <redis-host> -p <redis-port> ping
    ```
+
    A healthy Redis instance responds with `PONG`.
 4. Review Celery worker logs (`logs/celery-worker.log` if using the provided Docker
    setup) for traceback information.
 
 ### Recovery Steps
+
 1. Restart Redis and Celery workers:
+
    ```bash
    docker compose restart redis celery
    ```
+
    or, if running locally:
+
    ```bash
    systemctl restart redis
    pkill -f "celery worker"
    celery -A attendance_system_facial_recognition worker -l info
    ```
+
 2. After services are healthy, requeue affected batches using their `task_id`s (see
    [Handling failed batch API tasks](#handling-failed-batch-api-tasks)).
 3. Consider scaling worker concurrency temporarily if there is a backlog:
+
    ```bash
    celery -A attendance_system_facial_recognition worker -l info --concurrency=4
    ```
@@ -55,25 +69,30 @@ fallback behaviours implemented in `recognition/views.py`.
 ## Batch Attendance API Failures
 
 ### Symptoms
+
 - HTTP 4xx or 5xx responses from `POST /recognition/enqueue-attendance-batch/`.
 - Clients observe rate limiting with HTTP 429 responses.
 - API responses contain error details such as `"'records' must be a list."` or `"Record at index 2 must be a JSON object."`
 
 ### Diagnostics
+
 1. **Validate payload format**: Ensure the request body is UTF-8 encoded JSON with a
    top-level `records` list.
 2. **Check server logs** for JSON parsing or validation errors logged by
    `recognition.views.enqueue_attendance_batch`.
 3. **Inspect the Celery task** associated with a submission:
+
    ```bash
    celery -A attendance_system_facial_recognition inspect query_task <task-id>
    ```
+
 4. **Rate limiting (HTTP 429)**
    - Confirm the caller is not exceeding the configured limit in
      `settings.RECOGNITION_ATTENDANCE_RATE_LIMIT`.
    - Use server access logs to correlate frequent requests from the same user or IP.
 
 ### Recovery Steps
+
 1. For malformed payloads, correct the data and retry the request.
 2. If Redis/Celery were previously unavailable, follow the outage recovery steps and
    resubmit the batch.
@@ -91,30 +110,36 @@ Certain failure scenarios trigger graceful fallbacks in the recognition pipeline
 Understanding them helps interpret API responses and user-facing behaviour.
 
 ### Empty Embedding Dataset (HTTP 503)
+
 If no enrolled embeddings are available, `_load_dataset_embeddings_for_matching`
 returns an empty index, and the recognition API responds with HTTP 503 and
 `"No enrolled face embeddings are available for comparison."`
 
 **Action**
+
 1. Confirm the dataset directory (`face_recognition_data/training_dataset/`) contains
    user subdirectories with captured images.
 2. Queue the `capture_dataset` Celery task (via **Add Photos** or `tasks.capture_dataset.delay`) to rebuild
    encrypted samples. Monitor progress through `/tasks/<task-id>/`.
 
 ### Liveness Check Failures
+
 When `_passes_liveness_check` fails, the API still returns a JSON payload but sets
 `"spoofed": true` and leaves `"recognized": false`.
 
 **Action**
+
 1. Advise the user to retry with better lighting, blink twice, or tilt their head slightly so the motion gate can detect parallax.
 2. Review liveness heuristics if false positives occur frequently.
 3. Run `python manage.py evaluate_liveness --samples-root /path/to/liveness_samples` with representative clips to validate new `RECOGNITION_LIVENESS_*` thresholds before deploying them.
 
 ### Distance Metric Fallbacks
+
 `_calculate_embedding_distance` attempts cosine, Euclidean, or Manhattan metrics. If
 all fail, it logs `"Failed to compute fallback distance"` and skips the candidate.
 
 **Action**
+
 1. Inspect embeddings for corruption or unexpected data types.
 2. Recompute embeddings by re-running the capture workflow and verifying the corresponding Celery job succeeds.
 
@@ -125,15 +150,20 @@ all fail, it logs `"Failed to compute fallback distance"` and skips the candidat
 
 1. Locate the `task_id` from the batch submission response (`202 Accepted`).
 2. Query task status:
+
    ```bash
    celery -A attendance_system_facial_recognition inspect query_task <task-id>
    ```
+
    or, if result backend is enabled:
+
    ```bash
    celery -A attendance_system_facial_recognition result <task-id>
    ```
+
 3. If the task failed, review the Celery result for traceback details and requeue the
    normalized records:
+
    ```bash
    python manage.py shell <<'PY'
    from recognition.tasks import process_attendance_batch
@@ -141,6 +171,7 @@ all fail, it logs `"Failed to compute fallback distance"` and skips the candidat
    process_attendance_batch.delay(records)
    PY
    ```
+
 4. For persistent failures, verify dependent services (database, filesystem access,
    face recognition models) and consult Celery worker logs for stack traces.
 
@@ -150,48 +181,63 @@ all fail, it logs `"Failed to compute fallback distance"` and skips the candidat
 ## Common Issues & Solutions
 
 ### Camera Permissions Denied
+
 **Symptoms**
+
 - The camera feed does not appear on the "Mark Time-In" or "Mark Time-Out" pages.
 - The browser shows a camera icon with a strike-through or a permission prompt that was dismissed.
 
 **Diagnostics**
+
 - Check the browser's address bar for camera permission indicators.
 - Open the browser developer console (F12) to look for `NotAllowedError` or `PermissionDeniedError`.
 
 **Recovery Steps**
+
 1. Instruct the user to click the camera icon in their browser's address bar and allow camera access.
 2. Ensure the site is being served over HTTPS, as modern browsers restrict camera access on HTTP (except for `localhost`).
 3. Reload the page after granting permissions.
 
 ### Missing Dependencies After Clone/Update
+
 **Symptoms**
+
 - `ModuleNotFoundError` when running `python manage.py`.
 - `Error [ERR_MODULE_NOT_FOUND]` or similar when running frontend build commands.
 
 **Diagnostics**
+
 - Check if `requirements.txt` or `requirements-dev.txt` were recently updated.
 - Verify the frontend `package.json` dependencies are installed.
 
 **Recovery Steps**
+
 1. Re-install Python dependencies:
+
    ```bash
    pip install -r requirements.txt
    pip install -r requirements-dev.txt
    ```
+
 2. Re-install frontend dependencies:
+
    ```bash
    cd frontend && pnpm install --frozen-lockfile
    ```
 
 ### Database Connection Failures
+
 **Symptoms**
+
 - `OperationalError: could not connect to server` or `psycopg2.OperationalError` during application startup or migrations.
 
 **Diagnostics**
+
 - Verify the database service (PostgreSQL) is running.
 - Check the `DATABASE_URL` environment variable is correctly set in your `.env` file.
 
 **Recovery Steps**
+
 1. If using Docker, ensure the database container is up: `docker compose up -d db`.
 2. Verify credentials in `.env` match your local PostgreSQL setup.
 3. Restart the application server.

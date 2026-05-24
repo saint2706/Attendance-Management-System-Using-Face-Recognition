@@ -15,21 +15,25 @@ This directory contains the React-based frontend application for the Smart Atten
 ## Getting Started
 
 1. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
 2. Start the development server:
+
    ```bash
    pnpm run dev
    ```
 
 3. Build for production:
+
    ```bash
    pnpm run build
    ```
 
 4. Run linting:
+
    ```bash
    pnpm run lint
    ```
