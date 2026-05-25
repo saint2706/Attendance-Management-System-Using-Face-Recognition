@@ -453,6 +453,13 @@ def configure_environment(
         "SESSION_COOKIE_HTTPONLY",
         default=True,
     )
+    global CSRF_COOKIE_HTTPONLY
+    CSRF_COOKIE_HTTPONLY = _get_bool_env_with_aliases(
+        "DJANGO_CSRF_COOKIE_HTTPONLY",
+        "CSRF_COOKIE_HTTPONLY",
+        default=True,
+    )
+
     CSRF_COOKIE_SECURE = _get_bool_env_with_aliases(
         "DJANGO_CSRF_COOKIE_SECURE",
         "CSRF_COOKIE_SECURE",

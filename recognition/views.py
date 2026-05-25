@@ -711,7 +711,7 @@ class FaceRecognitionAPI(View):
 
         raw_username = payload.get("username")
         submitted_username = (
-            raw_username.strip() if isinstance(raw_username, str) else request_username
+            raw_username.strip()[:150] if isinstance(raw_username, str) else request_username
         )
 
         embedding_vector = None
