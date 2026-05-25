@@ -7,11 +7,7 @@ from pathlib import Path
 
 from django.test import TestCase
 
-from recognition.ablation import (
-    AblationConfig,
-    generate_ablation_configs,
-    run_single_ablation,
-)
+from recognition.ablation import AblationConfig, generate_ablation_configs, run_single_ablation
 
 
 class AblationTest(TestCase):

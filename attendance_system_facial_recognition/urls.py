@@ -179,11 +179,7 @@ urlpatterns = [
     path("setup-wizard/step4/", users_views.setup_wizard_step4, name="setup-wizard-step4"),
     path("setup-wizard/step5/", users_views.setup_wizard_step5, name="setup-wizard-step5"),
     path("setup-wizard/skip/", users_views.setup_wizard_skip, name="setup-wizard-skip"),
-    path(
-        "setup-wizard/status/",
-        users_views.setup_wizard_status,
-        name="setup-wizard-status",
-    ),
+    path("setup-wizard/status/", users_views.setup_wizard_status, name="setup-wizard-status"),
     path("add_photos/", recog_views.add_photos, name="add-photos"),
     path("train/", recog_views.train, name="train"),
     path("tasks/<str:task_id>/", recog_views.task_status, name="task-status"),

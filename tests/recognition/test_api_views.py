@@ -185,6 +185,7 @@ class TestAttendanceViewSet:
 
 @pytest.mark.django_db
 class TestAttendanceViewSetMarkEndpoint:
+
     @pytest.fixture(autouse=True)
     def mock_deepface_represent(self, monkeypatch):
         """Mock DeepFace.represent to prevent actual ML inferences during tests."""
@@ -194,10 +195,7 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {
-                    "embedding": [0.0] * 128,
-                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
-                }
+                {"embedding": [0.0] * 128, "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
             ],
         )
 
@@ -257,10 +255,7 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {
-                    "embedding": np.zeros(128),
-                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
-                }
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
             ],
         )
 
@@ -269,10 +264,7 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             pipeline,
             "extract_embedding",
-            lambda *args, **kwargs: (
-                np.zeros(128),
-                {"x": 0, "y": 0, "w": 100, "h": 100},
-            ),
+            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
         )
 
         # Mock empty dataset index
@@ -337,8 +329,7 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode",
-            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
+            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
         )
 
         def mock_represent(*args, **kwargs):
@@ -364,8 +355,7 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode",
-            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
+            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
         )
 
         def mock_represent(*args, **kwargs):
@@ -391,8 +381,7 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode",
-            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
+            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
         )
 
         from deepface import DeepFace
@@ -401,10 +390,7 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {
-                    "embedding": np.zeros(128),
-                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
-                }
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
             ],
         )
 
@@ -413,10 +399,7 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             pipeline,
             "extract_embedding",
-            lambda *args, **kwargs: (
-                np.zeros(128),
-                {"x": 0, "y": 0, "w": 100, "h": 100},
-            ),
+            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
         )
 
         # Mock dataset with unparseable embeddings
@@ -443,8 +426,7 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode",
-            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
+            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
         )
 
         from deepface import DeepFace
@@ -453,10 +435,7 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {
-                    "embedding": np.zeros(128),
-                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
-                }
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
             ],
         )
 
@@ -465,10 +444,7 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             pipeline,
             "extract_embedding",
-            lambda *args, **kwargs: (
-                np.zeros(128),
-                {"x": 0, "y": 0, "w": 100, "h": 100},
-            ),
+            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
         )
 
         monkeypatch.setattr(
@@ -505,8 +481,7 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode",
-            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
+            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
         )
 
         from deepface import DeepFace
@@ -515,10 +490,7 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {
-                    "embedding": np.zeros(128),
-                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
-                }
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
             ],
         )
 
@@ -527,10 +499,7 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             pipeline,
             "extract_embedding",
-            lambda *args, **kwargs: (
-                np.zeros(128),
-                {"x": 0, "y": 0, "w": 100, "h": 100},
-            ),
+            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
         )
 
         monkeypatch.setattr(
@@ -561,8 +530,7 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode",
-            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
+            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
         )
 
         from deepface import DeepFace
@@ -571,10 +539,7 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {
-                    "embedding": np.zeros(128),
-                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
-                }
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
             ],
         )
 
@@ -583,10 +548,7 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             pipeline,
             "extract_embedding",
-            lambda *args, **kwargs: (
-                np.zeros(128),
-                {"x": 0, "y": 0, "w": 100, "h": 100},
-            ),
+            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
         )
 
         monkeypatch.setattr(
@@ -625,8 +587,7 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode",
-            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
+            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
         )
 
         from deepface import DeepFace
@@ -635,10 +596,7 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {
-                    "embedding": np.zeros(128),
-                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
-                }
+                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
             ],
         )
 
@@ -647,10 +605,7 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             pipeline,
             "extract_embedding",
-            lambda *args, **kwargs: (
-                np.zeros(128),
-                {"x": 0, "y": 0, "w": 100, "h": 100},
-            ),
+            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
         )
 
         monkeypatch.setattr(

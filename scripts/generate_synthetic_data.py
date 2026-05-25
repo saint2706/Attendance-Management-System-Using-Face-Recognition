@@ -176,23 +176,13 @@ def generate_attendance_history(employees):
             # Time model tracks individual events
             # Check-in event
             times_to_create.append(
-                Time(
-                    user=user,
-                    date=current_date,
-                    time=check_in_dt,
-                    direction=Direction.IN,
-                )
+                Time(user=user, date=current_date, time=check_in_dt, direction=Direction.IN)
             )
 
             # Check-out event (if applicable)
             if not forgot_checkout:
                 times_to_create.append(
-                    Time(
-                        user=user,
-                        date=current_date,
-                        time=check_out_dt,
-                        direction=Direction.OUT,
-                    )
+                    Time(user=user, date=current_date, time=check_out_dt, direction=Direction.OUT)
                 )
 
             # Present Model (Daily status)

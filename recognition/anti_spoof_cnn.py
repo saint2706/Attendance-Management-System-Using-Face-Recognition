@@ -192,6 +192,7 @@ class AntiSpoofCNN:
             # Create new model with ImageNet weights
             tflite_model_content = self._create_model()
             if tflite_model_content is not None:
+
                 # Save the model for future use
                 try:
                     os.makedirs(model_path.parent, exist_ok=True)

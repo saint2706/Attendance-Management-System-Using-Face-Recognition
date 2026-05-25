@@ -81,10 +81,7 @@ def test_liveness_frames_limit_rejection(client):
     payload = {"embedding": [0.1] * 128, "liveness_frames": liveness_frames}
 
     response = client.post(
-        url,
-        data=json.dumps(payload),
-        content_type="application/json",
-        HTTP_X_API_KEY="test-key",
+        url, data=json.dumps(payload), content_type="application/json", HTTP_X_API_KEY="test-key"
     )
 
     # Should return 400 Bad Request

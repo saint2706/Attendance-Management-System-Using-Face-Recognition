@@ -14,10 +14,7 @@ from users.models import Direction, RecognitionAttempt
 def test_attendance_api_query_count():
     User = get_user_model()
     admin = User.objects.create(
-        username="admin",
-        password=make_password("password"),
-        is_staff=True,
-        is_superuser=True,
+        username="admin", password=make_password("password"), is_staff=True, is_superuser=True
     )
     client = APIClient()
     client.force_authenticate(user=admin)

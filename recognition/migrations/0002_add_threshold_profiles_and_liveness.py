@@ -5,6 +5,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ("recognition", "0001_initial"),
     ]
@@ -16,10 +17,7 @@ class Migration(migrations.Migration):
                 (
                     "id",
                     models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
                 (
@@ -115,9 +113,7 @@ class Migration(migrations.Migration):
             model_name="recognitionoutcome",
             name="liveness_confidence",
             field=models.FloatField(
-                blank=True,
-                help_text="Liveness confidence score (0.0 to 1.0)",
-                null=True,
+                blank=True, help_text="Liveness confidence score (0.0 to 1.0)", null=True
             ),
         ),
         migrations.AddField(
@@ -131,9 +127,7 @@ class Migration(migrations.Migration):
             model_name="recognitionoutcome",
             name="profile_name",
             field=models.CharField(
-                blank=True,
-                help_text="Name of the threshold profile used",
-                max_length=100,
+                blank=True, help_text="Name of the threshold profile used", max_length=100
             ),
         ),
         migrations.CreateModel(
@@ -142,10 +136,7 @@ class Migration(migrations.Migration):
                 (
                     "id",
                     models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
@@ -217,8 +208,7 @@ class Migration(migrations.Migration):
                         name="recognition_created_3d05a6_idx",
                     ),
                     models.Index(
-                        fields=["username", "created_at"],
-                        name="recognition_usernam_4383e5_idx",
+                        fields=["username", "created_at"], name="recognition_usernam_4383e5_idx"
                     ),
                 ],
             },

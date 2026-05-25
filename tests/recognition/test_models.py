@@ -159,8 +159,7 @@ class TestRecognitionOutcomeModel(TestCase):
 class TestModelEvaluationResultModel(TestCase):
     def test_str_representation(self):
         eval_success = ModelEvaluationResult.objects.create(
-            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
-            success=True,
+            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY, success=True
         )
         assert "✓" in str(eval_success)
         assert "Scheduled Nightly" in str(eval_success)
@@ -173,15 +172,13 @@ class TestModelEvaluationResultModel(TestCase):
 
     def test_get_latest(self):
         old_eval = ModelEvaluationResult.objects.create(
-            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
-            success=True,
+            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY, success=True
         )
         old_eval.created_at = timezone.now() - timedelta(days=1)
         old_eval.save()
 
         recent_eval = ModelEvaluationResult.objects.create(
-            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
-            success=True,
+            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY, success=True
         )
 
         # Test latest general
@@ -203,22 +200,19 @@ class TestModelEvaluationResultModel(TestCase):
 
     def test_get_previous(self):
         older_eval = ModelEvaluationResult.objects.create(
-            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
-            success=True,
+            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY, success=True
         )
         older_eval.created_at = timezone.now() - timedelta(days=2)
         older_eval.save()
 
         old_eval = ModelEvaluationResult.objects.create(
-            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
-            success=True,
+            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY, success=True
         )
         old_eval.created_at = timezone.now() - timedelta(days=1)
         old_eval.save()
 
         recent_eval = ModelEvaluationResult.objects.create(
-            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
-            success=True,
+            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY, success=True
         )
 
         # Test get previous
@@ -322,32 +316,27 @@ class TestThresholdProfileStr(TestCase):
 class TestModelEvaluationResultLatestAndPreviousUnsuccessful(TestCase):
     def test_get_latest_unsuccessful(self):
         eval1 = ModelEvaluationResult.objects.create(
-            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
-            success=False,
+            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY, success=False
         )
         assert ModelEvaluationResult.get_latest(successful_only=False).id == eval1.id
 
     def test_get_previous_with_type(self):
         current = ModelEvaluationResult.objects.create(
-            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
-            success=True,
+            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY, success=True
         )
         old_nightly = ModelEvaluationResult.objects.create(
-            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
-            success=True,
+            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY, success=True
         )
         old_nightly.created_at = current.created_at - timedelta(days=2)
         old_nightly.save()
         old_weekly = ModelEvaluationResult.objects.create(
-            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_WEEKLY,
-            success=True,
+            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_WEEKLY, success=True
         )
         old_weekly.created_at = current.created_at - timedelta(days=1)
         old_weekly.save()
 
         prev = ModelEvaluationResult.get_previous(
-            current,
-            evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY,
+            current, evaluation_type=ModelEvaluationResult.EvaluationType.SCHEDULED_NIGHTLY
         )
         assert prev.id == old_nightly.id
 

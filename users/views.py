@@ -420,8 +420,7 @@ def setup_wizard_step4(request):
             except ImportError:
                 logger.exception("Celery tasks not available")
                 messages.error(
-                    request,
-                    "Training service not available. Please check configuration.",
+                    request, "Training service not available. Please check configuration."
                 )
             except Exception:
                 logger.exception("Failed to start training")

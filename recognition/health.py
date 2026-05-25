@@ -158,8 +158,7 @@ def evaluation_health() -> Dict[str, Any]:
     counts = ModelEvaluationResult.objects.aggregate(
         total=Count("id"),
         recent_failures=Count(
-            "id",
-            filter=Q(success=False, created_at__gte=timezone.now() - dt.timedelta(days=7)),
+            "id", filter=Q(success=False, created_at__gte=timezone.now() - dt.timedelta(days=7))
         ),
     )
     total_evaluations = counts["total"]
@@ -185,9 +184,7 @@ def evaluation_health() -> Dict[str, Any]:
 def recognition_activity() -> Dict[str, Any]:
     """Provide the most recent recognition attempt and outcome snapshots."""
 
-    def _serialize_attempt(
-        attempt: RecognitionAttempt | None,
-    ) -> Optional[Dict[str, Any]]:
+    def _serialize_attempt(attempt: RecognitionAttempt | None) -> Optional[Dict[str, Any]]:
         if attempt is None:
             return None
         return {
@@ -203,9 +200,7 @@ def recognition_activity() -> Dict[str, Any]:
             "error": attempt.error_message,
         }
 
-    def _serialize_outcome(
-        outcome: RecognitionOutcome | None,
-    ) -> Optional[Dict[str, Any]]:
+    def _serialize_outcome(outcome: RecognitionOutcome | None) -> Optional[Dict[str, Any]]:
         if outcome is None:
             return None
         return {
@@ -261,10 +256,7 @@ def worker_health() -> Dict[str, Any]:
         logger.warning("Celery ping failed: %s", exc)
         return {"status": "unreachable", "workers": 0, "error": str(exc)}
 
-    return {
-        "status": "online" if responses else "unreachable",
-        "workers": len(responses),
-    }
+    return {"status": "online" if responses else "unreachable", "workers": len(responses)}
 
 
 __all__ = [

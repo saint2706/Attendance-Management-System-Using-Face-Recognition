@@ -5,6 +5,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ("users", "0019_recognitionattempt_users_attempt_user_created_idx"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -14,8 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddIndex(
             model_name="recognitionattempt",
             index=models.Index(
-                fields=["created_at", "successful"],
-                name="users_attempt_created_succ_idx",
+                fields=["created_at", "successful"], name="users_attempt_created_succ_idx"
             ),
         ),
     ]

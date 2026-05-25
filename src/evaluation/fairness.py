@@ -143,9 +143,7 @@ def estimate_lighting_bucket(image_path: Path) -> str:
 
     try:
         import numpy as np
-        from PIL import (  # Imported lazily to avoid mandatory dependency during tests
-            Image,
-        )
+        from PIL import Image  # Imported lazily to avoid mandatory dependency during tests
     except Exception as e:
         import logging
 

@@ -14,9 +14,7 @@ def test_logout_get_request_not_allowed(client):
     """Test that GET request to logout endpoint returns 405."""
     # Create and login a user
     user = User.objects.create(
-        username="testuser",
-        email="test@example.com",
-        password=make_password("testpass123"),
+        username="testuser", email="test@example.com", password=make_password("testpass123")
     )
     client.force_login(user)
 
@@ -32,9 +30,7 @@ def test_logout_post_request_succeeds(client):
     """Test that POST request to logout endpoint works correctly."""
     # Create and login a user
     user = User.objects.create(
-        username="testuser",
-        email="test@example.com",
-        password=make_password("testpass123"),
+        username="testuser", email="test@example.com", password=make_password("testpass123")
     )
     client.force_login(user)
 
@@ -63,9 +59,7 @@ def test_logout_with_follow_redirect(client):
     """Test that logout works and follows redirect properly."""
     # Create and login a user
     user = User.objects.create(
-        username="testuser",
-        email="test@example.com",
-        password=make_password("testpass123"),
+        username="testuser", email="test@example.com", password=make_password("testpass123")
     )
     client.force_login(user)
 

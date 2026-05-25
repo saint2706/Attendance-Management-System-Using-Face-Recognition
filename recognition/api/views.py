@@ -204,10 +204,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         from deepface import DeepFace
         from rest_framework.exceptions import ValidationError
 
-        from recognition.api.exceptions import (
-            RecognitionAPIException,
-            RecognitionException,
-        )
+        from recognition.api.exceptions import RecognitionAPIException, RecognitionException
         from recognition.pipeline import extract_embedding, find_closest_dataset_match
         from recognition.views import (
             _get_face_detection_backend,

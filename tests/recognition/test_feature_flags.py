@@ -85,9 +85,7 @@ class TestFeatureFlags:
 
         for value, expected in test_cases:
             with mock.patch.dict(
-                os.environ,
-                {"FEATURE_PROFILE": "basic", "ENABLE_ENCRYPTION": value},
-                clear=True,
+                os.environ, {"FEATURE_PROFILE": "basic", "ENABLE_ENCRYPTION": value}, clear=True
             ):
                 FeatureFlags._initialize()
                 assert FeatureFlags.is_encryption_enabled() == expected

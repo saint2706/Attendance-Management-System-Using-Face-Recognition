@@ -4,6 +4,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ("recognition", "0002_add_threshold_profiles_and_liveness"),
     ]
@@ -15,10 +16,7 @@ class Migration(migrations.Migration):
                 (
                     "id",
                     models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
@@ -44,34 +42,18 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "precision",
-                    models.FloatField(
-                        blank=True, help_text="Weighted precision score", null=True
-                    ),
+                    models.FloatField(blank=True, help_text="Weighted precision score", null=True),
                 ),
                 (
                     "recall",
-                    models.FloatField(
-                        blank=True, help_text="Weighted recall score", null=True
-                    ),
+                    models.FloatField(blank=True, help_text="Weighted recall score", null=True),
                 ),
                 (
                     "f1_score",
-                    models.FloatField(
-                        blank=True, help_text="Weighted F1 score", null=True
-                    ),
+                    models.FloatField(blank=True, help_text="Weighted F1 score", null=True),
                 ),
-                (
-                    "far",
-                    models.FloatField(
-                        blank=True, help_text="False Accept Rate", null=True
-                    ),
-                ),
-                (
-                    "frr",
-                    models.FloatField(
-                        blank=True, help_text="False Reject Rate", null=True
-                    ),
-                ),
+                ("far", models.FloatField(blank=True, help_text="False Accept Rate", null=True)),
+                ("frr", models.FloatField(blank=True, help_text="False Reject Rate", null=True)),
                 (
                     "samples_evaluated",
                     models.PositiveIntegerField(
@@ -81,24 +63,19 @@ class Migration(migrations.Migration):
                 (
                     "threshold_used",
                     models.FloatField(
-                        blank=True,
-                        help_text="Distance threshold used for evaluation",
-                        null=True,
+                        blank=True, help_text="Distance threshold used for evaluation", null=True
                     ),
                 ),
                 (
                     "identities_evaluated",
                     models.PositiveIntegerField(
-                        default=0,
-                        help_text="Number of unique identities in evaluation set",
+                        default=0, help_text="Number of unique identities in evaluation set"
                     ),
                 ),
                 (
                     "liveness_pass_rate",
                     models.FloatField(
-                        blank=True,
-                        help_text="Liveness check pass rate (0.0 to 1.0)",
-                        null=True,
+                        blank=True, help_text="Liveness check pass rate (0.0 to 1.0)", null=True
                     ),
                 ),
                 (
@@ -125,15 +102,12 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "error_message",
-                    models.TextField(
-                        blank=True, help_text="Error message if evaluation failed"
-                    ),
+                    models.TextField(blank=True, help_text="Error message if evaluation failed"),
                 ),
                 (
                     "success",
                     models.BooleanField(
-                        default=True,
-                        help_text="Whether the evaluation completed successfully",
+                        default=True, help_text="Whether the evaluation completed successfully"
                     ),
                 ),
             ],
@@ -147,8 +121,7 @@ class Migration(migrations.Migration):
                         name="recognition_created_cffd0c_idx",
                     ),
                     models.Index(
-                        fields=["evaluation_type", "success"],
-                        name="recognition_evaluat_0182d5_idx",
+                        fields=["evaluation_type", "success"], name="recognition_evaluat_0182d5_idx"
                     ),
                 ],
             },

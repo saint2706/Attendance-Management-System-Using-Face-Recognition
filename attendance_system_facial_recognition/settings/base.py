@@ -217,10 +217,7 @@ def _load_cached_dev_key(var_name: str) -> bytes | None:
 
     try:
         cache = json.loads(DEV_KEY_CACHE_PATH.read_text())
-    except (
-        OSError,
-        json.JSONDecodeError,
-    ) as exc:  # pragma: no cover - defensive programming
+    except (OSError, json.JSONDecodeError) as exc:  # pragma: no cover - defensive programming
         warnings.warn(f"Ignoring invalid dev key cache file: {exc}")
         return None
 

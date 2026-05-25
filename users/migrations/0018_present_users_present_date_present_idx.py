@@ -5,6 +5,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ("users", "0017_remove_time_out_field"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -13,8 +14,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddIndex(
             model_name="present",
-            index=models.Index(
-                fields=["date", "present"], name="users_present_date_present_idx"
-            ),
+            index=models.Index(fields=["date", "present"], name="users_present_date_present_idx"),
         ),
     ]

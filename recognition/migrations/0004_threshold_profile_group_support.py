@@ -4,6 +4,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ("recognition", "0003_add_model_evaluation_result"),
     ]
@@ -56,8 +57,7 @@ class Migration(migrations.Migration):
         migrations.AddIndex(
             model_name="thresholdprofile",
             index=models.Index(
-                fields=["group_type", "group_value"],
-                name="recognition_group_t_79776f_idx",
+                fields=["group_type", "group_value"], name="recognition_group_t_79776f_idx"
             ),
         ),
     ]

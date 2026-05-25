@@ -6,10 +6,7 @@ from django.utils import timezone
 
 import pytest
 
-from recognition.views_legacy import (
-    hours_vs_date_given_employee,
-    hours_vs_employee_given_date,
-)
+from recognition.views_legacy import hours_vs_date_given_employee, hours_vs_employee_given_date
 from users.models import Direction, Present, Time
 
 
