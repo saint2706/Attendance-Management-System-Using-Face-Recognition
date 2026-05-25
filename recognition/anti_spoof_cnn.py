@@ -137,11 +137,67 @@ class AntiSpoofCNN:
             import tensorflow as tf
             from tensorflow import lite
 
-            # Convert to TFLite and quantize
-            converter = lite.TFLiteConverter.from_keras_model(model)
-            converter.optimizations = [lite.Optimize.DEFAULT]
-            converter.target_spec.supported_types = [tf.float16]
-            tflite_model = converter.convert()
+            # Find representative dataset path
+            try:
+                from django.conf import settings
+
+                base_dir = getattr(settings, "BASE_DIR", Path(__file__).resolve().parent.parent)
+            except Exception:
+                base_dir = Path(__file__).resolve().parent.parent
+
+            dataset_dir = base_dir / "sample_data" / "representative_dataset"
+
+            def get_image_files(directory):
+                valid_extensions = {".jpg", ".jpeg", ".png"}
+                if not directory.exists() or not directory.is_dir():
+                    return []
+                return [p for p in directory.iterdir() if p.suffix.lower() in valid_extensions]
+
+            image_files = get_image_files(dataset_dir)
+            tflite_model = None
+
+            if image_files:
+                try:
+                    logger.info("Found representative dataset. Attempting INT8 quantization.")
+
+                    def representative_data_gen():
+                        # Take up to 100 images for calibration
+                        for img_path in image_files[:100]:
+                            img = cv2.imread(str(img_path))
+                            if img is None:
+                                continue
+
+                            # Convert to correct color space and size
+                            img = cv2.resize(img, self._input_size)
+                            # Normalize
+                            img = img.astype(np.float32) / 255.0
+                            # Add batch dimension
+                            img = np.expand_dims(img, axis=0)
+                            yield [img]
+
+                    converter = lite.TFLiteConverter.from_keras_model(model)
+                    converter.optimizations = [lite.Optimize.DEFAULT]
+                    converter.representative_dataset = representative_data_gen
+                    converter.target_spec.supported_ops = [
+                        lite.OpsSet.TFLITE_BUILTINS_INT8,
+                        lite.OpsSet.TFLITE_BUILTINS,
+                    ]
+                    # Ensure full integer quantization for inputs/outputs
+                    converter.inference_input_type = tf.float32
+                    converter.inference_output_type = tf.float32
+
+                    tflite_model = converter.convert()
+                    logger.info("Successfully converted model to INT8 TFLite.")
+                except Exception as e:
+                    logger.warning("INT8 quantization failed: %s. Falling back to FP16.", e)
+                    tflite_model = None
+
+            if tflite_model is None:
+                logger.info("Using FP16 quantization fallback.")
+                converter = lite.TFLiteConverter.from_keras_model(model)
+                converter.optimizations = [lite.Optimize.DEFAULT]
+                converter.target_spec.supported_types = [tf.float16]
+                tflite_model = converter.convert()
 
             return tflite_model
 
