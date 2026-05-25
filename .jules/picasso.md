@@ -66,3 +66,6 @@ Replaced large `size` prop with explicit `width` and `height` props on `lucide-r
 - Added `.sr-only` visually hidden text alongside the loading skeletons in `Dashboard.tsx` to explicitly announce "Loading total employees...", "Loading present today...", and "Loading system status..." to screen readers while data is being fetched.
 - Added sr-only loading text for screen readers next to Loader2 spinners in Dashboard, Login, and MarkAttendance pages.
 - Reverted the sr-only addition next to the Loader2 spinner where visible text already existed (e.g. 'Signing in...', 'Processing...') since it creates a redundant announcement on screen readers. Only kept it in icon-only buttons.
+
+## Accessibility improvements
+- Updated stateful icon buttons in Login and Navbar components to use dynamic `aria-label` properties reflecting their current state (e.g., 'Show password'/'Hide password', 'Switch to light mode'/'Switch to dark mode').
