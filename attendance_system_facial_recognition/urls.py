@@ -52,6 +52,7 @@ def progressive_web_app_service_worker(request: HttpRequest) -> FileResponse:
 
 
 def robots_txt(request: HttpRequest) -> FileResponse:
+    """Serve the robots.txt file to guide web crawlers."""
     return _serve_static_asset(
         "recognition/static/robots.txt",
         content_type="text/plain",
@@ -59,6 +60,7 @@ def robots_txt(request: HttpRequest) -> FileResponse:
 
 
 def llms_txt(request: HttpRequest) -> FileResponse:
+    """Serve the llms.txt file to provide context for AI models."""
     return _serve_static_asset(
         "recognition/static/llms.txt",
         content_type="text/plain",

@@ -71,21 +71,25 @@ class _FernetWrapper:
         return self._cipher
 
     def encrypt(self, payload: BytesLike) -> bytes:
+        """Encrypt a given byte payload using the configured Fernet key."""
         if not isinstance(payload, (bytes, bytearray, memoryview)):
             raise TypeError("encrypt expects a bytes-like object")
         return self._get_cipher().encrypt(bytes(payload))
 
     def decrypt(self, token: BytesLike) -> bytes:
+        """Decrypt a previously encrypted payload returning the original bytes."""
         if not isinstance(token, (bytes, bytearray, memoryview)):
             raise TypeError("decrypt expects a bytes-like object")
         return self._get_cipher().decrypt(bytes(token))
 
     def encrypt_encoding(self, encoding: np.ndarray) -> bytes:
+        """Encrypt a numpy facial encoding array for secure storage."""
         if not isinstance(encoding, np.ndarray):
             raise TypeError("encrypt_encoding expects a numpy.ndarray")
         return self.encrypt(encoding.astype(np.float64).tobytes())
 
     def decrypt_encoding(self, token: BytesLike, dtype: np.dtype = np.float64) -> np.ndarray:
+        """Decrypt a secure token back into a numpy facial encoding array."""
         decrypted = self.decrypt(token)
         return np.frombuffer(decrypted, dtype=dtype)
 
@@ -97,15 +101,19 @@ class FaceDataEncryption:
         self._helper = _FernetWrapper("FACE_DATA_ENCRYPTION_KEY", key_override=key)
 
     def encrypt(self, data: BytesLike) -> bytes:
+        """Encrypt facial data bytes."""
         return self._helper.encrypt(data)
 
     def decrypt(self, token: BytesLike) -> bytes:
+        """Decrypt facial data token back to bytes."""
         return self._helper.decrypt(token)
 
     def encrypt_encoding(self, encoding: np.ndarray) -> bytes:
+        """Encrypt a numpy facial encoding array."""
         return self._helper.encrypt_encoding(encoding)
 
     def decrypt_encoding(self, token: BytesLike, dtype: np.dtype = np.float64) -> np.ndarray:
+        """Decrypt a token back to a numpy facial encoding array."""
         return self._helper.decrypt_encoding(token, dtype=dtype)
 
 

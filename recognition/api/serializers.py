@@ -29,6 +29,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.CharField)
     def get_full_name(self, obj):
+        """Retrieve the full name of the user."""
         return obj.get_full_name()
 
 
@@ -54,6 +55,7 @@ class RegisterEmployeeSerializer(serializers.ModelSerializer):
         fields = ["username", "email", "password", "first_name", "last_name"]
 
     def create(self, validated_data):
+        """Create a new employee user account."""
         user = User.objects.create_user(**validated_data)
         return user
 
@@ -80,6 +82,7 @@ class AttendanceRecordSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.CharField)
     def get_username(self, obj):
+        """Retrieve the username associated with the attendance record."""
         return obj.username or (obj.user.username if obj.user else "Unknown")
 
 
