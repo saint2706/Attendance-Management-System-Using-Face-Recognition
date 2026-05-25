@@ -31,3 +31,4 @@
 - [GEO/SEO] Synchronized and updated llms.txt and robots.txt to properly account for missing protected routes, task endpoints, and API boundaries.
 - [SEO] Added missing <h1> tag to MarkAttendance.tsx for semantic HTML hierarchy
 - [SEO] Removed duplicate `<h1>` in `MarkAttendance.tsx` to ensure a strict h1-h6 semantic HTML hierarchy.
+- [SEO] Updated `<h2>` to `<h3>` in `MarkAttendance.tsx` status alerts to strictly adhere to the h1-h6 semantic HTML hierarchy.

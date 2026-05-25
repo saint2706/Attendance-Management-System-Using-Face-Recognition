@@ -310,7 +310,7 @@ export const MarkAttendance = () => {
                                 <>
                                     <CheckCircle width={32} height={32} aria-hidden="true" />
                                     <div>
-                                        <h2>Attendance Marked!</h2>
+                                        <h3>Attendance Marked!</h3>
                                         <p>Welcome, {result.username}</p>
                                         {result.confidence && (
                                             <span className="badge badge-success">
@@ -323,7 +323,7 @@ export const MarkAttendance = () => {
                                 <>
                                     <AlertTriangle width={32} height={32} aria-hidden="true" />
                                     <div>
-                                        <h2>Liveness Check Failed</h2>
+                                        <h3>Liveness Check Failed</h3>
                                         <p>Please try again with your actual face</p>
                                     </div>
                                 </>
@@ -331,7 +331,7 @@ export const MarkAttendance = () => {
                                 <>
                                     <XCircle width={32} height={32} aria-hidden="true" />
                                     <div>
-                                        <h2>Not Recognized</h2>
+                                        <h3>Not Recognized</h3>
                                         <p>{result.message}</p>
                                     </div>
                                 </>
