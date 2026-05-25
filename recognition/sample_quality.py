@@ -204,7 +204,11 @@ def assess_dataset_diversity(
     metrics = DatasetDiversityMetrics(total_samples=len(samples))
 
     # Analyze lighting distribution
-    lighting_counts: Dict[str, int] = {"low_light": 0, "moderate_light": 0, "bright_light": 0}
+    lighting_counts: Dict[str, int] = {
+        "low_light": 0,
+        "moderate_light": 0,
+        "bright_light": 0,
+    }
     quality_tiers: Dict[str, int] = {"excellent": 0, "good": 0, "poor": 0}
     quality_scores = []
 

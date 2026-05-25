@@ -22,7 +22,9 @@ def _coerce_key_bytes(key: BytesLike | str) -> bytes:
     return bytes(key)
 
 
-def _parse_key_material(key: BytesLike | str | Iterable[BytesLike | str]) -> list[bytes]:
+def _parse_key_material(
+    key: BytesLike | str | Iterable[BytesLike | str],
+) -> list[bytes]:
     """Return a list of Fernet key bytes from strings or iterables.
 
     Accepts comma-delimited strings to allow transient dual-key operation

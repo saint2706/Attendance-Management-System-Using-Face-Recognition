@@ -68,7 +68,10 @@ class TestMultiFaceEdgeCases:
 
         # Create 5 faces (more than limit)
         face_embs = [
-            (np.array([i * 0.1, i * 0.2, i * 0.3]), {"x": i * 50, "y": i * 10, "w": 100, "h": 100})
+            (
+                np.array([i * 0.1, i * 0.2, i * 0.3]),
+                {"x": i * 50, "y": i * 10, "w": 100, "h": 100},
+            )
             for i in range(5)
         ]
         mock_extract.return_value = face_embs
@@ -215,7 +218,10 @@ class TestInvalidImageHandling:
         """NaN in embeddings produces NaN distance that fails threshold check."""
         import math
 
-        from recognition.pipeline import calculate_embedding_distance, is_within_distance_threshold
+        from recognition.pipeline import (
+            calculate_embedding_distance,
+            is_within_distance_threshold,
+        )
 
         valid = np.array([1.0, 2.0, 3.0])
         with_nan = np.array([1.0, float("nan"), 3.0])

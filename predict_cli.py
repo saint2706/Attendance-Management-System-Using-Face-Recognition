@@ -188,7 +188,10 @@ def main():
         "--profile", type=str, default=None, help="Name of threshold profile to use"
     )
     parser.add_argument(
-        "--site", type=str, default=None, help="Site code for automatic profile selection"
+        "--site",
+        type=str,
+        default=None,
+        help="Site code for automatic profile selection",
     )
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
 

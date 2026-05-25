@@ -66,7 +66,11 @@ from .forms import DateForm, DateForm_2, UsernameAndDateForm, usernameForm
 from .liveness import LivenessBuffer, is_live_face
 from .metrics_store import log_recognition_outcome
 from .models import RecognitionOutcome
-from .pipeline import extract_embedding, find_closest_dataset_match, is_within_distance_threshold
+from .pipeline import (
+    extract_embedding,
+    find_closest_dataset_match,
+    is_within_distance_threshold,
+)
 from .webcam_manager import get_webcam_manager
 
 # Use 'Agg' backend for Matplotlib to avoid GUI-related issues in a web server environment
@@ -2034,7 +2038,9 @@ def update_attendance_in_db_out(
             )
 
 
-def check_validity_times(times_all: Sequence[Time] | QuerySet[Time]) -> tuple[bool, float]:
+def check_validity_times(
+    times_all: Sequence[Time] | QuerySet[Time],
+) -> tuple[bool, float]:
     """
     Validate and calculate break hours from a sequence of time entries.
 

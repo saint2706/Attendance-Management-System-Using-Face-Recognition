@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("users", "0013_recognitionattempt"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -19,7 +18,10 @@ class Migration(migrations.Migration):
                 (
                     "id",
                     models.BigAutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
                     ),
                 ),
                 (
@@ -39,13 +41,16 @@ class Migration(migrations.Migration):
                 (
                     "completed",
                     models.BooleanField(
-                        default=False, help_text="Whether the wizard has been completed."
+                        default=False,
+                        help_text="Whether the wizard has been completed.",
                     ),
                 ),
                 (
                     "org_name",
                     models.CharField(
-                        blank=True, help_text="Organization name entered in step 1.", max_length=255
+                        blank=True,
+                        help_text="Organization name entered in step 1.",
+                        max_length=255,
                     ),
                 ),
                 (
@@ -59,13 +64,15 @@ class Migration(migrations.Migration):
                 (
                     "camera_tested",
                     models.BooleanField(
-                        default=False, help_text="Whether the camera test was passed in step 2."
+                        default=False,
+                        help_text="Whether the camera test was passed in step 2.",
                     ),
                 ),
                 (
                     "liveness_tested",
                     models.BooleanField(
-                        default=False, help_text="Whether the liveness test was passed in step 2."
+                        default=False,
+                        help_text="Whether the liveness test was passed in step 2.",
                     ),
                 ),
                 (
@@ -86,13 +93,16 @@ class Migration(migrations.Migration):
                 (
                     "model_trained",
                     models.BooleanField(
-                        default=False, help_text="Whether the model was trained in step 4."
+                        default=False,
+                        help_text="Whether the model was trained in step 4.",
                     ),
                 ),
                 (
                     "training_task_id",
                     models.CharField(
-                        blank=True, help_text="Celery task ID for the training job.", max_length=255
+                        blank=True,
+                        help_text="Celery task ID for the training job.",
+                        max_length=255,
                     ),
                 ),
                 (
@@ -105,13 +115,15 @@ class Migration(migrations.Migration):
                 (
                     "created_at",
                     models.DateTimeField(
-                        auto_now_add=True, help_text="When the wizard progress was created."
+                        auto_now_add=True,
+                        help_text="When the wizard progress was created.",
                     ),
                 ),
                 (
                     "updated_at",
                     models.DateTimeField(
-                        auto_now=True, help_text="When the wizard progress was last updated."
+                        auto_now=True,
+                        help_text="When the wizard progress was last updated.",
                     ),
                 ),
                 (

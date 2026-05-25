@@ -8,7 +8,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
 from sklearn.decomposition import PCA
-from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score, silhouette_score
+from sklearn.metrics import (
+    calinski_harabasz_score,
+    davies_bouldin_score,
+    silhouette_score,
+)
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import StandardScaler
 
@@ -356,7 +360,12 @@ if __name__ == "__main__":
     y_iris = iris.target
 
     results_iris = complete_clustering_analysis(
-        X_iris, true_labels=y_iris, scale=True, find_k=True, k_range=range(2, 8), n_clusters=3
+        X_iris,
+        true_labels=y_iris,
+        scale=True,
+        find_k=True,
+        k_range=range(2, 8),
+        n_clusters=3,
     )
 
     print("\n" + "=" * 60)

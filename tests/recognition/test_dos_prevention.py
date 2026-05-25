@@ -49,7 +49,10 @@ def test_large_image_rejection(client):
         mock_open.return_value.__enter__.return_value = mock_img
 
         response = client.post(
-            url, data=payload, content_type="application/json", HTTP_X_API_KEY="test-key"
+            url,
+            data=payload,
+            content_type="application/json",
+            HTTP_X_API_KEY="test-key",
         )
 
         # Expect 400 Bad Request due to rejection

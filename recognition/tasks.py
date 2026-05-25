@@ -22,7 +22,11 @@ from asgiref.sync import sync_to_async
 from celery import shared_task
 from imutils.video import VideoStream
 from sklearn.linear_model import SGDClassifier
-from sklearn.metrics import accuracy_score, classification_report, precision_recall_fscore_support
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    precision_recall_fscore_support,
+)
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 

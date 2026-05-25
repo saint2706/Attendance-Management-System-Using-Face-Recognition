@@ -314,7 +314,8 @@ class RecognitionAttempt(models.Model):
             # 🗄️ Database: Added composite index on created_at and successful to optimize query
             # in attendance stats endpoint.
             models.Index(
-                fields=["created_at", "successful"], name="users_attempt_created_succ_idx"
+                fields=["created_at", "successful"],
+                name="users_attempt_created_succ_idx",
             ),
         ]
 

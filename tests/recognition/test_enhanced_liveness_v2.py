@@ -153,7 +153,10 @@ class TestFrameConsistency:
 
     def test_check_frame_consistency_returns_result(self):
         """Test that consistency check returns proper result."""
-        from recognition.frame_consistency import FrameConsistencyResult, check_frame_consistency
+        from recognition.frame_consistency import (
+            FrameConsistencyResult,
+            check_frame_consistency,
+        )
 
         frames = [np.random.randint(0, 255, (64, 64, 3), dtype=np.uint8) for _ in range(10)]
 
@@ -230,7 +233,10 @@ class TestEnhancedLivenessVerification:
 
     def test_run_enhanced_liveness_with_valid_frames(self):
         """Test enhanced liveness with valid frame count."""
-        from recognition.liveness import EnhancedLivenessResult, run_enhanced_liveness_verification
+        from recognition.liveness import (
+            EnhancedLivenessResult,
+            run_enhanced_liveness_verification,
+        )
 
         # Create frames with some variation
         frames = []

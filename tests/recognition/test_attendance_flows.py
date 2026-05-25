@@ -546,7 +546,9 @@ def test_missing_training_data_short_circuits_attendance(
         lambda: _StubWebcamManager(np.zeros((1, 1, 3), dtype=np.uint8)),
     )
     monkeypatch.setattr(
-        views_legacy, "_load_dataset_embeddings_for_matching", lambda *args, **kwargs: []
+        views_legacy,
+        "_load_dataset_embeddings_for_matching",
+        lambda *args, **kwargs: [],
     )
 
     def _fail_on_enqueue(_records: List[Dict[str, Any]]):

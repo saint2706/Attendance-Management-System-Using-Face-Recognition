@@ -45,7 +45,10 @@ def create_preprocessing_pipeline(numeric_features, categorical_features):
     """
     # Numeric preprocessing
     numeric_transformer = Pipeline(
-        steps=[("imputer", SimpleImputer(strategy="median")), ("scaler", StandardScaler())]
+        steps=[
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+        ]
     )
 
     # Categorical preprocessing
@@ -110,13 +113,19 @@ def train_and_evaluate_model(
         "Logistic Regression": Pipeline(
             [
                 ("preprocessor", preprocessor),
-                ("classifier", LogisticRegression(max_iter=1000, random_state=random_state)),
+                (
+                    "classifier",
+                    LogisticRegression(max_iter=1000, random_state=random_state),
+                ),
             ]
         ),
         "Random Forest": Pipeline(
             [
                 ("preprocessor", preprocessor),
-                ("classifier", RandomForestClassifier(n_estimators=100, random_state=random_state)),
+                (
+                    "classifier",
+                    RandomForestClassifier(n_estimators=100, random_state=random_state),
+                ),
             ]
         ),
         "Gradient Boosting": Pipeline(
@@ -233,7 +242,12 @@ def train_and_evaluate_model(
         "y_test": y_test,
         "y_pred": y_pred,
         "y_pred_proba": y_pred_proba,
-        "metrics": {"accuracy": accuracy, "precision": precision, "recall": recall, "f1": f1},
+        "metrics": {
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+        },
     }
 
 

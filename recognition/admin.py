@@ -52,7 +52,12 @@ class ThresholdProfileAdmin(admin.ModelAdmin):
         (
             "Threshold Settings",
             {
-                "fields": ("distance_threshold", "selection_method", "target_far", "target_frr"),
+                "fields": (
+                    "distance_threshold",
+                    "selection_method",
+                    "target_far",
+                    "target_frr",
+                ),
             },
         ),
         (

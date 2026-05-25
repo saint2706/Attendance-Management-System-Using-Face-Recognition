@@ -185,7 +185,6 @@ class TestAttendanceViewSet:
 
 @pytest.mark.django_db
 class TestAttendanceViewSetMarkEndpoint:
-
     @pytest.fixture(autouse=True)
     def mock_deepface_represent(self, monkeypatch):
         """Mock DeepFace.represent to prevent actual ML inferences during tests."""
@@ -195,7 +194,10 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {"embedding": [0.0] * 128, "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+                {
+                    "embedding": [0.0] * 128,
+                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
+                }
             ],
         )
 
@@ -255,7 +257,10 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+                {
+                    "embedding": np.zeros(128),
+                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
+                }
             ],
         )
 
@@ -264,7 +269,10 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             pipeline,
             "extract_embedding",
-            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
+            lambda *args, **kwargs: (
+                np.zeros(128),
+                {"x": 0, "y": 0, "w": 100, "h": 100},
+            ),
         )
 
         # Mock empty dataset index
@@ -299,7 +307,10 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr("cv2.imdecode", lambda *args, **kwargs: None)
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        valid_png_b64 = (
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB"
+            "0C8AAAAASUVORK5CYII="
+        )
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -308,7 +319,8 @@ class TestAttendanceViewSetMarkEndpoint:
     @pytest.fixture
     def api_client(self):
         # By redefining api_client inside the class, we ensure a new client for each test,
-        # though the main issue is rate-limiting based on IP/User. Let's patch get_rate for the test.
+        # though the main issue is rate-limiting based on IP/User.
+        # Let's patch get_rate for the test.
         return APIClient()
 
     @pytest.fixture(autouse=True)
@@ -325,7 +337,8 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+            "cv2.imdecode",
+            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
         )
 
         def mock_represent(*args, **kwargs):
@@ -335,7 +348,10 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr(DeepFace, "represent", mock_represent)
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        valid_png_b64 = (
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB"
+            "0C8AAAAASUVORK5CYII="
+        )
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -348,7 +364,8 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+            "cv2.imdecode",
+            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
         )
 
         def mock_represent(*args, **kwargs):
@@ -358,7 +375,10 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr(DeepFace, "represent", mock_represent)
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        valid_png_b64 = (
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB"
+            "0C8AAAAASUVORK5CYII="
+        )
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -371,7 +391,8 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+            "cv2.imdecode",
+            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
         )
 
         from deepface import DeepFace
@@ -380,7 +401,10 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+                {
+                    "embedding": np.zeros(128),
+                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
+                }
             ],
         )
 
@@ -389,7 +413,10 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             pipeline,
             "extract_embedding",
-            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
+            lambda *args, **kwargs: (
+                np.zeros(128),
+                {"x": 0, "y": 0, "w": 100, "h": 100},
+            ),
         )
 
         # Mock dataset with unparseable embeddings
@@ -400,7 +427,10 @@ class TestAttendanceViewSetMarkEndpoint:
             ],
         )
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        valid_png_b64 = (
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB"
+            "0C8AAAAASUVORK5CYII="
+        )
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -413,7 +443,8 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+            "cv2.imdecode",
+            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
         )
 
         from deepface import DeepFace
@@ -422,7 +453,10 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+                {
+                    "embedding": np.zeros(128),
+                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
+                }
             ],
         )
 
@@ -431,7 +465,10 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             pipeline,
             "extract_embedding",
-            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
+            lambda *args, **kwargs: (
+                np.zeros(128),
+                {"x": 0, "y": 0, "w": 100, "h": 100},
+            ),
         )
 
         monkeypatch.setattr(
@@ -439,7 +476,8 @@ class TestAttendanceViewSetMarkEndpoint:
             lambda *args, **kwargs: [{"embedding": np.ones(128), "username": admin_user.username}],
         )
 
-        # Force pipeline.find_closest_dataset_match to return a match with high distance (low confidence)
+        # Force pipeline.find_closest_dataset_match to return a match with high distance
+        # (low confidence)
         monkeypatch.setattr(
             pipeline,
             "find_closest_dataset_match",
@@ -450,7 +488,10 @@ class TestAttendanceViewSetMarkEndpoint:
             ),  # distance 0.99 is above the 0.6 threshold for cosine
         )
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        valid_png_b64 = (
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB"
+            "0C8AAAAASUVORK5CYII="
+        )
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -464,7 +505,8 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+            "cv2.imdecode",
+            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
         )
 
         from deepface import DeepFace
@@ -473,7 +515,10 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+                {
+                    "embedding": np.zeros(128),
+                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
+                }
             ],
         )
 
@@ -482,7 +527,10 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             pipeline,
             "extract_embedding",
-            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
+            lambda *args, **kwargs: (
+                np.zeros(128),
+                {"x": 0, "y": 0, "w": 100, "h": 100},
+            ),
         )
 
         monkeypatch.setattr(
@@ -497,7 +545,10 @@ class TestAttendanceViewSetMarkEndpoint:
             lambda *args, **kwargs: ("ghost_user", 0.0, "dataset/ghost/1.jpg"),
         )
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        valid_png_b64 = (
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB"
+            "0C8AAAAASUVORK5CYII="
+        )
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -510,7 +561,8 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+            "cv2.imdecode",
+            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
         )
 
         from deepface import DeepFace
@@ -519,7 +571,10 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+                {
+                    "embedding": np.zeros(128),
+                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
+                }
             ],
         )
 
@@ -528,7 +583,10 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             pipeline,
             "extract_embedding",
-            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
+            lambda *args, **kwargs: (
+                np.zeros(128),
+                {"x": 0, "y": 0, "w": 100, "h": 100},
+            ),
         )
 
         monkeypatch.setattr(
@@ -550,7 +608,10 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr(views, "update_attendance_in_db_out", lambda *args, **kwargs: None)
 
-        valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        valid_png_b64 = (
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB"
+            "0C8AAAAASUVORK5CYII="
+        )
         response = api_client.post(url, {"image": valid_png_b64, "direction": "out"})
 
         assert response.status_code == status.HTTP_200_OK
@@ -564,7 +625,8 @@ class TestAttendanceViewSetMarkEndpoint:
         import numpy as np
 
         monkeypatch.setattr(
-            "cv2.imdecode", lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8)
+            "cv2.imdecode",
+            lambda *args, **kwargs: np.zeros((100, 100, 3), dtype=np.uint8),
         )
 
         from deepface import DeepFace
@@ -573,7 +635,10 @@ class TestAttendanceViewSetMarkEndpoint:
             DeepFace,
             "represent",
             lambda *args, **kwargs: [
-                {"embedding": np.zeros(128), "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100}}
+                {
+                    "embedding": np.zeros(128),
+                    "facial_area": {"x": 0, "y": 0, "w": 100, "h": 100},
+                }
             ],
         )
 
@@ -582,7 +647,10 @@ class TestAttendanceViewSetMarkEndpoint:
         monkeypatch.setattr(
             pipeline,
             "extract_embedding",
-            lambda *args, **kwargs: (np.zeros(128), {"x": 0, "y": 0, "w": 100, "h": 100}),
+            lambda *args, **kwargs: (
+                np.zeros(128),
+                {"x": 0, "y": 0, "w": 100, "h": 100},
+            ),
         )
 
         monkeypatch.setattr(
@@ -604,7 +672,10 @@ class TestAttendanceViewSetMarkEndpoint:
 
         monkeypatch.setattr(views, "update_attendance_in_db_in", lambda *args, **kwargs: None)
 
-        valid_png_b64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        valid_png_b64 = (
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAA"
+            "C0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        )
         response = api_client.post(url, {"image": valid_png_b64})
 
         assert response.status_code == status.HTTP_200_OK

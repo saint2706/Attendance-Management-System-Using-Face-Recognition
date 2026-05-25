@@ -66,7 +66,6 @@ def test_embedding_cache_performance():
         patch("recognition.views_legacy.extract_embedding") as mock_extract,
         patch("recognition.views_legacy.cache") as mock_cache,
     ):
-
         mock_root.glob.return_value = mock_paths
         mock_decode.return_value = np.zeros((100, 100, 3), dtype=np.uint8)
         mock_extract.return_value = ([0.1] * 128, None)
@@ -106,7 +105,6 @@ def test_embedding_cache_stores_on_miss():
         patch("recognition.views_legacy.extract_embedding") as mock_extract,
         patch("recognition.views_legacy.cache") as mock_cache,
     ):
-
         mock_root.glob.return_value = mock_paths
         mock_decrypt.return_value = b"fake_decrypted_bytes"
         mock_decode.return_value = np.zeros((100, 100, 3), dtype=np.uint8)

@@ -35,7 +35,8 @@ class CustomLoginViewTests(TestCase):
         # 5 attempts allowed by rate limiter
         for _ in range(5):
             self.client.post(
-                self.login_url, {"username": "ratelimit_user", "password": "wrongpassword"}
+                self.login_url,
+                {"username": "ratelimit_user", "password": "wrongpassword"},
             )
 
         # 6th attempt should be rate limited
@@ -211,7 +212,9 @@ class SetupWizardStep2Tests(TestCase):
         self.step2_url = reverse("setup-wizard-step2")
         User = get_user_model()
         self.staff_user = User.objects.create(
-            username="wizard_staff", password=make_password("Testpass123"), is_staff=True
+            username="wizard_staff",
+            password=make_password("Testpass123"),
+            is_staff=True,
         )
 
     def test_get_step2_without_step1_redirects(self):

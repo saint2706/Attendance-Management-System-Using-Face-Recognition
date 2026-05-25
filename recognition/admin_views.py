@@ -21,7 +21,11 @@ from django.utils import timezone
 from users.models import RecognitionAttempt
 
 from . import health, monitoring
-from .forms import AttendanceSessionFilterForm, ThresholdImportForm, ThresholdProfileForm
+from .forms import (
+    AttendanceSessionFilterForm,
+    ThresholdImportForm,
+    ThresholdProfileForm,
+)
 from .models import LivenessResult, RecognitionOutcome, ThresholdProfile
 
 
@@ -177,8 +181,12 @@ def failure_analysis(request: HttpRequest) -> HttpResponse:
         fa_df = df[df["failure_type"] == "false_accept"]
         fr_df = df[df["failure_type"] == "false_reject"]
 
-        context["false_accepts"] = list(fa_df.to_dict("records")) if not bool(fa_df.empty) else []  # type: ignore[assignment]
-        context["false_rejects"] = list(fr_df.to_dict("records")) if not bool(fr_df.empty) else []  # type: ignore[assignment]
+        context["false_accepts"] = (
+            list(fa_df.to_dict("records")) if not bool(fa_df.empty) else []
+        )  # type: ignore[assignment]
+        context["false_rejects"] = (
+            list(fr_df.to_dict("records")) if not bool(fr_df.empty) else []
+        )  # type: ignore[assignment]
         context["failures_available"] = True
 
     if subgroup_csv.exists():

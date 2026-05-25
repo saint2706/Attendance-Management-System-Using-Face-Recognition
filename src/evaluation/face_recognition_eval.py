@@ -23,7 +23,10 @@ from sklearn.metrics import (
     recall_score,
 )
 
-from recognition.pipeline import find_closest_dataset_match, is_within_distance_threshold
+from recognition.pipeline import (
+    find_closest_dataset_match,
+    is_within_distance_threshold,
+)
 
 from . import UNKNOWN_LABEL
 

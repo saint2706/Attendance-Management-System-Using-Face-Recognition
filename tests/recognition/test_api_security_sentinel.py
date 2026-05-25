@@ -38,7 +38,10 @@ def test_long_username_truncation(client, monkeypatch):
 
     # We expect 503 because no embeddings are loaded, but we care about the logging side effect
     response = client.post(
-        url, data=payload, content_type="application/json", HTTP_X_API_KEY="secure-key-1"
+        url,
+        data=payload,
+        content_type="application/json",
+        HTTP_X_API_KEY="secure-key-1",
     )
 
     assert response.status_code == 503
@@ -68,7 +71,10 @@ def test_api_key_authentication_works(client, monkeypatch):
 
     # Test valid key
     response = client.post(
-        url, data=payload, content_type="application/json", HTTP_X_API_KEY="secure-key-1"
+        url,
+        data=payload,
+        content_type="application/json",
+        HTTP_X_API_KEY="secure-key-1",
     )
     # Should be 503 because we mocked empty embeddings, BUT NOT 401
     assert response.status_code == 503
