@@ -90,7 +90,7 @@ jobs:
     needs: [lint]
     services:
       postgres:
-        image: postgres:16.2-alpine
+        image: postgres:16.2-alpine@sha256:951bfda460300925caa3949eaa092ba022e9aec191bbea9056a39e2382260b27
         env:
           POSTGRES_USER: ams
           POSTGRES_PASSWORD: ams
@@ -194,7 +194,7 @@ jobs:
         python-version: ["3.11", "3.12"]
     services:
       postgres:
-        image: postgres:16.2-alpine
+        image: postgres:16.2-alpine@sha256:951bfda460300925caa3949eaa092ba022e9aec191bbea9056a39e2382260b27
         env:
           POSTGRES_USER: ams
           POSTGRES_PASSWORD: ams
@@ -272,7 +272,7 @@ jobs:
         python-version: ["3.11", "3.12"]
     services:
       postgres:
-        image: postgres:16.2-alpine
+        image: postgres:16.2-alpine@sha256:951bfda460300925caa3949eaa092ba022e9aec191bbea9056a39e2382260b27
         env:
           POSTGRES_USER: ams
           POSTGRES_PASSWORD: ams
