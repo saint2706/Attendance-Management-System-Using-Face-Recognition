@@ -12,6 +12,7 @@ This changelog was initially reconstructed from the git history on 2025-11-29, a
 
 - docs: Documented `/admin/health/` endpoint in `docs/API_REFERENCE.md` as per good first issue.
 - docs: Improved troubleshooting guide in `docs/troubleshooting.md` with common issues and solutions.
+- API: Modified FaceRecognitionAPI to only return the filename instead of the full path in the identity field to fix a path disclosure vulnerability.
 
 ### Fixed
 

@@ -1022,7 +1022,7 @@ class FaceRecognitionAPI(View):
         response_payload.update(
             {
                 "distance": float(distance_value),
-                "identity": identity_path,
+                "identity": Path(identity_path).name if identity_path else None,
             }
         )
         if username:
