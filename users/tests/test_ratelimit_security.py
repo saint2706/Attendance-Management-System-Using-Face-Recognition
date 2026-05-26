@@ -178,7 +178,7 @@ def test_distributed_brute_force_prevention(test_user):
 
     # Simulate requests from different IPs by creating separate clients with different REMOTE_ADDR
     for i in range(5):
-        client = Client()
+        client = Client(HTTP_HOST="localhost")
         # Simulate different IP addresses
         response = client.post(
             url,
@@ -191,7 +191,7 @@ def test_distributed_brute_force_prevention(test_user):
             assert b"Too many login attempts" not in response.content
 
     # 6th attempt from yet another IP should be rate limited due to username limit
-    client = Client()
+    client = Client(HTTP_HOST="localhost")
     response = client.post(
         url,
         {"username": "testuser", "password": "wrongpassword6"},
@@ -248,7 +248,7 @@ def test_different_usernames_have_separate_limits(db):
 
     # Make 5 failed attempts for user1 (at the limit) from different IPs to avoid IP limit
     for i in range(5):
-        client = Client()
+        client = Client(HTTP_HOST="localhost")
         response = client.post(
             url,
             {"username": "user1", "password": "wrongpassword"},
@@ -258,7 +258,7 @@ def test_different_usernames_have_separate_limits(db):
 
     # Attempts for user2 should still work (separate counter)
     for i in range(3):
-        client = Client()
+        client = Client(HTTP_HOST="localhost")
         response = client.post(
             url,
             {"username": "user2", "password": "wrongpassword"},
@@ -269,7 +269,7 @@ def test_different_usernames_have_separate_limits(db):
             assert b"Too many login attempts" not in response.content
 
     # But user1 should be rate limited on next attempt (even from a new IP)
-    client = Client()
+    client = Client(HTTP_HOST="localhost")
     response = client.post(
         url,
         {"username": "user1", "password": "wrongpassword"},
