@@ -127,7 +127,8 @@ def test_extract_all_embeddings_list_of_lists() -> None:
     # Each item must be valid for extract_embedding.
     # If the item is a list (e.g., [0.1, 0.2]), extract_embedding sees it as list of length 2
     # but the logic there expects representations as either a list of dicts or list of lists.
-    # Passing [[[0.1, 0.2]], [[0.3, 0.4]]] allows extract_embedding to parse each internal list properly.
+    # Passing [[[0.1, 0.2]], [[0.3, 0.4]]] allows extract_embedding to parse each
+    # internal list properly.
     payload = [[[0.1, 0.2]], [[0.3, 0.4]]]
     results = pipeline.extract_all_embeddings(payload)
     assert len(results) == 2
@@ -299,7 +300,9 @@ def test_find_closest_match_faiss_invalid_index() -> None:
     """Invalid FAISS index type should return None."""
     probe = np.array([0.9, 0.1], dtype=float)
     assert pipeline.find_closest_match_faiss(probe, None) is None  # type: ignore[arg-type]
-    assert pipeline.find_closest_match_faiss(probe, "not_faiss_index") is None  # type: ignore[arg-type]
+    assert pipeline.find_closest_match_faiss(
+        probe, "not_faiss_index"
+    ) is None  # type: ignore[arg-type]
 
 
 def test_find_closest_match_faiss_empty_probe() -> None:

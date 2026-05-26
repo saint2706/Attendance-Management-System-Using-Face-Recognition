@@ -42,3 +42,10 @@
 - `tests/recognition/test_performance.py`: Ran black to fix line length issues.
 - `tests/recognition/test_face_recognition_api.py`: Removed invalid `F401` from the `noqa` comment for `from recognition import views_legacy`.
 - `tests/recognition/test_api_views.py.orig`: Removed the `.orig` backup file.
+
+- `recognition/admin_views.py`: Fixed E501 line length issues by splitting dictionary comprehension assignments across lines inside parenthesis.
+- `recognition/analysis/attendance.py`: Fixed E501 line length issues by breaking a long object query operation and refactoring a long line comment.
+- `tests/recognition/test_api_views.py`: Fixed E501 line length issues for long base64 string literals by using implicit string concatenation (wrapped in parentheses) and wrapped long comments.
+- `tests/recognition/test_models.py`: Fixed E501 line length issue by wrapping a long comment.
+- `tests/recognition/test_pipeline.py`: Fixed E501 line length issue by wrapping a long comment and splitting a long method call into multiple lines.
+Build now passes ✅
