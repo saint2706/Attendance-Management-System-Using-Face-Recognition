@@ -300,9 +300,9 @@ def test_find_closest_match_faiss_invalid_index() -> None:
     """Invalid FAISS index type should return None."""
     probe = np.array([0.9, 0.1], dtype=float)
     assert pipeline.find_closest_match_faiss(probe, None) is None  # type: ignore[arg-type]
-    assert pipeline.find_closest_match_faiss(
-        probe, "not_faiss_index"
-    ) is None  # type: ignore[arg-type]
+    assert (
+        pipeline.find_closest_match_faiss(probe, "not_faiss_index") is None
+    )  # type: ignore[arg-type]
 
 
 def test_find_closest_match_faiss_empty_probe() -> None:
