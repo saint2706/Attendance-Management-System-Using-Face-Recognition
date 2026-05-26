@@ -143,7 +143,9 @@ class AntiSpoofCNN:
 
             # Setup representative dataset for INT8
             def representative_dataset():
-                faces_dir = Path("faces")
+                # Avoid Django imports here; fallback to repo root "faces" directory
+                base_dir = Path(__file__).resolve().parent.parent
+                faces_dir = base_dir / "faces"
                 count = 0
                 if faces_dir.exists() and faces_dir.is_dir():
                     for filepath in faces_dir.glob("*.jpg"):
@@ -170,7 +172,9 @@ class AntiSpoofCNN:
                 converter.inference_input_type = tf.float32
                 converter.inference_output_type = tf.float32
                 tflite_model = converter.convert()
-                logger.info("Successfully converted anti-spoof model to TFLite with INT8 quantization")
+                logger.info(
+                    "Successfully converted anti-spoof model to TFLite with INT8 quantization"
+                )
             except Exception as e:
                 logger.warning("INT8 quantization failed, falling back to float16: %s", e)
                 # Fallback to float16
