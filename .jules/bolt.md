@@ -72,3 +72,8 @@
 - Found multiple `.aggregate()` queries being executed consecutively against the same queryset in `recognition/scheduled_tasks.py` (`scheduled_liveness_evaluation`).
 - **Optimization:** Refactored these sequential database queries into a single `.aggregate()` call using `Count("id")`, `Count("id", filter=Q(...))`, and `Avg("liveness_confidence", filter=Q(...))` to minimize database roundtrips.
 - **Result:** Decreased query count from 2 to 1 on the scheduled liveness evaluation Celery task.
+
+## Optimization: Prevent redundant queries in attendance views
+- **Problem**: In `recognition/views.py` and `recognition/views_legacy.py`, `present_qs.exists()` was used before passing the queryset to `hours_vs_employee_given_date` and `hours_vs_date_given_employee`. This caused a redundant database query because the queryset was immediately iterated over within those functions.
+- **Optimization**: Replaced `present_qs.exists()` with `if present_qs:` to utilize implicit boolean evaluation. This fetches and caches the queryset in a single query, preventing the N+1-like redundant database hit.
+- **Result**: Reduced the number of database queries by 1 for the admin attendance views (e.g. `view_attendance_date`).
