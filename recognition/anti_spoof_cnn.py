@@ -140,8 +140,44 @@ class AntiSpoofCNN:
             # Convert to TFLite and quantize
             converter = lite.TFLiteConverter.from_keras_model(model)
             converter.optimizations = [lite.Optimize.DEFAULT]
-            converter.target_spec.supported_types = [tf.float16]
-            tflite_model = converter.convert()
+
+            # Setup representative dataset for INT8
+            def representative_dataset():
+                faces_dir = Path("faces")
+                count = 0
+                if faces_dir.exists() and faces_dir.is_dir():
+                    for filepath in faces_dir.glob("*.jpg"):
+                        img = cv2.imread(str(filepath))
+                        if img is not None:
+                            resized = cv2.resize(img, self._input_size)
+                            if resized.ndim == 2:
+                                resized = np.stack([resized] * 3, axis=-1)
+                            elif resized.shape[-1] == 4:
+                                resized = resized[..., :3]
+
+                            normalized = resized.astype(np.float32) / 255.0
+                            yield [np.expand_dims(normalized, axis=0)]
+                            count += 1
+                            if count >= 10:  # Use a subset of 10 images
+                                break
+
+                if count == 0:
+                    raise Exception("No real images found for representative dataset.")
+
+            try:
+                converter.representative_dataset = representative_dataset
+                converter.target_spec.supported_ops = [lite.OpsSet.TFLITE_BUILTINS_INT8]
+                converter.inference_input_type = tf.float32
+                converter.inference_output_type = tf.float32
+                tflite_model = converter.convert()
+                logger.info("Successfully converted anti-spoof model to TFLite with INT8 quantization")
+            except Exception as e:
+                logger.warning("INT8 quantization failed, falling back to float16: %s", e)
+                # Fallback to float16
+                converter = lite.TFLiteConverter.from_keras_model(model)
+                converter.optimizations = [lite.Optimize.DEFAULT]
+                converter.target_spec.supported_types = [tf.float16]
+                tflite_model = converter.convert()
 
             return tflite_model
 
