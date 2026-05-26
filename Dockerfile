@@ -79,6 +79,7 @@ RUN DJANGO_SETTINGS_MODULE=attendance_system_facial_recognition.settings.product
     RECOGNITION_JWT_SECRET=dummy-jwt-secret-for-build \
     python manage.py collectstatic --noinput \
     && rm -rf /app/frontend \
+    && /venv/bin/pip uninstall -y setuptools wheel pip \
     && find /venv -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true \
     && find /venv -type f -name "*.pyc" -delete \
     && find /venv -type f -name "*.pyo" -delete
