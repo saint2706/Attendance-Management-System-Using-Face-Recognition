@@ -241,6 +241,7 @@ class LivenessResult(models.Model):
         indexes = [
             models.Index(fields=["created_at", "challenge_status"]),
             models.Index(fields=["username", "created_at"]),
+            models.Index(fields=["challenge_type"]),
         ]
         verbose_name = "Liveness Result"
         verbose_name_plural = "Liveness Results"
