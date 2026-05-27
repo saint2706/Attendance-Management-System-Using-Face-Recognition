@@ -241,7 +241,7 @@ export const MarkAttendance = () => {
                         <div className="camera-error" role="alert" aria-live="assertive">
                             <CameraOff width={48} height={48} aria-hidden="true" />
                             <p>{error}</p>
-                            <button onClick={startCamera} className="btn btn-primary" title="Retry connecting to camera" disabled={isInitializing} aria-busy={isInitializing}>
+                            <button type="button" onClick={startCamera} className="btn btn-primary" title="Retry connecting to camera" disabled={isInitializing} aria-busy={isInitializing}>
                                 {isInitializing ? (
                                     <>
                                         <Loader2 size={18} className="animate-spin" aria-hidden="true" />
@@ -353,6 +353,7 @@ export const MarkAttendance = () => {
                     {!result ? (
                         <div className="flex flex-col items-center gap-sm">
                             <button
+                                type="button"
                                 ref={captureButtonRef}
                                 onClick={startCaptureSequence}
                                 disabled={!stream || isProcessing || countdown !== null}
@@ -389,6 +390,7 @@ export const MarkAttendance = () => {
                                 {result.recognized ? (
                                     <>
                                         <button
+                                            type="button"
                                             onClick={() => navigate('/')}
                                             className="btn btn-secondary btn-lg"
                                             title="Return to the home page"
@@ -397,6 +399,7 @@ export const MarkAttendance = () => {
                                             Return Home
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={resetAttempt}
                                             className="btn btn-primary btn-lg"
                                             aria-keyshortcuts="Escape"
@@ -408,6 +411,7 @@ export const MarkAttendance = () => {
                                     </>
                                 ) : (
                                     <button
+                                        type="button"
                                         onClick={resetAttempt}
                                         className="btn btn-secondary btn-lg"
                                         aria-keyshortcuts="Escape"

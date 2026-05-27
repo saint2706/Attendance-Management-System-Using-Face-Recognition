@@ -60,7 +60,7 @@ export const Navbar = () => {
                                     </NavLink>
                                 </li>
                                 <li>
-                                    <button onClick={handleLogout} className="nav-link nav-button" title="Logout">
+                                    <button type="button" onClick={handleLogout} className="nav-link nav-button" title="Logout">
                                         <LogOut size={18} aria-hidden="true" />
                                         <span>Logout</span>
                                     </button>
@@ -82,9 +82,10 @@ export const Navbar = () => {
                     </ul>
 
                     <button
+                        type="button"
                         onClick={toggleTheme}
                         className="btn btn-icon theme-toggle"
-                            aria-label="Toggle theme"
+                            aria-label={resolvedTheme === 'dark' ? "Switch to light mode" : "Switch to dark mode"}
                             aria-pressed={resolvedTheme === 'dark'}
                             title={resolvedTheme === 'dark' ? "Switch to light mode" : "Switch to dark mode"}
                     >
@@ -92,9 +93,10 @@ export const Navbar = () => {
                     </button>
 
                     <button
+                        type="button"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         className="btn btn-icon mobile-menu-toggle"
-                            aria-label="Toggle mobile menu"
+                            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
                             title={mobileMenuOpen ? "Close menu" : "Open menu"}
                             aria-expanded={mobileMenuOpen}
                             aria-controls="mobile-menu"
