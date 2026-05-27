@@ -34,7 +34,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: postgres
-          image: postgres:16.2-alpine
+          image: postgres:16.2-alpine@sha256:951bfda460300925caa3949eaa092ba022e9aec191bbea9056a39e2382260b27
           imagePullPolicy: IfNotPresent
           ports:
             - name: postgres
