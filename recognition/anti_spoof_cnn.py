@@ -140,8 +140,48 @@ class AntiSpoofCNN:
             # Convert to TFLite and quantize
             converter = lite.TFLiteConverter.from_keras_model(model)
             converter.optimizations = [lite.Optimize.DEFAULT]
-            converter.target_spec.supported_types = [tf.float16]
-            tflite_model = converter.convert()
+
+            # INT8 Quantization
+            def representative_dataset():
+                import cv2
+                import numpy as np
+                import os
+
+                from django.conf import settings
+
+                base_dir = getattr(settings, "BASE_DIR", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                image_dir = os.path.join(base_dir, "sample_data", "images")
+                if os.path.exists(image_dir) and os.listdir(image_dir):
+                    image_files = [os.path.join(image_dir, f) for f in os.listdir(image_dir) if f.endswith(('.jpg', '.png'))]
+                    if not image_files:
+                        logger.warning("No images found, fallback to float16")
+                        converter.target_spec.supported_types = [tf.float16]
+                        return
+                    for img_path in image_files[:100]:
+                        img = cv2.imread(img_path)
+                        if img is None:
+                            continue
+                        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                        img = cv2.resize(img, self._input_size)
+                        img = img.astype(np.float32) / 255.0
+                        img = np.expand_dims(img, axis=0)
+                        yield [img]
+                else:
+                    logger.warning("Image directory not found, fallback to float16")
+                    converter.target_spec.supported_types = [tf.float16]
+                    return
+
+            try:
+                converter.representative_dataset = representative_dataset
+                converter.target_spec.supported_ops = [lite.OpsSet.TFLITE_BUILTINS_INT8]
+                tflite_model = converter.convert()
+                logger.info("Successfully converted anti-spoof model to INT8")
+            except Exception as e:
+                logger.warning("INT8 conversion failed, falling back to float16. Error: %s", e)
+                converter = lite.TFLiteConverter.from_keras_model(model)
+                converter.optimizations = [lite.Optimize.DEFAULT]
+                converter.target_spec.supported_types = [tf.float16]
+                tflite_model = converter.convert()
 
             return tflite_model
 
