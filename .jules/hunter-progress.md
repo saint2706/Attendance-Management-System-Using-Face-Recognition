@@ -42,3 +42,4 @@
 - `tests/recognition/test_performance.py`: Ran black to fix line length issues.
 - `tests/recognition/test_face_recognition_api.py`: Removed invalid `F401` from the `noqa` comment for `from recognition import views_legacy`.
 - `tests/recognition/test_api_views.py.orig`: Removed the `.orig` backup file.
+- Fixed E501 line length issues in recognition/admin_views.py, recognition/analysis/attendance.py, tests/recognition/test_api_views.py, tests/recognition/test_models.py, tests/recognition/test_pipeline.py
