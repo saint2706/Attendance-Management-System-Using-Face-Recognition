@@ -149,10 +149,18 @@ class AntiSpoofCNN:
 
                 from django.conf import settings
 
-                base_dir = getattr(settings, "BASE_DIR", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                base_dir = getattr(
+                    settings,
+                    "BASE_DIR",
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                )
                 image_dir = os.path.join(base_dir, "sample_data", "images")
                 if os.path.exists(image_dir) and os.listdir(image_dir):
-                    image_files = [os.path.join(image_dir, f) for f in os.listdir(image_dir) if f.endswith(('.jpg', '.png'))]
+                    image_files = [
+                        os.path.join(image_dir, f)
+                        for f in os.listdir(image_dir)
+                        if f.endswith((".jpg", ".png"))
+                    ]
                     if not image_files:
                         logger.warning("No images found, fallback to float16")
                         converter.target_spec.supported_types = [tf.float16]
