@@ -143,11 +143,12 @@ class AntiSpoofCNN:
 
             # INT8 Quantization
             def representative_dataset():
-                import cv2
-                import numpy as np
                 import os
 
                 from django.conf import settings
+
+                import cv2
+                import numpy as np
 
                 base_dir = getattr(
                     settings,
