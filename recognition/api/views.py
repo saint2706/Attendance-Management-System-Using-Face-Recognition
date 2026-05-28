@@ -154,6 +154,7 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
             RecognitionAttempt.objects.filter(
                 created_at__range=(today_start, today_end), successful=True
             )
+            .order_by()
             .values_list("user_id", "direction")
             .distinct()
         )
