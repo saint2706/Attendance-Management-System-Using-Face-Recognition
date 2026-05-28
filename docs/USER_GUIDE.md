@@ -18,7 +18,7 @@ If you are new to the system, start with the [Quick Start Guide](QUICKSTART.md) 
 
 1. Navigate to the system's home page.
 
-    ![Home page](screenshots/home-light.png)
+    ![Home page](screenshots/home.png)
 
     *The home page shows the main actions: Mark Time-In, Mark Time-Out, and Dashboard Login.*
 
@@ -51,7 +51,7 @@ If you are new to the system, start with the [Quick Start Guide](QUICKSTART.md) 
 
 After logging in as an admin, you will see the Admin Dashboard with a first-run checklist (if setup is incomplete) and quick-action cards.
 
-![Admin dashboard](screenshots/admin-dashboard-light.png)
+![Admin dashboard](screenshots/admin-dashboard.png)
 
 *The admin dashboard provides quick access to employee management, photo capture, and reports.*
 
@@ -68,6 +68,10 @@ After logging in as an admin, you will see the Admin Dashboard with a first-run 
 
 #### Adding Employee Photos
 
+![Employee enrollment](screenshots/employee-enrollment.png)
+
+*The employee enrollment page.*
+
 1. From the admin dashboard, click on **Add Photos**.
 2. Enter the username of the employee and click **Add Photos**.
 3. The system will automatically capture a set of images to create a face profile for the employee. Ensure the employee is in a well-lit area and facing the camera.
@@ -76,6 +80,10 @@ After logging in as an admin, you will see the Admin Dashboard with a first-run 
 > For best recognition accuracy, capture **8-12 images** per employee under varied lighting and poses. See the [Training Protocol](TRAINING_PROTOCOL.md) for detailed guidance on diverse data collection.
 
 #### Running an Attendance Session
+
+![Attendance session](screenshots/attendance-session.png)
+
+*The attendance session page with real-time results.*
 
 The Attendance Session view provides a live feed of recognition attempts with real-time results.
 
@@ -87,6 +95,10 @@ The Attendance Session view provides a live feed of recognition attempts with re
     - Check-in/check-out controls
 
 #### Viewing Attendance Reports
+
+![Attendance reports](screenshots/reports.png)
+
+*The attendance reports page.*
 
 Admins have access to several attendance reports:
 
@@ -112,6 +124,10 @@ The system also generates graphs to help you visualize attendance trends.
 
 ## 5. Model Evaluation Reports
 
+![Evaluation dashboard](screenshots/evaluation-dashboard.png)
+
+*The model evaluation dashboard.*
+
 Administrators who need to verify recognition quality can generate a full evaluation report from the command line:
 
 ```bash
@@ -130,6 +146,10 @@ Use these reports to fine-tune thresholds before rolling changes into production
 > **Tip for reviewers:** The repository includes a `sample_data/` directory with three synthetic identities so you can rehearse the full workflow without using production assets. Running `make reproduce` will point the evaluation pipeline at that demo dataset and deposit artifacts under `reports/sample_repro/`.
 
 ## 6. Responsible Use & Limitations
+
+![Fairness dashboard](screenshots/fairness-dashboard.png)
+
+*The fairness dashboard.*
 
 - **Fairness audit:** Run `python manage.py fairness_audit --split-csv reports/splits.csv --reports-dir reports/fairness` after major enrollment batches or hardware changes. The command captures recognition accuracy, precision/recall, and FAR/FRR for different user-role buckets, commonly used sites, capture sources, and coarse lighting conditions. Review the generated `reports/fairness/summary.md` so you can identify groups that require additional training photos or new lighting guidance.
 - **Documentation:** The [Fairness & Limitations](FAIRNESS_AND_LIMITATIONS.md) report explains the methodology, interprets the findings, and lists known blind spots such as the absence of demographic labels. Pair it with the [DATA_CARD.md](DATA_CARD.md) before deploying to new regions so operators understand how the system behaves today and what still needs manual review.

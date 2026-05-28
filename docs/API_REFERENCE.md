@@ -182,6 +182,10 @@ A successful request indicates that the batch has been accepted and enqueued for
 
 ## Health Check Endpoint
 
+![System health dashboard](screenshots/system-health.png)
+
+*The system health dashboard.*
+
 This endpoint provides a comprehensive overview of the system's health, including dataset status, model training status, evaluation metrics, recent recognition activity, and background worker status. It is useful for monitoring and diagnostics.
 
 - **URL:** `/admin/health/`
