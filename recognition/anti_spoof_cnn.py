@@ -136,11 +136,54 @@ class AntiSpoofCNN:
 
             import tensorflow as tf
             from tensorflow import lite
+            import os
+            import cv2
+            import numpy as np
+            from django.conf import settings
 
             # Convert to TFLite and quantize
             converter = lite.TFLiteConverter.from_keras_model(model)
             converter.optimizations = [lite.Optimize.DEFAULT]
-            converter.target_spec.supported_types = [tf.float16]
+
+            def representative_data_gen():
+                base_dir = getattr(settings, 'BASE_DIR', '')
+                faces_dir = os.path.join(base_dir, 'faces') if base_dir else 'faces'
+
+                count = 0
+                if os.path.isdir(faces_dir):
+                    for filename in os.listdir(faces_dir):
+                        if count >= 100:
+                            break
+                        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+                            filepath = os.path.join(faces_dir, filename)
+                            img = cv2.imread(filepath)
+                            if img is not None:
+                                img = cv2.resize(img, self._input_size)
+                                img = img.astype(np.float32) / 255.0
+                                img = np.expand_dims(img, axis=0)
+                                yield [img]
+                                count += 1
+
+            # Check if faces directory exists and has images
+            base_dir = getattr(settings, 'BASE_DIR', '')
+            faces_dir = os.path.join(base_dir, 'faces') if base_dir else 'faces'
+            has_images = False
+            if os.path.isdir(faces_dir):
+                for filename in os.listdir(faces_dir):
+                    if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+                        has_images = True
+                        break
+
+            if has_images:
+                converter.representative_dataset = representative_data_gen
+                converter.target_spec.supported_ops = [lite.OpsSet.TFLITE_BUILTINS_INT8]
+                converter.inference_input_type = tf.int8
+                converter.inference_output_type = tf.int8
+                logger.info("Using INT8 quantization for anti-spoof model")
+            else:
+                converter.target_spec.supported_types = [tf.float16]
+                logger.info("Using float16 quantization fallback for anti-spoof model")
+
             tflite_model = converter.convert()
 
             return tflite_model
@@ -239,6 +282,12 @@ class AntiSpoofCNN:
             # Normalize to [0, 1]
             normalized = resized.astype(np.float32) / 255.0
 
+            if getattr(self, "_interpreter", None) is not None and getattr(self, "_input_details", None) is not None:
+                if len(self._input_details) > 0 and self._input_details[0]["dtype"] == np.int8:
+                    scale, zero_point = self._input_details[0]["quantization"]
+                    if scale > 0:
+                        quantized = np.round(normalized / scale + zero_point).astype(np.int8)
+                        return quantized
             return normalized
 
         except Exception as e:
@@ -298,6 +347,11 @@ class AntiSpoofCNN:
                 self._interpreter.set_tensor(self._input_details[0]["index"], batch)
                 self._interpreter.invoke()
                 prediction = self._interpreter.get_tensor(self._output_details[0]["index"])
+
+            if self._output_details[0]["dtype"] == np.int8:
+                scale, zero_point = self._output_details[0]["quantization"]
+                if scale > 0:
+                    prediction = (prediction.astype(np.float32) - zero_point) * scale
 
             real_probability = float(prediction[0][0])
             spoof_probability = 1.0 - real_probability
@@ -395,6 +449,11 @@ class AntiSpoofCNN:
                 self._interpreter.set_tensor(self._input_details[0]["index"], batch)
                 self._interpreter.invoke()
                 predictions = self._interpreter.get_tensor(self._output_details[0]["index"])
+
+            if self._output_details[0]["dtype"] == np.int8:
+                scale, zero_point = self._output_details[0]["quantization"]
+                if scale > 0:
+                    predictions = (predictions.astype(np.float32) - zero_point) * scale
 
             # Update results for valid frames
             for idx, prediction_val in zip(valid_indices, predictions):
