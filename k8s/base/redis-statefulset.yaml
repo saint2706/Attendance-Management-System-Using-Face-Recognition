@@ -34,7 +34,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: redis
-          image: redis:7.2.13-alpine
+          image: redis:7.2.13-alpine@sha256:9907ac0c435717b4d95697cb4d0ce77d100b1d21269a01a0ce66f27335184c38
           imagePullPolicy: IfNotPresent
           ports:
             - name: redis
