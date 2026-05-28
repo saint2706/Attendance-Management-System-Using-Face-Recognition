@@ -134,27 +134,29 @@ class AntiSpoofCNN:
                 metrics=["accuracy"],
             )
 
-            import tensorflow as tf
-            from tensorflow import lite
             import os
+
+            from django.conf import settings
+
             import cv2
             import numpy as np
-            from django.conf import settings
+            import tensorflow as tf
+            from tensorflow import lite
 
             # Convert to TFLite and quantize
             converter = lite.TFLiteConverter.from_keras_model(model)
             converter.optimizations = [lite.Optimize.DEFAULT]
 
             def representative_data_gen():
-                base_dir = getattr(settings, 'BASE_DIR', '')
-                faces_dir = os.path.join(base_dir, 'faces') if base_dir else 'faces'
+                base_dir = getattr(settings, "BASE_DIR", "")
+                faces_dir = os.path.join(base_dir, "faces") if base_dir else "faces"
 
                 count = 0
                 if os.path.isdir(faces_dir):
                     for filename in os.listdir(faces_dir):
                         if count >= 100:
                             break
-                        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+                        if filename.lower().endswith((".png", ".jpg", ".jpeg")):
                             filepath = os.path.join(faces_dir, filename)
                             img = cv2.imread(filepath)
                             if img is not None:
@@ -165,12 +167,12 @@ class AntiSpoofCNN:
                                 count += 1
 
             # Check if faces directory exists and has images
-            base_dir = getattr(settings, 'BASE_DIR', '')
-            faces_dir = os.path.join(base_dir, 'faces') if base_dir else 'faces'
+            base_dir = getattr(settings, "BASE_DIR", "")
+            faces_dir = os.path.join(base_dir, "faces") if base_dir else "faces"
             has_images = False
             if os.path.isdir(faces_dir):
                 for filename in os.listdir(faces_dir):
-                    if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    if filename.lower().endswith((".png", ".jpg", ".jpeg")):
                         has_images = True
                         break
 
@@ -282,7 +284,10 @@ class AntiSpoofCNN:
             # Normalize to [0, 1]
             normalized = resized.astype(np.float32) / 255.0
 
-            if getattr(self, "_interpreter", None) is not None and getattr(self, "_input_details", None) is not None:
+            if (
+                getattr(self, "_interpreter", None) is not None
+                and getattr(self, "_input_details", None) is not None
+            ):
                 if len(self._input_details) > 0 and self._input_details[0]["dtype"] == np.int8:
                     scale, zero_point = self._input_details[0]["quantization"]
                     if scale > 0:
