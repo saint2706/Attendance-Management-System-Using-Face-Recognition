@@ -23,7 +23,7 @@ import threading
 import time
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -1954,7 +1954,7 @@ def hours_vs_date_given_employee(
     # ⚡ Performance: Fetch all time records once and group in memory to avoid N+1 queries
     # Sorting in the DB is more efficient than sorting each group in Python
     all_times = list(time_qs.order_by("time"))
-    times_by_date = {}
+    times_by_date: Dict[datetime.date, List[Time]] = {}
     for t in all_times:
         if t.date not in times_by_date:
             times_by_date[t.date] = []
@@ -2030,7 +2030,7 @@ def hours_vs_employee_given_date(
     # ⚡ Performance: Fetch all time records once and group in memory to avoid N+1 queries
     # Sorting in the DB is more efficient than sorting each group in Python
     all_times = list(time_qs.order_by("time"))
-    times_by_user = {}
+    times_by_user: Dict[int, List[Time]] = {}
     for t in all_times:
         if t.user_id not in times_by_user:
             times_by_user[t.user_id] = []
@@ -2466,12 +2466,12 @@ def _normalize_face_region(
     w = _get_value("w", "width")
     h = _get_value("h", "height")
 
-    if None not in (x, y, w, h):
+    if x is not None and y is not None and w is not None and h is not None:
         return {"x": x, "y": y, "w": w, "h": h}
 
     right = _get_value("right")
     bottom = _get_value("bottom")
-    if None not in (x, right, y, bottom):
+    if x is not None and right is not None and y is not None and bottom is not None:
         width = right - x
         height = bottom - y
         if width > 0 and height > 0:
