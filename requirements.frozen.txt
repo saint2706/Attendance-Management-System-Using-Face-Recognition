@@ -221,7 +221,6 @@ numpy==2.4.4
     #   seaborn
     #   tensorboard
     #   tensorflow
-opencv-python==4.13.0.92
     # via
     #   deepface
     #   retina-face
