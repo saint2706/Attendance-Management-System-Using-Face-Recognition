@@ -139,7 +139,7 @@ h5py==3.14.0
     # via
     #   keras
     #   tensorflow
-idna==3.11
+idna==3.18
     # via requests
 imutils==0.5.4
     # via -r requirements.txt
