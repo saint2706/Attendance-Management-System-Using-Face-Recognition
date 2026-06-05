@@ -267,7 +267,7 @@ pycparser==3.0
     # via cffi
 pygments==2.19.2
     # via rich
-pyjwt==2.12.1
+pyjwt==2.13.0
     # via djangorestframework-simplejwt
 pyparsing==3.3.2
     # via matplotlib
