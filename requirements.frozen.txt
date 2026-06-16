@@ -139,7 +139,7 @@ h5py==3.14.0
     # via
     #   keras
     #   tensorflow
-idna==3.11
+idna==3.15
     # via requests
 imutils==0.5.4
     # via -r requirements.txt
@@ -267,7 +267,7 @@ pycparser==3.0
     # via cffi
 pygments==2.19.2
     # via rich
-pyjwt==2.12.1
+pyjwt==2.13.0
     # via djangorestframework-simplejwt
 pyparsing==3.3.2
     # via matplotlib
@@ -367,7 +367,7 @@ tzlocal==5.3.1
     # via celery
 uritemplate==4.2.0
     # via drf-spectacular
-urllib3==2.6.3
+urllib3==2.7.0
     # via
     #   requests
     #   sentry-sdk
